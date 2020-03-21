@@ -1,0 +1,93 @@
+types:
+  QuestId: string
+  PlayerName: string
+
+  Role:
+    - MERLIN
+    - PERCIVAL
+    - LOYAL_SERVANT
+    - MORGANA
+    - MORDRED
+    - OBERON
+    - ASSASSIN
+    - MINION
+  Vote:
+    - PASS
+    - FAIL
+  QuestStatus:
+    - PROPOSING_QUEST
+    - VOTING_FOR_PROPOSAL
+    - PROPOSAL_REJECTED
+    - VOTING_IN_QUEST
+    - PASSED
+    - FAILED
+  GameStatus:
+    - NOT_STARTED
+    - IN_PROGRESS
+    - ASSASSINATING
+    - GOOD_WON
+    - EVIL_WON
+
+  RoleInfo:
+    role: Role
+    isEvil: boolean
+    description: string
+  PlayerAndRole:
+    player: PlayerName
+    role: Role
+  PlayerAndVote:
+    player: PlayerName
+    vote: Vote
+  QuestAttempt:
+    id: QuestId
+    roundNumber: number
+    attemptNumber: number
+    size: number
+    leader: PlayerName
+    members: PlayerName[]
+    votes: PlayerAndVote[]
+    remainingVotes: number
+    results: Vote[]
+    remainingResults: number
+    numFailures: number
+    playerVote?: Vote
+    playerResult?: Vote
+    status: QuestStatus
+  PlayerState:
+    # metadata
+    creator: PlayerName
+    # game rules
+    playersPerQuest: number[]
+    rolesInfo: RoleInfo[]
+    # game configuration
+    players: PlayerName[]
+    roles: Role[]
+    # player info
+    playerName: PlayerName
+    playerRole?: Role
+    knownRoles: PlayerAndRole[]
+    # game info
+    currentQuest: QuestAttempt
+    questHistory: QuestAttempt[]
+    status: GameStatus
+
+methods:
+  createGame:
+    playerName: PlayerName
+  joinGame:
+    playerName: PlayerName
+  startGame:
+    roleList: Role[]
+    playerOrder: PlayerName[]
+  proposeQuest:
+    questId: QuestId
+    proposedMembers: PlayerName[]
+  voteForProposal:
+    questId: QuestId
+    vote: Vote
+  voteInQuest:
+    questId: QuestId
+    vote: Vote
+
+userState: PlayerState
+initialize: createGame
