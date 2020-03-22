@@ -21,6 +21,11 @@ socketio(3000).on("connection", socket => {
     states[stateId] = state;
   });
 
+  socket.on("joinGame", (userId, stateId) => {
+    const state = states[stateId];
+    const userData = users[userId];
+    impl.joinGame(state, userData);
+  });
   socket.on("startGame", (userId, stateId, roleList, playerOrder) => {
     const state = states[stateId];
     const userData = users[userId];
@@ -30,15 +35,15 @@ socketio(3000).on("connection", socket => {
     const state = states[stateId];
     const userData = users[userId];
     impl.proposeQuest(state, userData, questId, proposedMembers);
-  })
+  });
   socket.on("voteForProposal", (userId, stateId, questId, vote) => {
     const state = states[stateId];
     const userData = users[userId];
     impl.voteForProposal(state, userData, questId, vote);
-  })
+  });
   socket.on("voteInQuest", (userId, stateId, questId, vote) => {
     const state = states[stateId];
     const userData = users[userId];
     impl.voteInQuest(state, userData, questId, vote);
-  })
+  });
 });
