@@ -1,0 +1,12 @@
+{
+    "editor.formatOnSave": true,
+    "tslint.autoFixOnSave": true,
+    "prettier.printWidth": 100,
+    "prettier.tabWidth": 2,
+    "prettier.trailingComma": "all",
+    "typescript.updateImportsOnFileMove.enabled": "always",
+    "[typescript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "window.zoomLevel": 0,
+}
