@@ -9,7 +9,7 @@ import {
   QuestAttempt,
   PlayerState,
   PlayerData
-} from "./lsot-types";
+} from "./types";
 
 interface InternalPlayer {
   name: PlayerName;
