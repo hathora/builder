@@ -1,4 +1,4 @@
-import { UserId, PlayerName, QuestId, Role, Vote } from "./types";
+import { UserId, PlayerName, QuestId, Role, Vote } from "./generated/types";
 
 export interface ILsotClient {
   joinGame(): void;
