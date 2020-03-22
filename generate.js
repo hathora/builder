@@ -12,7 +12,7 @@ const stringify = (key, value) => {
   }
 }
 
-const doc = yaml.safeLoad(fs.readFileSync('lsot.yml', 'utf8'))
+const doc = yaml.safeLoad(fs.readFileSync('types.yml', 'utf8'))
 
 console.log('export type UserId = string')
 Object.entries(doc.types).forEach(([key, value]) => {
