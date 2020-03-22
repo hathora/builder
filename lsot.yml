@@ -70,12 +70,12 @@ types:
     currentQuest: QuestAttempt
     questHistory: QuestAttempt[]
     status: GameStatus
+  PlayerData:
+    playerName: PlayerName
 
 methods:
   createGame:
-    playerName: PlayerName
   joinGame:
-    playerName: PlayerName
   startGame:
     roleList: Role[]
     playerOrder: PlayerName[]
@@ -90,4 +90,5 @@ methods:
     vote: Vote
 
 userState: PlayerState
+playerData: PlayerData
 initialize: createGame

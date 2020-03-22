@@ -1,33 +1,34 @@
 import {
     UserId,
+    QuestId,
     PlayerName,
     Role,
-    QuestId,
     Vote,
-    PlayerState
+    PlayerState,
+    PlayerData
 } from "./lsot-types";
 
 export interface AbstractImpl<T> {
-    createGame(playerId: UserId, playerName: PlayerName): T;
-    joinGame(state: T, playerId: UserId, playerName: PlayerName): void;
-    startGame(
-        state: T,
-        playerId: UserId,
-        roleList: Role[],
-        playerOrder: PlayerName[]
-    ): void;
+    createGame(playerData: PlayerData): T;
+    joinGame(state: T, playerData: PlayerData): void;
+    startGame(state: T, playerData: PlayerData, roleList: Role[], playerOrder: PlayerName[]): void;
     proposeQuest(
         state: T,
-        playerId: UserId,
+        playerData: PlayerData,
         questId: QuestId,
         proposedMembers: PlayerName[]
     ): void;
     voteForProposal(
         state: T,
-        playerId: UserId,
+        playerData: PlayerData,
         questId: QuestId,
         vote: Vote
     ): void;
-    voteInQuest(state: T, playerId: UserId, questId: QuestId, vote: Vote): void;
-    getUserState(state: T, playerId: UserId): PlayerState;
+    voteInQuest(
+        state: T,
+        playerData: PlayerData,
+        questId: QuestId,
+        vote: Vote
+    ): void;
+    getUserState(state: T, playerData: PlayerData): PlayerState;
 }
