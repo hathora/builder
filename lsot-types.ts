@@ -72,3 +72,6 @@ export interface PlayerState {
 	questHistory: QuestAttempt[]
 	status: GameStatus
 }
+export interface PlayerData {
+	playerName: PlayerName
+}
