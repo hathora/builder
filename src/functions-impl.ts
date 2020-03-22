@@ -9,7 +9,7 @@ import {
   QuestAttempt,
   PlayerState,
   PlayerData
-} from "./types";
+} from "./generated/types";
 
 interface InternalPlayer {
   name: PlayerName;

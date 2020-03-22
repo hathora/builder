@@ -1,5 +1,5 @@
-import { safeLoad } from "js-yaml";
-import { readFileSync, writeFileSync } from "fs";
+import { safeLoad} from "js-yaml";
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 
 const stringifyType = (key, value) => {
   if (Array.isArray(value)) {
@@ -22,12 +22,16 @@ const stringifyMethod = (key, value) => {
 
 const doc = safeLoad(readFileSync("types.yml", "utf8"));
 
+if (!existsSync('src/generated')) {
+  mkdirSync('src/generated')
+}
+
 let typesOutput = "";
 typesOutput += "export type UserId = string\n";
 Object.entries(doc.types).forEach(([key, value]) => {
   typesOutput += stringifyType(key, value) + "\n";
 });
-writeFileSync("types.ts", typesOutput, "utf8");
+writeFileSync("src/generated/types.ts", typesOutput, "utf8");
 
 let methodOutput = "";
 Object.entries(doc.methods).forEach(([key, value]) => {
@@ -39,4 +43,4 @@ const serverTemplate = readFileSync("server.template", "utf8");
 const serverOutput = serverTemplate
   .replace(/{{methods}}/g, methodOutput)
   .replace(/{{UserData}}/g, doc.userData);
-writeFileSync("server.ts", serverOutput, "utf8");
+writeFileSync("src/generated/server.ts", serverOutput, "utf8");

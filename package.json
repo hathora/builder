@@ -20,7 +20,7 @@
   },
   "scripts": {
     "generate": "ts-node src/generate.ts",
-    "start": "ts-node src/server.ts"
+    "start": "ts-node src/generated/server.ts"
   },
   "repository": {
     "type": "git",
