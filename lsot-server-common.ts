@@ -11,7 +11,12 @@ import {
 export interface AbstractImpl<T> {
     createGame(playerData: PlayerData): T;
     joinGame(state: T, playerData: PlayerData): void;
-    startGame(state: T, playerData: PlayerData, roleList: Role[], playerOrder: PlayerName[]): void;
+    startGame(
+        state: T,
+        playerData: PlayerData,
+        roleList: Role[],
+        playerOrder: PlayerName[]
+    ): void;
     proposeQuest(
         state: T,
         playerData: PlayerData,
