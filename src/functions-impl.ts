@@ -92,8 +92,13 @@ export class Impl {
       quests: []
     };
   }
-  joinGame(state: InternalState, playerData: PlayerData) {
+  joinGame(state: InternalState, playerData: PlayerData) : boolean {
+    if (state.players.length >= 10) {
+      // can't have more than 10 players
+      return false;
+    }
     state.players.push({ name: playerData.playerName });
+    return true;
   }
   startGame(
     state: InternalState,
