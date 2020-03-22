@@ -27,7 +27,7 @@ interface InternalQuestAttempt {
   results: PlayerAndVote[];
 }
 
-interface InternalState {
+export interface InternalState {
   creator: PlayerName;
   players: InternalPlayer[];
   quests: InternalQuestAttempt[];
@@ -84,7 +84,7 @@ function voteToInt(vote: Vote): number {
   return vote == Vote.PASS ? 1 : -1;
 }
 
-class LsotImpl {
+export class LsotImpl {
   createGame(playerData: PlayerData): InternalState {
     return {
       creator: playerData.playerName,
@@ -169,5 +169,3 @@ class LsotImpl {
     };
   }
 }
-
-export default new LsotImpl();

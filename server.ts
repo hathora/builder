@@ -1,15 +1,16 @@
 import socketio from "socket.io";
 import express from "express";
 import * as http from "http";
-import impl from "./functions-impl";
+import { LsotImpl, InternalState } from "./functions-impl";
 import { PlayerData } from "./types";
 
 const app = express();
 const server = http.createServer(app);
 const io = socketio(http);
 
+const impl = new LsotImpl();
 const users: Map<string, PlayerData> = new Map();
-const states: Map<string, any> = new Map();
+const states: Map<string, InternalState> = new Map();
 const connections: Map<string, Set<SocketIO.Socket>> = new Map();
 
 function addConnection(stateId: string, socket: socketio.Socket) {
@@ -27,7 +28,7 @@ function deleteConnection(stateId: string, socket: SocketIO.Socket) {
   }
 }
 
-function broadcastUpdates(stateId: string, state: any) {
+function broadcastUpdates(stateId: string, state: InternalState) {
   connections.get(stateId)!.forEach(socket => {
     const userId = socket.handshake.query.userId;
     const userData = users.get(userId)!;
