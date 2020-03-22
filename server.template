@@ -2,7 +2,7 @@ import socketio from "socket.io";
 import express from "express";
 import * as http from "http";
 import { {{UserData}} } from "./types";
-import { Impl, InternalState } from "./functions-impl";
+import { Impl, InternalState } from "../functions-impl";
 
 const app = express();
 const server = http.createServer(app);
