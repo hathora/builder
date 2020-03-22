@@ -10,7 +10,6 @@ import {
     PlayerState,
     PlayerData,
 } from "./types";
-import { NullableValue } from "./nullableValue";
 
 interface InternalPlayer {
     name: PlayerName;
@@ -49,12 +48,8 @@ function sanitizeQuest(quest: InternalQuestAttempt, player: PlayerName): QuestAt
         results: remainingResults == 0 ? quest.results.map(r => r.vote).sort() : [],
         remainingResults,
         numFailures: remainingResults == 0 ? quest.results.filter(r => r.vote == Vote.FAIL).length : 0,
-        playerVote: NullableValue.of(quest.votes.find(v => v.player == player))
-            .map(player => player.vote)
-            .getOrUndefined(),
-        playerResult: NullableValue.of(quest.results.find(v => v.player == player))
-            .map(player => player.vote)
-            .getOrUndefined(),
+        playerVote: quest.votes.find(v => v.player == player)?.vote,
+        playerResult: quest.results.find(v => v.player == player)?.vote,
         status: QuestStatus.PROPOSING_QUEST,
     };
 }
