@@ -1,7 +1,7 @@
 import socketio from "socket.io";
 import express from "express";
 import * as http from "http";
-import { PlayerData } from "./types";
+import { {{UserData}} } from "./types";
 import { Impl, InternalState } from "./functions-impl";
 
 const app = express();
@@ -9,7 +9,7 @@ const server = http.createServer(app);
 const io = socketio(http);
 
 const impl = new Impl();
-const users: Map<string, PlayerData> = new Map();
+const users: Map<string, {{UserData}}> = new Map();
 const states: Map<string, InternalState> = new Map();
 const connections: Map<string, Set<SocketIO.Socket>> = new Map();
 
@@ -39,7 +39,7 @@ function broadcastUpdates(stateId: string, state: InternalState) {
 
 app.use(express.json());
 app.post("/register", (req, res) => {
-  const userData: PlayerData = req.body;
+  const userData: {{UserData}} = req.body;
   const userId = Math.random()
     .toString(36)
     .substring(2);
@@ -67,7 +67,7 @@ io.on("connection", socket => {
     deleteConnection(stateId, socket);
   });
 
-[[methods]]
+{{methods}}
 });
 
 server.listen(3000, () => {
