@@ -38,7 +38,7 @@ function broadcastUpdates(stateId: string, state: InternalState) {
 }
 
 app.use(express.json());
-app.use('/static', express.static('public'));
+app.use('/static', express.static('static'));
 app.post("/register", (req, res) => {
   const userData: {{UserData}} = req.body;
   const userId = Math.random()

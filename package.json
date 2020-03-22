@@ -19,6 +19,7 @@
     "@types/socket.io-client": "^1.4.32"
   },
   "scripts": {
+    "build-client": "tsc --p tsconfig.json",
     "generate": "ts-node src/generate.ts",
     "start": "ts-node src/generated/server.ts"
   },

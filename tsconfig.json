@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
     "esModuleInterop": true,
-  }
+    "outDir": "static/js"
+  },
+  "include": ["src/client*"]
 }
