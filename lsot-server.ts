@@ -1,5 +1,5 @@
 import socketio from "socket.io";
-import impl from "./lsot-impl";
+import impl from "./functions-impl";
 
 const users: Map<string, any> = new Map();
 const states: Map<string, any> = new Map();
