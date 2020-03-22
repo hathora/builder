@@ -12,10 +12,13 @@
     "js-yaml": "^3.13.1",
     "socket.io": "^2.3.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "ts-node-dev": "^1.0.0-pre.44",
+    "typescript": "^3.8.3"
+  },
   "scripts": {
-    "build": "tsc generate.ts --outDir dist && node dist/generate.js && tsc",
-    "start": "node dist/server.js"
+    "generate": "tsc generate.ts && node generate.js",
+    "start": "ts-node-dev server.ts"
   },
   "repository": {
     "type": "git",

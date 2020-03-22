@@ -2,5 +2,6 @@ dist/
 node_modules/
 
 # generated files 
+generate.js
 server.ts
 types.ts
