@@ -85,7 +85,7 @@ function voteToInt(vote: Vote): number {
   return vote == Vote.PASS ? 1 : -1;
 }
 
-class LsotImpl implements AbstractImpl<InternalState> {
+class LsotImpl {
   createGame(playerData: PlayerData): InternalState {
     return {
       creator: playerData.playerName,
