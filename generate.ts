@@ -1,5 +1,5 @@
-const yaml = require("js-yaml");
-const fs = require("fs");
+import { safeLoad } from "js-yaml";
+import { readFileSync, writeFileSync } from "fs";
 
 const stringifyType = (key, value) => {
   if (Array.isArray(value)) {
@@ -20,14 +20,14 @@ const stringifyMethod = (key, value) => {
   });`;
 };
 
-const doc = yaml.safeLoad(fs.readFileSync("types.yml", "utf8"));
+const doc = safeLoad(readFileSync("types.yml", "utf8"));
 
 let typesOutput = "";
 typesOutput += "export type UserId = string\n";
 Object.entries(doc.types).forEach(([key, value]) => {
   typesOutput += stringifyType(key, value) + "\n";
 });
-fs.writeFileSync("types.ts", typesOutput, "utf8");
+writeFileSync("types.ts", typesOutput, "utf8");
 
 let methodOutput = "";
 Object.entries(doc.methods).forEach(([key, value]) => {
@@ -35,6 +35,6 @@ Object.entries(doc.methods).forEach(([key, value]) => {
     methodOutput += stringifyMethod(key, value) + "\n";
   }
 });
-const serverTemplate = fs.readFileSync("server.template", "utf8");
-const serverOutput = serverTemplate.replace('[[methods]]', methodOutput);
-fs.writeFileSync("server.ts", serverOutput, "utf8");
+const serverTemplate = readFileSync("server.template", "utf8");
+const serverOutput = serverTemplate.replace("[[methods]]", methodOutput);
+writeFileSync("server.ts", serverOutput, "utf8");
