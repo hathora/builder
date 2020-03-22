@@ -2,13 +2,13 @@ import socketio from "socket.io";
 import express from "express";
 import * as http from "http";
 import { PlayerData } from "./types";
-import { LsotImpl, InternalState } from "./functions-impl";
+import { Impl, InternalState } from "./functions-impl";
 
 const app = express();
 const server = http.createServer(app);
 const io = socketio(http);
 
-const impl = new LsotImpl();
+const impl = new Impl();
 const users: Map<string, PlayerData> = new Map();
 const states: Map<string, InternalState> = new Map();
 const connections: Map<string, Set<SocketIO.Socket>> = new Map();

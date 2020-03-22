@@ -84,7 +84,7 @@ function voteToInt(vote: Vote): number {
   return vote == Vote.PASS ? 1 : -1;
 }
 
-export class LsotImpl {
+export class Impl {
   createGame(playerData: PlayerData): InternalState {
     return {
       creator: playerData.playerName,
