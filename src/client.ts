@@ -1,4 +1,4 @@
-import { UserId, PlayerName, QuestId, PlayerState, Role, Vote, PlayerData } from "./types";
+import { UserId, PlayerName, QuestId, Role, Vote } from "./types";
 
 export interface ILsotClient {
   joinGame(): void;
@@ -10,15 +10,6 @@ export interface ILsotClient {
 }
 
 export type StateId = string;
-
-export interface ConnectionQueryParameters {
-  stateId: StateId;
-  userId: UserId;
-}
-
-export interface ICreateStateResponse {
-  stateId: StateId;
-}
 
 export interface ISocketIOClientConfig {
   api: string;
@@ -42,14 +33,14 @@ export class LsotClient implements ILsotClient {
       .then(({ userId }) => ({ userId, username }));
   }
 
-  public static createState(userId: UserId): Promise<StateId> {
+  public static connect(userId: UserId, { api, agent }: ISocketIOClientConfig): Promise<LsotClient> {
+    return this.createState(userId).then(stateId => new LsotClient(io(api, { agent, query: { stateId, userId } })));
+  }
+
+  private static createState(userId: UserId): Promise<StateId> {
     return fetch("/new?userId=" + userId, { method: "POST" })
       .then(res => res.json())
       .then(({ stateId }) => stateId);
-  }
-
-  public static connect(userId: UserId, { api, agent }: ISocketIOClientConfig): Promise<LsotClient> {
-    return this.createState(userId).then(stateId => new LsotClient(io(api, { agent, query: { stateId, userId } })));
   }
 
   public joinGame(): void {
