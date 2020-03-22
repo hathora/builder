@@ -1,5 +1,5 @@
 import socketio from "socket.io";
-import impl from "./lsot-impl";
+import * as impl from "./lsot-impl";
 
 const users = {};
 const states = {};
