@@ -10,38 +10,30 @@ const io = socketio(3000);
 io.on("connection", socket => {
   const stateId = socket.handshake.query.stateId;
   const userId = socket.handshake.query.userId;
+  const state = states.get(stateId);
+  const userData = users.get(userId);
   addConnection(stateId, socket);
   socket.on("disconnect", () => {
     deleteConnection(stateId, socket);
   });
 
   socket.on("joinGame", () => {
-    const state = states.get(stateId);
-    const userData = users.get(userId);
     impl.joinGame(state, userData);
     broadcastUpdates(stateId, state);
   });
   socket.on("startGame", (roleList, playerOrder) => {
-    const state = states.get(stateId);
-    const userData = users.get(userId);
     impl.startGame(state, userData, roleList, playerOrder);
     broadcastUpdates(stateId, state);
   });
   socket.on("proposeQuest", (questId, proposedMembers) => {
-    const state = states.get(stateId);
-    const userData = users.get(userId);
     impl.proposeQuest(state, userData, questId, proposedMembers);
     broadcastUpdates(stateId, state);
   });
   socket.on("voteForProposal", (questId, vote) => {
-    const state = states.get(stateId);
-    const userData = users.get(userId);
     impl.voteForProposal(state, userData, questId, vote);
     broadcastUpdates(stateId, state);
   });
   socket.on("voteInQuest", (questId, vote) => {
-    const state = states.get(stateId);
-    const userData = users.get(userId);
     impl.voteInQuest(state, userData, questId, vote);
     broadcastUpdates(stateId, state);
   });
