@@ -1,11 +1,59 @@
 import socketio from "socket.io";
+import express from "express";
+import * as http from "http";
 import impl from "./functions-impl";
+
+const app = express();
+const server = http.createServer(app);
+const io = socketio(http);
 
 const users: Map<string, any> = new Map();
 const states: Map<string, any> = new Map();
 const connections: Map<string, Set<SocketIO.Socket>> = new Map();
 
-const io = socketio(3000);
+function addConnection(stateId: string, socket: socketio.Socket) {
+  if (!connections.has(stateId)) {
+    connections.set(stateId, new Set([socket]));
+  } else {
+    connections.get(stateId).add(socket);
+  }
+}
+
+function deleteConnection(stateId: string, socket: SocketIO.Socket) {
+  connections.get(stateId).delete(socket);
+  if (connections.get(stateId).size === 0) {
+    connections.delete(stateId);
+  }
+}
+
+function broadcastUpdates(stateId: string, state) {
+  connections.get(stateId).forEach(socket => {
+    const userId = socket.handshake.query.userId;
+    const userData = users.get(userId);
+    const userState = impl.getUserState(state, userData);
+    socket.emit("state", userState);
+  });
+}
+
+app.use(express.json());
+app.post("/register", (req, res) => {
+  const userData = req.body;
+  const userId = Math.random()
+    .toString(36)
+    .substring(2);
+  users.set(userId, userData);
+  res.send();
+});
+app.post("/new", (req, res) => {
+  const userId = req.query.userId;
+  const userData = users.get(userId);
+  const state = impl.createGame(userData);
+  const stateId = Math.random()
+    .toString(36)
+    .substring(2);
+  states.set(stateId, state);
+  res.json({ stateId });
+});
 
 io.on("connection", socket => {
   const stateId = socket.handshake.query.stateId;
@@ -39,26 +87,6 @@ io.on("connection", socket => {
   });
 });
 
-function addConnection(stateId: string, socket: socketio.Socket) {
-  if (!connections.has(stateId)) {
-    connections.set(stateId, new Set([socket]));
-  } else {
-    connections.get(stateId).add(socket);
-  }
-}
-
-function deleteConnection(stateId: string, socket: SocketIO.Socket) {
-  connections.get(stateId).delete(socket);
-  if (connections.get(stateId).size === 0) {
-    connections.delete(stateId);
-  }
-}
-
-function broadcastUpdates(stateId: string, state) {
-  connections.get(stateId).forEach(socket => {
-    const userId = socket.handshake.query.userId;
-    const userData = users.get(userId);
-    const userState = impl.getUserState(state, userData);
-    socket.emit("state", userState);
-  });
-}
+server.listen(3000, () => {
+  console.log("listening on *:3000");
+});
