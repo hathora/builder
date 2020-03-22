@@ -8,7 +8,7 @@ import {
   PlayerAndVote,
   QuestAttempt,
   PlayerState,
-  PlayerData,
+  PlayerData
 } from "./types";
 
 interface InternalPlayer {
@@ -33,7 +33,10 @@ export interface InternalState {
   quests: InternalQuestAttempt[];
 }
 
-function sanitizeQuest(quest: InternalQuestAttempt, player: PlayerName): QuestAttempt {
+function sanitizeQuest(
+  quest: InternalQuestAttempt,
+  player: PlayerName
+): QuestAttempt {
   const remainingVotes = quest.size - quest.votes.length;
   const remainingResults = quest.size - quest.results.length;
   return {
@@ -47,10 +50,13 @@ function sanitizeQuest(quest: InternalQuestAttempt, player: PlayerName): QuestAt
     remainingVotes,
     results: remainingResults == 0 ? quest.results.map(r => r.vote).sort() : [],
     remainingResults,
-    numFailures: remainingResults == 0 ? quest.results.filter(r => r.vote == Vote.FAIL).length : 0,
+    numFailures:
+      remainingResults == 0
+        ? quest.results.filter(r => r.vote == Vote.FAIL).length
+        : 0,
     playerVote: quest.votes.find(v => v.player == player)?.vote,
     playerResult: quest.results.find(v => v.player == player)?.vote,
-    status: QuestStatus.PROPOSING_QUEST,
+    status: QuestStatus.PROPOSING_QUEST
   };
 }
 
@@ -58,7 +64,7 @@ function createQuest(
   roundNumber: number,
   attemptNumber: number,
   numPlayers: number,
-  leader: PlayerName,
+  leader: PlayerName
 ): InternalQuestAttempt {
   return {
     id: Math.random()
@@ -70,7 +76,7 @@ function createQuest(
     leader,
     members: [],
     votes: [],
-    results: [],
+    results: []
   };
 }
 
@@ -83,32 +89,62 @@ export class Impl {
     return {
       creator: playerData.playerName,
       players: [{ name: playerData.playerName }],
-      quests: [],
+      quests: []
     };
   }
   joinGame(state: InternalState, playerData: PlayerData) {
     state.players.push({ name: playerData.playerName });
   }
-  startGame(state: InternalState, playerData: PlayerData, roleList: Role[], playerOrder: PlayerName[]) {
+  startGame(
+    state: InternalState,
+    playerData: PlayerData,
+    roleList: Role[],
+    playerOrder: PlayerName[]
+  ) {
     const numPlayers = state.players.length;
     const leader = state.players[Math.floor(Math.random() * numPlayers)].name;
     state.players.forEach((p, i) => (p.role = roleList[i]));
     state.quests.push(createQuest(1, 1, numPlayers, leader));
   }
-  proposeQuest(state: InternalState, playerData: PlayerData, questId: QuestId, proposedMembers: PlayerName[]) {
+  proposeQuest(
+    state: InternalState,
+    playerData: PlayerData,
+    questId: QuestId,
+    proposedMembers: PlayerName[]
+  ) {
     const quest = state.quests.find(q => q.id == questId)!;
     quest.members = proposedMembers;
   }
-  voteForProposal(state: InternalState, playerData: PlayerData, questId: QuestId, vote: Vote) {
+  voteForProposal(
+    state: InternalState,
+    playerData: PlayerData,
+    questId: QuestId,
+    vote: Vote
+  ) {
     const player = state.players.find(p => p.name == playerData.playerName)!;
     const quest = state.quests.find(q => q.id == questId)!;
     const numPlayers = state.players.length;
     quest.votes.push({ player: player.name, vote });
-    if (quest.votes.length === numPlayers && quest.votes.reduce((a, b) => a + voteToInt(b.vote), 0) <= 0) {
-      state.quests.push(createQuest(quest.roundNumber, quest.attemptNumber + 1, numPlayers, player.name));
+    if (
+      quest.votes.length === numPlayers &&
+      quest.votes.reduce((a, b) => a + voteToInt(b.vote), 0) <= 0
+    ) {
+      state.quests.push(
+        createQuest(
+          quest.roundNumber,
+          quest.attemptNumber + 1,
+          numPlayers,
+          player.name
+        )
+      );
     }
   }
-  voteInQuest(state: InternalState, playerData: PlayerData, questId: QuestId, vote: Vote) {
+  voteInQuest(
+    state: InternalState,
+    playerData: PlayerData,
+    questId: QuestId,
+    vote: Vote
+  ) {
     const player = state.players.find(p => p.name == playerData.playerName)!;
     const quest = state.quests.find(q => q.id == questId)!;
     quest.results.push({ player: player.name, vote });
@@ -124,9 +160,12 @@ export class Impl {
       playerName: player.name,
       playerRole: player.role,
       knownRoles: [],
-      currentQuest: sanitizeQuest(state.quests[state.quests.length - 1], player.name),
+      currentQuest: sanitizeQuest(
+        state.quests[state.quests.length - 1],
+        player.name
+      ),
       questHistory: [],
-      status: GameStatus.NOT_STARTED,
+      status: GameStatus.NOT_STARTED
     };
   }
 }
