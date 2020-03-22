@@ -10,7 +10,6 @@ import {
   PlayerState,
   PlayerData
 } from "./lsot-types";
-import { AbstractImpl } from "./lsot-server-common";
 
 interface InternalPlayer {
   name: PlayerName;
