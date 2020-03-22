@@ -6,7 +6,7 @@ import { Impl, InternalState } from "./functions-impl";
 
 const app = express();
 const server = http.createServer(app);
-const io = socketio(http);
+const io = socketio(server);
 
 const impl = new Impl();
 const users: Map<string, {{UserData}}> = new Map();
@@ -44,7 +44,7 @@ app.post("/register", (req, res) => {
     .toString(36)
     .substring(2);
   users.set(userId, userData);
-  res.send();
+  res.json({ userId });
 });
 app.post("/new", (req, res) => {
   const userId = req.query.userId;
@@ -55,6 +55,9 @@ app.post("/new", (req, res) => {
     .substring(2);
   states.set(stateId, state);
   res.json({ stateId });
+});
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/index.html");
 });
 
 io.on("connection", socket => {
@@ -67,8 +70,7 @@ io.on("connection", socket => {
     deleteConnection(stateId, socket);
   });
 
-{{methods}}
-});
+{{methods}}});
 
 server.listen(3000, () => {
   console.log("listening on *:3000");
