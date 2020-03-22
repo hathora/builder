@@ -2,8 +2,3 @@ dist/
 node_modules/
 src/generated/
 static/*/**
-
-# generated files 
-server.ts
-types.ts
->>>>>>> Stashed changes
