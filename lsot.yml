@@ -90,5 +90,5 @@ methods:
     vote: Vote
 
 userState: PlayerState
-playerData: PlayerData
+userData: PlayerData
 initialize: createGame
