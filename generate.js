@@ -1,20 +1,40 @@
-const yaml = require('js-yaml')
-const fs   = require('fs')
+const yaml = require("js-yaml");
+const fs = require("fs");
 
-const stringify = (key, value) => {
+const stringifyType = (key, value) => {
   if (Array.isArray(value)) {
-    return `export enum ${key} {\n\t${value.join(',\n\t')}\n}`
-  } else if (typeof value === 'object') {
-    const parts = Object.entries(value).map(([k, v]) => `${k}: ${v}`)
-    return `export interface ${key} {\n\t${parts.join('\n\t')}\n}`
+    return `export enum ${key} {\n\t${value.join(",\n\t")}\n}`;
+  } else if (typeof value === "object") {
+    const parts = Object.entries(value).map(([k, v]) => `${k}: ${v}`);
+    return `export interface ${key} {\n\t${parts.join("\n\t")}\n}`;
   } else {
-    return `export type ${key} = ${value}`
+    return `export type ${key} = ${value}`;
   }
-}
+};
 
-const doc = yaml.safeLoad(fs.readFileSync('types.yml', 'utf8'))
+const stringifyMethod = (key, value) => {
+  const args = value ? Object.keys(value) : [];
+  return `  socket.on("${key}", (${args.join(', ')}) => {
+    impl.${key}(state, userData${args.length ? [''].concat(args).join(', ') : ''});
+    broadcastUpdates(stateId, state);
+  });`;
+};
 
-console.log('export type UserId = string')
+const doc = yaml.safeLoad(fs.readFileSync("types.yml", "utf8"));
+
+let typesOutput = "";
+typesOutput += "export type UserId = string\n";
 Object.entries(doc.types).forEach(([key, value]) => {
-  console.log(stringify(key, value))
-})
+  typesOutput += stringifyType(key, value) + "\n";
+});
+fs.writeFileSync("types.ts", typesOutput, "utf8");
+
+let methodOutput = "";
+Object.entries(doc.methods).forEach(([key, value]) => {
+  if (key !== doc.initialize) {
+    methodOutput += stringifyMethod(key, value) + "\n";
+  }
+});
+const serverTemplate = fs.readFileSync("server.template", "utf8");
+const serverOutput = serverTemplate.replace('[[methods]]', methodOutput);
+fs.writeFileSync("server.ts", serverOutput, "utf8");
