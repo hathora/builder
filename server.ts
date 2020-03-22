@@ -1,8 +1,8 @@
 import socketio from "socket.io";
 import express from "express";
 import * as http from "http";
-import { LsotImpl, InternalState } from "./functions-impl";
 import { PlayerData } from "./types";
+import { LsotImpl, InternalState } from "./functions-impl";
 
 const app = express();
 const server = http.createServer(app);
