@@ -1,4 +1,4 @@
-import { safeLoad} from "js-yaml";
+import { safeLoad } from "js-yaml";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 
 const stringifyType = (key, value) => {
@@ -20,12 +20,13 @@ const stringifyMethod = (key, value) => {
   });`;
 };
 
-const doc = safeLoad(readFileSync("types.yml", "utf8"));
+const doc = safeLoad(readFileSync("src/types.yml", "utf8"));
 
-if (!existsSync('src/generated')) {
-  mkdirSync('src/generated')
+if (!existsSync("src/generated")) {
+  mkdirSync("src/generated");
 }
 
+// types
 let typesOutput = "";
 typesOutput += "export type UserId = string\n";
 Object.entries(doc.types).forEach(([key, value]) => {
@@ -33,14 +34,25 @@ Object.entries(doc.types).forEach(([key, value]) => {
 });
 writeFileSync("src/generated/types.ts", typesOutput, "utf8");
 
+// server
 let methodOutput = "";
 Object.entries(doc.methods).forEach(([key, value]) => {
   if (key !== doc.initialize) {
     methodOutput += stringifyMethod(key, value) + "\n";
   }
 });
-const serverTemplate = readFileSync("server.template", "utf8");
+const serverTemplate = readFileSync("server.ts.template", "utf8");
 const serverOutput = serverTemplate
   .replace(/{{methods}}/g, methodOutput)
   .replace(/{{UserData}}/g, doc.userData);
 writeFileSync("src/generated/server.ts", serverOutput, "utf8");
+
+// client
+const clientTemplate = readFileSync("client.ts.template", "utf8");
+const clientOutput = clientTemplate;
+writeFileSync("src/generated/client.ts", clientOutput, "utf8");
+
+// app
+const appTemplate = readFileSync("index.html.template", "utf8");
+const appOutput = appTemplate;
+writeFileSync("src/generated/index.html", appOutput, "utf8");
