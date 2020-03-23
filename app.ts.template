@@ -1,0 +1,3 @@
+import { LsotClient } from "./client";
+
+(window as any).LsotClient = LsotClient;

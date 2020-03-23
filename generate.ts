@@ -53,6 +53,11 @@ const clientOutput = clientTemplate;
 writeFileSync("src/generated/client.ts", clientOutput, "utf8");
 
 // app
-const appTemplate = readFileSync("index.html.template", "utf8");
+const appTemplate = readFileSync("app.ts.template", "utf8");
 const appOutput = appTemplate;
-writeFileSync("src/generated/index.html", appOutput, "utf8");
+writeFileSync("src/generated/app.ts", appOutput, "utf8");
+
+// index
+const indexTemplate = readFileSync("index.html.template", "utf8");
+const indexOutput = indexTemplate;
+writeFileSync("src/generated/index.html", indexOutput, "utf8");
