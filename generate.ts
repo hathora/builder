@@ -3,12 +3,12 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 
 const stringifyType = (key, value) => {
   if (Array.isArray(value)) {
-    return `export enum ${key} {\n\t${value.join(",\n\t")}\n}`;
+    return `export enum ${key} {\n  ${value.join(",\n  ")}\n}`;
   } else if (typeof value === "object") {
-    const parts = Object.entries(value).map(([k, v]) => `${k}: ${v}`);
-    return `export interface ${key} {\n\t${parts.join("\n\t")}\n}`;
+    const parts = Object.entries(value).map(([k, v]) => `${k}: ${v};`);
+    return `export interface ${key} {\n  ${parts.join("\n  ")};\n}`;
   } else {
-    return `export type ${key} = ${value}`;
+    return `export type ${key} = ${value};`;
   }
 };
 
@@ -28,7 +28,7 @@ if (!existsSync("src/generated")) {
 
 // types
 let typesOutput = "";
-typesOutput += "export type UserId = string\n";
+typesOutput += "export type UserId = string;\n";
 Object.entries(doc.types).forEach(([key, value]) => {
   typesOutput += stringifyType(key, value) + "\n";
 });
