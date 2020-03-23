@@ -9,7 +9,9 @@ import { Impl, InternalState } from "../impl";
 const app = express();
 const server = http.createServer(app);
 const io = socketio(server);
-const bundler = new Bundler(path.join(__dirname, "index.html"));
+const bundler = new Bundler(path.join(__dirname, "index.html"), {
+  cache: false
+});
 
 const impl = new Impl();
 const users: Map<string, {{UserData}}> = new Map();
