@@ -3,7 +3,7 @@ import express from "express";
 import * as http from "http";
 import * as path from "path";
 import { {{UserData}} } from "./types";
-import { Impl, InternalState } from "../functions-impl";
+import { Impl, InternalState } from "../impl";
 
 const app = express();
 const server = http.createServer(app);
@@ -59,7 +59,7 @@ app.post("/new", (req, res) => {
   res.json({ stateId });
 });
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../index.html"));
+  res.sendFile(path.join(__dirname, "index.html"));
 });
 
 io.on("connection", socket => {
