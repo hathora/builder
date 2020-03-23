@@ -8,8 +8,54 @@ import {
   PlayerAndVote,
   QuestAttempt,
   PlayerState,
-  PlayerData
+  PlayerData,
+  RoleInfo,
+  PlayerAndRole
 } from "./generated/types";
+import { keyBy } from "./utils";
+
+const ROLES_INFO: RoleInfo[] = [
+  {
+    role: Role.MERLIN,
+    isEvil: false,
+    description: ""
+  },
+  {
+    role: Role.PERCIVAL,
+    isEvil: false,
+    description: ""
+  },
+  {
+    role: Role.LOYAL_SERVANT,
+    isEvil: false,
+    description: ""
+  },
+  {
+    role: Role.MINION,
+    isEvil: true,
+    description: ""
+  },
+  {
+    role: Role.ASSASSIN,
+    isEvil: true,
+    description: ""
+  },
+  {
+    role: Role.MORGANA,
+    isEvil: true,
+    description: ""
+  },
+  {
+    role: Role.OBERON,
+    isEvil: true,
+    description: ""
+  },
+  {
+    role: Role.MORDRED,
+    isEvil: true,
+    description: ""
+  }
+];
 
 interface InternalPlayer {
   name: PlayerName;
@@ -84,6 +130,67 @@ function voteToInt(vote: Vote): number {
   return vote == Vote.PASS ? 1 : -1;
 }
 
+function getGameStatus(quests: QuestAttempt[]): GameStatus {
+  if (quests.length === 0) {
+    return GameStatus.NOT_STARTED;
+  } else if (quests.length >= 5) {
+    const lastFiveQuests = quests.slice(quests.length - 5, quests.length);
+    const isAllRejects = lastFiveQuests.reduce((result, quest) => {
+      return result && quest.status === QuestStatus.PROPOSAL_REJECTED;
+    }, true);
+    if (isAllRejects) {
+      return GameStatus.EVIL_WON;
+    }
+  }
+  const results = quests.reduce(
+    (results, quest) => {
+      return {
+        evilWins:
+          results.evilWins + (quest.status === QuestStatus.FAILED ? 1 : 0),
+        goodWins:
+          results.goodWins + (quest.status === QuestStatus.PASSED ? 1 : 0)
+      };
+    },
+    { evilWins: 0, goodWins: 0 }
+  );
+
+  if (results.evilWins >= 3) {
+    return GameStatus.EVIL_WON;
+  } else if (results.goodWins >= 3) {
+    //TODO: handle GameStatus.ASSASSINATING
+    return GameStatus.GOOD_WON;
+  }
+
+  return GameStatus.IN_PROGRESS;
+}
+
+function getKnownRoles(
+  playerRole: Role,
+  players: PlayerAndRole[]
+): PlayerAndRole[] {
+  const rolesInfoMap: Map<Role, RoleInfo> = keyBy(ROLES_INFO, ri => ri.role);
+  if (playerRole === Role.MERLIN) {
+    return players.filter(
+      p =>
+        p.role === playerRole ||
+        (rolesInfoMap[p.role].isEvil && p.role != Role.MORDRED)
+    );
+  } else if (playerRole === Role.PERCIVAL) {
+    return players.filter(
+      p =>
+        p.role === playerRole ||
+        p.role === Role.MERLIN ||
+        p.role === Role.MORGANA
+    );
+  } else if (playerRole === Role.OBERON) {
+    return players.filter(p => p.role === playerRole);
+  } else if (rolesInfoMap[playerRole].isEvil) {
+    return players.filter(
+      p => rolesInfoMap[p.role].isEvil && p.role !== Role.OBERON
+    );
+  }
+}
+
 export class Impl {
   createGame(playerData: PlayerData): InternalState {
     return {
@@ -151,21 +258,22 @@ export class Impl {
   }
   getUserState(state: InternalState, playerData: PlayerData): PlayerState {
     const player = state.players.find(p => p.name == playerData.playerName)!;
+    const quests = state.quests.map(quest => sanitizeQuest(quest, player.name));
     return {
       creator: state.creator,
-      playersPerQuest: [],
-      rolesInfo: [],
-      players: [],
-      roles: [],
+      playersPerQuest: quests.map(q => q.size),
+      rolesInfo: ROLES_INFO,
+      players: state.players.map(p => p.name),
+      roles: state.players.map(p => p.role),
       playerName: player.name,
       playerRole: player.role,
-      knownRoles: [],
-      currentQuest: sanitizeQuest(
-        state.quests[state.quests.length - 1],
-        player.name
+      knownRoles: getKnownRoles(
+        player.role,
+        state.players.map(p => ({ player: p.name, role: p.role }))
       ),
-      questHistory: [],
-      status: GameStatus.NOT_STARTED
+      currentQuest: quests[quests.length - 1],
+      questHistory: quests.slice(0, state.quests.length - 1),
+      status: getGameStatus(quests)
     };
   }
 }
