@@ -43,7 +43,6 @@ function broadcastUpdates(stateId: string, state: InternalState) {
 }
 
 app.use(express.json());
-app.use(bundler.middleware());
 app.post("/register", (req, res) => {
   const userData: {{UserData}} = req.body;
   const userId = Math.random()
@@ -62,6 +61,7 @@ app.post("/new", (req, res) => {
   states.set(stateId, state);
   res.json({ stateId });
 });
+app.use(bundler.middleware());
 
 io.on("connection", socket => {
   const stateId = socket.handshake.query.stateId;

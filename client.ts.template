@@ -1,14 +1,5 @@
 import { UserId, PlayerName, QuestId, Role, Vote } from "./types";
 
-export interface ILsotClient {
-  joinGame(): void;
-  startGame(roleList: Role[], playerOrder: PlayerName[]): void;
-  proposeQuest(questId: QuestId, proposal: PlayerName[]): void;
-  voteForProposal(questId: QuestId, vote: Vote): void;
-  voteInQuest(questId: QuestId, vote: Vote): void;
-  disconnect(): void;
-}
-
 export type StateId = string;
 
 export interface ISocketIOClientConfig {
@@ -16,31 +7,27 @@ export interface ISocketIOClientConfig {
   agent?: string;
 }
 
-export interface IPrivateUserData {
-  username: PlayerName;
-  userId: UserId;
-}
+export class LsotClient {
+  private constructor(private socket: SocketIOClient.Socket) {}
 
-export class LsotClient implements ILsotClient {
-  constructor(private socket: SocketIOClient.Socket) {}
-
-  public static registerUser(username: PlayerName): Promise<IPrivateUserData> {
-    return fetch("/register", {
+  public static async registerUser(username: PlayerName): Promise<UserId> {
+    const res = await fetch("/register", {
       method: "POST",
-      body: JSON.stringify({ playerName: username }),
-    })
-      .then(res => res.json())
-      .then(({ userId }) => ({ userId, username }));
+      body: JSON.stringify({ playerName: username })
+    });
+    const { userId } = await res.json();
+    return userId;
   }
 
-  public static connect(userId: UserId, { api, agent }: ISocketIOClientConfig): Promise<LsotClient> {
-    return this.createState(userId).then(stateId => new LsotClient(io(api, { agent, query: { stateId, userId } })));
+  public static async connect(userId: UserId): Promise<LsotClient> {
+    const stateId = await this.createState(userId);
+    return new LsotClient(io({ query: { stateId, userId } }));
   }
 
-  private static createState(userId: UserId): Promise<StateId> {
-    return fetch("/new?userId=" + userId, { method: "POST" })
-      .then(res => res.json())
-      .then(({ stateId }) => stateId);
+  private static async createState(userId: UserId): Promise<StateId> {
+    const res = await fetch("/new?userId=" + userId, { method: "POST" });
+    const { stateId } = await res.json();
+    return stateId;
   }
 
   public joinGame(): void {
