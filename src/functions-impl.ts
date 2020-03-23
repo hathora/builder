@@ -31,6 +31,7 @@ export interface InternalState {
   creator: PlayerName;
   players: InternalPlayer[];
   quests: InternalQuestAttempt[];
+  playerOrder: PlayerName[];
 }
 
 function sanitizeQuest(
@@ -111,37 +112,21 @@ function validateRoles(roleList: Role[], numPlayers: number): boolean {
     return false;
   }
 
-  const uniqueRoles = [
-    Role.MERLIN,
-    Role.ASSASSIN,
-    Role.MORDRED,
-    Role.MORGANA,
-    Role.OBERON,
-    Role.PERCIVAL
-  ];
-  for (var role of uniqueRoles) {
-    if (roleCount.has(uniqueRoles) && roleCount.get(uniqueRoles) > 1) {
-      // more than one of a unique role
-      return false;
-    }
+  if (roleCount.has(Role.ASSASSIN) && roleCount.get(Role.ASSASSIN) > 1) {
+    // more than one assassin
+    return false;
   }
 
-  // specific role validation
-  if (roleCount.has(Role.MERLIN) && !(roleCount.has(Role.ASSASSIN))) return false;
-  if (roleCount.has(Role.ASSASSIN) && !(roleCount.has(Role.MERLIN))) return false;
-  if (
-    roleCount.has(Role.MORGANA) &&
-    !(roleCount.has(Role.MERLIN) && roleCount.has(Role.PERCIVAL))
-  )
-    return false;
-  if (
-    roleCount.has(Role.PERCIVAL) &&
-    !(roleCount.has(Role.MERLIN) && roleCount.has(Role.MORGANA))
-  )
-    return false;
-  if (roleCount.has(Role.MORDRED) && !(roleCount.has(Role.MERLIN))) return false;
+  // No validation for uniqueness of other roles or combinations that make sense - play with two Merlins and no Assassins if you want!
 
   return true;
+}
+
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
 }
 
 export class Impl {
@@ -149,7 +134,8 @@ export class Impl {
     return {
       creator: playerData.playerName,
       players: [{ name: playerData.playerName }],
-      quests: []
+      quests: [],
+      playerOrder: []
     };
   }
 
@@ -193,13 +179,15 @@ export class Impl {
     }
 
     if (!validateRoles(roleList, numPlayers)) return false;
+    shuffleArray(roleList);
 
     const leader = state.players[Math.floor(Math.random() * numPlayers)].name;
     state.players.forEach((p, i) => (p.role = roleList[i]));
     state.quests.push(createQuest(1, 1, numPlayers, leader));
+    state.playerOrder = playerOrder;
     return true;
   }
-  
+
   proposeQuest(
     state: InternalState,
     playerData: PlayerData,
