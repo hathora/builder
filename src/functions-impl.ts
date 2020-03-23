@@ -84,6 +84,66 @@ function voteToInt(vote: Vote): number {
   return vote == Vote.PASS ? 1 : -1;
 }
 
+function validateRoles(roleList: Role[], numPlayers: number): boolean {
+  if (roleList.length != numPlayers) {
+    // not enough roles
+    return false;
+  }
+
+  const roleCount = new Map();
+  for (var role of roleList) {
+    if (roleCount.has(role)) {
+      roleCount.set(role, roleCount.get(role) + 1);
+    } else {
+      roleCount.set(role, 1);
+    }
+  }
+
+  // strong assumption here that roles are exclusively good/evil - revisit if implementing Lancelot
+  const goodRoles = [Role.LOYAL_SERVANT, Role.MERLIN, Role.PERCIVAL];
+  const numGood = goodRoles.reduce(
+    (count, role) => count + (roleCount.has(role) ? roleCount.get(role) : 0),
+    0
+  );
+  const goodPlayerCount = { 5: 3, 6: 4, 7: 4, 8: 5, 9: 6, 10: 6 };
+  if (numGood != goodPlayerCount[numPlayers]) {
+    // incorrect good/evil role distribution
+    return false;
+  }
+
+  const uniqueRoles = [
+    Role.MERLIN,
+    Role.ASSASSIN,
+    Role.MORDRED,
+    Role.MORGANA,
+    Role.OBERON,
+    Role.PERCIVAL
+  ];
+  for (var role of uniqueRoles) {
+    if (roleCount.has(uniqueRoles) && roleCount.get(uniqueRoles) > 1) {
+      // more than one of a unique role
+      return false;
+    }
+  }
+
+  // specific role validation
+  if (roleCount.has(Role.MERLIN) && !(roleCount.has(Role.ASSASSIN))) return false;
+  if (roleCount.has(Role.ASSASSIN) && !(roleCount.has(Role.MERLIN))) return false;
+  if (
+    roleCount.has(Role.MORGANA) &&
+    !(roleCount.has(Role.MERLIN) && roleCount.has(Role.PERCIVAL))
+  )
+    return false;
+  if (
+    roleCount.has(Role.PERCIVAL) &&
+    !(roleCount.has(Role.MERLIN) && roleCount.has(Role.MORGANA))
+  )
+    return false;
+  if (roleCount.has(Role.MORDRED) && !(roleCount.has(Role.MERLIN))) return false;
+
+  return true;
+}
+
 export class Impl {
   createGame(playerData: PlayerData): InternalState {
     return {
@@ -92,20 +152,54 @@ export class Impl {
       quests: []
     };
   }
-  joinGame(state: InternalState, playerData: PlayerData) {
+
+  joinGame(state: InternalState, playerData: PlayerData): boolean {
+    if (state.players.length >= 10) {
+      // can't have more than 10 players
+      return false;
+    }
+    if (state.quests.length > 0) {
+      // can't join if the game has started
+      return false;
+    }
+
     state.players.push({ name: playerData.playerName });
+    return true;
   }
+
   startGame(
     state: InternalState,
     playerData: PlayerData,
     roleList: Role[],
     playerOrder: PlayerName[]
-  ) {
+  ): boolean {
+    if (!(playerData.playerName in state.players.map(player => player.name))) {
+      // player not in the game is trying to start game
+    }
+
     const numPlayers = state.players.length;
+    if (numPlayers < 5) {
+      // too few players to start game
+      return false;
+    }
+    if (numPlayers > 10) {
+      // too many players to start game
+      return false;
+    }
+
+    if (state.quests.length > 0) {
+      // can't start if the game has started
+      return false;
+    }
+
+    if (!validateRoles(roleList, numPlayers)) return false;
+
     const leader = state.players[Math.floor(Math.random() * numPlayers)].name;
     state.players.forEach((p, i) => (p.role = roleList[i]));
     state.quests.push(createQuest(1, 1, numPlayers, leader));
+    return true;
   }
+  
   proposeQuest(
     state: InternalState,
     playerData: PlayerData,
