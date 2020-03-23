@@ -149,7 +149,7 @@ export class Impl {
       // can't have more than 10 players
       return false;
     }
-    
+
     if (state.quests.length > 0) {
       // can't join if the game has started
       return false;
@@ -170,17 +170,12 @@ export class Impl {
       return false;
     }
 
-    const numPlayers = state.players.length;
-    if (numPlayers < 5) {
-      // too few players to start game
-      return false;
-    }
-
     if (state.quests.length > 0) {
       // can't start if the game has started
       return false;
     }
 
+    const numPlayers = state.players.length;
     if (!validateRoles(roleList, numPlayers)) return false;
     shuffleArray(roleList);
 
