@@ -2,11 +2,6 @@ import { UserId, PlayerName, QuestId, Role, Vote } from "./types";
 
 export type StateId = string;
 
-export interface ISocketIOClientConfig {
-  api: string;
-  agent?: string;
-}
-
 export class LsotClient {
   private constructor(private socket: SocketIOClient.Socket) {}
 
