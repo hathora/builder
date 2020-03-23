@@ -20,7 +20,7 @@
     "typescript-bundle": "^1.0.16"
   },
   "scripts": {
-    "build-client": "rm -r static/* && cp src/index.html static/ && tsc-bundle tsconfig.json --exportAs GLOBAL",
+    "build-client": "mkdir static && cp src/index.html static/ && tsc-bundle tsconfig.json --exportAs GLOBAL",
     "generate": "ts-node src/generate.ts",
     "start": "ts-node src/generated/server.ts"
   },
