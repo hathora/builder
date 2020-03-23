@@ -19,7 +19,7 @@
     "@types/socket.io-client": "^1.4.32"
   },
   "scripts": {
-    "build-client": "rm -r static/* && cp index.html static/ && tsc --p tsconfig.json",
+    "build-client": "rm -r static/* && cp src/index.html static/ && tsc --p tsconfig.json",
     "generate": "ts-node src/generate.ts",
     "start": "ts-node src/generated/server.ts"
   },
