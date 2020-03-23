@@ -140,10 +140,16 @@ export class Impl {
   }
 
   joinGame(state: InternalState, playerData: PlayerData): boolean {
+    if (playerData.playerName in state.players.map(player => player.name)) {
+      // player already in the game is trying to join game
+      return false;
+    }
+
     if (state.players.length >= 10) {
       // can't have more than 10 players
       return false;
     }
+    
     if (state.quests.length > 0) {
       // can't join if the game has started
       return false;
@@ -161,15 +167,12 @@ export class Impl {
   ): boolean {
     if (!(playerData.playerName in state.players.map(player => player.name))) {
       // player not in the game is trying to start game
+      return false;
     }
 
     const numPlayers = state.players.length;
     if (numPlayers < 5) {
       // too few players to start game
-      return false;
-    }
-    if (numPlayers > 10) {
-      // too many players to start game
       return false;
     }
 
