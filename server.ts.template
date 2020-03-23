@@ -1,5 +1,6 @@
 import socketio from "socket.io";
 import express from "express";
+import Bundler from "parcel-bundler";
 import * as http from "http";
 import * as path from "path";
 import { {{UserData}} } from "./types";
@@ -8,6 +9,7 @@ import { Impl, InternalState } from "../impl";
 const app = express();
 const server = http.createServer(app);
 const io = socketio(server);
+const bundler = new Bundler(path.join(__dirname, "index.html"));
 
 const impl = new Impl();
 const users: Map<string, {{UserData}}> = new Map();
@@ -39,7 +41,7 @@ function broadcastUpdates(stateId: string, state: InternalState) {
 }
 
 app.use(express.json());
-app.use("/static", express.static("public"));
+app.use(bundler.middleware());
 app.post("/register", (req, res) => {
   const userData: {{UserData}} = req.body;
   const userId = Math.random()
@@ -57,9 +59,6 @@ app.post("/new", (req, res) => {
     .substring(2);
   states.set(stateId, state);
   res.json({ stateId });
-});
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
 });
 
 io.on("connection", socket => {
