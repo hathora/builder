@@ -9,6 +9,9 @@ export class LsotClient {
   public static async registerUser(username: PlayerName): Promise<UserId> {
     const res = await fetch("/register", {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({ playerName: username })
     });
     const { userId } = await res.json();
@@ -21,7 +24,12 @@ export class LsotClient {
   }
 
   private static async createState(userId: UserId): Promise<StateId> {
-    const res = await fetch("/new?userId=" + userId, { method: "POST" });
+    const res = await fetch("/new?userId=" + userId, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
     const { stateId } = await res.json();
     return stateId;
   }
