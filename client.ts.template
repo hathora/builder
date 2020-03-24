@@ -25,27 +25,7 @@ export class LsotClient {
     return stateId;
   }
 
-  public joinGame(): void {
-    this.socket.emit("joinGame");
-  }
-
-  public startGame(roleList: Role[], playerOrder: PlayerName[]): void {
-    this.socket.emit("startGame", roleList, playerOrder);
-  }
-
-  public proposeQuest(questId: string, proposal: PlayerName[]): void {
-    this.socket.emit("proposeQuest", questId, proposal);
-  }
-
-  public voteForProposal(questId: string, vote: Vote): void {
-    this.socket.emit("voteForProposal", questId, vote);
-  }
-
-  public voteInQuest(questId: string, vote: Vote): void {
-    this.socket.emit("voteInQuest", questId, vote);
-  }
-
-  public disconnect(): void {
+{{methods}}  public disconnect(): void {
     this.socket.close();
   }
 }
