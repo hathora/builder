@@ -66,7 +66,9 @@ Object.entries(doc.methods).forEach(([key, value]) => {
   }
 });
 const clientTemplate = readFileSync("client.ts.template", "utf8");
-const clientOutput = clientTemplate.replace(/{{methods}}/g, clientMethodOutput);
+const clientOutput = clientTemplate
+  .replace(/{{methods}}/g, clientMethodOutput)
+  .replace(/{{UserState}}/g, doc.userState)
 writeFileSync("src/generated/client.ts", clientOutput, "utf8");
 
 // app
