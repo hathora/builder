@@ -18,9 +18,11 @@ export class LsotClient {
     return userId;
   }
 
-  public static async connect(userId: UserId): Promise<LsotClient> {
+  public static async connect(userId: UserId, onStateChange: ((state: PlayerState) => void)): Promise<LsotClient> {
     const stateId = await this.createState(userId);
-    return new LsotClient(io({ query: { stateId, userId } }));
+    const socket = io({ query: { stateId, userId } });
+    socket.on("state", onStateChange);
+    return new LsotClient(socket);
   }
 
   private static async createState(userId: UserId): Promise<StateId> {
