@@ -1,0 +1,45 @@
+import { UserId, PlayerName, QuestId, Role, Vote, {{UserState}} } from "./types";
+import io from "socket.io-client";
+
+export type StateId = string;
+
+export class LsotClient {
+  private constructor(private socket: SocketIOClient.Socket) {}
+
+  public static async registerUser(username: PlayerName): Promise<UserId> {
+    const res = await fetch("/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ playerName: username })
+    });
+    const { userId } = await res.json();
+    return userId;
+  }
+
+  public static async createState(userId: UserId): Promise<StateId> {
+    const res = await fetch("/new?userId=" + userId, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+    const { stateId } = await res.json();
+    return stateId;
+  }
+
+  public static async connect(
+    userId: UserId,
+    stateId: StateId,
+    onStateChange: (state: {{UserState}}) => void
+  ): Promise<LsotClient> {
+    const socket = io({ query: { stateId, userId } });
+    socket.on("state", onStateChange);
+    return new LsotClient(socket);
+  }
+
+{{methods}}  public disconnect(): void {
+    this.socket.close();
+  }
+}
