@@ -1,1 +1,1 @@
-export const keyBy = (array, key) => (array || []).reduce((r, x) => ({ ...r, [key ? x[key] : x]: x }), {});
+export const keyBy = <T extends {}, U extends keyof T>(array: T[], key: U): Map<T[U], T> => (array || []).reduce((r, x) => ({ ...r, [(key ? x[key] : x) as unknown as string]: x }), new Map<T[U], T>());
