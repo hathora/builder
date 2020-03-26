@@ -165,15 +165,18 @@ function getGameStatus(quests: QuestAttempt[]): GameStatus {
 }
 
 function getKnownRoles(
-  playerRole: Role,
+  playerRole: Role | undefined,
   players: PlayerAndRole[]
 ): PlayerAndRole[] {
-  const rolesInfoMap: Map<Role, RoleInfo> = keyBy(ROLES_INFO, ri => ri.role);
-  if (playerRole === Role.MERLIN) {
+  const rolesInfoMap: Map<Role, RoleInfo> = keyBy(ROLES_INFO, "role");
+  if (playerRole === undefined) {
+    return [];
+  }
+  else if (playerRole === Role.MERLIN) {
     return players.filter(
       p =>
         p.role === playerRole ||
-        (rolesInfoMap[p.role].isEvil && p.role != Role.MORDRED)
+        (rolesInfoMap.get(p.role)!.isEvil && p.role != Role.MORDRED)
     );
   } else if (playerRole === Role.PERCIVAL) {
     return players.filter(
@@ -184,11 +187,12 @@ function getKnownRoles(
     );
   } else if (playerRole === Role.OBERON) {
     return players.filter(p => p.role === playerRole);
-  } else if (rolesInfoMap[playerRole].isEvil) {
+  } else if (rolesInfoMap.get(playerRole)!.isEvil) {
     return players.filter(
-      p => rolesInfoMap[p.role].isEvil && p.role !== Role.OBERON
+      p => rolesInfoMap.get(p.role)!.isEvil && p.role !== Role.OBERON
     );
   }
+  return [];
 }
 
 export class Impl {
@@ -257,19 +261,19 @@ export class Impl {
     quest.results.push({ player: player.name, vote });
   }
   getUserState(state: InternalState, playerData: PlayerData): PlayerState {
-    const player = state.players.find(p => p.name == playerData.playerName)!;
+    const player = state.players.find(p => p.name === playerData.playerName)!;
     const quests = state.quests.map(quest => sanitizeQuest(quest, player.name));
     return {
       creator: state.creator,
       playersPerQuest: quests.map(q => q.size),
       rolesInfo: ROLES_INFO,
       players: state.players.map(p => p.name),
-      roles: state.players.map(p => p.role),
+      roles: state.players.map(p => p.role!).filter(r => !!r),
       playerName: player.name,
       playerRole: player.role,
       knownRoles: getKnownRoles(
         player.role,
-        state.players.map(p => ({ player: p.name, role: p.role }))
+        state.players.map(p => ({ player: p.name, role: p.role! }))
       ),
       currentQuest: quests[quests.length - 1],
       questHistory: quests.slice(0, state.quests.length - 1),
