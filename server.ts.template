@@ -69,6 +69,7 @@ io.on("connection", socket => {
   const state = states.get(stateId)!;
   const userData = users.get(userId)!;
   addConnection(stateId, socket);
+  socket.emit("state", impl.getUserState(state, userData));
   socket.on("disconnect", () => {
     deleteConnection(stateId, socket);
   });

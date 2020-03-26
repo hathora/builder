@@ -1,3 +1,16 @@
 import { LsotClient } from "./client";
 
-(window as any).LsotClient = LsotClient;
+const name = prompt("Enter username")!;
+LsotClient.registerUser(name)
+  .then(userId =>
+    LsotClient.createState(userId).then(stateId =>
+      LsotClient.connect(
+        userId,
+        stateId,
+        state => (document.getElementById("state")!.innerHTML = JSON.stringify(state, null, 2))
+      )
+    )
+  )
+  .then(client => {
+    (window as any).client = client;
+  });

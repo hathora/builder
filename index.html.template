@@ -3,5 +3,6 @@
     <script src="./app.ts"></script>
   </head>
   <body>
+    <pre id="state"></pre>
   </body>
 </html>
