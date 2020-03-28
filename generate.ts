@@ -53,9 +53,7 @@ Object.entries(doc.methods).forEach(([key, value]) => {
   }
 });
 const serverTemplate = readFileSync("server.ts.template", "utf8");
-const serverOutput = serverTemplate
-  .replace(/{{methods}}/g, serverMethodOutput)
-  .replace(/{{UserData}}/g, doc.userData);
+const serverOutput = serverTemplate;
 writeFileSync("src/generated/server.ts", serverOutput, "utf8");
 
 // client
@@ -68,7 +66,7 @@ Object.entries(doc.methods).forEach(([key, value]) => {
 const clientTemplate = readFileSync("client.ts.template", "utf8");
 const clientOutput = clientTemplate
   .replace(/{{methods}}/g, clientMethodOutput)
-  .replace(/{{UserState}}/g, doc.userState)
+  .replace(/{{UserState}}/g, doc.userState);
 writeFileSync("src/generated/client.ts", clientOutput, "utf8");
 
 // app

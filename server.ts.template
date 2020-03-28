@@ -3,8 +3,7 @@ import express from "express";
 import Bundler from "parcel-bundler";
 import * as http from "http";
 import * as path from "path";
-import { {{UserData}} } from "./types";
-import { Impl, InternalState } from "../impl";
+import { Impl } from "../impl";
 
 const app = express();
 const server = http.createServer(app);
@@ -13,9 +12,9 @@ const bundler = new Bundler(path.join(__dirname, "index.html"), {
   cache: false
 });
 
-const impl = new Impl();
-const users: Map<string, {{UserData}}> = new Map();
-const states: Map<string, InternalState> = new Map();
+const impl: any = new Impl();
+const users: Map<string, any> = new Map();
+const states: Map<string, any> = new Map();
 const connections: Map<string, Set<SocketIO.Socket>> = new Map();
 
 function addConnection(stateId: string, socket: socketio.Socket) {
@@ -33,7 +32,7 @@ function deleteConnection(stateId: string, socket: SocketIO.Socket) {
   }
 }
 
-function broadcastUpdates(stateId: string, state: InternalState) {
+function broadcastUpdates(stateId: string, state: any) {
   connections.get(stateId)!.forEach(socket => {
     const userId = socket.handshake.query.userId;
     const userData = users.get(userId)!;
@@ -44,7 +43,7 @@ function broadcastUpdates(stateId: string, state: InternalState) {
 
 app.use(express.json());
 app.post("/register", (req, res) => {
-  const userData: {{UserData}} = req.body;
+  const userData = req.body;
   const userId = Math.random()
     .toString(36)
     .substring(2);
@@ -53,8 +52,9 @@ app.post("/register", (req, res) => {
 });
 app.post("/new", (req, res) => {
   const userId = req.query.userId;
+  const args = req.body;
   const userData = users.get(userId)!;
-  const state = impl.createGame(userData);
+  const state = impl.createGame(userData, ...args);
   const stateId = Math.random()
     .toString(36)
     .substring(2);
@@ -68,13 +68,18 @@ io.on("connection", socket => {
   const userId = socket.handshake.query.userId;
   const state = states.get(stateId)!;
   const userData = users.get(userId)!;
+
   addConnection(stateId, socket);
   socket.emit("state", impl.getUserState(state, userData));
+
+  socket.on("message", (...args) => {
+    const fn = impl[args[0]];
+    fn(state, userData, ...args.slice(1));
+  });
   socket.on("disconnect", () => {
     deleteConnection(stateId, socket);
   });
-
-{{methods}}});
+});
 
 server.listen(3000, () => {
   console.log("listening on *:3000");
