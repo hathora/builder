@@ -75,6 +75,7 @@ io.on("connection", socket => {
   socket.on("message", (...args) => {
     const fn = impl[args[0]];
     fn(state, userData, ...args.slice(1));
+    broadcastUpdates(stateId, state);
   });
   socket.on("disconnect", () => {
     deleteConnection(stateId, socket);
