@@ -1,10 +1,9 @@
 import socketio from "socket.io";
 import express from "express";
 import Bundler from "parcel-bundler";
+import { reload } from "../../reload";
 import * as http from "http";
 import * as path from "path";
-import { {{UserData}} } from "./types";
-import { Impl, InternalState } from "../impl";
 
 const app = express();
 const server = http.createServer(app);
@@ -13,9 +12,13 @@ const bundler = new Bundler(path.join(__dirname, "index.html"), {
   cache: false
 });
 
-const impl = new Impl();
-const users: Map<string, {{UserData}}> = new Map();
-const states: Map<string, InternalState> = new Map();
+const impl = reload(
+  () => require("../impl"),
+  Impl => new Impl.Impl()
+);
+
+const users: Map<string, any> = new Map();
+const states: Map<string, any> = new Map();
 const connections: Map<string, Set<SocketIO.Socket>> = new Map();
 
 function addConnection(stateId: string, socket: socketio.Socket) {
@@ -33,7 +36,7 @@ function deleteConnection(stateId: string, socket: SocketIO.Socket) {
   }
 }
 
-function broadcastUpdates(stateId: string, state: InternalState) {
+function broadcastUpdates(stateId: string, state: any) {
   connections.get(stateId)!.forEach(socket => {
     const userId = socket.handshake.query.userId;
     const userData = users.get(userId)!;
@@ -44,7 +47,7 @@ function broadcastUpdates(stateId: string, state: InternalState) {
 
 app.use(express.json());
 app.post("/register", (req, res) => {
-  const userData: {{UserData}} = req.body;
+  const userData = req.body;
   const userId = Math.random()
     .toString(36)
     .substring(2);
