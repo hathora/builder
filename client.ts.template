@@ -23,8 +23,7 @@ export class LsotClient {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
-      },
-      body: "[]"
+      }
     });
     const { stateId } = await res.json();
     return stateId;

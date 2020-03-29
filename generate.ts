@@ -83,7 +83,9 @@ Object.entries(doc.methods).forEach(([key, value]) => {
   }
 });
 const serverTemplate = readFileSync("server.ts.template", "utf8");
-const serverOutput = serverTemplate;
+const serverOutput = serverTemplate
+  .replace(/{{methods}}/g, serverMethodOutput)
+  .replace(/{{UserData}}/g, doc.userData);
 writeFileSync("src/generated/server.ts", serverOutput, "utf8");
 
 // client
