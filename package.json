@@ -5,6 +5,7 @@
   "main": "server.js",
   "dependencies": {
     "express": "^4.17.1",
+    "import-reload": "^1.0.3",
     "js-yaml": "^3.13.1",
     "parcel-bundler": "^1.12.4",
     "socket.io": "^2.3.0",

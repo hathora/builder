@@ -14,10 +14,10 @@ const stringifyType = (key: string, value: any) => {
 
 const stringifyServerMethod = (key: string, value: any) => {
   const args = value ? Object.keys(value) : [];
-  return `  socket.on("${key}", (${args.join(", ")}) => {
-    impl.${key}(state, userData${args.length ? [""].concat(args).join(", ") : ""});
-    broadcastUpdates(stateId, state);
-  });`;
+  return `    socket.on("${key}", (${args.join(", ")}) => {
+      impl.${key}(state, userData${args.length ? [""].concat(args).join(", ") : ""});
+      broadcastUpdates(stateId, state);
+    });`;
 };
 
 const stringifyClientMethod = (key: string, value: any) => {
