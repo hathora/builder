@@ -1,0 +1,3 @@
+import { Method } from "./form";
+
+export const METHODS: Method[] = {{methods}}

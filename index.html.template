@@ -1,8 +1,15 @@
 <html>
   <head>
+    <link rel=stylesheet type="text/css" href="./styles.css">
+    <link rel=stylesheet href=https://cdn.jsdelivr.net/npm/pretty-print-json@0.2/dist/pretty-print-json.css>
     <script src="./app.ts"></script>
   </head>
   <body>
-    <pre id="state"></pre>
+    <div class="container">
+      <div class="forms-container" id="forms"></div>
+      <div class="json-state">
+        <pre id="state"></pre>
+      <div>
+    </div>
   </body>
 </html>

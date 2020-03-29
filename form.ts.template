@@ -1,0 +1,53 @@
+import { MethodArgument, ArgumentType } from "./formTypes";
+import { LsotClient } from "./client";
+
+export interface Method {
+  name: keyof LsotClient;
+  args: MethodArgument[];
+}
+
+export const renderForm = (form: Method, onSubmit: (...args: any[]) => void) => {
+  return `
+    <div class="form" id="${form.name}">
+      <h1 class="heading">${form.name}</h1>
+      ${renderFormArgs(form.args)}
+      <button type="button" class="submit-button"><span class="button-text">Submit</span></button>
+    </div>
+  `;
+};
+
+function assertNever(value: never): never {
+  throw new TypeError(`Unsupported type: ${value}`);
+}
+
+function renderFormArgs(args: MethodArgument[]) {
+  if (args.length == 0) {
+    return '<div class=\"no-args\">No arguments required</div>'
+  } else {
+    return args.map(({ type }) => {
+      switch (type) {
+        case ArgumentType.ARRAY: {
+          return "<div>Array input to be implemented</div>";
+        }
+        case ArgumentType.BOOLEAN: {
+          return "<div>Boolean input to be implemented</div>";
+        }
+        case ArgumentType.NUMBER: {
+          return "<div>Number input to be implemented</div>";
+        }
+        case ArgumentType.STRING: {
+          return "<div>String input to be implemented</div>";
+        }
+        case ArgumentType.ENUM: {
+          return "<div>Enum input to be implemented</div>";
+        }
+        case ArgumentType.OBJECT: {
+          return "<div>Object input to be implemented</div>";
+        }
+        default: {
+          return assertNever(type);
+        }
+      }
+    }).join("");
+  }
+}

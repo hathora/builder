@@ -1,13 +1,16 @@
 import { LsotClient } from "./client";
+import { METHODS } from "./methods";
+import { renderForm } from "./form";
+const prettyPrintJson = require("pretty-print-json");
 
 function connect(userId: string, stateId: string) {
-  return LsotClient.connect(
-    userId,
-    stateId,
-    state => (document.getElementById("state")!.innerHTML = JSON.stringify(state, null, 2))
-  );
+  return LsotClient.connect(userId, stateId, state => {
+    document.getElementById("state")!.innerHTML = prettyPrintJson.toHtml(state);
+    document.getElementById("forms")!.innerHTML = renderForms();
+  });
 }
 
+let renderedForms = "";
 const name = prompt("Enter username")!;
 LsotClient.registerUser(name)
   .then(userId => {
@@ -20,4 +23,10 @@ LsotClient.registerUser(name)
   })
   .then(client => {
     (window as any).client = client;
+    renderedForms = METHODS.map(method => {
+      const onSubmit: any = client[method.name];
+      return renderForm(method, onSubmit);
+    }).reduce((prev, cur) => prev + cur);
   });
+
+const renderForms = () => renderedForms;

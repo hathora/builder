@@ -7,6 +7,7 @@
     "express": "^4.17.1",
     "js-yaml": "^3.13.1",
     "parcel-bundler": "^1.12.4",
+    "pretty-print-json": "^0.2.1",
     "socket.io": "^2.3.0",
     "socket.io-client": "^2.3.0"
   },
