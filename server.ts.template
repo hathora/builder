@@ -1,6 +1,7 @@
 import socketio from "socket.io";
 import express from "express";
 import Bundler from "parcel-bundler";
+import { reload } from "../../reload";
 import * as http from "http";
 import * as path from "path";
 import { Impl } from "../impl";
@@ -12,7 +13,11 @@ const bundler = new Bundler(path.join(__dirname, "index.html"), {
   cache: false
 });
 
-const impl: any = new Impl();
+const impl = reload(
+  () => require("../impl"),
+  Impl => new Impl.Impl()
+);
+
 const users: Map<string, any> = new Map();
 const states: Map<string, any> = new Map();
 const connections: Map<string, Set<SocketIO.Socket>> = new Map();
@@ -63,7 +68,15 @@ app.post("/new", (req, res) => {
 });
 app.use(bundler.middleware());
 
-io.on("connection", socket => {
+io.use((socket, next) => {
+  const stateId = socket.handshake.query.stateId;
+  const userId = socket.handshake.query.userId;
+  if (!states.has(stateId) || !users.has(userId)) {
+    next(new Error("Invalid connection parameters"));
+  } else {
+    next();
+  }
+}).on("connection", socket => {
   const stateId = socket.handshake.query.stateId;
   const userId = socket.handshake.query.userId;
   const state = states.get(stateId)!;
