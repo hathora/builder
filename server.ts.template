@@ -4,7 +4,6 @@ import Bundler from "parcel-bundler";
 import { reload } from "../../reload";
 import * as http from "http";
 import * as path from "path";
-import { Impl } from "../impl";
 
 const app = express();
 const server = http.createServer(app);
@@ -57,9 +56,8 @@ app.post("/register", (req, res) => {
 });
 app.post("/new", (req, res) => {
   const userId = req.query.userId;
-  const args = req.body;
   const userData = users.get(userId)!;
-  const state = impl.createGame(userData, ...args);
+  const state = impl.createGame(userData);
   const stateId = Math.random()
     .toString(36)
     .substring(2);
@@ -81,19 +79,13 @@ io.use((socket, next) => {
   const userId = socket.handshake.query.userId;
   const state = states.get(stateId)!;
   const userData = users.get(userId)!;
-
   addConnection(stateId, socket);
   socket.emit("state", impl.getUserState(state, userData));
-
-  socket.on("message", (...args) => {
-    const fn = impl[args[0]];
-    fn(state, userData, ...args.slice(1));
-    broadcastUpdates(stateId, state);
-  });
   socket.on("disconnect", () => {
     deleteConnection(stateId, socket);
   });
-});
+
+{{methods}}});
 
 server.listen(3000, () => {
   console.log("listening on *:3000");
