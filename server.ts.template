@@ -66,7 +66,15 @@ app.post("/new", (req, res) => {
 });
 app.use(bundler.middleware());
 
-io.on("connection", socket => {
+io.use((socket, next) => {
+  const stateId = socket.handshake.query.stateId;
+  const userId = socket.handshake.query.userId;
+  if (!states.has(stateId) || !users.has(userId)) {
+    next(new Error("Invalid connection parameters"));
+  } else {
+    next();
+  }
+}).on("connection", socket => {
   const stateId = socket.handshake.query.stateId;
   const userId = socket.handshake.query.userId;
   const state = states.get(stateId)!;

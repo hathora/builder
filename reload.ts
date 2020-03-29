@@ -10,7 +10,12 @@ export function reload(importFn: () => any, extractFn: (module: any) => any) {
   filesToWatch.forEach(file => {
     fs.watch(file, () => {
       delete require.cache[file];
-      extracted = extractFn(importFn());
+      try {
+        extracted = extractFn(importFn());
+        console.log("Reloaded module " + file);
+      } catch (err) {
+        console.error("Error reloading module " + file + "\n" + err);
+      }
     });
   });
 
