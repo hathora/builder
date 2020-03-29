@@ -92,4 +92,4 @@ async function main() {
     console.log("listening on *:3000");
   });
 }
-main()
+main();
