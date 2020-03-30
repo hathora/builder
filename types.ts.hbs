@@ -1,0 +1,16 @@
+export type UserId = string;
+{{#each types}}
+{{#if (isArray this)}}
+export enum {{@key}} {
+  {{#join this ",
+  " false false}}{{name}}{{/join}}
+}
+{{else if (isObject this)}}
+export interface {{@key}} {
+{{#join this ";
+" false true}}  {{name}}: {{type}}{{/join~}}
+}
+{{else}}
+export type {{@key}} = {{this}};
+{{/if}}
+{{/each}}

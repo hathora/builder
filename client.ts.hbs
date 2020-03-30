@@ -1,4 +1,4 @@
-import { UserId, PlayerName, QuestId, Role, Vote, {{UserState}} } from "./types";
+import { UserId, PlayerName, QuestId, Role, Vote, {{userState}} } from "./types";
 import io from "socket.io-client";
 
 export type StateId = string;
@@ -32,14 +32,22 @@ export class LsotClient {
   public static async connect(
     userId: UserId,
     stateId: StateId,
-    onStateChange: (state: {{UserState}}) => void
+    onStateChange: (state: {{userState}}) => void
   ): Promise<LsotClient> {
     const socket = io({ query: { stateId, userId } });
     socket.on("state", onStateChange);
     return new LsotClient(socket);
   }
 
-{{methods}}  public disconnect(): void {
+  {{#each methods}}
+  {{#if (ne @key ../initialize)}}
+  public {{@key}}({{#join this ", " false false}}{{name}}: {{type}}{{/join}}): void {
+    this.socket.emit("{{@key}}"{{#join this ", " true false}}{{name}}{{/join}});
+  }
+
+  {{/if}}
+  {{/each}}
+  public disconnect(): void {
     this.socket.close();
   }
 }

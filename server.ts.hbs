@@ -86,7 +86,15 @@ async function main() {
       deleteConnection(stateId, socket);
     });
 
-{{methods}}  });
+    {{#each methods}}
+    {{#if (ne @key ../initialize)}}
+    socket.on("{{@key}}", ({{#join this ", " false false}}{{name}}{{/join}}) => {
+      impl.{{@key}}(state, userData{{#join this ", " true false}}{{name}}{{/join}});
+      broadcastUpdates(stateId, state);
+    });
+    {{/if}}
+    {{/each}}
+  });
 
   server.listen(3000, () => {
     console.log("listening on *:3000");
