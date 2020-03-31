@@ -1,8 +1,20 @@
 <html>
   <head>
+    <link rel=stylesheet type="text/css" href="./styles.css">
     <script src="./app.ts"></script>
   </head>
   <body>
     <pre id="state"></pre>
+    <div id="">
+      {{#each methods}}
+      <div class="form" id="{{@key}}">
+        <h1 class="heading">{{@key}}</h1>
+        {{#each this}}
+        <div>{{@key}}: {{this}}</div>
+        {{/each}}
+        <button type="button" class="submit-button"<span class="button-text">Submit</span></button>
+      </div>
+      {{/each}}
+    </div>
   </body>
 </html>
