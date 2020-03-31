@@ -7,6 +7,7 @@
     <div class="container">
       <div class="forms-container" id="forms">
         {{#each methods}}
+        {{#if (ne @key ../initialize)}}
         <div class="form" id="{{@key}}">
           <h1 class="heading">{{@key}}</h1>
           {{#each this}}
@@ -14,6 +15,7 @@
           {{/each}}
           <button type="button" class="submit-button" onClick="client.{{@key}}()" <span class="button-text">Submit</span></button>
         </div>
+        {{/if}}
         {{/each}}
       </div>
       <div class="json-state">
