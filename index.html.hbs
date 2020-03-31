@@ -10,10 +10,10 @@
         {{#if (ne @key ../initialize)}}
         <div class="form" id="{{@key}}">
           <h1 class="heading">{{@key}}</h1>
-          {{#each this}}
-          <div>{{@key}}: {{#getFormType this}}{{/getFormType}} => Options: {{#getFormValues this}}{{/getFormValues}}</div>
+          {{#each (getArgsInfo this)}}
+          <div>{{name}}: {{type}} => Options: {{values}}</div>
           {{/each}}
-          <button type="button" class="submit-button" onClick="client.{{@key}}()" <span class="button-text">Submit</span></button>
+          <button type="button" class="submit-button" onClick="client.{{@key}}()"><span class="button-text">Submit</span></button>
         </div>
         {{/if}}
         {{/each}}

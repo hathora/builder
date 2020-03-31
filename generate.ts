@@ -16,40 +16,32 @@ registerHelper("join", (params, joinStr, prepend, postpend, options) => {
     return (prepend && paramsStr.length ? joinStr : "") + paramsStr + (postpend && paramsStr.length ? joinStr : "");
   }
 });
-registerHelper("getFormType", (type) => {
-  const { types } = doc;
-  if (type.endsWith("[]")) {
-    const primType = getPrimitiveTypeRecursively(type.substring(0, type.length - 2), types);
-    if (Array.isArray(primType)) {
-      return "enum-multiselect";
-    } else if (primType === "string") {
-      return "string-multiselect";
+registerHelper("getArgsInfo", (args: { [name: string]: string }) => {
+  return Object.entries(args).map(([name, type]) => {
+    if (type.endsWith("[]")) {
+      const primType = getPrimitiveTypeRecursively(type.substring(0, type.length - 2));
+      if (Array.isArray(primType)) {
+        return { name, type: "enum-multiselect", values: primType };
+      } else if (primType === "string") {
+        return { name, type: "string-multiselect" };
+      }
+    } else {
+      const primType = getPrimitiveTypeRecursively(type);
+      if (Array.isArray(primType)) {
+        return { name, type: "enum-dropdown", values: primType };
+      } else if (primType === "string") {
+        return { name, type: "string" };
+      }
     }
-  } else {
-    const primType = getPrimitiveTypeRecursively(type, types);
-    if (Array.isArray(primType)) {
-      return "enum-dropdown"
-    } else if (primType === "string") {
-      return "string";
-    }
-  }
-});
-registerHelper("getFormValues", (type) => {
-  const { types } = doc;
-  const primType = getPrimitiveTypeRecursively(
-    type.endsWith("[]") ? type.substring(0, type.length - 2) : type,
-    types,
-  )
-  return Array.isArray(primType) ? primType : undefined;
+  });
 });
 
-function getPrimitiveTypeRecursively(type: [] | string, types: { [key: string]: [] | string}): [] | string {
-  if ((type !== "string") && !Array.isArray(type)) {
-    return getPrimitiveTypeRecursively(types[type], types);
+function getPrimitiveTypeRecursively(type: [] | string): [] | string {
+  if (type !== "string" && !Array.isArray(type)) {
+    return getPrimitiveTypeRecursively(doc.types[type]);
   }
   return type;
 }
-
 
 function generate(filename: string) {
   const template = compile(readFileSync(filename + ".hbs", "utf8"));
