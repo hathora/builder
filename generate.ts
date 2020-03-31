@@ -21,22 +21,22 @@ registerHelper("getArgsInfo", (args: { [name: string]: string }) => {
     if (type.endsWith("[]")) {
       const primType = getPrimitiveTypeRecursively(type.substring(0, type.length - 2));
       if (Array.isArray(primType)) {
-        return { name, type: "enum-multiselect", values: primType };
-      } else if (primType === "string") {
-        return { name, type: "string-multiselect" };
+        return { name, type: "enum", multi: true, values: primType };
+      } else {
+        return { name, type: primType, multi: true };
       }
     } else {
       const primType = getPrimitiveTypeRecursively(type);
       if (Array.isArray(primType)) {
-        return { name, type: "enum-dropdown", values: primType };
-      } else if (primType === "string") {
-        return { name, type: "string" };
+        return { name, type: "enum", multi: false, values: primType };
+      } else {
+        return { name, type: primType, multi: false };
       }
     }
   });
 });
 
-function getPrimitiveTypeRecursively(type: [] | string): [] | string {
+function getPrimitiveTypeRecursively(type: string | string[]): string | string[] {
   if (type !== "string" && !Array.isArray(type)) {
     return getPrimitiveTypeRecursively(doc.types[type]);
   }
