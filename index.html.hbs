@@ -4,17 +4,21 @@
     <script src="./app.ts"></script>
   </head>
   <body>
-    <pre id="state"></pre>
-    <div id="">
-      {{#each methods}}
-      <div class="form" id="{{@key}}">
-        <h1 class="heading">{{@key}}</h1>
-        {{#each this}}
-        <div>{{@key}}: {{this}}</div>
+    <div class="container">
+      <div class="forms-container" id="forms">
+        {{#each methods}}
+        <div class="form" id="{{@key}}">
+          <h1 class="heading">{{@key}}</h1>
+          {{#each this}}
+          <div>{{@key}}: {{this}}</div>
+          {{/each}}
+          <button type="button" class="submit-button"<span class="button-text">Submit</span></button>
+        </div>
         {{/each}}
-        <button type="button" class="submit-button"<span class="button-text">Submit</span></button>
       </div>
-      {{/each}}
+      <div class="json-state">
+        <pre id="state"></pre>
+      </div>
     </div>
   </body>
 </html>
