@@ -12,7 +12,7 @@
           {{#each this}}
           <div>{{@key}}: {{this}}</div>
           {{/each}}
-          <button type="button" class="submit-button"<span class="button-text">Submit</span></button>
+          <button type="button" class="submit-button" onClick="client.{{@key}}()" <span class="button-text">Submit</span></button>
         </div>
         {{/each}}
       </div>
