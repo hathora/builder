@@ -11,7 +11,7 @@
         <div class="form" id="{{@key}}">
           <h1 class="heading">{{@key}}</h1>
           {{#each this}}
-          <div>{{@key}}: {{this}}</div>
+          <div>{{@key}}: {{#getFormType this}}{{/getFormType}} => Options: {{#getFormValues this}}{{/getFormValues}}</div>
           {{/each}}
           <button type="button" class="submit-button" onClick="client.{{@key}}()" <span class="button-text">Submit</span></button>
         </div>

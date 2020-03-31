@@ -16,6 +16,40 @@ registerHelper("join", (params, joinStr, prepend, postpend, options) => {
     return (prepend && paramsStr.length ? joinStr : "") + paramsStr + (postpend && paramsStr.length ? joinStr : "");
   }
 });
+registerHelper("getFormType", (type) => {
+  const { types } = doc;
+  if (type.endsWith("[]")) {
+    const primType = getPrimitiveTypeRecursively(type.substring(0, type.length - 2), types);
+    if (Array.isArray(primType)) {
+      return "enum-multiselect";
+    } else if (primType === "string") {
+      return "string-multiselect";
+    }
+  } else {
+    const primType = getPrimitiveTypeRecursively(type, types);
+    if (Array.isArray(primType)) {
+      return "enum-dropdown"
+    } else if (primType === "string") {
+      return "string";
+    }
+  }
+});
+registerHelper("getFormValues", (type) => {
+  const { types } = doc;
+  const primType = getPrimitiveTypeRecursively(
+    type.endsWith("[]") ? type.substring(0, type.length - 2) : type,
+    types,
+  )
+  return Array.isArray(primType) ? primType : undefined;
+});
+
+function getPrimitiveTypeRecursively(type: [] | string, types: { [key: string]: [] | string}): [] | string {
+  if ((type !== "string") && !Array.isArray(type)) {
+    return getPrimitiveTypeRecursively(types[type], types);
+  }
+  return type;
+}
+
 
 function generate(filename: string) {
   const template = compile(readFileSync(filename + ".hbs", "utf8"));
