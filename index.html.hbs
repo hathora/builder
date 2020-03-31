@@ -11,7 +11,13 @@
         <div class="form" id="{{@key}}">
           <h1 class="heading">{{@key}}</h1>
           {{#each (getArgsInfo this)}}
-          <div>{{name}}: {{type}} {{multi}} => Options: {{values}}</div>
+          {{#if (ne type "enum")}}
+          <label for="{{@../key}}_{{name}}">{{name}}:</label>
+          <input type="text" id="{{@../key}}_{{name}}">
+          <br>
+          {{else}}
+          <div>{{name}}: {{multi}} enum({{values}})</div>
+          {{/if}}
           {{/each}}
           <button type="button" class="submit-button" onClick="client.{{@key}}()"><span class="button-text">Submit</span></button>
         </div>
