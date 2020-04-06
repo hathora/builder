@@ -1,0 +1,276 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>vaadin-combo basic tests</title>
+  <script src="../../web-component-tester/browser.js"></script>
+
+  <link rel="import" href="common.html">
+</head>
+
+<body>
+
+  <test-fixture id="combobox">
+    <template>
+      <vaadin-combo-box></vaadin-combo-box>
+    </template>
+  </test-fixture>
+
+  <script>
+    describe('properties', function() {
+      var comboBox;
+
+      beforeEach(function() {
+        comboBox = fixture('combobox');
+
+        // make iron-input pick up child input
+        if (comboBox._bindableInput._initSlottedInput) {
+          comboBox._bindableInput._initSlottedInput();
+        }
+      });
+
+      describe('items property', function() {
+        it('should have undefined by default', function() {
+          expect(comboBox.items).to.be.undefined;
+        });
+
+        it('should be bound to items list', function() {
+          comboBox.items = ['qux'];
+          expect(comboBox.$.overlay.$.selector.items).to.eql(['qux']);
+        });
+
+        it('should update items list on mutation', function() {
+          comboBox.items = [];
+          comboBox.push('items', 'foo');
+          expect(comboBox.$.overlay.$.selector._virtualCount).to.eql(1);
+        });
+
+        it('should set focused index on items set', function() {
+          comboBox.value = 'bar';
+
+          comboBox.items = ['foo', 'bar'];
+
+          expect(comboBox._focusedIndex).to.eql(1);
+        });
+
+        it('should set focused index on mutation', function() {
+          comboBox.value = 'baz';
+          comboBox.items = ['foo', 'bar'];
+
+          comboBox.push('items', 'baz');
+
+          expect(comboBox._focusedIndex).to.eql(2);
+        });
+      });
+
+      describe('value property', function() {
+        it('should have empty string by default', function() {
+          expect(comboBox.value).to.eql('');
+        });
+
+        it('should be able to be set before items', function() {
+          comboBox.value = 'foo';
+
+          comboBox.items = ['foo', 'bar'];
+
+          expect(comboBox.selectedItem).to.eql('foo');
+          expect(comboBox._bindableInput.bindValue).to.eql('foo');
+        });
+
+        it('should be able to be set before object items', function() {
+          var item = {label: 'foo', value: 1};
+          comboBox.value = 1;
+
+          comboBox.items = [item];
+
+          expect(comboBox.selectedItem).to.eql(item);
+          expect(comboBox._bindableInput.bindValue).to.eql('foo');
+        });
+      });
+
+      describe('hasValue property', function() {
+        it('should be readOnly', function() {
+          expect(comboBox.hasValue).to.be.false;
+          comboBox.hasValue = true;
+          expect(comboBox.hasValue).to.be.false;
+        });
+
+        it('should be updated when setting the value', function() {
+          comboBox.value = 'foo';
+          expect(comboBox.hasValue).to.be.true;
+        });
+      });
+
+      describe('allow custom value property', function() {
+        beforeEach(function() {
+          comboBox.items = [];
+          comboBox.allowCustomValue = true;
+        });
+
+        it('should set bind value after setting value property', function() {
+          comboBox.value = 'foo';
+
+          expect(comboBox._bindableInput.bindValue).to.eql('foo');
+        });
+
+        it('should set value after setting a custom input value', function() {
+          comboBox.open();
+          comboBox.inputElement.value = 'foo';
+          comboBox.inputElement.dispatchEvent(new CustomEvent('input'));
+          comboBox.close();
+
+          expect(comboBox.value).to.eql('foo');
+        });
+
+        describe('`custom-value-set` event', function() {
+          it('should be fired when custom value is set', function() {
+            var spy = sinon.spy();
+            comboBox.addEventListener('custom-value-set', spy);
+
+            comboBox.open();
+            comboBox.inputElement.value = 'foo';
+            comboBox.inputElement.dispatchEvent(new CustomEvent('input'));
+            comboBox.close();
+
+            expect(spy.callCount).to.eql(1);
+          });
+
+          it('should not be fired when custom values are not allowed', function() {
+            comboBox.allowCustomValue = false;
+
+            var spy = sinon.spy();
+            comboBox.addEventListener('custom-value-set', spy);
+
+            comboBox.open();
+            comboBox.inputElement.value = 'foo';
+            comboBox.inputElement.dispatchEvent(new CustomEvent('input'));
+            comboBox.close();
+
+            expect(spy.callCount).to.eql(0);
+          });
+
+          it('should be cancelable', function() {
+            comboBox.addEventListener('custom-value-set', function(e) {
+              e.preventDefault();
+            });
+
+            comboBox.open();
+            comboBox.inputElement.value = 'foo';
+            comboBox.inputElement.dispatchEvent(new CustomEvent('input'));
+            comboBox.close();
+
+            expect(comboBox.value).to.be.empty;
+          });
+        });
+      });
+
+      describe('label property', function() {
+        it('should have undefined by default', function() {
+          expect(comboBox.label).to.be.undefined;
+        });
+
+        it('should be bound to label element', function() {
+          comboBox.label = 'This is LABEL';
+          expect(comboBox.$.inputContainer.querySelector('label').innerHTML).to.eql('This is LABEL');
+        });
+      });
+
+      describe('selectedItem property', function() {
+        beforeEach(function() {
+          comboBox.items = ['foo'];
+        });
+
+        it('should have undefined by default', function() {
+          expect(comboBox.selectedItem).to.be.undefined;
+        });
+
+        it('should set value and input', function() {
+          comboBox.selectedItem = 'foo';
+
+          expect(comboBox.value).to.eql('foo');
+          expect(comboBox._bindableInput.bindValue).to.eql('foo');
+        });
+
+        it('should default back to null when value set to undefined', function() {
+          comboBox.value = 'foo';
+
+          comboBox.value = undefined;
+
+          expect(comboBox.selectedItem).to.be.null;
+        });
+
+        it('should default back to null when value is set to null', function() {
+          comboBox.value = null;
+
+          expect(comboBox.selectedItem).to.be.null;
+        });
+
+        it('should be null after clearing the value', function() {
+          comboBox.value = 'foo';
+
+          comboBox._clear();
+
+          expect(comboBox.selectedItem).to.be.null;
+        });
+      });
+
+      describe('focus API', function() {
+        it('should have readOnly focused property', function() {
+          comboBox.focused = true;
+          expect(comboBox.focused).to.be.false;
+          expect(comboBox.hasAttribute('focused')).to.be.false;
+        });
+
+        it('should not be focused by default', function() {
+          expect(comboBox.focused).to.be.false;
+          expect(comboBox.hasAttribute('focused')).to.be.false;
+        });
+
+        describe('methods', function() {
+          // Avoid FF window focus issues by stubing native focus behavior
+          var inputFocusStub, inputBlurStub;
+
+          beforeEach(function() {
+            inputFocusStub = sinon.stub(comboBox.inputElement, 'focus', function() {
+              comboBox.inputElement.dispatchEvent(new CustomEvent('focus'));
+            });
+
+            inputBlurStub = sinon.stub(comboBox.inputElement, 'blur', function() {
+              comboBox.inputElement.dispatchEvent(new CustomEvent('blur'));
+            });
+          });
+
+          it('should focus the input with focus method', function() {
+            var focusedChangedSpy = sinon.spy();
+            comboBox.addEventListener('focused-changed', focusedChangedSpy);
+
+            comboBox.focus();
+
+            expect(inputFocusStub.called).to.be.true;
+            expect(comboBox.focused).to.be.true;
+            expect(comboBox.hasAttribute('focused')).to.be.true;
+            expect(focusedChangedSpy.called).to.be.true;
+          });
+
+          it('should blur the input with the blur method', function() {
+            comboBox.focus();
+
+            var focusedChangedSpy = sinon.spy();
+            comboBox.addEventListener('focused-changed', focusedChangedSpy);
+
+            comboBox.blur();
+
+            expect(inputBlurStub.called).to.be.true;
+            expect(comboBox.focused).to.be.false;
+            expect(comboBox.hasAttribute('focused')).to.be.false;
+            expect(focusedChangedSpy.called).to.be.true;
+          });
+        });
+      });
+    });
+  </script>
+
+</body>
+
+</html>

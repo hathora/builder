@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>tags-input demo</title>
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+    <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
+    <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+    <link rel="import" href="../tags-input.html">
+    <link rel="import" href="../tags-input-list.html">
+
+    <custom-style>
+      <style include="demo-pages-shared-styles"></style>
+    </custom-style>
+  </head>
+  <body>
+    <div class="vertical-section-container centered">
+      <h3>Default usage</h3>
+      <demo-snippet>
+        <template>
+          <tags-input autofocus label="Tags" tag-label="Add tag"
+            min-length="3" max-length="16"></tags-input>
+        </template>
+      </demo-snippet>
+
+      <h3>Default usage with list</h3>
+      <demo-snippet>
+        <template>
+          <tags-input-list id="List" autofocus label="Tags" tag-label="Add tag"></tags-input-list>
+            <script>
+              List.options = [
+                {
+                  value: 9,
+                  label: 'one',
+                },
+                {
+                  value: 10,
+                  label: 'two',
+                },
+                {
+                  value: 11,
+                  label: 'three',
+                },
+              ]
+            </script>
+        </template>
+      </demo-snippet>
+
+      <h3>Get tags array</h3>
+      <demo-snippet>
+        <template>
+          <tags-input id="tag" autofocus label="Tags" tag-label="Add tag"
+            min-length="3" max-length="16"></tags-input>
+          <button onclick="printValue()">Get value</button>
+          <div id="toprint"></div>
+          <script>
+            function printValue() {
+              const tagSelector = document.getElementById('tag');
+              document.getElementById('toprint').innerHTML = JSON.stringify(tagSelector.value);
+            }
+          </script>
+        </template>
+      </demo-snippet>
+
+      <h3>Allow duplicates</h3>
+      <demo-snippet>
+        <template>
+          <tags-input allow-duplicates></tags-input>
+        </template>
+      </demo-snippet>
+
+      <h3>Styling</h3>
+      <demo-snippet>
+        <template>
+          <custom-style>
+          <style>
+            tags-input.styled {
+              width: 400px;
+              border: 1px solid red;
+              padding: 8px;
+
+              --tags-container: {
+                background-color: green;
+              };
+              --tags-existing-tag: {
+                background-color: gray;
+              };
+              --tags-remove-icon: {
+                color: white;
+              };
+              --tags-remove-icon-size: 16px;
+              --tags-input: {
+                background-color: yellow;
+              };
+            }
+          </style>
+          </custom-style>
+          <tags-input class="styled"></tags-input>
+        </template>
+      </demo-snippet>
+
+      <h3>Events</h3>
+      <demo-snippet>
+        <template>
+          <tags-input id="events"></tags-input>
+          <div>Last event:</div>
+          <div id="feedback"></div>
+          <script>
+            var tags = document.getElementById('events');
+            var feedback = document.getElementById('feedback');
+            tags.addEventListener('tag-added', function(e) {
+              feedback.innerText = 'tag-added: ' + e.detail;
+            });
+            tags.addEventListener('tag-denied', function(e) {
+              feedback.innerText = 'tag-denied: ' + e.detail;
+            });
+            tags.addEventListener('tag-inserted', function(e) {
+              feedback.innerText = 'tag-inserted: ' + e.detail;
+            });
+            tags.addEventListener('tag-removed', function(e) {
+              feedback.innerText = 'tag-removed: ' + e.detail;
+            });
+          </script>
+        </template>
+      </demo-snippet>
+
+
+      <h3>Comma delimited</h3>
+      <demo-snippet>
+        <template>
+          <tags-input separator=","></tags-input>
+        </template>
+      </demo-snippet>
+
+      <h3>Not editable</h3>
+      <demo-snippet>
+        <template>
+          <tags-input id="noEdit" no-edit></tags-input>
+          <script>
+            document.getElementById('noEdit').tags = ['tag1', 'tag2', 'tag3'];
+          </script>
+        </template>
+      </demo-snippet>
+    </div>
+  </body>
+</html>

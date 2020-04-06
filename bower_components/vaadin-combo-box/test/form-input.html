@@ -1,0 +1,164 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset='UTF-8'>
+  <title>vaadin-combo basic tests</title>
+  <script src='../../web-component-tester/browser.js'></script>
+
+  <link rel='import' href='common.html'>
+  <link rel='import' href='../../iron-form/iron-form.html'>
+</head>
+
+<body>
+
+  <test-fixture id="combobox">
+    <template>
+      <vaadin-combo-box></vaadin-combo-box>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="combobox-in-form">
+    <template is="dom-template">
+      <iron-form>
+        <form>
+          <vaadin-combo-box></vaadin-combo-box>
+        </form>
+      </iron-form>
+    </template>
+  </test-fixture>
+
+  <script>
+    describe('using as a field in html form', function() {
+      var comboBox;
+
+      beforeEach(function() {
+        comboBox = fixture('combobox');
+        comboBox.allowCustomValue = true;
+
+        // make iron-input pick up child input
+        if(comboBox._bindableInput._initSlottedInput) {
+          comboBox._bindableInput._initSlottedInput();
+        }
+      });
+
+      it('should have the given name', function() {
+        comboBox.name = 'foo';
+        expect(comboBox.$$('input').getAttribute('name')).to.equal('foo');
+      });
+
+      it('should have no name', function() {
+        expect(comboBox.$$('input').getAttribute('name')).to.equal(null);
+      });
+
+      it('should be required', function() {
+        comboBox.required = true;
+        expect(comboBox.$$('input').getAttribute('required')).to.equal('');
+      });
+
+      it('should not be required', function() {
+        expect(comboBox.$$('input').getAttribute('required')).to.equal(null);
+      });
+
+      it('should be disabled', function() {
+        comboBox.disabled = true;
+        expect(comboBox.$$('input').getAttribute('disabled')).to.equal('');
+      });
+
+      it('should have disabled paper-input-container', function() {
+        comboBox.disabled = true;
+        expect(comboBox.$$('paper-input-container').getAttribute('disabled')).to.equal('');
+      });
+
+      it('should be read-only', function() {
+        comboBox.readonly = true;
+        expect(comboBox.$$('input').getAttribute('readonly')).to.equal('');
+      });
+
+      it('should validate correctly when input value is invalid', function() {
+        comboBox.name = 'foo';
+        comboBox.required = true;
+
+        expect(comboBox.validate()).to.equal(false);
+        expect(comboBox.invalid).to.be.equal(true);
+      });
+
+      it('should validate correctly when input value is valid', function() {
+        comboBox.name = 'foo';
+        comboBox.required = true;
+        comboBox.value = 'foo';
+
+        expect(comboBox.validate()).to.equal(true);
+        expect(comboBox.invalid).to.be.equal(false);
+      });
+    });
+
+    describe('using the field in iron-form', function() {
+      var comboBox, ironForm, form;
+
+      beforeEach(function() {
+        ironForm = fixture('combobox-in-form');
+        comboBox = ironForm.querySelector('vaadin-combo-box');
+        form = ironForm.querySelector('form');
+        comboBox.name = 'foo';
+        comboBox.allowCustomValue = true;
+      });
+
+      it('should serialize correctly', function() {
+        comboBox.value = 'bar';
+
+        var val = ironForm.serializeForm().foo;
+        expect(val).to.equal('bar');
+      });
+
+      it('should not-submit iron-form with invalid value', function(done) {
+        comboBox.required = true;
+
+        var spy = sinon.spy();
+
+        setTimeout(function() {
+          ironForm.addEventListener('iron-form-submit', spy);
+          ironForm.submit ? ironForm.submit() : form.submit();
+          expect(spy).not.to.have.been.called;
+          done();
+        });
+      });
+
+      describe('enter key behavior', function() {
+        var keydownEvent, preventDefault;
+
+        beforeEach(function() {
+          // These tests fake a keydown event for the enter key and
+          // use a spy to verify if preventDefault was called on the
+          // event. Actually replicating the form submit on enter turned
+          // out to be extremely tricky to do in a test.
+          preventDefault = sinon.spy();
+
+          keydownEvent = new CustomEvent('keydown', {
+            bubbles: true,
+            cancelable: true
+          });
+          keydownEvent.keyCode = 13;
+          keydownEvent.code = 13;
+          keydownEvent.preventDefault = preventDefault;
+        });
+
+        it('should prevent default on open combobox', function() {
+          comboBox.open();
+          // Using comboBox instead of input because of 2.0
+          comboBox.dispatchEvent(keydownEvent);
+          expect(preventDefault).to.have.been.called;
+        });
+
+        it('should not prevent default on closed combobox', function() {
+          comboBox.dispatchEvent(keydownEvent);
+          expect(preventDefault).to.not.have.been.called;
+        });
+      });
+
+    });
+  </script>
+
+</body>
+
+</html>

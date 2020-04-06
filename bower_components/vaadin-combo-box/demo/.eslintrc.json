@@ -1,0 +1,11 @@
+{
+  "rules": {
+    "no-unused-vars": 0
+  },
+  "globals": {
+    "elements": false,
+    "users": false,
+    "elementsJson": false,
+    "HTMLImports": false
+  }
+}

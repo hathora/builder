@@ -1,0 +1,254 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../polymer/lib/mixins/gesture-event-listeners.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../iron-input/iron-input.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="tag-iconset.html">
+<link rel="import" href="tags-input-styles.html">
+
+<!--
+CSS custom property | Description | Default
+------------------- | ----------- | -------
+`--tags-container` | Mixin for the overall container | `@apply --layout-vertical;`
+`--tags-input` | Mixin for the paper-input | ``
+`--tags-existing-tag` | Mixin for the each existing tag | ``
+`--tags-remove-icon-size` | Hight and width of the remove icon | `12px`
+`--tags-remove-icon` | Mixin applied to the icon | ``
+-->
+<dom-module id="tags-input">
+  <template strip-whitespace>
+    <custom-style>
+      <style include="tags-input-styles">
+
+      </style>
+    </custom-style>
+    <div class="container">
+      <div class="tags">
+        <template is="dom-repeat" items="[[tags]]" as="tag">
+          <div class="tag">
+            <span>[[tag]]</span>
+            <iron-icon
+              tabindex="0"
+              hidden$="[[noEdit]]"
+              icon="tag:remove"
+              on-keydown="_onRemoveKeydown"
+              on-tap="_removeTag">
+            </iron-icon>
+          </div>
+        </template>
+      </div>
+      <paper-input
+        id="input"
+        hidden$="[[noEdit]]"
+        no-label-float
+        label="[[_label]]"
+        autofocus$="[[autofocus]]"
+        minlength="[[minLength]]"
+        maxlength="[[maxLength]]"
+        on-keydown="_onInputKeydown"
+        value="{{tag}}">
+      </paper-input>
+    </div>
+  </template>
+
+  <script>
+    /**
+     * `tags-input`
+     * Input element for defining one or more tags.
+     *
+     * @customElement
+     * @polymer
+     * @demo demo/index.html
+     */
+    class TagsInput extends Polymer.GestureEventListeners(Polymer.Element) {
+      static get is() { return 'tags-input'; }
+      static get properties() {
+        return {
+          /**
+          * The current set of tags.
+          */
+          tags: {
+            type: Array,
+            value() { return [] },
+            notify: true
+          },
+          /**
+          * The character to use as a separator. Uses [event.key](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key)
+          * instead of event.keyCode.
+          * The default behavior is to use whitespace characters and escape.
+          */
+          separator: String,
+
+          /**
+          * Whether tags can be added and removed.
+          */
+          noEdit: {
+            type: Boolean,
+            value: false
+          },
+          /**
+          * Bound to the input's `autofocus` attribute.
+          */
+          autofocus: {
+            type: Boolean,
+            value: false
+          },
+          /**
+          * Whether tags must be unique.
+          */
+          allowDuplicates: {
+            type: Boolean,
+            value: false
+          },
+          /**
+          * The paper-input-container's label when there are no tags.
+          */
+          label: String,
+          /**
+          * The paper-input-container's label.
+          */
+          tagLabel: String,
+          /**
+          * The minimum length of a tag.
+          */
+          minLength: Number,
+          /**
+          * The maximum length of a tag.
+          */
+          maxLength: Number,
+          _label: {
+            type: String,
+            computed: '_computeLabel(label, tagLabel, tags.length)'
+          }
+        };
+      }
+
+      get value() {
+        return this.tags;
+      }
+
+      /** Copy the Polymer 1.x fire implementation. */
+      _fire(name, data, options = {}) {
+        options.detail = data;
+        if (options.bubbles === undefined) options.bubbles = true;
+        if (options.composed === undefined) options.composed = true;
+        this.dispatchEvent(new CustomEvent(name, options));
+      }
+
+      /**
+       * Add a tag to the internal array.
+       */
+      add(tag) {
+        if (tag
+            && (!this.minLength || tag.length >= this.minLength)
+            && (!this.maxLength || tag.length <= this.maxLength)
+            && (this.allowDuplicates || !this.tags.includes(tag))) {
+          this.push('tags', tag);
+          this._fire('tag-added', tag);
+          return true;
+        } else {
+          if (this.tag == tag) this.$.input.invalid = true;
+          this._fire('tag-denied', tag);
+          return false;
+        }
+      }
+
+      /**
+       * Remove a tag by index.
+       */
+      remove(index) {
+        var removed = this.splice('tags', index, 1);
+        if (removed.length > 0) this._fire('tag-removed', removed[0]);
+      }
+
+      /**
+       * Insert tag at index.
+       */
+      insert(index, tag) {
+        if (tag
+            && (!this.minLength || tag.length >= this.minLength)
+            && (!this.maxLength || tag.length <= this.maxLength)
+            && (this.allowDuplicates || !this.tags.includes(tag))) {
+          this.splice('tags', index, 0, tag);
+          this._fire('tag-inserted', tag);
+          return true;
+        } else {
+          if (this.tag == tag) this.$.input.invalid = true;
+          this._fire('tag-denied', tag);
+          return false;
+        }
+      }
+
+      /**
+       * Give focus to the underlying input.
+       */
+      focus() {
+        this.$.input.$.input.focus();
+      }
+
+      _removeTag(e) {
+        // console.log('onremove', e, tag);
+        this.remove(e.model.index);
+        this.focus();
+      }
+
+
+      _onRemoveKeydown(e) {
+        if (e.keyCode === 13 || e.keyCode === 32) {  // enter or space
+          this._removeTag(e);
+        }
+      }
+
+      _onInputKeydown (e) {
+        // console.log('keydown:', e.key, e.keyCode, this._separatorKeyCode);
+        this.$.input.invalid = false;
+        if ((this.separator && this.separator === e.key)
+          || (!this.separator
+            && (e.keyCode == 9   || e.key == 'Tab'          // tab
+              || e.keyCode == 13 || e.key == 'Enter'        // enter
+              || e.keyCode == 19 || e.key == 'Pause'        // pause/break
+              || e.keyCode == 27 || e.key == 'Escape'       // esc
+              || e.keyCode == 32 || e.key == ' '))) {       // space
+          var tag = this.tag.trim();
+          if (tag) {
+            e.preventDefault();
+            // console.log('onadd', e, tag);
+            this.tag = this.add(tag) ? '' : tag.trim();
+            this.focus();
+          }
+        }
+      }
+
+      _computeLabel(label, tagLabel, len) {
+        return len == 0 ? (label || tagLabel) : tagLabel;
+      }
+
+
+      /**
+       * Triggered when a tag was added.
+       * @event tag-added
+       * @param {tag} string The tag that was added.
+       */
+
+      /**
+       * Triggered when adding or inserting a duplicate tag fails because `allowDuplicates` is false.
+       * @event tag-denied
+       * @param {tag} string The tag that was denied.
+       */
+
+      /**
+       * Triggered when a tag was inserted.
+       * @event tag-inserted
+       * @param {tag} string The tag that was inserted.
+       */
+
+       /**
+        * Triggered when a tag was removed.
+        * @event tag-removed
+        * @param {tag} string The tag that was removed.
+        */
+    }
+    customElements.define(TagsInput.is, TagsInput);
+  </script>
+</dom-module>

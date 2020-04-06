@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>vaadin-combo basic tests</title>
+  <script src="../../web-component-tester/browser.js"></script>
+
+  <link rel="import" href="common.html">
+  <script src="common.js"></script>
+</head>
+
+<body>
+
+  <test-fixture id="combobox">
+    <template>
+      <vaadin-combo-box></vaadin-combo-box>
+    </template>
+  </test-fixture>
+
+
+  <script>
+    describe('scrolling', function() {
+
+      var combobox;
+
+      beforeEach(function() {
+        combobox = fixture('combobox');
+      });
+
+      describeIf(touchDevice, 'touch devices', function() {
+        it('should blur input on scroll', function() {
+          combobox.open();
+
+          combobox.$.overlay.fire('down');
+          var focusedInput = Polymer.dom(combobox.root).querySelector('input:focus');
+
+          expect(focusedInput).not.to.equal(combobox.inputElement);
+        });
+      });
+
+      describeIf(ios, 'iOS', function() {
+        it('should have momentum scrolling enabled', function() {
+          combobox.open();
+
+          var scroller = combobox.$.overlay._unwrapIfNeeded(combobox.$.overlay.$.scroller);
+          expect(getComputedStyle(scroller).WebkitOverflowScrolling).to.equal('touch');
+        });
+      });
+
+      describeIf(/Trident/.test(navigator.userAgent), 'IE11', function() {
+        it('should have unselectable="on" for the scroller', function() {
+          var scroller = combobox.$.overlay.$.scroller;
+          expect(scroller.getAttribute('unselectable')).to.equal('on');
+        });
+      });
+
+      describe('scrolling position', function() {
+        beforeEach(function() {
+          var items = [];
+
+          for (var i = 0; i < 100; i++) {
+            items.push(i.toString());
+          }
+
+          combobox.items = items;
+        });
+
+        it('should be zero when no items are selected', function() {
+          combobox.open();
+
+          expect(combobox.$.overlay.$.scroller.scrollTop).to.equal(0);
+        });
+
+        it('should be zero when the first item is selected', function() {
+          combobox.value = combobox.items[0];
+          combobox.open();
+
+          expect(combobox.$.overlay.$.scroller.scrollTop).to.equal(0);
+        });
+
+        function expectSelectedItemPositionToBeVisible() {
+          var selectedItem = Polymer.dom(combobox.$.overlay.$.selector).querySelector('[selected]');
+          expect(selectedItem).to.be.ok;
+
+          var selectedItemRect = selectedItem.getBoundingClientRect();
+          var overlayRect = combobox.$.overlay.getBoundingClientRect();
+          expect(selectedItemRect.left).to.be.at.least(overlayRect.left - 1);
+          expect(selectedItemRect.top).to.be.at.least(overlayRect.top - 1);
+          expect(selectedItemRect.right).to.be.at.most(overlayRect.right + 1);
+          expect(selectedItemRect.bottom).to.be.at.most(overlayRect.bottom + 1);
+        }
+
+        it('should make selected item visible after open', function(done) {
+          combobox.value = combobox.items[50];
+          combobox.open();
+
+          combobox.async(function() {
+            expectSelectedItemPositionToBeVisible();
+            done();
+          }, 1);
+        });
+
+        it('should make selected item visible after reopen', function(done) {
+          combobox.open();
+
+          combobox.value = combobox.items[50];
+          combobox.close();
+          combobox.open();
+
+          combobox.async(function() {
+            expectSelectedItemPositionToBeVisible();
+            done();
+          }, 1);
+        });
+      });
+    });
+  </script>
+
+</body>
+
+</html>

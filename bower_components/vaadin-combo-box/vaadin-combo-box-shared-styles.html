@@ -1,0 +1,73 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<dom-module id="vaadin-combo-box-shared-styles">
+  <template>
+    <style>
+      :host([opened]) {
+        pointer-events: auto;
+      }
+
+      .rotate-on-open,
+      :host ::slotted(.rotate-on-open) {
+        transition: all 0.2s !important;
+      }
+
+      /*
+       * Hacky selector to apply when using P2 Shady.
+       * Invalid when using P2 Shadow so need to be kept in a separate block.
+       */
+      :host ::slotted(paper-input-container) .rotate-on-open {
+        transition: all 0.2s !important;
+      }
+
+      :host([opened]) .rotate-on-open,
+      :host([opened]) ::slotted(.rotate-on-open) {
+        -webkit-transform: rotate(180deg);
+        transform: rotate(180deg);
+      }
+
+      /* P2 Shady */
+      :host([opened]) ::slotted(paper-input-container) .rotate-on-open {
+        -webkit-transform: rotate(180deg);
+        transform: rotate(180deg);
+      }
+
+      paper-icon-button.small,
+      :host ::slotted(paper-icon-button.small) {
+        padding: 6px !important;
+      }
+
+      /* P2 Shady */
+      :host ::slotted(paper-input-container) paper-icon-button.small {
+        padding: 6px !important;
+      }
+
+      :host(:not([has-value])) ::slotted([slot="clear-button"]),
+      :host([readonly]) ::slotted([slot="clear-button"]),
+      :host([disabled]) ::slotted([slot="clear-button"]),
+      :host([readonly]) ::slotted([slot="toggle-button"]),
+      :host([disabled]) ::slotted([slot="toggle-button"]),
+      :host(:not([has-value])) .clear-button,
+      :host([readonly]) .clear-button,
+      :host([disabled]) .clear-button,
+      :host([readonly]) .toggle-button,
+      :host([disabled]) .toggle-button {
+        display: none;
+      }
+
+      /* P2 Shady */
+      :host(:not([has-value])) ::slotted(paper-input-container) [slot="clear-button"],
+      :host([readonly]) ::slotted(paper-input-container) [slot="clear-button"],
+      :host([readonly]) ::slotted(paper-input-container) [slot="toggle-button"],
+      :host([disabled]) ::slotted(paper-input-container) [slot="clear-button"],
+      :host([disabled]) ::slotted(paper-input-container) [slot="toggle-button"] {
+        display: none;
+      }
+    </style>
+  </template>
+  <script>
+    Polymer({
+      is: 'vaadin-combo-box-shared-styles'
+    });
+  </script>
+</dom-module>

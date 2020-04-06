@@ -1,0 +1,142 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../polymer/lib/mixins/gesture-event-listeners.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../iron-input/iron-input.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../vaadin-combo-box/vaadin-combo-box-light.html">
+<link rel="import" href="../iron-input/iron-input.html">
+<link rel="import" href="tag-iconset.html">
+<link rel="import" href="tags-input-styles.html">
+<link rel="import" href="tags-input.html">
+
+<dom-module id="tags-input-list">
+  <template>
+    <custom-style>
+      <style include="tags-input-styles">
+
+      </style>
+    </custom-style>
+    <div class="container">
+      <div class="tags">
+        <template is="dom-repeat" items="[[tags]]" as="tag">
+          <div class="tag">
+            <span>[[_getTagName(tag)]]</span>
+            <iron-icon
+              tabindex="0"
+              hidden$="[[noEdit]]"
+              icon="tag:remove"
+              on-keydown="_onRemoveKeydown"
+              on-tap="_removeTag">
+            </iron-icon>
+          </div>
+        </template>
+      </div>
+      <vaadin-combo-box-light id="combo" item-label-path="[[itemLabel]]" item-value-path="[[itemValue]]" items="[[options]]"
+      selected-item="{{selectedItem}}">
+        <div class="input-container">
+          <paper-input
+            id="input"
+            hidden$="[[noEdit]]"
+            no-label-float
+            label="[[_label]]"
+            autofocus$="[[autofocus]]"
+            value="{{tag}}">
+          </paper-input>
+        </div>
+      </vaadin-combo-box-light>
+    </div>
+  </template>
+
+  <script>
+    /**
+     * `tags-input-list`
+     * Input element for defining one or more tags.
+     *
+     * @customElement
+     * @polymer
+     * @demo demo/index.html
+     */
+    class TagsInputList extends TagsInput {
+      static get is() { return 'tags-input-list'; }
+      static get properties() {
+        return {
+          /**
+          * List of options to select from
+          */
+          options: {
+            type: Array,
+            value: []
+          },
+          /**
+          * Selected item
+          */
+          selectedItem: {
+            type: Object,
+            observer: '_selectedObserver',
+          },
+          /**
+          * Name of options property used as value
+          */
+          itemValue: {
+            type: String,
+            value: 'value',
+          },
+          /**
+          * Name of options property used as label
+          */
+          itemLabel: {
+            type: String,
+            value: 'label',
+          },
+        };
+      }
+
+      /**
+       * Add a tag to the internal array.
+       */
+      add(tag) {
+        this.push('tags', tag);
+        this._fire('tag-added', tag);
+      }
+
+      /**
+       * Remove a tag from the tags array, and returns it to the options array
+       */
+      _removeTag(e) {
+        const { index } = e.model;
+        const currObject = this.tags[index];
+        this.remove(index);
+        this.push('options', currObject);
+        this.focus();
+      }
+
+      /**
+      * Observer when item is selected
+      */
+      _selectedObserver(newValue) {
+        if(newValue) {
+          // Get the selected value
+          const value = this.$.combo._getItemValue(this.selectedItem);
+          // Add name to array
+          this.add(newValue);
+          // Remove seleted item, to reset input
+          this.selectedItem = null;
+          // Reset input value
+          this.tag = '';
+          // Remove selected option from array
+          this.options = this.options.filter(n => n.value != value)
+        }
+      }
+
+      /**
+      * Print tag name with given label name
+      */
+      _getTagName(tag) {
+        const { itemLabel } = this;
+        return tag[itemLabel];
+      }
+    }
+    customElements.define(TagsInputList.is, TagsInputList);
+  </script>
+</dom-module>

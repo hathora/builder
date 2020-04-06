@@ -1,0 +1,32 @@
+language: node_js
+sudo: 'false'
+before_script:
+  - npm install -g polymer-cli
+  - polymer install --variants
+  - git checkout package-lock.json
+  - >-
+    npm run update-types && git diff --exit-code || (echo -e
+    '\n\033[31mERROR:\033[0m Typings are stale. Please run "npm run
+    update-types".' && false)
+  - >-
+    npm run format && git diff --exit-code || (echo -e '\n\033[31mERROR:\033[0m
+    Project is not formatted. Please run "npm run format".' && false)
+env:
+  global:
+    - secure: >-
+        Hz8Mve/MIM0ukD+WdwzvDCtPT9EVVA2BL3q+lzfwHHIOAKb5Jt7i8oJuEpI6ivILGf3c3stiBmw4OOczVVZUmDGjiXGh2cKnCMBW5HwH25nudZFvZZMndNJNvjEHgOaLthSO7WFc4n2Uf169FpPU3jtKX1lRMdwzxXD6+urXOEBSMNoJpJgL/UQQous0y4ziHhJXXdM9kIiclE3mN5tNh3zLsbUrZjKOtWVssgy1FpCg8mpkKlAGnoEpt1tA2GXjQQDYi5ZjU95gyUErMGgq6WZP+Rdo7mVQHVxh7hX/8oWKevwp/CZl2aXW2/Bu4qb4QtX4K9rFTD2/EyBzmfEmkUc9irOISY2FZDNxQZ+mj3Iuv4hgyOz+eK7wtdFOLZ4bhBqw88Koli8FVTbnu74OLrT3395s5Go00hz6EKebnBJzUZluEK+l+h0i/NnucsKwP/bnfPKtjw0Xr/8KTXHp0bHF9wLJDMF5pAJVVvewELFN7WCNmRPW6rnsUdmL5OIT1As2Js1kg0eyfq7NB2cjWTCaH6RUto2XfCcSTC2k2SWizuWAFSEwAF17yBSd/DcpdpwnKco19owFI1ddEzpPkVaUmvsfbJpp+5CKKXMdO4eAtUtX0/MQEz84UYqa4pBxUibo25VAW5OdfJs2qPLwS7T/xyDlJ0RuFeBgf8kN2Do=
+    - secure: >-
+        WJY2j5jMCtOlChNewlmIVHEnnRE6/TgBlosAXkyL35l6/SX3HmGXa1JeDWGp/ZjvfacYv7JOt+xWYaGjIZveCMneP36uIPxfEydetQ0HiQFf4b/AFjmbgIPboMjeScU/I3A6KmcvqH3J4oVSSh5oSd/neP2HQ4/iw9J7SdI4sZ9AmKKVhyxhrQN4l0+8GbEV+a00lpqjSm9EnozSOaC1eikiZj4z65tfCDERAnsndspJfwdLjs4ojzTESflnVsZcL7Xhuaq4QXJTwejfqHG4dCQUyQiJ+7NUsERoWS6qt/V0Swtfz7b0nGBxjaB42Sdnc+jwE+xtwkZVepL8FIoESRTDSShJUidbAFLlwWxbeNDe1PhnnGxDQMRIx9dWFV6zg4ulZ/BxbqaEMmglRgeOyjftB39VSwHmiKAmmVrwhV8wp20b3lBTC60nJyTSToD9uKzATf2B0LB4lhP1vDHtQ/TUT4mQ2m8VetmYUoRWyShJQBc4jmz3q3DiOYACWDp8BnmTyaNuinLb8Ka6mzp0UnH2E6/gZMvRCJvsF/v0gnBqHCk9RHCCwZNCA6bbzNe9E5sUUlH5arC9OF9gp7Oq2kdJ/V7aDvXMRTiweFgjOzYg9k4eKl6J3Cf3hVuorp5Fmy2YTE4C4NJmKn9KrPXInL/89goJdCzNvmFJxqJvBnE=
+node_js: '9'
+addons:
+  firefox: latest
+  chrome: stable
+script:
+  - xvfb-run polymer test
+  - >-
+    if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then polymer test -s 'default';
+    fi
+dist: trusty
+cache:
+  directories:
+    - node_modules

@@ -2,6 +2,9 @@
   <head>
     <link rel=stylesheet type="text/css" href="./styles.css">
     <script src="./app.ts"></script>
+    <link rel="import" href="../../bower_components/tags-input/tags-input.html"></script>
+    <link rel="import" href="../../bower_components/tags-input/tags-input-list.html"></script>
+    <script src="../../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
   </head>
   <body>
     <div class="container">
@@ -13,13 +16,18 @@
           {{#each (getArgsInfo this)}}
           {{#if (ne type "enum")}}
           <label for="{{@../key}}_{{name}}">{{name}}:</label>
-          <input type="text" id="{{@../key}}_{{name}}">
+          <tags-input id="{{@../key}}_{{name}}" autofocus allow-duplicates label="Tags" tag-label="Add tag"></tags-input>
           <br>
           {{else}}
-          <div>{{name}}: {{multi}} enum({{values}})</div>
+          <div>{{name}}: {{multi}}</div>
+          <tags-input-list id="{{@../key}}_{{name}}" autofocus allow-duplicates label="Tags" tag-label="Add tag" options='[
+          {{#each values}}
+          {"value": "{{@index}}", "label": "{{this}}"}{{#if (ne @last true)}},{{/if}}
+          {{/each}}
+          ]'></tags-input-list>
           {{/if}}
           {{/each}}
-          <button type="button" class="submit-button" onClick="client.{{@key}}()"><span class="button-text">Submit</span></button>
+          <button type="button" class="submit-button" onClick='submitToClient("{{@key}}", [{{#each (getArgsInfo this)}}"{{@../key}}_{{name}}"{{#if (ne @last true)}},{{/if}}{{/each}}])'><span class="button-text">Submit</span></button>
         </div>
         {{/if}}
         {{/each}}
@@ -28,5 +36,17 @@
         <pre id="state"></pre>
       </div>
     </div>
+    <script>
+      function submitToClient(callback, paramElementIds) {
+        const params = paramElementIds.map(p => {
+          formValue = document.getElementById(p).value;
+          if (Array.isArray(formValue)) {
+            formValue = formValue.map(v => v.value || v);
+          }
+          return formValue;
+        })
+        client[callback](...params);
+      }
+    </script>
   </body>
 </html>
