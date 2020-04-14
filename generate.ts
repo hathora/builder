@@ -2,8 +2,8 @@ import { safeLoad } from "js-yaml";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { compile, registerHelper } from "handlebars";
 
-registerHelper("ne", (a, b) => a !== b);
 registerHelper("eq", (a, b) => a === b);
+registerHelper("ne", (a, b) => a !== b);
 registerHelper("isArray", Array.isArray);
 registerHelper("isObject", (x) => typeof x === "object");
 registerHelper("join", (params, joinStr, prepend, postpend, options) => {
@@ -25,8 +25,7 @@ function getType(type: string | string[]): { type: string; values?: string[]; ar
   if (typeof type === "string") {
     if (type.endsWith("[]")) {
       return { type: "array", args: getType(type.substring(0, type.length - 2)) };
-    }
-    if (type === "string" || type === "number" || type === "boolean") {
+    } else if (type === "string" || type === "number" || type === "boolean") {
       return { type };
     } else {
       return getType(doc.types[type]);
