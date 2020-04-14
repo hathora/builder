@@ -14,6 +14,7 @@
         <h1 class="heading">{{@key}}</h1>
         {{#each (getArgsInfo this)}}
         <label for="{{@../key}}_{{name}}">{{name}}:</label>
+        {{#if (eq base "primitive")}}
         {{#if (eq type "enum")}}
         <select id="{{@../key}}_{{name}}">
           {{#each values}}
@@ -30,10 +31,11 @@
         {{else if (eq type "string")}}
         <input type="text" id="{{@../key}}_{{name}}">
         <br>
-        {{else if (eq type "array")}}
-        <div>Array {{#each args}} {{@key}}={{this}} {{/each}}</div>
         {{else}}
         <div>{{type}} - not implemented</div>
+        {{/if}}
+        {{else}}
+        <div>Array type={{type}} values={{values}}</div>
         {{/if}}
         {{/each}}
         <button type="button" class="submit-button"

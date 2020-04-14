@@ -18,22 +18,24 @@ registerHelper("join", (params, joinStr, prepend, postpend, options) => {
   }
 });
 registerHelper("getArgsInfo", (args: { [name: string]: string }) => {
-  return Object.entries(args).map(([name, type]) => ({ name, ...getType(type) }));
+  return Object.entries(args).map(([name, type]) => {
+    if (type.endsWith("[]")) {
+      return { ...resolveType(type.substring(0, type.length - 2)), name, base: "array" };
+    } else {
+      return { ...resolveType(type), name, base: "primitive" };
+    }
+  });
 });
 
-function getType(type: string | string[]): { type: string; values?: string[]; args?: any } {
-  if (typeof type === "string") {
-    if (type.endsWith("[]")) {
-      return { type: "array", args: getType(type.substring(0, type.length - 2)) };
-    } else if (type === "string" || type === "number" || type === "boolean") {
-      return { type };
-    } else {
-      return getType(doc.types[type]);
-    }
-  } else if (Array.isArray(type)) {
-    return { type: "enum", values: type };
+function resolveType(type: string): { type: string; values?: string[] } {
+  if (type === "string" || type === "number" || type === "boolean") {
+    return { type };
+  }
+  const resolvedType = doc.types[type];
+  if (Array.isArray(resolvedType)) {
+    return { type: "enum", values: resolvedType };
   } else {
-    throw new Error(typeof type + " not supported");
+    return { type: resolvedType };
   }
 }
 
