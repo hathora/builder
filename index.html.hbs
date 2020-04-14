@@ -1,40 +1,56 @@
 <html>
-  <head>
-    <link rel=stylesheet type="text/css" href="./styles.css">
-    <script src="./app.ts"></script>
-  </head>
-  <body>
-    <div class="container">
-      <div class="forms-container" id="forms">
-        {{#each methods}}
-        {{#if (ne @key ../initialize)}}
-        <div class="form" id="{{@key}}">
-          <h1 class="heading">{{@key}}</h1>
-          {{#each (getArgsInfo this)}}
-          {{#if (ne type "enum")}}
-          <label for="{{@../key}}_{{name}}">{{name}}:</label>
-          <input type="text" id="{{@../key}}_{{name}}">
-          <br>
-          {{else}}
-          <label for="{{@../key}}_{{name}}">{{name}}:</label>
-          <select id="{{@../key}}_{{name}}">
+
+<head>
+  <link rel=stylesheet type="text/css" href="./styles.css">
+  <script src="./app.ts"></script>
+</head>
+
+<body>
+  <div class="container">
+    <div class="forms-container" id="forms">
+      {{#each methods}}
+      {{#if (ne @key ../initialize)}}
+      <div class="form" id="{{@key}}">
+        <h1 class="heading">{{@key}}</h1>
+        {{#each (getArgsInfo this)}}
+        <label for="{{@../key}}_{{name}}">{{name}}:</label>
+        {{#if (eq type "enum")}}
+        <select id="{{@../key}}_{{name}}">
           {{#each values}}
-            <option>{{this}}</option>
+          <option>{{this}}</option>
           {{/each}}
-          </select>
-          <br>
-          {{/if}}
-          {{/each}}
-          <button type="button" class="submit-button" onClick="sendData('{{@key}}'{{#join this ", " true false}}'{{name}}'{{/join}})">
-            <span class="button-text">Submit</span>
-          </button>
-        </div>
+        </select>
+        <br>
+        {{else if (eq type "number")}}
+        <input type="number" id="{{@../key}}_{{name}}">
+        <br>
+        {{else if (eq type "boolean")}}
+        <input type="checkbox" id="{{@../key}}_{{name}}">
+        <br>
+        {{else if (eq type "string")}}
+
+        <input type="text" id="{{@../key}}_{{name}}">
+        <br>
+        {{else if (eq type "array")}}
+        <div>Not implemented</div>
+        <br>
+        {{else}}
+        <div>Not implemented</div>
+        <br>
         {{/if}}
         {{/each}}
+        <button type="button" class="submit-button"
+          onClick="sendData('{{@key}}'{{#join this ", " true false}}'{{name}}'{{/join}})">
+          <span class="button-text">Submit</span>
+        </button>
       </div>
-      <div class="json-state">
-        <pre id="state"></pre>
-      </div>
+      {{/if}}
+      {{/each}}
     </div>
-  </body>
+    <div class="json-state">
+      <pre id="state"></pre>
+    </div>
+  </div>
+</body>
+
 </html>
