@@ -28,15 +28,12 @@
         <input type="checkbox" id="{{@../key}}_{{name}}">
         <br>
         {{else if (eq type "string")}}
-
         <input type="text" id="{{@../key}}_{{name}}">
         <br>
         {{else if (eq type "array")}}
-        <div>Not implemented</div>
-        <br>
+        <div>Array {{#each args}} {{@key}}={{this}} {{/each}}</div>
         {{else}}
-        <div>Not implemented</div>
-        <br>
+        <div>{{type}} - not implemented</div>
         {{/if}}
         {{/each}}
         <button type="button" class="submit-button"
