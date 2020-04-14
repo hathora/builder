@@ -16,10 +16,18 @@
           <input type="text" id="{{@../key}}_{{name}}">
           <br>
           {{else}}
-          <div>{{name}}: {{multi}} enum({{values}})</div>
+          <label for="{{@../key}}_{{name}}">{{name}}:</label>
+          <select id="{{@../key}}_{{name}}">
+          {{#each values}}
+            <option>{{this}}</option>
+          {{/each}}
+          </select>
+          <br>
           {{/if}}
           {{/each}}
-          <button type="button" class="submit-button" onClick="client.{{@key}}()"><span class="button-text">Submit</span></button>
+          <button type="button" class="submit-button" onClick="sendData('{{@key}}'{{#join this ", " true false}}'{{name}}'{{/join}})">
+            <span class="button-text">Submit</span>
+          </button>
         </div>
         {{/if}}
         {{/each}}
