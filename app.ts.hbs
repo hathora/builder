@@ -4,20 +4,20 @@ function connect(userId: string, stateId: string) {
   return LsotClient.connect(
     userId,
     stateId,
-    state => (document.getElementById("state")!.innerHTML = JSON.stringify(state, null, 2))
+    (state) => (document.getElementById("state")!.innerHTML = JSON.stringify(state, null, 2))
   );
 }
 
 const name = prompt("Enter username")!;
 LsotClient.registerUser(name)
-  .then(userId => {
+  .then((userId) => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has("stateId")) {
       return connect(userId, urlParams.get("stateId")!);
     } else {
-      return LsotClient.createState(userId).then(stateId => connect(userId, stateId));
+      return LsotClient.createState(userId).then((stateId) => connect(userId, stateId));
     }
   })
-  .then(client => {
+  .then((client) => {
     (window as any).client = client;
   });

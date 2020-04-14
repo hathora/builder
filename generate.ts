@@ -4,10 +4,10 @@ import { compile, registerHelper } from "handlebars";
 
 registerHelper("ne", (a, b) => a !== b);
 registerHelper("isArray", Array.isArray);
-registerHelper("isObject", x => typeof x === "object");
+registerHelper("isObject", (x) => typeof x === "object");
 registerHelper("join", (params, joinStr, prepend, postpend, options) => {
   if (Array.isArray(params)) {
-    const paramsStr = params.map(name => options.fn({ name })).join(joinStr);
+    const paramsStr = params.map((name) => options.fn({ name })).join(joinStr);
     return (prepend && paramsStr.length ? joinStr : "") + paramsStr;
   } else {
     const paramsStr = Object.entries(params || {})
