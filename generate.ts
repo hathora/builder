@@ -20,22 +20,21 @@ registerHelper("join", (params, joinStr, prepend, postpend, options) => {
 registerHelper("getArgsInfo", (args: { [name: string]: string }) => {
   return Object.entries(args).map(([name, type]) => {
     if (type.endsWith("[]")) {
-      return { ...resolveType(type.substring(0, type.length - 2)), name, base: "array" };
+      return { name, base: "array", ...resolveType(type.substring(0, type.length - 2)) };
     } else {
-      return { ...resolveType(type), name, base: "primitive" };
+      return { name, base: "primitive", ...resolveType(type) };
     }
   });
 });
 
 function resolveType(type: string): { type: string; values?: string[] } {
-  if (type === "string" || type === "number" || type === "boolean") {
-    return { type };
-  }
-  const resolvedType = doc.types[type];
-  if (Array.isArray(resolvedType)) {
+  const resolvedType = type in doc.types ? doc.types[type] : type;
+  if (resolvedType === "string" || resolvedType === "number" || resolvedType === "boolean") {
+    return { type: resolvedType };
+  } else if (Array.isArray(resolvedType)) {
     return { type: "enum", values: resolvedType };
   } else {
-    return { type: resolvedType };
+    return { type: "unknown" };
   }
 }
 
