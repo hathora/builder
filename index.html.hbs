@@ -18,7 +18,7 @@
         {{#if (eq type "enum")}}
         <select id="{{@../key}}_{{name}}">
           {{#each values}}
-          <option>{{this}}</option>
+          <option value="{{value}}">{{label}}</option>
           {{/each}}
         </select>
         <br>
@@ -35,7 +35,7 @@
         <div>{{type}} - not implemented</div>
         {{/if}}
         {{else}}
-        <div>Array type={{type}} {{#if values}}values={{values}}{{/if}}</div>
+        <div>Array type={{type}} {{#if values}}values={{#each values}}{{label}},{{/each}}{{/if}}</div>
         {{/if}}
         {{/each}}
         <button type="button" class="submit-button"

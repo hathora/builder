@@ -27,12 +27,12 @@ registerHelper("getArgsInfo", (args: { [name: string]: string }) => {
   });
 });
 
-function resolveType(type: string): { type: string; values?: string[] } {
+function resolveType(type: string): { type: string; values?: { label: string; value: number }[] } {
   const resolvedType = type in doc.types ? doc.types[type] : type;
   if (resolvedType === "string" || resolvedType === "number" || resolvedType === "boolean") {
     return { type: resolvedType };
   } else if (Array.isArray(resolvedType)) {
-    return { type: "enum", values: resolvedType };
+    return { type: "enum", values: resolvedType.map((label, value) => ({ label, value })) };
   } else {
     return { type: "unknown" };
   }
