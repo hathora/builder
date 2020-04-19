@@ -8,14 +8,32 @@ function connect(userId: string, stateId: string) {
   );
 }
 
+function setMetadata(userName: string, stateId: string) {
+  const urlParams = new URLSearchParams();
+  urlParams.set("userName", userName);
+  urlParams.set("stateId", stateId);
+  window.history.replaceState({}, '', window.location.pathname + "?" + urlParams.toString());
+}
+
 const name = prompt("Enter username")!;
 LsotClient.registerUser(name)
   .then((userId) => {
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has("stateId")) {
-      return connect(userId, urlParams.get("stateId")!);
+    let stateId;
+    if (urlParams.get("stateId") == null) {
+      stateId = prompt("Enter stateId (or enter if creating new)")!;
     } else {
-      return LsotClient.createState(userId).then((stateId) => connect(userId, stateId));
+      stateId =  urlParams.get("stateId");
+    }
+    if (stateId != null && stateId.length > 0) {
+        setMetadata(userId, stateId);
+      return connect(userId, stateId);
+    } else {
+      return LsotClient.createState(userId).then((stateId) => {
+        connect(userId, stateId);
+        console.log("hello world");
+        setMetadata(userId, stateId);
+      });
     }
   })
   .then((client) => {
