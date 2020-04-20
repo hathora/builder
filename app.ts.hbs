@@ -53,3 +53,17 @@ class NumericInput extends LitElement {
     this.value = new Number(target.value).valueOf();
   };
 }
+
+@customElement("boolean-input")
+class BooleanInput extends LitElement {
+  @property({ type: Boolean }) value: boolean | undefined;
+
+  render() {
+    return html`<input type="checkbox" @change=${this.onChange} />`;
+  }
+
+  private onChange = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    this.value = target.checked;
+  };
+}
