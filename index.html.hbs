@@ -2,6 +2,8 @@
 
 <head>
   <link rel=stylesheet type="text/css" href="./styles.css">
+  <link rel=stylesheet type="text/css" href="./styles.css">
+  <script type="module" src="../components/numericInput.ts"></script>
   <script src="./app.ts"></script>
 </head>
 
@@ -23,7 +25,7 @@
         </select>
         <br>
         {{else if (eq type "number")}}
-        <input type="number" id="{{@../key}}_{{name}}">
+        <numeric-input id="{{@../key}}_{{name}}" />
         <br>
         {{else if (eq type "boolean")}}
         <input type="checkbox" id="{{@../key}}_{{name}}">

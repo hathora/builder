@@ -88,6 +88,8 @@ methods:
   voteInQuest:
     questId: QuestId
     vote: Vote
+  happy:
+    something: number
 
 userState: PlayerState
 userData: PlayerData

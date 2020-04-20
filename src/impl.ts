@@ -196,6 +196,13 @@ function getKnownRoles(
 }
 
 export class Impl {
+  happy(
+    state: InternalState,
+    playerData: PlayerData,
+    something: QuestId,
+  ) {
+    // nothing;
+  }
   createGame(playerData: PlayerData): InternalState {
     return {
       creator: playerData.playerName,
