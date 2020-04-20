@@ -10,9 +10,9 @@ function connect(userId: string, stateId: string) {
 
 function setMetadata(userName: string, stateId: string) {
   const urlParams = new URLSearchParams();
-  urlParams.set("userName", userName);
   urlParams.set("stateId", stateId);
-  window.history.pushState({}, "", window.location.pathname + "?" + urlParams.toString());
+  urlParams.set("userName", userName);
+  history.pushState({}, "", window.location.pathname + "?" + urlParams.toString());
 }
 
 const name = prompt("Enter username")!;
