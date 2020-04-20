@@ -2,6 +2,7 @@
   "compilerOptions": {
     "experimentalDecorators": true,
     "esModuleInterop": true,
+    "module": "commonjs",
     "strict": true,
     "target": "es6"
   }
