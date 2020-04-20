@@ -23,7 +23,7 @@
         </select>
         <br>
         {{else if (eq type "number")}}
-        <input type="number" id="{{@../key}}_{{name}}">
+        <numeric-input type="number" id="{{@../key}}_{{name}}"></numeric-input>
         <br>
         {{else if (eq type "boolean")}}
         <input type="checkbox" id="{{@../key}}_{{name}}">
