@@ -261,18 +261,19 @@ export class Impl {
     quest.results.push({ player: player.name, vote });
   }
   getUserState(state: InternalState, playerData: PlayerData): PlayerState {
-    const player = state.players.find(p => p.name === playerData.playerName)!;
-    const quests = state.quests.map(quest => sanitizeQuest(quest, player.name));
+    const { playerName } = playerData;
+    const player = state.players.find(p => p.name === playerName);
+    const quests = state.quests.map(quest => sanitizeQuest(quest, playerName));
     return {
       creator: state.creator,
       playersPerQuest: quests.map(q => q.size),
       rolesInfo: ROLES_INFO,
       players: state.players.map(p => p.name),
       roles: state.players.map(p => p.role!).filter(r => !!r),
-      playerName: player.name,
-      playerRole: player.role,
+      playerName: playerData.playerName,
+      playerRole: player && player.role,
       knownRoles: getKnownRoles(
-        player.role,
+        player && player.role,
         state.players.map(p => ({ player: p.name, role: p.role! }))
       ),
       currentQuest: quests[quests.length - 1],

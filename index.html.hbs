@@ -1,8 +1,55 @@
 <html>
-  <head>
-    <script src="./app.ts"></script>
-  </head>
-  <body>
-    <pre id="state"></pre>
-  </body>
+
+<head>
+  <link rel=stylesheet type="text/css" href="./styles.css">
+  <script src="./app.ts"></script>
+</head>
+
+<body>
+  <div class="container">
+    <div class="forms-container" id="forms">
+      {{#each methods}}
+      {{#if (ne @key ../initialize)}}
+      <div class="form" id="{{@key}}">
+        <h1 class="heading">{{@key}}</h1>
+        {{#each (getArgsInfo this)}}
+        <label for="{{@../key}}_{{name}}">{{name}}:</label>
+        {{#if (eq base "primitive")}}
+        {{#if (eq type "enum")}}
+        <select id="{{@../key}}_{{name}}">
+          {{#each values}}
+          <option value="{{value}}">{{label}}</option>
+          {{/each}}
+        </select>
+        <br>
+        {{else if (eq type "number")}}
+        <numeric-input id="{{@../key}}_{{name}}"></numeric-input>
+        <br>
+        {{else if (eq type "boolean")}}
+        <boolean-input id="{{@../key}}_{{name}}"></boolean-input>
+        <br>
+        {{else if (eq type "string")}}
+        <input type="text" id="{{@../key}}_{{name}}">
+        <br>
+        {{else}}
+        <div>{{type}} - not implemented</div>
+        {{/if}}
+        {{else}}
+        <div>Array type={{type}} {{#if values}}values={{#each values}}{{label}},{{/each}}{{/if}}</div>
+        {{/if}}
+        {{/each}}
+        <button type="button" class="submit-button"
+          onClick="sendData('{{@key}}'{{#join this ", " true false}}'{{name}}'{{/join}})">
+          <span class="button-text">Submit</span>
+        </button>
+      </div>
+      {{/if}}
+      {{/each}}
+    </div>
+    <div class="json-state">
+      <pre id="state"></pre>
+    </div>
+  </div>
+</body>
+
 </html>

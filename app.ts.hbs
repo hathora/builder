@@ -1,4 +1,5 @@
 import { LsotClient } from "./client";
+import { LitElement, html, customElement, property } from "lit-element";
 
 function connect(userId: string, stateId: string) {
   return LsotClient.connect(
@@ -8,16 +9,61 @@ function connect(userId: string, stateId: string) {
   );
 }
 
+function setMetadata(userName: string, stateId: string) {
+  const urlParams = new URLSearchParams();
+  urlParams.set("stateId", stateId);
+  urlParams.set("userName", userName);
+  history.pushState({}, "", window.location.pathname + "?" + urlParams.toString());
+}
+
 const name = prompt("Enter username")!;
 LsotClient.registerUser(name)
   .then((userId) => {
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has("stateId")) {
-      return connect(userId, urlParams.get("stateId")!);
+    const stateId = urlParams.get("stateId") || prompt("Enter stateId (or enter if creating new)");
+    if (stateId != null && stateId.length > 0) {
+      setMetadata(name, stateId);
+      return connect(userId, stateId);
     } else {
-      return LsotClient.createState(userId).then((stateId) => connect(userId, stateId));
+      return LsotClient.createState(userId).then((stateId) => {
+        setMetadata(name, stateId);
+        return connect(userId, stateId);
+      });
     }
   })
   .then((client) => {
     (window as any).client = client;
+    (window as any).sendData = (method: string, ...elmIds: string[]) => {
+      const elms = elmIds.map((elmId) => document.getElementById(method + "_" + elmId));
+      const values = elms.map((elm) => (elm as any).value);
+      console.log(method, values);
+    };
   });
+
+@customElement("numeric-input")
+class NumericInput extends LitElement {
+  @property({ type: Number }) value: number | undefined;
+
+  render() {
+    return html`<input type="number" @change=${this.onChange} />`;
+  }
+
+  private onChange = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    this.value = new Number(target.value).valueOf();
+  };
+}
+
+@customElement("boolean-input")
+class BooleanInput extends LitElement {
+  @property({ type: Boolean }) value: boolean | undefined;
+
+  render() {
+    return html`<input type="checkbox" @change=${this.onChange} />`;
+  }
+
+  private onChange = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    this.value = target.checked;
+  };
+}
