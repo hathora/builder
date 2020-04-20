@@ -26,12 +26,12 @@ LsotClient.registerUser(name)
       stateId =  urlParams.get("stateId");
     }
     if (stateId != null && stateId.length > 0) {
-        setMetadata(userId, stateId);
+        setMetadata(name, stateId);
       return connect(userId, stateId);
     } else {
       return LsotClient.createState(userId).then((stateId) => {
         connect(userId, stateId);
-        setMetadata(userId, stateId);
+        setMetadata(name, stateId);
       });
     }
   })
