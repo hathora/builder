@@ -1,4 +1,5 @@
 import { LsotClient } from "./client";
+import { LitElement, html, customElement, property } from "lit-element";
 
 function connect(userId: string, stateId: string) {
   return LsotClient.connect(
@@ -38,3 +39,17 @@ LsotClient.registerUser(name)
       console.log(method, values);
     };
   });
+
+@customElement("numeric-input")
+class NumericInput extends LitElement {
+  @property({ type: Number }) value: number | undefined;
+
+  render() {
+    return html`<input type="number" @change=${this.onChange} />`;
+  }
+
+  private onChange = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    this.value = new Number(target.value).valueOf();
+  };
+}
