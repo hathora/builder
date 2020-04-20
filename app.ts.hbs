@@ -12,26 +12,21 @@ function setMetadata(userName: string, stateId: string) {
   const urlParams = new URLSearchParams();
   urlParams.set("userName", userName);
   urlParams.set("stateId", stateId);
-  window.history.pushState({}, '', window.location.pathname + "?" + urlParams.toString());
+  window.history.pushState({}, "", window.location.pathname + "?" + urlParams.toString());
 }
 
 const name = prompt("Enter username")!;
 LsotClient.registerUser(name)
   .then((userId) => {
     const urlParams = new URLSearchParams(window.location.search);
-    let stateId;
-    if (urlParams.get("stateId") == null) {
-      stateId = prompt("Enter stateId (or enter if creating new)")!;
-    } else {
-      stateId =  urlParams.get("stateId");
-    }
+    const stateId = urlParams.get("stateId") || prompt("Enter stateId (or enter if creating new)");
     if (stateId != null && stateId.length > 0) {
-        setMetadata(name, stateId);
+      setMetadata(name, stateId);
       return connect(userId, stateId);
     } else {
       return LsotClient.createState(userId).then((stateId) => {
-        connect(userId, stateId);
         setMetadata(name, stateId);
+        return connect(userId, stateId);
       });
     }
   })
