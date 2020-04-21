@@ -16,11 +16,11 @@
         <label for="{{@../key}}_{{name}}">{{name}}:</label>
         {{#if (eq base "primitive")}}
         {{#if (eq type "enum")}}
-        <select id="{{@../key}}_{{name}}">
+        <enum-input id="{{@../key}}_{{name}}">
           {{#each values}}
-          <option value="{{value}}">{{label}}</option>
+          <li value="{{value}}">{{label}}</li>
           {{/each}}
-        </select>
+        </enum-input>
         <br>
         {{else if (eq type "number")}}
         <numeric-input id="{{@../key}}_{{name}}"></numeric-input>
