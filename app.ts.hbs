@@ -67,3 +67,19 @@ class BooleanInput extends LitElement {
     this.value = target.checked;
   };
 }
+
+@customElement("enum-input")
+class EnumInput extends LitElement {
+  @property({ type: Number }) value: number | undefined;
+
+  render() {
+    return html`<ul @click=${this.onClick}>
+      <slot></slot>
+    </ul>`;
+  }
+
+  private onClick = (e: Event) => {
+    const target: any = e.target;
+    console.log(target.value);
+  };
+}
