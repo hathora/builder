@@ -27,7 +27,9 @@
     "generate": "ts-node generate.ts",
     "start": "ts-node src/generated/server.ts"
   },
-  "browserslist": ["Chrome > 50"],
+  "browserslist": [
+    "Chrome > 50"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hpx7/lsot.git"

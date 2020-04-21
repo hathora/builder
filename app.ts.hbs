@@ -67,3 +67,24 @@ class BooleanInput extends LitElement {
     this.value = target.checked;
   };
 }
+
+@customElement("enum-input")
+class EnumInput extends LitElement {
+  @property({ type: Array }) options: { value: number, label: string }[] | undefined;
+  @property({ type: Number }) value: number | undefined;
+
+  render() {
+    return html`
+    <select @change=${this.onChange}>
+      <option value="" selected disabled hidden>Select Value</option>
+      ${
+        (this.options || []).map(o => html`<option value="${o.value}">${o.label}</option>`)
+      }
+    </select>`;
+  }
+
+  private onChange = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    this.value = new Number(target.value).valueOf();
+  }
+}
