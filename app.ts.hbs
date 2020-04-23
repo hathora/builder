@@ -92,3 +92,71 @@ class EnumInput extends LitElement {
     this.closed = true;
   };
 }
+
+@customElement("array-input")
+class ArrayInput extends LitElement {
+  @property({ type: String }) type: "enum" | "boolean" | "number" | "string" | undefined;
+  @property({ type: Array }) value: any[] = [];
+  @property({ type: Array }) options: { value: number | boolean; label: string }[] = [];
+  @property({ type: Boolean }) distinct: boolean = false;
+
+  render() {
+    const optionsToShow = this.distinct
+      ? this.options.filter((o) => !this.value.includes(o.value))
+      : this.options;
+    return html`<input id="${this.id}_input" type="text" @change=${this.onChange} />
+      <ul @click=${this.onSelect}>
+        ${optionsToShow.map((o) => html`<li value="${o.value}">${o.label}</li>`)}
+      </ul>`;
+  }
+
+  private onChange = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    this.updateValues(target.value, target);
+  };
+
+  private onSelect = (e: Event) => {
+    const target: any = e.target;
+    const input = this.shadowRoot!.getElementById(`${this.id}_input`) as HTMLInputElement;
+    this.updateValues(`${input.value},${target.textContent}`, input);
+  };
+
+  private updateValues(newInputStr: string, inputElement: HTMLInputElement) {
+    const inputs = this.distinct
+      ? newInputStr.split(",").filter((s, idx, self) => self.indexOf(s) === idx)
+      : newInputStr.split(",");
+    switch (this.type) {
+      case "enum": {
+        const validatedInputs = inputs
+          .map((i) => this.options.find((o) => o.label === i))
+          .filter((i) => i !== undefined);
+        this.value = validatedInputs.map((i) => Number(i!.value));
+        inputElement.value = validatedInputs.map((i) => i!.label).join(",");
+        break;
+      }
+      case "boolean": {
+        const validatedInputs = inputs
+          .map((i) => this.options.find((o) => o.label === i))
+          .filter((i) => i !== undefined);
+        this.value = validatedInputs.map((i) => Boolean(i!.value));
+        inputElement.value = validatedInputs.map((i) => i!.label).join(",");
+      }
+      case "number": {
+        const validatedInputs = inputs.filter((i) => i.trim() !== "" && !isNaN(Number(i)));
+        this.value = validatedInputs.map((i) => Number(i));
+        inputElement.value = validatedInputs.join(",");
+        break;
+      }
+      case "string": {
+        const validatedInputs = inputs.filter((i) => i.trim() !== "");
+        this.value = validatedInputs;
+        inputElement.value = validatedInputs.join(",");
+        break;
+      }
+      default: {
+        this.value = [];
+        inputElement.value = "Invalid data type";
+      }
+    }
+  }
+}

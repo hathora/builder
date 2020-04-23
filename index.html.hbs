@@ -35,7 +35,10 @@
         <div>{{type}} - not implemented</div>
         {{/if}}
         {{else}}
-        <div>Array type={{type}} {{#if values}}values={{#each values}}{{label}},{{/each}}{{/if}}</div>
+        <array-input id="{{@../key}}_{{name}}" type="{{type}}" {{#if values}}options='[
+          {{#each values}}
+            { "value": "{{value}}", "label": "{{label}}" }{{#unless @last}},{{/unless}}
+          {{/each}}]'{{/if}} ></array-input>
         {{/if}}
         {{/each}}
         <button type="button" class="submit-button"
