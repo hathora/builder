@@ -2,6 +2,29 @@ import { safeLoad } from "js-yaml";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { compile, registerHelper } from "handlebars";
 
+type Arg = ObjectArg | ArrayArg | EnumArg | StringArg | NumberArg | BooleanArg;
+interface ObjectArg {
+  type: "object";
+  properties: Arg[];
+}
+interface ArrayArg {
+  type: "array";
+  items: Arg;
+}
+interface EnumArg {
+  type: "enum";
+  options: { label: string; value: number };
+}
+interface StringArg {
+  type: "string";
+}
+interface NumberArg {
+  type: "number";
+}
+interface BooleanArg {
+  type: "boolean";
+}
+
 registerHelper("eq", (a, b) => a === b);
 registerHelper("ne", (a, b) => a !== b);
 registerHelper("stringify", JSON.stringify);
