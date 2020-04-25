@@ -4,6 +4,7 @@ import { compile, registerHelper } from "handlebars";
 
 registerHelper("eq", (a, b) => a === b);
 registerHelper("ne", (a, b) => a !== b);
+registerHelper("stringify", JSON.stringify);
 registerHelper("isArray", Array.isArray);
 registerHelper("isObject", (x) => typeof x === "object");
 registerHelper("join", (params, joinStr, prepend, postpend, options) => {

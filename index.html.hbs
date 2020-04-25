@@ -8,36 +8,44 @@
 <body>
   <div class="container">
     <div class="forms-container" id="forms">
+      {{#*inline "renderForm"}}
+        {{#if (eq type "array")}}
+        <array-input key="{{key}}">
+          {{#with items}}
+          {{> renderForm}}
+          {{/with}}
+        </array-input>
+        {{else if (eq type "object")}}
+        <object-input key="{{key}}">
+          {{#each properties}}
+          <label>{{@key}}</label>
+          {{> renderForm key=@key}}
+          {{/each}}
+        </object-input>
+        {{else if (eq type "enum")}}
+        <enum-input key="{{key}}" options='{{{stringify options}}}'></enum-input>
+        {{else if (eq type "string")}}
+        <string-input key="{{key}}"></string-input>
+        {{else if (eq type "number")}}
+        <number-input key="{{key}}"></number-input>
+        {{else if (eq type "boolean")}}
+        <boolean-input key="{{key}}"></boolean-input>
+        {{/if}}
+      {{/inline}}
       {{#each methods}}
       {{#if (ne @key ../initialize)}}
       <div class="form" id="{{@key}}">
         <h1 class="heading">{{@key}}</h1>
-        {{#each (getArgsInfo this)}}
-        <label for="{{@../key}}_{{name}}">{{name}}:</label>
-        {{#if (eq base "primitive")}}
-        {{#if (eq type "enum")}}
-        <enum-input id="{{@../key}}_{{name}}">
-          {{#each values}}
-          <li value="{{value}}">{{label}}</li>
-          {{/each}}
-        </enum-input>
-        <br>
-        {{else if (eq type "number")}}
-        <numeric-input id="{{@../key}}_{{name}}"></numeric-input>
-        <br>
-        {{else if (eq type "boolean")}}
-        <boolean-input id="{{@../key}}_{{name}}"></boolean-input>
-        <br>
-        {{else if (eq type "string")}}
-        <input type="text" id="{{@../key}}_{{name}}">
-        <br>
-        {{else}}
-        <div>{{type}} - not implemented</div>
-        {{/if}}
-        {{else}}
-        <div>Array type={{type}} {{#if values}}values={{#each values}}{{label}},{{/each}}{{/if}}</div>
-        {{/if}}
-        {{/each}}
+        <object-input key="startGame">
+          <label>roleList</label>
+          <array-input key="roleList">
+            <enum-input key="" options='[{"value":0,"label":"MERLIN"},{"value":1,"label":"PERCIVAL"}]'></enum-input>
+          </array-input>
+          <label>playerOrder</label>
+          <array-input key="playerOrder">
+            <string-input key=""></string-input>
+          </array-input>
+        </object-input>
         <button type="button" class="submit-button"
           onClick="sendData('{{@key}}'{{#join this ", " true false}}'{{name}}'{{/join}})">
           <span class="button-text">Submit</span>
