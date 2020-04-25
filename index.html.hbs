@@ -9,33 +9,37 @@
   <div class="container">
     <div class="forms-container" id="forms">
       {{#*inline "renderForm"}}
-        {{#if (eq type "array")}}
-        <array-input key="{{key}}">
-          {{#with items}}
-          {{> renderForm}}
-          {{/with}}
-        </array-input>
-        {{else if (eq type "object")}}
-        <object-input key="{{key}}">
-          {{#each properties}}
-          <label>{{@key}}</label>
-          {{> renderForm key=@key}}
-          {{/each}}
-        </object-input>
-        {{else if (eq type "enum")}}
-        <enum-input key="{{key}}" options='{{{stringify options}}}'></enum-input>
-        {{else if (eq type "string")}}
-        <string-input key="{{key}}"></string-input>
-        {{else if (eq type "number")}}
-        <number-input key="{{key}}"></number-input>
-        {{else if (eq type "boolean")}}
-        <boolean-input key="{{key}}"></boolean-input>
-        {{/if}}
+      {{#if (eq type "array")}}
+      <array-input key="{{key}}">
+        {{#with items}}
+        {{> renderForm}}
+        {{/with}}
+      </array-input>
+      {{else if (eq type "object")}}
+      <object-input key="{{key}}">
+        {{#each properties}}
+        <label>{{@key}}</label>
+        {{> renderForm key=@key}}
+        {{/each}}
+      </object-input>
+      {{else if (eq type "enum")}}
+      <enum-input key="{{key}}" options='{{{stringify options}}}'></enum-input>
+      {{else if (eq type "string")}}
+      <string-input key="{{key}}"></string-input>
+      {{else if (eq type "number")}}
+      <number-input key="{{key}}"></number-input>
+      {{else if (eq type "boolean")}}
+      <boolean-input key="{{key}}"></boolean-input>
+      {{/if}}
       {{/inline}}
-      {{#each methods}}
-      {{#if (ne @key ../initialize)}}
-      <div class="form" id="{{@key}}">
-        <h1 class="heading">{{@key}}</h1>
+      <div class="form" id="joinGame">
+        <h1 class="heading">joinGame</h1>
+        <button type="button" class="submit-button">
+          <span class="button-text">Submit</span>
+        </button>
+      </div>
+      <div class="form" id="startGame">
+        <h1 class="heading">startGame</h1>
         <object-input key="startGame">
           <label>roleList</label>
           <array-input key="roleList">
@@ -46,13 +50,24 @@
             <string-input key=""></string-input>
           </array-input>
         </object-input>
-        <button type="button" class="submit-button"
-          onClick="sendData('{{@key}}'{{#join this ", " true false}}'{{name}}'{{/join}})">
+        <button type="button" class="submit-button">
           <span class="button-text">Submit</span>
         </button>
       </div>
-      {{/if}}
-      {{/each}}
+      <div class="form" id="proposeQuest">
+        <h1 class="heading">proposeQuest</h1>
+        <object-input key="proposeQuest">
+          <label>questId</label>
+          <string-input key="questId"></string-input>
+          <label>proposedMembers</label>
+          <array-input key="proposedMembers">
+            <string-input key=""></string-input>
+          </array-input>
+        </object-input>
+        <button type="button" class="submit-button">
+          <span class="button-text">Submit</span>
+        </button>
+      </div>
     </div>
     <div class="json-state">
       <pre id="state"></pre>

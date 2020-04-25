@@ -46,7 +46,7 @@ class StringInput extends LitElement {
   @property({ type: Number }) value: string | undefined;
 
   render() {
-    return html`<input type="text" @change=${this.onChange} />`;
+    return html`<div><input type="text" @change=${this.onChange} /></div>`;
   }
 
   private onChange = (e: Event) => {
@@ -67,7 +67,7 @@ class NumberInput extends LitElement {
   @property({ type: Number }) value: number | undefined;
 
   render() {
-    return html`<input type="number" @change=${this.onChange} />`;
+    return html`<div><input type="number" @change=${this.onChange} /></div>`;
   }
 
   private onChange = (e: Event) => {
