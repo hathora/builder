@@ -17,78 +17,180 @@ function setMetadata(userName: string, stateId: string) {
 }
 
 const name = prompt("Enter username")!;
-LsotClient.registerUser(name)
-  .then((userId) => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const stateId = urlParams.get("stateId") || prompt("Enter stateId (or enter if creating new)");
-    if (stateId != null && stateId.length > 0) {
+LsotClient.registerUser(name).then((userId) => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const stateId = urlParams.get("stateId") || prompt("Enter stateId (or enter if creating new)");
+  if (stateId != null && stateId.length > 0) {
+    setMetadata(name, stateId);
+    return connect(userId, stateId);
+  } else {
+    return LsotClient.createState(userId).then((stateId) => {
       setMetadata(name, stateId);
       return connect(userId, stateId);
-    } else {
-      return LsotClient.createState(userId).then((stateId) => {
-        setMetadata(name, stateId);
-        return connect(userId, stateId);
-      });
-    }
-  })
-  .then((client) => {
-    (window as any).client = client;
-    (window as any).sendData = (method: string, ...elmIds: string[]) => {
-      const elms = elmIds.map((elmId) => document.getElementById(method + "_" + elmId));
-      const values = elms.map((elm) => (elm as any).value);
-      console.log(method, values);
-    };
-  });
+    });
+  }
+});
 
-@customElement("numeric-input")
-class NumericInput extends LitElement {
+@customElement("method-form")
+class MethodForm extends LitElement {
+  @property({ type: String }) method: string | undefined;
+  @property({ type: Object }) value: Record<string, any> = {};
+
+  render() {
+    return html`<div class="form" id="${this.method}">
+      <h1 class="heading">${this.method}</h1>
+      <slot></slot>
+      <button type="button" class="submit-button" @click=${this.onSubmit}>
+        <span class="button-text">Submit</span>
+      </button>
+    </div>`;
+  }
+
+  firstUpdated() {
+    this.addEventListener("udpate", (e) => {
+      this.value = (e as CustomEvent).detail.value;
+    });
+  }
+
+  onSubmit() {
+    console.log(this.method, this.value);
+  }
+}
+
+@customElement("object-input")
+class ObjectInput extends LitElement {
+  @property({ type: String }) key: string | undefined;
+  @property({ type: Object }) value: Record<string, any> = {};
+
+  render() {
+    return html`<div><slot></slot></div>`;
+  }
+
+  firstUpdated() {
+    this.addEventListener("udpate", (e) => {
+      if (e.target !== this) {
+        e.stopPropagation();
+        const { key, value }: { key: string; value: any } = (e as CustomEvent).detail;
+        this.value[key] = value;
+        this.dispatchEvent(
+          new CustomEvent("udpate", {
+            detail: { key: this.key, value: this.value },
+            bubbles: true,
+          })
+        );
+      }
+    });
+  }
+}
+
+@customElement("array-input")
+class ArrayInput extends LitElement {
+  @property({ type: String }) key: string | undefined;
+  @property({ type: Array }) value: any[] = [];
+
+  render() {
+    return html`<div><slot></slot></div>`;
+  }
+
+  firstUpdated() {
+    this.addEventListener("udpate", (e) => {
+      if (e.target !== this) {
+        e.stopPropagation();
+        this.value[0] = (e as CustomEvent).detail.value;
+        this.dispatchEvent(
+          new CustomEvent("udpate", {
+            detail: { key: this.key, value: this.value },
+            bubbles: true,
+          })
+        );
+      }
+    });
+  }
+}
+
+@customElement("string-input")
+class StringInput extends LitElement {
+  @property({ type: String }) key: string | undefined;
+  @property({ type: Number }) value: string | undefined;
+
+  render() {
+    return html`<div><input type="text" @change=${this.onChange} /></div>`;
+  }
+
+  onChange(e: Event) {
+    const target: any = e.target;
+    this.value = target.value;
+    this.dispatchEvent(
+      new CustomEvent("udpate", {
+        detail: { key: this.key, value: this.value },
+        bubbles: true,
+      })
+    );
+  }
+}
+
+@customElement("number-input")
+class NumberInput extends LitElement {
+  @property({ type: String }) key: string | undefined;
   @property({ type: Number }) value: number | undefined;
 
   render() {
-    return html`<input type="number" @change=${this.onChange} />`;
+    return html`<div><input type="number" @change=${this.onChange} /></div>`;
   }
 
-  private onChange = (e: Event) => {
-    const target = e.target as HTMLInputElement;
-    this.value = new Number(target.value).valueOf();
-  };
+  onChange(e: Event) {
+    const target: any = e.target;
+    this.value = Number(target.value);
+    this.dispatchEvent(
+      new CustomEvent("udpate", {
+        detail: { key: this.key, value: this.value },
+        bubbles: true,
+      })
+    );
+  }
 }
 
 @customElement("boolean-input")
 class BooleanInput extends LitElement {
+  @property({ type: String }) key: string | undefined;
   @property({ type: Boolean }) value: boolean | undefined;
 
   render() {
     return html`<input type="checkbox" @change=${this.onChange} />`;
   }
 
-  private onChange = (e: Event) => {
-    const target = e.target as HTMLInputElement;
+  onChange(e: Event) {
+    const target: any = e.target;
     this.value = target.checked;
-  };
+    this.dispatchEvent(
+      new CustomEvent("udpate", {
+        detail: { key: this.key, value: this.value },
+        bubbles: true,
+      })
+    );
+  }
 }
 
 @customElement("enum-input")
 class EnumInput extends LitElement {
+  @property({ type: String }) key: string | undefined;
+  @property({ type: Array }) options: { value: number; label: string }[] = [];
   @property({ type: Number }) value: number | undefined;
-  @property({ type: String }) selectedLabel: string | undefined;
-  @property({ type: Boolean }) closed: boolean = true;
 
   render() {
-    return html`<div @click=${this.onDropdownClick}>${this.selectedLabel || "Select a value..."}</div>
-      <ul style="${this.closed ? "display: none" : ""}" @click=${this.onSelect}>
-        <slot></slot>
-      </ul>`;
+    return html`<select @change=${this.onChange}>
+      ${this.options.map(({ value, label }) => html`<option value="${value}">${label}</option>`)}
+    </select>`;
   }
 
-  private onDropdownClick = (e: Event) => {
-    this.closed = !this.closed;
-  };
-
-  private onSelect = (e: Event) => {
+  onChange(e: Event) {
     const target: any = e.target;
-    this.value = target.value;
-    this.selectedLabel = target.textContent;
-    this.closed = true;
-  };
+    this.value = Number(target.value);
+    this.dispatchEvent(
+      new CustomEvent("udpate", {
+        detail: { key: this.key, value: this.value },
+        bubbles: true,
+      })
+    );
+  }
 }

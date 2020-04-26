@@ -1,55 +1,49 @@
 <html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="./styles.css" />
+    <script src="./app.ts"></script>
+  </head>
 
-<head>
-  <link rel=stylesheet type="text/css" href="./styles.css">
-  <script src="./app.ts"></script>
-</head>
-
-<body>
-  <div class="container">
-    <div class="forms-container" id="forms">
-      {{#each methods}}
-      {{#if (ne @key ../initialize)}}
-      <div class="form" id="{{@key}}">
-        <h1 class="heading">{{@key}}</h1>
-        {{#each (getArgsInfo this)}}
-        <label for="{{@../key}}_{{name}}">{{name}}:</label>
-        {{#if (eq base "primitive")}}
-        {{#if (eq type "enum")}}
-        <enum-input id="{{@../key}}_{{name}}">
-          {{#each values}}
-          <li value="{{value}}">{{label}}</li>
-          {{/each}}
-        </enum-input>
-        <br>
-        {{else if (eq type "number")}}
-        <numeric-input id="{{@../key}}_{{name}}"></numeric-input>
-        <br>
-        {{else if (eq type "boolean")}}
-        <boolean-input id="{{@../key}}_{{name}}"></boolean-input>
-        <br>
-        {{else if (eq type "string")}}
-        <input type="text" id="{{@../key}}_{{name}}">
-        <br>
+  <body>
+    <div class="container">
+      <div class="forms-container" id="forms">
+        {{#each methods}}
+        {{#if this}}
+        <method-form method="{{@key}}">
+          {{> renderForm (getArgsInfo this)}}
+        </method-form>
         {{else}}
-        <div>{{type}} - not implemented</div>
-        {{/if}}
-        {{else}}
-        <div>Array type={{type}} {{#if values}}values={{#each values}}{{label}},{{/each}}{{/if}}</div>
+        <method-form method="{{@key}}"></method-form>
         {{/if}}
         {{/each}}
-        <button type="button" class="submit-button"
-          onClick="sendData('{{@key}}'{{#join this ", " true false}}'{{name}}'{{/join}})">
-          <span class="button-text">Submit</span>
-        </button>
       </div>
-      {{/if}}
-      {{/each}}
+      <div class="json-state">
+        <pre id="state"></pre>
+      </div>
     </div>
-    <div class="json-state">
-      <pre id="state"></pre>
-    </div>
-  </div>
-</body>
-
+  </body>
 </html>
+{{#*inline "renderForm"}}
+{{#if (eq type "object")}}
+<object-input{{#if key}} key="{{key}}"{{/if}}>
+  {{#each properties}}
+  <label>{{@key}}</label>
+  {{> renderForm key=@key}}
+  {{/each}}
+</object-input>
+{{else if (eq type "array")}}
+<array-input{{#if key}} key="{{key}}"{{/if}}>
+  {{#with items}}
+  {{> renderForm}}
+  {{/with}}
+</array-input>
+{{else if (eq type "enum")}}
+<enum-input{{#if key}} key="{{key}}"{{/if}} options='{{{stringify options}}}'></enum-input>
+{{else if (eq type "string")}}
+<string-input{{#if key}} key="{{key}}"{{/if}}></string-input>
+{{else if (eq type "number")}}
+<number-input{{#if key}} key="{{key}}"{{/if}}></number-input>
+{{else if (eq type "boolean")}}
+<boolean-input{{#if key}} key="{{key}}"{{/if}}></boolean-input>
+{{/if}}
+{{/inline}}
