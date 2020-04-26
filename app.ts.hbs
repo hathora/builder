@@ -47,7 +47,7 @@ class MethodForm extends LitElement {
   }
 
   firstUpdated() {
-    this.addEventListener("udpate", (e) => {
+    this.addEventListener("update", (e) => {
       const target: any = e.target;
       this.value = target.value;
     });
@@ -68,12 +68,12 @@ class ObjectInput extends LitElement {
   }
 
   firstUpdated() {
-    this.addEventListener("udpate", (e) => {
+    this.addEventListener("update", (e) => {
       const target: any = e.target;
       if (target !== this) {
         e.stopPropagation();
         this.value[target.key] = target.value;
-        this.dispatchEvent(new Event("udpate", { bubbles: true }));
+        this.dispatchEvent(new Event("update", { bubbles: true }));
       }
     });
   }
@@ -89,12 +89,12 @@ class ArrayInput extends LitElement {
   }
 
   firstUpdated() {
-    this.addEventListener("udpate", (e) => {
+    this.addEventListener("update", (e) => {
       const target: any = e.target;
       if (target !== this) {
         e.stopPropagation();
         this.value[0] = target.value;
-        this.dispatchEvent(new Event("udpate", { bubbles: true }));
+        this.dispatchEvent(new Event("update", { bubbles: true }));
       }
     });
   }
@@ -112,7 +112,7 @@ class StringInput extends LitElement {
   onChange(e: Event) {
     const target: any = e.target;
     this.value = target.value;
-    this.dispatchEvent(new Event("udpate", { bubbles: true }));
+    this.dispatchEvent(new Event("update", { bubbles: true }));
   }
 }
 
@@ -128,7 +128,7 @@ class NumberInput extends LitElement {
   onChange(e: Event) {
     const target: any = e.target;
     this.value = Number(target.value);
-    this.dispatchEvent(new Event("udpate", { bubbles: true }));
+    this.dispatchEvent(new Event("update", { bubbles: true }));
   }
 }
 
@@ -144,7 +144,7 @@ class BooleanInput extends LitElement {
   onChange(e: Event) {
     const target: any = e.target;
     this.value = target.checked;
-    this.dispatchEvent(new Event("udpate", { bubbles: true }));
+    this.dispatchEvent(new Event("update", { bubbles: true }));
   }
 }
 
@@ -163,6 +163,6 @@ class EnumInput extends LitElement {
   onChange(e: Event) {
     const target: any = e.target;
     this.value = Number(target.value);
-    this.dispatchEvent(new Event("udpate", { bubbles: true }));
+    this.dispatchEvent(new Event("update", { bubbles: true }));
   }
 }
