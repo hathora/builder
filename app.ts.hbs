@@ -48,7 +48,8 @@ class MethodForm extends LitElement {
 
   firstUpdated() {
     this.addEventListener("udpate", (e) => {
-      this.value = (e as CustomEvent).detail.value;
+      const target: any = e.target;
+      this.value = target.value;
     });
   }
 
@@ -68,16 +69,11 @@ class ObjectInput extends LitElement {
 
   firstUpdated() {
     this.addEventListener("udpate", (e) => {
-      if (e.target !== this) {
+      const target: any = e.target;
+      if (target !== this) {
         e.stopPropagation();
-        const { key, value }: { key: string; value: any } = (e as CustomEvent).detail;
-        this.value[key] = value;
-        this.dispatchEvent(
-          new CustomEvent("udpate", {
-            detail: { key: this.key, value: this.value },
-            bubbles: true,
-          })
-        );
+        this.value[target.key] = target.value;
+        this.dispatchEvent(new Event("udpate", { bubbles: true }));
       }
     });
   }
@@ -94,15 +90,11 @@ class ArrayInput extends LitElement {
 
   firstUpdated() {
     this.addEventListener("udpate", (e) => {
-      if (e.target !== this) {
+      const target: any = e.target;
+      if (target !== this) {
         e.stopPropagation();
-        this.value[0] = (e as CustomEvent).detail.value;
-        this.dispatchEvent(
-          new CustomEvent("udpate", {
-            detail: { key: this.key, value: this.value },
-            bubbles: true,
-          })
-        );
+        this.value[0] = target.value;
+        this.dispatchEvent(new Event("udpate", { bubbles: true }));
       }
     });
   }
@@ -120,12 +112,7 @@ class StringInput extends LitElement {
   onChange(e: Event) {
     const target: any = e.target;
     this.value = target.value;
-    this.dispatchEvent(
-      new CustomEvent("udpate", {
-        detail: { key: this.key, value: this.value },
-        bubbles: true,
-      })
-    );
+    this.dispatchEvent(new Event("udpate", { bubbles: true }));
   }
 }
 
@@ -141,12 +128,7 @@ class NumberInput extends LitElement {
   onChange(e: Event) {
     const target: any = e.target;
     this.value = Number(target.value);
-    this.dispatchEvent(
-      new CustomEvent("udpate", {
-        detail: { key: this.key, value: this.value },
-        bubbles: true,
-      })
-    );
+    this.dispatchEvent(new Event("udpate", { bubbles: true }));
   }
 }
 
@@ -162,12 +144,7 @@ class BooleanInput extends LitElement {
   onChange(e: Event) {
     const target: any = e.target;
     this.value = target.checked;
-    this.dispatchEvent(
-      new CustomEvent("udpate", {
-        detail: { key: this.key, value: this.value },
-        bubbles: true,
-      })
-    );
+    this.dispatchEvent(new Event("udpate", { bubbles: true }));
   }
 }
 
@@ -186,11 +163,6 @@ class EnumInput extends LitElement {
   onChange(e: Event) {
     const target: any = e.target;
     this.value = Number(target.value);
-    this.dispatchEvent(
-      new CustomEvent("udpate", {
-        detail: { key: this.key, value: this.value },
-        bubbles: true,
-      })
-    );
+    this.dispatchEvent(new Event("udpate", { bubbles: true }));
   }
 }
