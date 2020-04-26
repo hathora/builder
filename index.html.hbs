@@ -8,9 +8,13 @@
     <div class="container">
       <div class="forms-container" id="forms">
         {{#each methods}}
+        {{#if this}}
         <method-form method="{{@key}}">
           {{> renderForm (getArgsInfo this)}}
         </method-form>
+        {{else}}
+        <method-form method="{{@key}}"></method-form>
+        {{/if}}
         {{/each}}
       </div>
       <div class="json-state">
@@ -21,25 +25,25 @@
 </html>
 {{#*inline "renderForm"}}
 {{#if (eq type "object")}}
-<object-input key="{{key}}">
+<object-input{{#if key}} key="{{key}}"{{/if}}>
   {{#each properties}}
   <label>{{@key}}</label>
   {{> renderForm key=@key}}
   {{/each}}
 </object-input>
 {{else if (eq type "array")}}
-<array-input key="{{key}}">
+<array-input{{#if key}} key="{{key}}"{{/if}}>
   {{#with items}}
   {{> renderForm}}
   {{/with}}
 </array-input>
 {{else if (eq type "enum")}}
-<enum-input key="{{key}}" options='{{{stringify options}}}'></enum-input>
+<enum-input{{#if key}} key="{{key}}"{{/if}} options='{{{stringify options}}}'></enum-input>
 {{else if (eq type "string")}}
-<string-input key="{{key}}"></string-input>
+<string-input{{#if key}} key="{{key}}"{{/if}}></string-input>
 {{else if (eq type "number")}}
-<number-input key="{{key}}"></number-input>
+<number-input{{#if key}} key="{{key}}"{{/if}}></number-input>
 {{else if (eq type "boolean")}}
-<boolean-input key="{{key}}"></boolean-input>
+<boolean-input{{#if key}} key="{{key}}"{{/if}}></boolean-input>
 {{/if}}
 {{/inline}}

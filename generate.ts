@@ -52,9 +52,7 @@ function getArgsInfo(args: any): Arg {
   } else if (typeof args === "object") {
     return {
       type: "object",
-      properties: Object.fromEntries(
-        Object.entries(args || {}).map(([name, type]) => [name, getArgsInfo(type)])
-      ),
+      properties: Object.fromEntries(Object.entries(args).map(([name, type]) => [name, getArgsInfo(type)])),
     };
   } else if (typeof args === "string") {
     if (args.endsWith("[]")) {
