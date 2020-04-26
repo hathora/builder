@@ -68,6 +68,18 @@
           <span class="button-text">Submit</span>
         </button>
       </div>
+      <div class="form" id="voteForProposal">
+        <h1 class="heading">voteForProposal</h1>
+        <object-input key="voteForProposal">
+          <label>questId</label>
+          <string-input key="questId"></string-input>
+          <label>vote</label>
+          <enum-input key="vote" options='[{"value":0,"label":"PASS"},{"value":1,"label":"FAIL"}]'></enum-input>
+        </object-input>
+        <button type="button" class="submit-button">
+          <span class="button-text">Submit</span>
+        </button>
+      </div>
     </div>
     <div class="json-state">
       <pre id="state"></pre>
