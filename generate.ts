@@ -5,7 +5,7 @@ import { compile, registerHelper } from "handlebars";
 type Arg = ObjectArg | ArrayArg | EnumArg | StringArg | NumberArg | BooleanArg;
 interface ObjectArg {
   type: "object";
-  properties: Arg[];
+  properties: Record<string, Arg>;
 }
 interface ArrayArg {
   type: "array";
@@ -13,7 +13,7 @@ interface ArrayArg {
 }
 interface EnumArg {
   type: "enum";
-  options: { label: string; value: number };
+  options: { label: string; value: number }[];
 }
 interface StringArg {
   type: "string";
@@ -41,25 +41,31 @@ registerHelper("join", (params, joinStr, prepend, postpend, options) => {
     return (prepend && paramsStr.length ? joinStr : "") + paramsStr + (postpend && paramsStr.length ? joinStr : "");
   }
 });
-registerHelper("getArgsInfo", (args: { [name: string]: string }) => {
-  return Object.entries(args).map(([name, type]) => {
-    if (type.endsWith("[]")) {
-      return { name, base: "array", ...resolveType(type.substring(0, type.length - 2)) };
-    } else {
-      return { name, base: "primitive", ...resolveType(type) };
-    }
-  });
-});
+registerHelper("getArgsInfo", getArgsInfo);
 
-function resolveType(type: string): { type: string; values?: { label: string; value: number }[] } {
-  const resolvedType = type in doc.types ? doc.types[type] : type;
-  if (resolvedType === "string" || resolvedType === "number" || resolvedType === "boolean") {
-    return { type: resolvedType };
-  } else if (Array.isArray(resolvedType)) {
-    return { type: "enum", values: resolvedType.map((label, value) => ({ label, value })) };
-  } else {
-    return { type: "unknown" };
+function getArgsInfo(args: any): Arg {
+  if (Array.isArray(args)) {
+    return {
+      type: "enum",
+      options: args.map((label: string, value) => ({ label, value })),
+    };
+  } else if (typeof args === "object") {
+    return {
+      type: "object",
+      properties: Object.fromEntries(
+        Object.entries(args || {}).map(([name, type]) => [name, type && getArgsInfo(type)])
+      ),
+    };
+  } else if (typeof args === "string") {
+    if (args.endsWith("[]")) {
+      return { type: "array", items: getArgsInfo(args.substring(0, args.length - 2)) };
+    } else if (args in doc.types) {
+      return getArgsInfo(doc.types[args]);
+    } else if (args === "string" || args === "number" || args === "boolean") {
+      return { type: args };
+    }
   }
+  throw new Error("Invalid args: " + args);
 }
 
 function generate(filename: string) {

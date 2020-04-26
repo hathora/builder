@@ -31,37 +31,11 @@
         <boolean-input key="{{key}}"></boolean-input>
         {{/if}}
         {{/inline}}
-        <method-form method="joinGame"></method-form>
-        <method-form method="startGame">
-          <object-input key="startGame">
-            <label>roleList</label>
-            <array-input key="roleList">
-              <enum-input key="" options='[{"value":0,"label":"MERLIN"},{"value":1,"label":"PERCIVAL"}]'></enum-input>
-            </array-input>
-            <label>playerOrder</label>
-            <array-input key="playerOrder">
-              <string-input key=""></string-input>
-            </array-input>
-          </object-input>
-        </method-form>
-        <method-form method="proposeQuest">
-          <object-input key="proposeQuest">
-            <label>questId</label>
-            <string-input key="questId"></string-input>
-            <label>proposedMembers</label>
-            <array-input key="proposedMembers">
-              <string-input key=""></string-input>
-            </array-input>
-          </object-input>
-        </method-form>
-        <method-form method="voteForProposal">
-          <object-input key="voteForProposal">
-            <label>questId</label>
-            <string-input key="questId"></string-input>
-            <label>vote</label>
-            <enum-input key="vote" options='[{"value":0,"label":"PASS"},{"value":1,"label":"FAIL"}]'></enum-input>
-          </object-input>
-        </method-form>
+        {{#each methods}}
+          <method-form method="{{@key}}">
+            {{> renderForm (getArgsInfo this)}}
+          </method-form>
+        {{/each}}
       </div>
       <div class="json-state">
         <pre id="state"></pre>

@@ -4,6 +4,6 @@
     "esModuleInterop": true,
     "module": "commonjs",
     "strict": true,
-    "target": "es6"
+    "target": "es2019"
   }
 }
