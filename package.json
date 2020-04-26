@@ -5,7 +5,7 @@
   "main": "server.js",
   "dependencies": {
     "express": "^4.17.1",
-    "handlebars": "^4.7.3",
+    "handlebars": "^4.7.6",
     "import-reload": "^1.0.3",
     "js-yaml": "^3.13.1",
     "lit-element": "^2.3.1",
