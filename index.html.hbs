@@ -7,34 +7,10 @@
   <body>
     <div class="container">
       <div class="forms-container" id="forms">
-        {{#*inline "renderForm"}}
-        {{#if (eq type "object")}}
-        <object-input key="{{key}}">
-          {{#each properties}}
-          <label>{{@key}}</label>
-          {{> renderForm key=@key}}
-          {{/each}}
-        </object-input>
-        {{else if (eq type "array")}}
-        <array-input key="{{key}}">
-          {{#with items}}
-          {{> renderForm}}
-          {{/with}}
-        </array-input>
-        {{else if (eq type "enum")}}
-        <enum-input key="{{key}}" options='{{{stringify options}}}'></enum-input>
-        {{else if (eq type "string")}}
-        <string-input key="{{key}}"></string-input>
-        {{else if (eq type "number")}}
-        <number-input key="{{key}}"></number-input>
-        {{else if (eq type "boolean")}}
-        <boolean-input key="{{key}}"></boolean-input>
-        {{/if}}
-        {{/inline}}
         {{#each methods}}
-          <method-form method="{{@key}}">
-            {{> renderForm (getArgsInfo this)}}
-          </method-form>
+        <method-form method="{{@key}}">
+          {{> renderForm (getArgsInfo this)}}
+        </method-form>
         {{/each}}
       </div>
       <div class="json-state">
@@ -43,3 +19,27 @@
     </div>
   </body>
 </html>
+{{#*inline "renderForm"}}
+{{#if (eq type "object")}}
+<object-input key="{{key}}">
+  {{#each properties}}
+  <label>{{@key}}</label>
+  {{> renderForm key=@key}}
+  {{/each}}
+</object-input>
+{{else if (eq type "array")}}
+<array-input key="{{key}}">
+  {{#with items}}
+  {{> renderForm}}
+  {{/with}}
+</array-input>
+{{else if (eq type "enum")}}
+<enum-input key="{{key}}" options='{{{stringify options}}}'></enum-input>
+{{else if (eq type "string")}}
+<string-input key="{{key}}"></string-input>
+{{else if (eq type "number")}}
+<number-input key="{{key}}"></number-input>
+{{else if (eq type "boolean")}}
+<boolean-input key="{{key}}"></boolean-input>
+{{/if}}
+{{/inline}}
