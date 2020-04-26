@@ -17,28 +17,45 @@ function setMetadata(userName: string, stateId: string) {
 }
 
 const name = prompt("Enter username")!;
-LsotClient.registerUser(name)
-  .then((userId) => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const stateId = urlParams.get("stateId") || prompt("Enter stateId (or enter if creating new)");
-    if (stateId != null && stateId.length > 0) {
+LsotClient.registerUser(name).then((userId) => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const stateId = urlParams.get("stateId") || prompt("Enter stateId (or enter if creating new)");
+  if (stateId != null && stateId.length > 0) {
+    setMetadata(name, stateId);
+    return connect(userId, stateId);
+  } else {
+    return LsotClient.createState(userId).then((stateId) => {
       setMetadata(name, stateId);
       return connect(userId, stateId);
-    } else {
-      return LsotClient.createState(userId).then((stateId) => {
-        setMetadata(name, stateId);
-        return connect(userId, stateId);
-      });
-    }
-  })
-  .then((client) => {
-    (window as any).client = client;
-    (window as any).sendData = (method: string, ...elmIds: string[]) => {
-      const elms = elmIds.map((elmId) => document.getElementById(method + "_" + elmId));
-      const values = elms.map((elm) => (elm as any).value);
-      console.log(method, values);
-    };
-  });
+    });
+  }
+});
+
+@customElement("method-form")
+class MethodForm extends LitElement {
+  @property({ type: String }) method: string | undefined;
+  @property({ type: Object }) value: Record<string, any> = {};
+
+  render() {
+    return html`<div class="form" id="${this.method}">
+      <h1 class="heading">${this.method}</h1>
+      <slot></slot>
+      <button type="button" class="submit-button" @click=${this.onSubmit}>
+        <span class="button-text">Submit</span>
+      </button>
+    </div>`;
+  }
+
+  firstUpdated() {
+    this.addEventListener("udpate", (e) => {
+      this.value = (e as CustomEvent).detail.value;
+    });
+  }
+
+  onSubmit() {
+    console.log(this.method, this.value);
+  }
+}
 
 @customElement("object-input")
 class ObjectInput extends LitElement {
@@ -55,7 +72,6 @@ class ObjectInput extends LitElement {
         e.stopPropagation();
         const { key, value }: { key: string; value: any } = (e as CustomEvent).detail;
         this.value[key] = value;
-        console.log("update", this.key, this.value);
         this.dispatchEvent(
           new CustomEvent("udpate", {
             detail: { key: this.key, value: this.value },
@@ -101,7 +117,7 @@ class StringInput extends LitElement {
     return html`<div><input type="text" @change=${this.onChange} /></div>`;
   }
 
-  private onChange = (e: Event) => {
+  onChange(e: Event) {
     const target: any = e.target;
     this.value = target.value;
     this.dispatchEvent(
@@ -110,7 +126,7 @@ class StringInput extends LitElement {
         bubbles: true,
       })
     );
-  };
+  }
 }
 
 @customElement("number-input")
@@ -122,7 +138,7 @@ class NumberInput extends LitElement {
     return html`<div><input type="number" @change=${this.onChange} /></div>`;
   }
 
-  private onChange = (e: Event) => {
+  onChange(e: Event) {
     const target: any = e.target;
     this.value = Number(target.value);
     this.dispatchEvent(
@@ -131,7 +147,7 @@ class NumberInput extends LitElement {
         bubbles: true,
       })
     );
-  };
+  }
 }
 
 @customElement("boolean-input")
@@ -143,7 +159,7 @@ class BooleanInput extends LitElement {
     return html`<input type="checkbox" @change=${this.onChange} />`;
   }
 
-  private onChange = (e: Event) => {
+  onChange(e: Event) {
     const target: any = e.target;
     this.value = target.checked;
     this.dispatchEvent(
@@ -152,7 +168,7 @@ class BooleanInput extends LitElement {
         bubbles: true,
       })
     );
-  };
+  }
 }
 
 @customElement("enum-input")
@@ -167,7 +183,7 @@ class EnumInput extends LitElement {
     </select>`;
   }
 
-  private onChange = (e: Event) => {
+  onChange(e: Event) {
     const target: any = e.target;
     this.value = Number(target.value);
     this.dispatchEvent(
@@ -176,5 +192,5 @@ class EnumInput extends LitElement {
         bubbles: true,
       })
     );
-  };
+  }
 }

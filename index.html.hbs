@@ -32,14 +32,8 @@
       <boolean-input key="{{key}}"></boolean-input>
       {{/if}}
       {{/inline}}
-      <div class="form" id="joinGame">
-        <h1 class="heading">joinGame</h1>
-        <button type="button" class="submit-button">
-          <span class="button-text">Submit</span>
-        </button>
-      </div>
-      <div class="form" id="startGame">
-        <h1 class="heading">startGame</h1>
+      <method-form method="joinGame"></method-form>
+      <method-form method="startGame">
         <object-input key="startGame">
           <label>roleList</label>
           <array-input key="roleList">
@@ -50,12 +44,8 @@
             <string-input key=""></string-input>
           </array-input>
         </object-input>
-        <button type="button" class="submit-button">
-          <span class="button-text">Submit</span>
-        </button>
-      </div>
-      <div class="form" id="proposeQuest">
-        <h1 class="heading">proposeQuest</h1>
+      </method-form>
+      <method-form method="proposeQuest">
         <object-input key="proposeQuest">
           <label>questId</label>
           <string-input key="questId"></string-input>
@@ -64,22 +54,15 @@
             <string-input key=""></string-input>
           </array-input>
         </object-input>
-        <button type="button" class="submit-button">
-          <span class="button-text">Submit</span>
-        </button>
-      </div>
-      <div class="form" id="voteForProposal">
-        <h1 class="heading">voteForProposal</h1>
+      </method-form>
+      <method-form method="voteForProposal">
         <object-input key="voteForProposal">
           <label>questId</label>
           <string-input key="questId"></string-input>
           <label>vote</label>
           <enum-input key="vote" options='[{"value":0,"label":"PASS"},{"value":1,"label":"FAIL"}]'></enum-input>
         </object-input>
-        <button type="button" class="submit-button">
-          <span class="button-text">Submit</span>
-        </button>
-      </div>
+      </method-form>
     </div>
     <div class="json-state">
       <pre id="state"></pre>
