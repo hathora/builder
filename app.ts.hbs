@@ -40,6 +40,58 @@ LsotClient.registerUser(name)
     };
   });
 
+@customElement("object-input")
+class ObjectInput extends LitElement {
+  @property({ type: String }) key: string | undefined;
+  @property({ type: Object }) value: Record<string, any> = {};
+
+  render() {
+    return html`<div><slot></slot></div>`;
+  }
+
+  firstUpdated() {
+    this.addEventListener("udpate", (e) => {
+      if (e.target !== this) {
+        e.stopPropagation();
+        const { key, value }: { key: string; value: any } = (e as CustomEvent).detail;
+        this.value[key] = value;
+        console.log("update", this.key, this.value);
+        this.dispatchEvent(
+          new CustomEvent("udpate", {
+            detail: { key: this.key, value: this.value },
+            bubbles: true,
+          })
+        );
+      }
+    });
+  }
+}
+
+@customElement("array-input")
+class ArrayInput extends LitElement {
+  @property({ type: String }) key: string | undefined;
+  @property({ type: Array }) value: any[] = [];
+
+  render() {
+    return html`<div><slot></slot></div>`;
+  }
+
+  firstUpdated() {
+    this.addEventListener("udpate", (e) => {
+      if (e.target !== this) {
+        e.stopPropagation();
+        this.value[0] = (e as CustomEvent).detail.value;
+        this.dispatchEvent(
+          new CustomEvent("udpate", {
+            detail: { key: this.key, value: this.value },
+            bubbles: true,
+          })
+        );
+      }
+    });
+  }
+}
+
 @customElement("string-input")
 class StringInput extends LitElement {
   @property({ type: String }) key: string | undefined;
@@ -125,56 +177,4 @@ class EnumInput extends LitElement {
       })
     );
   };
-}
-
-@customElement("array-input")
-class ArrayInput extends LitElement {
-  @property({ type: String }) key: string | undefined;
-  @property({ type: Array }) value: any[] = [];
-
-  render() {
-    return html`<div><slot></slot></div>`;
-  }
-
-  firstUpdated() {
-    this.addEventListener("udpate", (e) => {
-      if (e.target !== this) {
-        e.stopPropagation();
-        this.value[0] = (e as CustomEvent).detail.value;
-        this.dispatchEvent(
-          new CustomEvent("udpate", {
-            detail: { key: this.key, value: this.value },
-            bubbles: true,
-          })
-        );
-      }
-    });
-  }
-}
-
-@customElement("object-input")
-class ObjectInput extends LitElement {
-  @property({ type: String }) key: string | undefined;
-  @property({ type: Object }) value: Record<string, any> = {};
-
-  render() {
-    return html`<div><slot></slot></div>`;
-  }
-
-  firstUpdated() {
-    this.addEventListener("udpate", (e) => {
-      if (e.target !== this) {
-        e.stopPropagation();
-        const { key, value }: { key: string; value: any } = (e as CustomEvent).detail;
-        this.value[key] = value;
-        console.log("update", this.key, this.value);
-        this.dispatchEvent(
-          new CustomEvent("udpate", {
-            detail: { key: this.key, value: this.value },
-            bubbles: true,
-          })
-        );
-      }
-    });
-  }
 }
