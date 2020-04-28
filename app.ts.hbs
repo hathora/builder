@@ -36,13 +36,14 @@ Vue.component("method-form", {
   template: `<div class="form" :id="method">
         <h1 class="heading">\{{method}}</h1>
         <slot></slot>
-        <button type="button" class="submit-button" @click="this.console.log(value())">
+        <button type="button" class="submit-button" @click="submit">
           <span class="button-text">Submit</span>
         </button>
       </div>`,
   methods: {
-    value: function () {
-      return Object.fromEntries(this.$children.map((child: any) => [child.arg, child.value()]));
+    submit: function () {
+      const child: any = this.$children[0];
+      console.log(child.value());
     },
   },
 });

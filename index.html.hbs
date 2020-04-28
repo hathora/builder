@@ -9,7 +9,7 @@
         {{#each methods}}
         {{#if this}}
         <method-form method="{{@key}}">
-          {{> renderForm (getArgsInfo this) arg=@key}}
+          {{> renderForm (getArgsInfo this)}}
         </method-form>
         {{else}}
         <method-form method="{{@key}}"></method-form>
