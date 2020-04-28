@@ -61,10 +61,10 @@ Vue.component("object-input", {
 
 Vue.component("array-input", {
   props: { arg: String },
-  data: () => ({ slots: [] } as { slots: any[] }),
+  data: () => ({ numItems: 0 }),
   template: `<div>
-      <slot v-for="s in slots"></slot>
-      <button type="button" @click="slots.push(undefined)">Add</button>
+      <slot v-for="n in numItems"></slot>
+      <button type="button" @click="numItems += 1">Add</button>
     </div>`,
   methods: {
     value: function () {
