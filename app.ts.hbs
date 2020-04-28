@@ -1,5 +1,5 @@
 import { LsotClient } from "./client";
-import { LitElement, html, customElement, property } from "lit-element";
+import Vue from "vue";
 
 function connect(userId: string, stateId: string) {
   return LsotClient.connect(
@@ -31,138 +31,65 @@ LsotClient.registerUser(name).then((userId) => {
   }
 });
 
-@customElement("method-form")
-class MethodForm extends LitElement {
-  @property({ type: String }) method: string | undefined;
-  @property({ type: Object }) value: Record<string, any> = {};
-
-  render() {
-    return html`<div class="form" id="${this.method}">
-      <h1 class="heading">${this.method}</h1>
+Vue.component("method-form", {
+  props: { method: String },
+  template: `<div class="form" :id="method">
+      <h1 class="heading">\{{method}}</h1>
       <slot></slot>
-      <button type="button" class="submit-button" @click=${this.onSubmit}>
+      <button type="button" class="submit-button" @click="submit">
         <span class="button-text">Submit</span>
       </button>
-    </div>`;
-  }
+    </div>`,
+  methods: {
+    submit: function () {
+      const child: any = this.$children[0];
+      console.log(child.value());
+    },
+  },
+});
 
-  firstUpdated() {
-    this.addEventListener("update", (e) => {
-      const target: any = e.target;
-      this.value = target.value;
-    });
-  }
+Vue.component("object-input", {
+  props: { arg: String },
+  template: `<div><slot></slot></div>`,
+  methods: {
+    value: function () {
+      return Object.fromEntries(
+        this.$children.map((child: any) => [child.arg, typeof child.value === "function" ? child.value() : child.value])
+      );
+    },
+  },
+});
 
-  onSubmit() {
-    console.log(this.method, this.value);
-  }
-}
+Vue.component("array-input", {
+  props: { arg: String },
+  data: () => ({ numItems: 0 }),
+  template: `<div>
+      <slot v-for="n in numItems"></slot>
+      <button type="button" @click="numItems += 1">Add</button>
+    </div>`,
+  methods: {
+    value: function () {
+      return this.$children.map((child: any) => (typeof child.value === "function" ? child.value() : child.value));
+    },
+  },
+});
 
-@customElement("object-input")
-class ObjectInput extends LitElement {
-  @property({ type: String }) key: string | undefined;
-  @property({ type: Object }) value: Record<string, any> = {};
+Vue.component("enum-input", {
+  props: { arg: String, options: Array },
+  data: () => ({ value: 0 }),
+  template: `<div>
+      <select v-model="value">
+        <option v-for="option in options" :value="option.value">
+          \{{option.label}}
+        </option>
+      </select>
+    </div>`,
+});
 
-  render() {
-    return html`<div><slot></slot></div>`;
-  }
+Vue.component("string-input", {
+  props: { arg: String },
+  data: () => ({ value: "" }),
+  template: `<div><input type="text" v-model="value" /></div>`,
+});
 
-  firstUpdated() {
-    this.addEventListener("update", (e) => {
-      const target: any = e.target;
-      if (target !== this) {
-        e.stopPropagation();
-        this.value[target.key] = target.value;
-        this.dispatchEvent(new Event("update", { bubbles: true }));
-      }
-    });
-  }
-}
-
-@customElement("array-input")
-class ArrayInput extends LitElement {
-  @property({ type: String }) key: string | undefined;
-  @property({ type: Array }) value: any[] = [];
-
-  render() {
-    return html`<div><slot></slot></div>`;
-  }
-
-  firstUpdated() {
-    this.addEventListener("update", (e) => {
-      const target: any = e.target;
-      if (target !== this) {
-        e.stopPropagation();
-        this.value[0] = target.value;
-        this.dispatchEvent(new Event("update", { bubbles: true }));
-      }
-    });
-  }
-}
-
-@customElement("string-input")
-class StringInput extends LitElement {
-  @property({ type: String }) key: string | undefined;
-  @property({ type: Number }) value: string | undefined;
-
-  render() {
-    return html`<div><input type="text" @change=${this.onChange} /></div>`;
-  }
-
-  onChange(e: Event) {
-    const target: any = e.target;
-    this.value = target.value;
-    this.dispatchEvent(new Event("update", { bubbles: true }));
-  }
-}
-
-@customElement("number-input")
-class NumberInput extends LitElement {
-  @property({ type: String }) key: string | undefined;
-  @property({ type: Number }) value: number | undefined;
-
-  render() {
-    return html`<div><input type="number" @change=${this.onChange} /></div>`;
-  }
-
-  onChange(e: Event) {
-    const target: any = e.target;
-    this.value = Number(target.value);
-    this.dispatchEvent(new Event("update", { bubbles: true }));
-  }
-}
-
-@customElement("boolean-input")
-class BooleanInput extends LitElement {
-  @property({ type: String }) key: string | undefined;
-  @property({ type: Boolean }) value: boolean | undefined;
-
-  render() {
-    return html`<input type="checkbox" @change=${this.onChange} />`;
-  }
-
-  onChange(e: Event) {
-    const target: any = e.target;
-    this.value = target.checked;
-    this.dispatchEvent(new Event("update", { bubbles: true }));
-  }
-}
-
-@customElement("enum-input")
-class EnumInput extends LitElement {
-  @property({ type: String }) key: string | undefined;
-  @property({ type: Array }) options: { value: number; label: string }[] = [];
-  @property({ type: Number }) value: number | undefined;
-
-  render() {
-    return html`<select @change=${this.onChange}>
-      ${this.options.map(({ value, label }) => html`<option value="${value}">${label}</option>`)}
-    </select>`;
-  }
-
-  onChange(e: Event) {
-    const target: any = e.target;
-    this.value = Number(target.value);
-    this.dispatchEvent(new Event("update", { bubbles: true }));
-  }
-}
+new Vue({ el: "#app" });

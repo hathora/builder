@@ -8,10 +8,10 @@
     "handlebars": "^4.7.6",
     "import-reload": "^1.0.3",
     "js-yaml": "^3.13.1",
-    "lit-element": "^2.3.1",
     "parcel-bundler": "^1.12.4",
     "socket.io": "^2.3.0",
-    "socket.io-client": "^2.3.0"
+    "socket.io-client": "^2.3.0",
+    "vue": "^2.6.11"
   },
   "devDependencies": {
     "@types/express": "^4.17.3",
@@ -22,6 +22,9 @@
     "@types/socket.io-client": "^1.4.32",
     "ts-node": "^8.8.1",
     "typescript": "^3.8.3"
+  },
+  "alias": {
+    "vue": "./node_modules/vue/dist/vue.common.js"
   },
   "scripts": {
     "generate": "ts-node generate.ts",

@@ -1,11 +1,10 @@
 <html>
   <head>
     <link rel="stylesheet" type="text/css" href="./styles.css" />
-    <script src="./app.ts"></script>
   </head>
 
   <body>
-    <div class="container">
+    <div class="container" id="app">
       <div class="forms-container" id="forms">
         {{#each methods}}
         {{#if this}}
@@ -21,29 +20,30 @@
         <pre id="state"></pre>
       </div>
     </div>
+    <script src="./app.ts"></script>
   </body>
 </html>
 {{#*inline "renderForm"}}
 {{#if (eq type "object")}}
-<object-input{{#if key}} key="{{key}}"{{/if}}>
+<object-input{{#if arg}} arg="{{arg}}"{{/if}}>
   {{#each properties}}
   <label>{{@key}}</label>
-  {{> renderForm key=@key}}
+  {{> renderForm arg=@key}}
   {{/each}}
 </object-input>
 {{else if (eq type "array")}}
-<array-input{{#if key}} key="{{key}}"{{/if}}>
+<array-input{{#if arg}} arg="{{arg}}"{{/if}}>
   {{#with items}}
   {{> renderForm}}
   {{/with}}
 </array-input>
 {{else if (eq type "enum")}}
-<enum-input{{#if key}} key="{{key}}"{{/if}} options='{{{stringify options}}}'></enum-input>
+<enum-input{{#if arg}} arg="{{arg}}"{{/if}} :options='{{{stringify options}}}'></enum-input>
 {{else if (eq type "string")}}
-<string-input{{#if key}} key="{{key}}"{{/if}}></string-input>
+<string-input{{#if arg}} arg="{{arg}}"{{/if}}></string-input>
 {{else if (eq type "number")}}
-<number-input{{#if key}} key="{{key}}"{{/if}}></number-input>
+<number-input{{#if arg}} arg="{{arg}}"{{/if}}></number-input>
 {{else if (eq type "boolean")}}
-<boolean-input{{#if key}} key="{{key}}"{{/if}}></boolean-input>
+<boolean-input{{#if arg}} arg="{{arg}}"{{/if}}></boolean-input>
 {{/if}}
 {{/inline}}
