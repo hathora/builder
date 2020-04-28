@@ -76,11 +76,13 @@ Vue.component("array-input", {
 Vue.component("enum-input", {
   props: { arg: String, options: Array },
   data: () => ({ value: 0 }),
-  template: `<div><select v-model="value">
+  template: `<div>
+      <select v-model="value">
         <option v-for="option in options" :value="option.value">
           \{{option.label}}
         </option>
-      </select></div>`,
+      </select>
+    </div>`,
 });
 
 Vue.component("string-input", {
