@@ -34,12 +34,12 @@ LsotClient.registerUser(name).then((userId) => {
 Vue.component("method-form", {
   props: { method: String },
   template: `<div class="form" :id="method">
-        <h1 class="heading">\{{method}}</h1>
-        <slot></slot>
-        <button type="button" class="submit-button" @click="submit">
-          <span class="button-text">Submit</span>
-        </button>
-      </div>`,
+      <h1 class="heading">\{{method}}</h1>
+      <slot></slot>
+      <button type="button" class="submit-button" @click="submit">
+        <span class="button-text">Submit</span>
+      </button>
+    </div>`,
   methods: {
     submit: function () {
       const child: any = this.$children[0];
