@@ -8,7 +8,7 @@
       <div class="forms-container" id="forms">
         {{#each methods}}
         {{#if this}}
-        <method-form method="{{@key}}">
+        <method-form method="{{@key}}" v-slot="{ arg, value }">
           {{> renderForm (getArgsInfo this)}}
         </method-form>
         {{else}}
@@ -25,25 +25,25 @@
 </html>
 {{#*inline "renderForm"}}
 {{#if (eq type "object")}}
-<object-input{{#if arg}} arg="{{arg}}"{{/if}}>
+<object-input{{#if arg}} arg="{{arg}}" :value="value.{{arg}}"{{else}} :arg="arg" :value="value"{{/if}} v-slot="{ value }">
   {{#each properties}}
   <label>{{@key}}</label>
   {{> renderForm arg=@key}}
   {{/each}}
 </object-input>
 {{else if (eq type "array")}}
-<array-input{{#if arg}} arg="{{arg}}"{{/if}}>
+<array-input{{#if arg}} arg="{{arg}}" :value="value.{{arg}}"{{else}} :arg="arg" :value="value"{{/if}} :value="value" v-slot="{ arg, value }">
   {{#with items}}
   {{> renderForm}}
   {{/with}}
 </array-input>
 {{else if (eq type "enum")}}
-<enum-input{{#if arg}} arg="{{arg}}"{{/if}} :options='{{{stringify options}}}'></enum-input>
+<enum-input{{#if arg}} arg="{{arg}}" :value="value.{{arg}}"{{else}} :arg="arg" :value="value"{{/if}} :options='{{{stringify options}}}'></enum-input>
 {{else if (eq type "string")}}
-<string-input{{#if arg}} arg="{{arg}}"{{/if}}></string-input>
+<string-input{{#if arg}} arg="{{arg}}" :value="value.{{arg}}"{{else}} :arg="arg" :value="value"{{/if}}></string-input>
 {{else if (eq type "number")}}
-<number-input{{#if arg}} arg="{{arg}}"{{/if}}></number-input>
+<number-input{{#if arg}} arg="{{arg}}" :value="value.{{arg}}"{{else}} :arg="arg" :value="value"{{/if}}></number-input>
 {{else if (eq type "boolean")}}
-<boolean-input{{#if arg}} arg="{{arg}}"{{/if}}></boolean-input>
+<boolean-input{{#if arg}} arg="{{arg}}" :value="value.{{arg}}"{{else}} :arg="arg" :value="value"{{/if}}></boolean-input>
 {{/if}}
 {{/inline}}

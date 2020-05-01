@@ -33,53 +33,49 @@ LsotClient.registerUser(name).then((userId) => {
 
 Vue.component("method-form", {
   props: { method: String },
+  data: () => ({ value: {} }),
   template: `<div class="form" :id="method">
       <h1 class="heading">\{{method}}</h1>
-      <slot></slot>
-      <button type="button" class="submit-button" @click="submit">
+      <slot :arg="method" :value="value"></slot>
+      <button type="button" class="submit-button" @click="this.console.log(JSON.parse(JSON.stringify(value)))">
         <span class="button-text">Submit</span>
       </button>
     </div>`,
-  methods: {
-    submit: function () {
-      const child: any = this.$children[0];
-      console.log(child.value());
-    },
+  created: function () {
+    this.$on("update", (arg: string, value: any) => {
+      this.$set(this.value, arg, value);
+    });
   },
 });
 
 Vue.component("object-input", {
-  props: { arg: String },
-  template: `<div><slot></slot></div>`,
-  methods: {
-    value: function () {
-      return Object.fromEntries(
-        this.$children.map((child: any) => [child.arg, typeof child.value === "function" ? child.value() : child.value])
-      );
-    },
+  props: { arg: String, value: { type: Object, default: () => ({}) } },
+  template: `<div><slot :value="value"></slot></div>`,
+  created: function () {
+    this.$on("update", (arg: number, value: any) => {
+      this.$parent.$emit("update", arg, value);
+    });
   },
 });
 
 Vue.component("array-input", {
-  props: { arg: String },
-  data: () => ({ numItems: 0 }),
+  props: { arg: String, value: { type: Array, default: () => [] } },
   template: `<div>
-      <slot v-for="n in numItems"></slot>
-      <button type="button" @click="numItems += 1">Add</button>
+      <slot v-for="(v, i) in value" :arg="i.toString()" :value="v"></slot>
+      <button type="button" @click="$parent.$emit('update', arg, value.concat(null))">Add</button>
     </div>`,
-  methods: {
-    value: function () {
-      return this.$children.map((child: any) => (typeof child.value === "function" ? child.value() : child.value));
-    },
+  created: function () {
+    this.$on("update", (arg: string, value: any) => {
+      this.$parent.$emit("update", this.arg, Object.assign([], this.value, { [Number(arg)]: value }));
+    });
   },
 });
 
 Vue.component("enum-input", {
-  props: { arg: String, options: Array },
-  data: () => ({ value: 0 }),
+  props: { arg: String, value: { type: Number, default: 0 }, options: Array },
   template: `<div>
-      <select v-model="value">
-        <option v-for="option in options" :value="option.value">
+      <select @change="$parent.$emit('update', arg, Number($event.target.value))">
+        <option v-for="option in options" :value="option.value" :selected="option.value === value">
           \{{option.label}}
         </option>
       </select>
@@ -87,9 +83,8 @@ Vue.component("enum-input", {
 });
 
 Vue.component("string-input", {
-  props: { arg: String },
-  data: () => ({ value: "" }),
-  template: `<div><input type="text" v-model="value" /></div>`,
+  props: { arg: String, value: { type: String, default: "" } },
+  template: `<div><input type="text" :value="value" @input="$parent.$emit('update', arg, $event.target.value)" /></div>`,
 });
 
 new Vue({ el: "#app" });
