@@ -84,7 +84,9 @@ Vue.component("enum-input", {
 
 Vue.component("string-input", {
   props: { arg: String, value: { type: String, default: "" } },
-  template: `<div><input type="text" :value="value" @input="$parent.$emit('update', arg, $event.target.value)" /></div>`,
+  template: `<div>
+      <input type="text" :value="value" @input="$parent.$emit('update', arg, $event.target.value)" />
+    </div>`,
 });
 
 new Vue({ el: "#app" });
