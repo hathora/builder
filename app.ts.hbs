@@ -60,7 +60,9 @@ Vue.component("method-form", {
         throw new Error("Client is not set");
       }
       console.log(JSON.parse(JSON.stringify(this.value)));
-      console.log(window.client[this.method as keyof LsotClient])
+      const method = window.client[this.method as keyof LsotClient];
+      console.log(method)
+      window.client[this.method as keyof LsotClient](this.value as any)
     }
   }
 });

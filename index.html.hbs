@@ -7,12 +7,14 @@
     <div class="container" id="app">
       <div class="forms-container" id="forms">
         {{#each methods}}
+        {{#if (ne @key ../initialize)}}
         {{#if this}}
         <method-form method="{{@key}}" v-slot="{ arg, value }">
           {{> renderForm (getArgsInfo this)}}
         </method-form>
         {{else}}
         <method-form method="{{@key}}"></method-form>
+        {{/if}}
         {{/if}}
         {{/each}}
       </div>
