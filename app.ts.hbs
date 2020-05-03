@@ -1,6 +1,10 @@
 import { LsotClient } from "./client";
 import Vue from "vue";
 
+declare global {
+  interface Window { client: LsotClient | undefined; }
+}
+
 function connect(userId: string, stateId: string) {
   return LsotClient.connect(
     userId,
@@ -16,6 +20,7 @@ function setMetadata(userName: string, stateId: string) {
   history.pushState({}, "", window.location.pathname + "?" + urlParams.toString());
 }
 
+window.client = undefined;
 const name = prompt("Enter username")!;
 LsotClient.registerUser(name).then((userId) => {
   const urlParams = new URLSearchParams(window.location.search);
@@ -29,7 +34,9 @@ LsotClient.registerUser(name).then((userId) => {
       return connect(userId, stateId);
     });
   }
-});
+}).then(client => {
+  window.client = client;
+})
 
 Vue.component("method-form", {
   props: { method: String },
@@ -37,7 +44,7 @@ Vue.component("method-form", {
   template: `<div class="form" :id="method">
       <h1 class="heading">\{{method}}</h1>
       <slot :arg="method" :value="value"></slot>
-      <button type="button" class="submit-button" @click="this.console.log(JSON.parse(JSON.stringify(value)))">
+      <button type="button" class="submit-button" @click="submit">
         <span class="button-text">Submit</span>
       </button>
     </div>`,
@@ -46,6 +53,16 @@ Vue.component("method-form", {
       this.$set(this.value, arg, value);
     });
   },
+  methods: {
+    submit: function (e: any) {
+      e.stopPropagation();
+      if (window.client == null) {
+        throw new Error("Client is not set");
+      }
+      console.log(JSON.parse(JSON.stringify(this.value)));
+      console.log(window.client[this.method as keyof LsotClient])
+    }
+  }
 });
 
 Vue.component("object-input", {

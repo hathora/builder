@@ -13,6 +13,7 @@ import {
   PlayerAndRole
 } from "./generated/types";
 import { keyBy } from "./utils";
+import { ICreateGameRequest, IJoinGameRequest, IStartGameRequest, IVoteForProposalRequest, IProposeQuestRequest, IVoteInQuestRequest } from './generated/types';
 
 const ROLES_INFO: RoleInfo[] = [
   {
@@ -203,14 +204,13 @@ export class Impl {
       quests: []
     };
   }
-  joinGame(state: InternalState, playerData: PlayerData) {
+  joinGame(state: InternalState, playerData: PlayerData, request: IJoinGameRequest) {
     state.players.push({ name: playerData.playerName });
   }
   startGame(
     state: InternalState,
     playerData: PlayerData,
-    roleList: Role[],
-    playerOrder: PlayerName[]
+    { roleList, playerOrder }: IStartGameRequest,
   ) {
     const numPlayers = state.players.length;
     const leader = state.players[Math.floor(Math.random() * numPlayers)].name;
@@ -220,8 +220,7 @@ export class Impl {
   proposeQuest(
     state: InternalState,
     playerData: PlayerData,
-    questId: QuestId,
-    proposedMembers: PlayerName[]
+    { questId, proposedMembers }: IProposeQuestRequest,
   ) {
     const quest = state.quests.find(q => q.id == questId)!;
     quest.members = proposedMembers;
@@ -229,8 +228,7 @@ export class Impl {
   voteForProposal(
     state: InternalState,
     playerData: PlayerData,
-    questId: QuestId,
-    vote: Vote
+    { questId, vote }: IVoteForProposalRequest,
   ) {
     const player = state.players.find(p => p.name == playerData.playerName)!;
     const quest = state.quests.find(q => q.id == questId)!;
@@ -253,8 +251,7 @@ export class Impl {
   voteInQuest(
     state: InternalState,
     playerData: PlayerData,
-    questId: QuestId,
-    vote: Vote
+    { questId, vote }: IVoteInQuestRequest,
   ) {
     const player = state.players.find(p => p.name == playerData.playerName)!;
     const quest = state.quests.find(q => q.id == questId)!;

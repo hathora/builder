@@ -88,8 +88,8 @@ async function main() {
 
     {{#each methods}}
     {{#if (ne @key ../initialize)}}
-    socket.on("{{@key}}", ({{#join this ", " false false}}{{name}}{{/join}}) => {
-      impl.{{@key}}(state, userData{{#join this ", " true false}}{{name}}{{/join}});
+    socket.on("{{@key}}", request => {
+      impl.{{@key}}(state, userData, request);
       broadcastUpdates(stateId, state);
     });
     {{/if}}

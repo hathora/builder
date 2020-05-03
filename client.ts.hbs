@@ -1,4 +1,12 @@
-import { UserId, PlayerName, QuestId, Role, Vote, {{userState}} } from "./types";
+import {
+  UserId,
+  {{#each types}}
+  {{@key}},
+  {{/each}}
+  {{#each methods}}
+  {{makeRequestName @key}},
+  {{/each}}
+} from "./types";
 import io from "socket.io-client";
 
 export type StateId = string;
@@ -41,8 +49,8 @@ export class LsotClient {
 
   {{#each methods}}
   {{#if (ne @key ../initialize)}}
-  public {{@key}}({{#join this ", " false false}}{{name}}: {{type}}{{/join}}): void {
-    this.socket.emit("{{@key}}"{{#join this ", " true false}}{{name}}{{/join}});
+  public {{@key}}(request: {{makeRequestName @key}}): void {
+    this.socket.emit("{{@key}}", request);
   }
 
   {{/if}}

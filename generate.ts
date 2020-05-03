@@ -30,6 +30,7 @@ registerHelper("ne", (a, b) => a !== b);
 registerHelper("stringify", JSON.stringify);
 registerHelper("isArray", Array.isArray);
 registerHelper("isObject", (x) => typeof x === "object");
+registerHelper("makeRequestName", (x) => "I" + capitalize(x) + "Request");
 registerHelper("join", (params, joinStr, prepend, postpend, options) => {
   if (Array.isArray(params)) {
     const paramsStr = params.map((name) => options.fn({ name })).join(joinStr);
@@ -64,6 +65,10 @@ function getArgsInfo(args: any): Arg {
     }
   }
   throw new Error("Invalid args: " + args);
+}
+
+function capitalize(s: string) {
+  return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
 function generate(filename: string) {

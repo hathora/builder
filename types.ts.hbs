@@ -14,3 +14,19 @@ export interface {{@key}} {
 export type {{@key}} = {{this}};
 {{/if}}
 {{/each}}
+
+{{#each methods}}
+{{#if (isArray this)}}
+export enum {{makeRequestName @key}} {
+  {{#join this ",
+  " false false}}{{name}}{{/join}}
+}
+{{else if (isObject this)}}
+export interface {{makeRequestName @key}} {
+{{#join this ";
+" false true}}  {{name}}: {{type}}{{/join~}}
+}
+{{else}}
+export type {{makeRequestName @key}} = {{this}};
+{{/if}}
+{{/each}}
