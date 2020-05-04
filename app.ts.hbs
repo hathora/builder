@@ -61,7 +61,12 @@ Vue.component("object-input", {
 Vue.component("array-input", {
   props: { arg: String, value: { type: Array, default: () => [] } },
   template: `<div>
-      <slot v-for="(v, i) in value" :arg="i.toString()" :value="v"></slot>
+      <div v-for="(v, i) in value">
+        <slot :arg="i.toString()" :value="v"></slot>
+        <button type="button" @click="$parent.$emit('update', arg, value.slice(0, i).concat(value.slice(i+1, value.length)))">x</button>
+        <button type="button" @click="$parent.$emit('update', arg, i === 0 ? value : [...value.slice(0, i-1), value[i], value[i-1], ...value.slice(i+1, value.length)])">up</button>
+        <button type="button" @click="$parent.$emit('update', arg, i === (value.length-1) ? value : [...value.slice(0, i), value[i+1], value[i], ...value.slice(i+2, value.length)])">dn</button>
+      </div>
       <button type="button" @click="$parent.$emit('update', arg, value.concat(null))">Add</button>
     </div>`,
   created: function () {
