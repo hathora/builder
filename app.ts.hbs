@@ -1,9 +1,7 @@
 import { LsotClient } from "./client";
 import Vue from "vue";
 
-declare global {
-  interface Window { client: LsotClient | undefined; }
-}
+let client: LsotClient;
 
 function connect(userId: string, stateId: string) {
   return LsotClient.connect(
@@ -20,23 +18,24 @@ function setMetadata(userName: string, stateId: string) {
   history.pushState({}, "", window.location.pathname + "?" + urlParams.toString());
 }
 
-window.client = undefined;
 const name = prompt("Enter username")!;
-LsotClient.registerUser(name).then((userId) => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const stateId = urlParams.get("stateId") || prompt("Enter stateId (or enter if creating new)");
-  if (stateId != null && stateId.length > 0) {
-    setMetadata(name, stateId);
-    return connect(userId, stateId);
-  } else {
-    return LsotClient.createState(userId).then((stateId) => {
+LsotClient.registerUser(name)
+  .then((userId) => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const stateId = urlParams.get("stateId") || prompt("Enter stateId (or enter if creating new)");
+    if (stateId != null && stateId.length > 0) {
       setMetadata(name, stateId);
       return connect(userId, stateId);
-    });
-  }
-}).then(client => {
-  window.client = client;
-})
+    } else {
+      return LsotClient.createState(userId).then((stateId) => {
+        setMetadata(name, stateId);
+        return connect(userId, stateId);
+      });
+    }
+  })
+  .then((c) => {
+    client = c;
+  });
 
 Vue.component("method-form", {
   props: { method: String },
@@ -54,17 +53,10 @@ Vue.component("method-form", {
     });
   },
   methods: {
-    submit: function (e: any) {
-      e.stopPropagation();
-      if (window.client == null) {
-        throw new Error("Client is not set");
-      }
-      console.log(JSON.parse(JSON.stringify(this.value)));
-      const method = window.client[this.method as keyof LsotClient];
-      console.log(method)
-      window.client[this.method as keyof LsotClient](this.value as any)
-    }
-  }
+    submit: function () {
+      client[this.method as keyof LsotClient](this.value as any);
+    },
+  },
 });
 
 Vue.component("object-input", {
