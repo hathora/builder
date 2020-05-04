@@ -1,10 +1,11 @@
 import {
   UserId,
-  {{#each types}}
-  {{@key}},
-  {{/each}}
+  PlayerName,
+  {{userState}},
   {{#each methods}}
+  {{#if (ne @key ../initialize)}}
   {{makeRequestName @key}},
+  {{/if}}
   {{/each}}
 } from "./types";
 import io from "socket.io-client";
@@ -18,9 +19,9 @@ export class LsotClient {
     const res = await fetch("/register", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ playerName: username })
+      body: JSON.stringify({ playerName: username }),
     });
     const { userId } = await res.json();
     return userId;
@@ -30,8 +31,8 @@ export class LsotClient {
     const res = await fetch("/new?userId=" + userId, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
-      }
+        "Content-Type": "application/json",
+      },
     });
     const { stateId } = await res.json();
     return stateId;
