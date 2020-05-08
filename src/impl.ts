@@ -11,8 +11,6 @@ import {
   PlayerData,
   RoleInfo,
   PlayerAndRole,
-} from "./generated/types";
-import {
   IJoinGameRequest,
   IStartGameRequest,
   IVoteForProposalRequest,
