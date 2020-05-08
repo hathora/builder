@@ -34,7 +34,7 @@ registerHelper("makeRequestName", (x) => "I" + capitalize(x) + "Request");
 registerHelper("join", (params, joinStr, prepend, postpend, options) => {
   if (Array.isArray(params)) {
     const paramsStr = params.map((name) => options.fn({ name })).join(joinStr);
-    return (prepend && paramsStr.length ? joinStr : "") + paramsStr;
+    return (prepend && paramsStr.length ? joinStr : "") + paramsStr + (postpend && paramsStr.length ? joinStr : "");
   } else {
     const paramsStr = Object.entries(params || {})
       .map(([name, type]) => options.fn({ name, type }))
@@ -68,7 +68,7 @@ function getArgsInfo(args: any): Arg {
 }
 
 function capitalize(s: string) {
-  return s.charAt(0).toUpperCase() + s.slice(1)
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 function generate(filename: string) {
