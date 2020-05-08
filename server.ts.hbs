@@ -9,7 +9,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketio(server);
 const bundler = new Bundler(path.join(__dirname, "index.html"), {
-  cache: false
+  cache: false,
 });
 
 const users: Map<string, any> = new Map();
@@ -19,7 +19,7 @@ const connections: Map<string, Set<SocketIO.Socket>> = new Map();
 async function main() {
   const impl = await reload(
     () => import("../impl"),
-    Impl => new Impl.Impl()
+    (Impl) => new Impl.Impl()
   );
 
   function addConnection(stateId: string, socket: socketio.Socket) {
@@ -38,7 +38,7 @@ async function main() {
   }
 
   function broadcastUpdates(stateId: string, state: any) {
-    connections.get(stateId)!.forEach(socket => {
+    connections.get(stateId)!.forEach((socket) => {
       const userId = socket.handshake.query.userId;
       const userData = users.get(userId)!;
       const userState = impl.getUserState(state, userData);
@@ -49,9 +49,7 @@ async function main() {
   app.use(express.json());
   app.post("/register", (req, res) => {
     const userData = req.body;
-    const userId = Math.random()
-      .toString(36)
-      .substring(2);
+    const userId = Math.random().toString(36).substring(2);
     users.set(userId, userData);
     res.json({ userId });
   });
@@ -59,9 +57,7 @@ async function main() {
     const userId = req.query.userId;
     const userData = users.get(userId)!;
     const state = impl.createGame(userData);
-    const stateId = Math.random()
-      .toString(36)
-      .substring(2);
+    const stateId = Math.random().toString(36).substring(2);
     states.set(stateId, state);
     res.json({ stateId });
   });
@@ -75,7 +71,7 @@ async function main() {
     } else {
       next();
     }
-  }).on("connection", socket => {
+  }).on("connection", (socket) => {
     const stateId = socket.handshake.query.stateId;
     const userId = socket.handshake.query.userId;
     const state = states.get(stateId)!;
@@ -88,8 +84,8 @@ async function main() {
 
     {{#each methods}}
     {{#if (ne @key ../initialize)}}
-    socket.on("{{@key}}", ({{#join this ", " false false}}{{name}}{{/join}}) => {
-      impl.{{@key}}(state, userData{{#join this ", " true false}}{{name}}{{/join}});
+    socket.on("{{@key}}", (request) => {
+      impl.{{@key}}(state, userData, request);
       broadcastUpdates(stateId, state);
     });
     {{/if}}

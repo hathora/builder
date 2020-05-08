@@ -10,7 +10,12 @@ import {
   PlayerState,
   PlayerData,
   RoleInfo,
-  PlayerAndRole
+  PlayerAndRole,
+  IJoinGameRequest,
+  IStartGameRequest,
+  IVoteForProposalRequest,
+  IProposeQuestRequest,
+  IVoteInQuestRequest,
 } from "./generated/types";
 import { keyBy } from "./utils";
 
@@ -18,43 +23,43 @@ const ROLES_INFO: RoleInfo[] = [
   {
     role: Role.MERLIN,
     isEvil: false,
-    description: ""
+    description: "",
   },
   {
     role: Role.PERCIVAL,
     isEvil: false,
-    description: ""
+    description: "",
   },
   {
     role: Role.LOYAL_SERVANT,
     isEvil: false,
-    description: ""
+    description: "",
   },
   {
     role: Role.MINION,
     isEvil: true,
-    description: ""
+    description: "",
   },
   {
     role: Role.ASSASSIN,
     isEvil: true,
-    description: ""
+    description: "",
   },
   {
     role: Role.MORGANA,
     isEvil: true,
-    description: ""
+    description: "",
   },
   {
     role: Role.OBERON,
     isEvil: true,
-    description: ""
+    description: "",
   },
   {
     role: Role.MORDRED,
     isEvil: true,
-    description: ""
-  }
+    description: "",
+  },
 ];
 
 interface InternalPlayer {
@@ -79,10 +84,7 @@ export interface InternalState {
   quests: InternalQuestAttempt[];
 }
 
-function sanitizeQuest(
-  quest: InternalQuestAttempt,
-  player: PlayerName
-): QuestAttempt {
+function sanitizeQuest(quest: InternalQuestAttempt, player: PlayerName): QuestAttempt {
   const remainingVotes = quest.size - quest.votes.length;
   const remainingResults = quest.size - quest.results.length;
   return {
@@ -94,15 +96,12 @@ function sanitizeQuest(
     members: quest.members,
     votes: remainingVotes == 0 ? quest.votes.sort() : [],
     remainingVotes,
-    results: remainingResults == 0 ? quest.results.map(r => r.vote).sort() : [],
+    results: remainingResults == 0 ? quest.results.map((r) => r.vote).sort() : [],
     remainingResults,
-    numFailures:
-      remainingResults == 0
-        ? quest.results.filter(r => r.vote == Vote.FAIL).length
-        : 0,
-    playerVote: quest.votes.find(v => v.player == player)?.vote,
-    playerResult: quest.results.find(v => v.player == player)?.vote,
-    status: QuestStatus.PROPOSING_QUEST
+    numFailures: remainingResults == 0 ? quest.results.filter((r) => r.vote == Vote.FAIL).length : 0,
+    playerVote: quest.votes.find((v) => v.player == player)?.vote,
+    playerResult: quest.results.find((v) => v.player == player)?.vote,
+    status: QuestStatus.PROPOSING_QUEST,
   };
 }
 
@@ -113,16 +112,14 @@ function createQuest(
   leader: PlayerName
 ): InternalQuestAttempt {
   return {
-    id: Math.random()
-      .toString(36)
-      .substring(2),
+    id: Math.random().toString(36).substring(2),
     roundNumber,
     attemptNumber,
     size: numPlayers,
     leader,
     members: [],
     votes: [],
-    results: []
+    results: [],
   };
 }
 
@@ -145,10 +142,8 @@ function getGameStatus(quests: QuestAttempt[]): GameStatus {
   const results = quests.reduce(
     (results, quest) => {
       return {
-        evilWins:
-          results.evilWins + (quest.status === QuestStatus.FAILED ? 1 : 0),
-        goodWins:
-          results.goodWins + (quest.status === QuestStatus.PASSED ? 1 : 0)
+        evilWins: results.evilWins + (quest.status === QuestStatus.FAILED ? 1 : 0),
+        goodWins: results.goodWins + (quest.status === QuestStatus.PASSED ? 1 : 0),
       };
     },
     { evilWins: 0, goodWins: 0 }
@@ -164,33 +159,18 @@ function getGameStatus(quests: QuestAttempt[]): GameStatus {
   return GameStatus.IN_PROGRESS;
 }
 
-function getKnownRoles(
-  playerRole: Role | undefined,
-  players: PlayerAndRole[]
-): PlayerAndRole[] {
+function getKnownRoles(playerRole: Role | undefined, players: PlayerAndRole[]): PlayerAndRole[] {
   const rolesInfoMap: Map<Role, RoleInfo> = keyBy(ROLES_INFO, "role");
   if (playerRole === undefined) {
     return [];
-  }
-  else if (playerRole === Role.MERLIN) {
-    return players.filter(
-      p =>
-        p.role === playerRole ||
-        (rolesInfoMap.get(p.role)!.isEvil && p.role != Role.MORDRED)
-    );
+  } else if (playerRole === Role.MERLIN) {
+    return players.filter((p) => p.role === playerRole || (rolesInfoMap.get(p.role)!.isEvil && p.role != Role.MORDRED));
   } else if (playerRole === Role.PERCIVAL) {
-    return players.filter(
-      p =>
-        p.role === playerRole ||
-        p.role === Role.MERLIN ||
-        p.role === Role.MORGANA
-    );
+    return players.filter((p) => p.role === playerRole || p.role === Role.MERLIN || p.role === Role.MORGANA);
   } else if (playerRole === Role.OBERON) {
-    return players.filter(p => p.role === playerRole);
+    return players.filter((p) => p.role === playerRole);
   } else if (rolesInfoMap.get(playerRole)!.isEvil) {
-    return players.filter(
-      p => rolesInfoMap.get(p.role)!.isEvil && p.role !== Role.OBERON
-    );
+    return players.filter((p) => rolesInfoMap.get(p.role)!.isEvil && p.role !== Role.OBERON);
   }
   return [];
 }
@@ -200,85 +180,55 @@ export class Impl {
     return {
       creator: playerData.playerName,
       players: [{ name: playerData.playerName }],
-      quests: []
+      quests: [],
     };
   }
-  joinGame(state: InternalState, playerData: PlayerData) {
+  joinGame(state: InternalState, playerData: PlayerData, request: IJoinGameRequest) {
     state.players.push({ name: playerData.playerName });
   }
-  startGame(
-    state: InternalState,
-    playerData: PlayerData,
-    roleList: Role[],
-    playerOrder: PlayerName[]
-  ) {
+  startGame(state: InternalState, playerData: PlayerData, { roleList, playerOrder }: IStartGameRequest) {
     const numPlayers = state.players.length;
     const leader = state.players[Math.floor(Math.random() * numPlayers)].name;
     state.players.forEach((p, i) => (p.role = roleList[i]));
     state.quests.push(createQuest(1, 1, numPlayers, leader));
   }
-  proposeQuest(
-    state: InternalState,
-    playerData: PlayerData,
-    questId: QuestId,
-    proposedMembers: PlayerName[]
-  ) {
-    const quest = state.quests.find(q => q.id == questId)!;
+  proposeQuest(state: InternalState, playerData: PlayerData, { questId, proposedMembers }: IProposeQuestRequest) {
+    const quest = state.quests.find((q) => q.id == questId)!;
     quest.members = proposedMembers;
   }
-  voteForProposal(
-    state: InternalState,
-    playerData: PlayerData,
-    questId: QuestId,
-    vote: Vote
-  ) {
-    const player = state.players.find(p => p.name == playerData.playerName)!;
-    const quest = state.quests.find(q => q.id == questId)!;
+  voteForProposal(state: InternalState, playerData: PlayerData, { questId, vote }: IVoteForProposalRequest) {
+    const player = state.players.find((p) => p.name == playerData.playerName)!;
+    const quest = state.quests.find((q) => q.id == questId)!;
     const numPlayers = state.players.length;
     quest.votes.push({ player: player.name, vote });
-    if (
-      quest.votes.length === numPlayers &&
-      quest.votes.reduce((a, b) => a + voteToInt(b.vote), 0) <= 0
-    ) {
-      state.quests.push(
-        createQuest(
-          quest.roundNumber,
-          quest.attemptNumber + 1,
-          numPlayers,
-          player.name
-        )
-      );
+    if (quest.votes.length === numPlayers && quest.votes.reduce((a, b) => a + voteToInt(b.vote), 0) <= 0) {
+      state.quests.push(createQuest(quest.roundNumber, quest.attemptNumber + 1, numPlayers, player.name));
     }
   }
-  voteInQuest(
-    state: InternalState,
-    playerData: PlayerData,
-    questId: QuestId,
-    vote: Vote
-  ) {
-    const player = state.players.find(p => p.name == playerData.playerName)!;
-    const quest = state.quests.find(q => q.id == questId)!;
+  voteInQuest(state: InternalState, playerData: PlayerData, { questId, vote }: IVoteInQuestRequest) {
+    const player = state.players.find((p) => p.name == playerData.playerName)!;
+    const quest = state.quests.find((q) => q.id == questId)!;
     quest.results.push({ player: player.name, vote });
   }
   getUserState(state: InternalState, playerData: PlayerData): PlayerState {
     const { playerName } = playerData;
-    const player = state.players.find(p => p.name === playerName);
-    const quests = state.quests.map(quest => sanitizeQuest(quest, playerName));
+    const player = state.players.find((p) => p.name === playerName);
+    const quests = state.quests.map((quest) => sanitizeQuest(quest, playerName));
     return {
       creator: state.creator,
-      playersPerQuest: quests.map(q => q.size),
+      playersPerQuest: quests.map((q) => q.size),
       rolesInfo: ROLES_INFO,
-      players: state.players.map(p => p.name),
-      roles: state.players.map(p => p.role!).filter(r => !!r),
+      players: state.players.map((p) => p.name),
+      roles: state.players.map((p) => p.role!).filter((r) => !!r),
       playerName: playerData.playerName,
       playerRole: player && player.role,
       knownRoles: getKnownRoles(
         player && player.role,
-        state.players.map(p => ({ player: p.name, role: p.role! }))
+        state.players.map((p) => ({ player: p.name, role: p.role! }))
       ),
       currentQuest: quests[quests.length - 1],
       questHistory: quests.slice(0, state.quests.length - 1),
-      status: getGameStatus(quests)
+      status: getGameStatus(quests),
     };
   }
 }
