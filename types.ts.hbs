@@ -2,8 +2,8 @@ export type UserId = string;
 {{#each types}}
 {{#if (isArray this)}}
 export enum {{@key}} {
-  {{#join this ",
-  " false false}}{{name}}{{/join}}
+{{#join this ",
+" false true}}  {{name}}{{/join~}}
 }
 {{else if (isObject this)}}
 export interface {{@key}} {
@@ -12,5 +12,13 @@ export interface {{@key}} {
 }
 {{else}}
 export type {{@key}} = {{this}};
+{{/if}}
+{{/each}}
+{{#each methods}}
+{{#if (ne @key ../initialize)}}
+export interface {{makeRequestName @key}} {
+{{#join this ";
+" false true}}  {{name}}: {{type}}{{/join~}}
+}
 {{/if}}
 {{/each}}

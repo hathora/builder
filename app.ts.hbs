@@ -1,6 +1,8 @@
 import { LsotClient } from "./client";
 import Vue from "vue";
 
+let client: LsotClient;
+
 function connect(userId: string, stateId: string) {
   return LsotClient.connect(
     userId,
@@ -17,19 +19,23 @@ function setMetadata(userName: string, stateId: string) {
 }
 
 const name = prompt("Enter username")!;
-LsotClient.registerUser(name).then((userId) => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const stateId = urlParams.get("stateId") || prompt("Enter stateId (or enter if creating new)");
-  if (stateId != null && stateId.length > 0) {
-    setMetadata(name, stateId);
-    return connect(userId, stateId);
-  } else {
-    return LsotClient.createState(userId).then((stateId) => {
+LsotClient.registerUser(name)
+  .then((userId) => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const stateId = urlParams.get("stateId") || prompt("Enter stateId (or enter if creating new)");
+    if (stateId != null && stateId.length > 0) {
       setMetadata(name, stateId);
       return connect(userId, stateId);
-    });
-  }
-});
+    } else {
+      return LsotClient.createState(userId).then((stateId) => {
+        setMetadata(name, stateId);
+        return connect(userId, stateId);
+      });
+    }
+  })
+  .then((c) => {
+    client = c;
+  });
 
 Vue.component("method-form", {
   props: { method: String },
@@ -37,7 +43,7 @@ Vue.component("method-form", {
   template: `<div class="form" :id="method">
       <h1 class="heading">\{{method}}</h1>
       <slot :arg="method" :value="value"></slot>
-      <button type="button" class="submit-button" @click="this.console.log(JSON.parse(JSON.stringify(value)))">
+      <button type="button" class="submit-button" @click="submit">
         <span class="button-text">Submit</span>
       </button>
     </div>`,
@@ -45,6 +51,11 @@ Vue.component("method-form", {
     this.$on("update", (arg: string, value: any) => {
       this.$set(this.value, arg, value);
     });
+  },
+  methods: {
+    submit: function () {
+      client[this.method as keyof LsotClient](this.value as any);
+    },
   },
 });
 
