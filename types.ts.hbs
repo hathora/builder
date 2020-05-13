@@ -15,10 +15,8 @@ export type {{@key}} = {{this}};
 {{/if}}
 {{/each}}
 {{#each methods}}
-{{#if (ne @key ../initialize)}}
 export interface {{makeRequestName @key}} {
 {{#join this ";
 " false true}}  {{name}}: {{type}}{{/join~}}
 }
-{{/if}}
 {{/each}}

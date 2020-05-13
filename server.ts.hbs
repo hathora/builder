@@ -12,8 +12,8 @@ const bundler = new Bundler(path.join(__dirname, "index.html"), {
   cache: false,
 });
 
-const users: Map<string, any> = new Map();
 const states: Map<string, any> = new Map();
+const users: Map<string, any> = new Map();
 const connections: Map<string, Set<SocketIO.Socket>> = new Map();
 
 async function main() {
@@ -56,7 +56,7 @@ async function main() {
   app.post("/new", (req, res) => {
     const userId = req.query.userId;
     const userData = users.get(userId)!;
-    const state = impl.createGame(userData);
+    const state = impl.{{initialize}}(userData, req.body);
     const stateId = Math.random().toString(36).substring(2);
     states.set(stateId, state);
     res.json({ stateId });

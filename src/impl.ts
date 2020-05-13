@@ -11,6 +11,7 @@ import {
   PlayerData,
   RoleInfo,
   PlayerAndRole,
+  ICreateGameRequest,
   IJoinGameRequest,
   IStartGameRequest,
   IVoteForProposalRequest,
@@ -176,7 +177,7 @@ function getKnownRoles(playerRole: Role | undefined, players: PlayerAndRole[]): 
 }
 
 export class Impl {
-  createGame(playerData: PlayerData): InternalState {
+  createGame(playerData: PlayerData, request: ICreateGameRequest): InternalState {
     return {
       creator: playerData.playerName,
       players: [{ name: playerData.playerName }],
