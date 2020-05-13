@@ -85,6 +85,7 @@ if (!existsSync("src/generated")) {
 generate("types.ts");
 generate("client.ts");
 generate("server.ts");
+generate("methods.ts");
 generate("app.ts");
 generate("styles.css");
 generate("index.html");

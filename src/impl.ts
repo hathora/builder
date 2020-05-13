@@ -19,6 +19,7 @@ import {
   IVoteInQuestRequest,
 } from "./generated/types";
 import { keyBy } from "./utils";
+import { Methods } from "./generated/methods";
 
 const ROLES_INFO: RoleInfo[] = [
   {
@@ -176,7 +177,7 @@ function getKnownRoles(playerRole: Role | undefined, players: PlayerAndRole[]): 
   return [];
 }
 
-export class Impl {
+export class Impl implements Methods<InternalState> {
   createGame(playerData: PlayerData, request: ICreateGameRequest): InternalState {
     return {
       creator: playerData.playerName,
