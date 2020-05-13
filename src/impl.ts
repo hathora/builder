@@ -18,8 +18,8 @@ import {
   IProposeQuestRequest,
   IVoteInQuestRequest,
 } from "./generated/types";
-import { keyBy } from "./utils";
 import { Methods } from "./generated/methods";
+import { keyBy } from "./utils";
 
 const ROLES_INFO: RoleInfo[] = [
   {
