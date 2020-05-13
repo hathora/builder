@@ -1,0 +1,18 @@
+import {
+  {{userData}},
+  {{userState}},
+  {{#each methods}}
+  {{makeRequestName @key}},
+  {{/each}}
+} from "./types";
+
+export interface Methods<T> {
+  {{#each methods}}
+  {{#if (eq @key ../initialize)}}
+  {{../initialize}}(userData: {{../userData}}, request: {{makeRequestName @key}}): T;
+  {{else}}
+  {{@key}}(state: T, userData: {{../userData}}, request: {{makeRequestName @key}}): void;
+  {{/if}}
+  {{/each}}
+  getUserState(state: T, userData: {{userData}}): {{userState}};
+}
