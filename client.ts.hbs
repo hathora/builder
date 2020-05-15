@@ -8,12 +8,11 @@ import {
   {{/if}}
   {{/each}}
 } from "./types";
-import io from "socket.io-client";
 
 export type StateId = string;
 
 export class LsotClient {
-  private constructor(private socket: SocketIOClient.Socket) {}
+  private constructor(private socket: WebSocket) {}
 
   public static async registerUser(username: PlayerName): Promise<UserId> {
     const res = await fetch("/register", {
@@ -43,15 +42,16 @@ export class LsotClient {
     stateId: StateId,
     onStateChange: (state: {{userState}}) => void
   ): Promise<LsotClient> {
-    const socket = io({ query: { stateId, userId } });
-    socket.on("state", onStateChange);
+    const socket = new WebSocket(`ws://${location.host}/${stateId}`);
+    socket.onopen = () => socket.send(userId);
+    socket.onmessage = ({ data }) => onStateChange(JSON.parse(data));
     return new LsotClient(socket);
   }
 
   {{#each methods}}
   {{#if (ne @key ../initialize)}}
   public {{@key}}(request: {{makeRequestName @key}}): void {
-    this.socket.emit("{{@key}}", request);
+    this.socket.send(JSON.stringify({ method: "{{@key}}", args: request }));
   }
 
   {{/if}}
