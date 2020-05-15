@@ -1,4 +1,4 @@
-import socketio from "socket.io";
+import WebSocket from "ws";
 import express from "express";
 import Bundler from "parcel-bundler";
 import { reload } from "import-reload";
@@ -7,44 +7,30 @@ import * as path from "path";
 
 const app = express();
 const server = http.createServer(app);
-const io = socketio(server);
+const wss = new WebSocket.Server({ noServer: true });
 const bundler = new Bundler(path.join(__dirname, "index.html"), {
   cache: false,
 });
 
+interface Client {
+  userId: string;
+  socket: WebSocket;
+}
+
+interface UpdateRequest {
+  method: string;
+  args: any;
+}
+
 const states: Map<string, any> = new Map();
 const users: Map<string, any> = new Map();
-const connections: Map<string, Set<SocketIO.Socket>> = new Map();
+const connections: Map<string, Set<Client>> = new Map();
 
 async function main() {
   const impl = await reload(
     () => import("../impl"),
     (Impl) => new Impl.Impl()
   );
-
-  function addConnection(stateId: string, socket: socketio.Socket) {
-    if (!connections.has(stateId)) {
-      connections.set(stateId, new Set([socket]));
-    } else {
-      connections.get(stateId)!.add(socket);
-    }
-  }
-
-  function deleteConnection(stateId: string, socket: SocketIO.Socket) {
-    connections.get(stateId)!.delete(socket);
-    if (connections.get(stateId)!.size === 0) {
-      connections.delete(stateId);
-    }
-  }
-
-  function broadcastUpdates(stateId: string, state: any) {
-    connections.get(stateId)!.forEach((socket) => {
-      const userId = socket.handshake.query.userId;
-      const userData = users.get(userId)!;
-      const userState = impl.getUserState(state, userData);
-      socket.emit("state", userState);
-    });
-  }
 
   app.use(express.json());
   app.post("/register", (req, res) => {
@@ -63,37 +49,61 @@ async function main() {
   });
   app.use(bundler.middleware());
 
-  io.use((socket, next) => {
-    const stateId = socket.handshake.query.stateId;
-    const userId = socket.handshake.query.userId;
-    if (!states.has(stateId) || !users.has(userId)) {
-      next(new Error("Invalid connection parameters"));
-    } else {
-      next();
-    }
-  }).on("connection", (socket) => {
-    const stateId = socket.handshake.query.stateId;
-    const userId = socket.handshake.query.userId;
+  server.on("upgrade", (req, socket, head) => {
+    const stateId = req.url.substring(1);
+    wss.handleUpgrade(req, socket, head, (ws) => {
+      ws.once("message", (userId) => {
+        if (!states.has(stateId) || !users.has(userId)) {
+          ws.terminate();
+        } else {
+          handleConnection(stateId, userId, ws);
+        }
+      });
+    });
+  });
+
+  function handleConnection(stateId: string, userId: string, socket: WebSocket) {
     const state = states.get(stateId)!;
     const userData = users.get(userId)!;
-    addConnection(stateId, socket);
-    socket.emit("state", impl.getUserState(state, userData));
-    socket.on("disconnect", () => {
-      deleteConnection(stateId, socket);
+    addConnection(stateId, userId, socket);
+    socket.send(JSON.stringify(impl.getUserState(state, userData)));
+    socket.on("close", () => {
+      deleteConnection(stateId, userId, socket);
     });
 
-    {{#each methods}}
-    {{#if (ne @key ../initialize)}}
-    socket.on("{{@key}}", (request) => {
-      impl.{{@key}}(state, userData, request);
+    socket.on("message", (data) => {
+      const { method, args }: UpdateRequest = JSON.parse(data as string);
+      impl[method as keyof typeof impl](state, userData, args);
       broadcastUpdates(stateId, state);
     });
-    {{/if}}
-    {{/each}}
-  });
+  }
+
+  function addConnection(stateId: string, userId: string, socket: WebSocket) {
+    if (!connections.has(stateId)) {
+      connections.set(stateId, new Set([{ userId, socket }]));
+    } else {
+      connections.get(stateId)!.add({ userId, socket });
+    }
+  }
+
+  function deleteConnection(stateId: string, userId: string, socket: WebSocket) {
+    connections.get(stateId)!.delete({ userId, socket });
+    if (connections.get(stateId)!.size === 0) {
+      connections.delete(stateId);
+    }
+  }
+
+  function broadcastUpdates(stateId: string, state: any) {
+    connections.get(stateId)!.forEach(({ userId, socket }) => {
+      const userData = users.get(userId)!;
+      const userState = impl.getUserState(state, userData);
+      socket.send(JSON.stringify(userState));
+    });
+  }
 
   server.listen(3000, () => {
     console.log("listening on *:3000");
   });
 }
+
 main();
