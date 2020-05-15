@@ -43,9 +43,7 @@ export class LsotClient {
     onStateChange: (state: {{userState}}) => void
   ): Promise<LsotClient> {
     const socket = new WebSocket(`ws://${location.host}/${stateId}`);
-    socket.onopen = () => {
-      socket.send(userId);
-    };
+    socket.onopen = () => socket.send(userId);
     socket.onmessage = ({ data }) => onStateChange(JSON.parse(data));
     return new LsotClient(socket);
   }
