@@ -40,7 +40,7 @@ export class LsotClient {
   public static async connect(
     userId: UserId,
     stateId: StateId,
-    onStateChange: (state: PlayerState) => void
+    onStateChange: (state: {{userState}}) => void
   ): Promise<LsotClient> {
     const socket = new WebSocket(`ws://${location.host}/${stateId}`);
     socket.onopen = () => {
