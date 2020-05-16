@@ -14,7 +14,7 @@ export type StateId = string;
 export class LsotClient {
   private constructor(private socket: WebSocket) {}
 
-  public static async registerUser(username: PlayerName): Promise<UserId> {
+  public static async registerUser(username: PlayerName): Promise<string> {
     const res = await fetch("/register", {
       method: "POST",
       headers: {
@@ -22,15 +22,16 @@ export class LsotClient {
       },
       body: JSON.stringify({ playerName: username }),
     });
-    const { userId } = await res.json();
-    return userId;
+    const { token } = await res.json();
+    return token;
   }
 
-  public static async createState(userId: UserId): Promise<StateId> {
-    const res = await fetch("/new?userId=" + userId, {
+  public static async createState(token: string): Promise<StateId> {
+    const res = await fetch("/new", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": "Bearer " + token,
       },
     });
     const { stateId } = await res.json();
@@ -38,12 +39,12 @@ export class LsotClient {
   }
 
   public static async connect(
-    userId: UserId,
+    token: string,
     stateId: StateId,
     onStateChange: (state: {{userState}}) => void
   ): Promise<LsotClient> {
     const socket = new WebSocket(`ws://${location.host}/${stateId}`);
-    socket.onopen = () => socket.send(userId);
+    socket.onopen = () => socket.send(token);
     socket.onmessage = ({ data }) => onStateChange(JSON.parse(data));
     return new LsotClient(socket);
   }
