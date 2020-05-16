@@ -3,9 +3,9 @@ import Vue from "vue";
 
 let client: LsotClient;
 
-function connect(userId: string, stateId: string) {
+function connect(token: string, stateId: string) {
   return LsotClient.connect(
-    userId,
+    token,
     stateId,
     (state) => (document.getElementById("state")!.innerHTML = JSON.stringify(state, null, 2))
   );
@@ -20,16 +20,16 @@ function setMetadata(userName: string, stateId: string) {
 
 const name = prompt("Enter username")!;
 LsotClient.registerUser(name)
-  .then((userId) => {
+  .then((token) => {
     const urlParams = new URLSearchParams(window.location.search);
     const stateId = urlParams.get("stateId") || prompt("Enter stateId (or enter if creating new)");
     if (stateId != null && stateId.length > 0) {
       setMetadata(name, stateId);
-      return connect(userId, stateId);
+      return connect(token, stateId);
     } else {
-      return LsotClient.createState(userId).then((stateId) => {
+      return LsotClient.createState(token).then((stateId) => {
         setMetadata(name, stateId);
-        return connect(userId, stateId);
+        return connect(token, stateId);
       });
     }
   })
