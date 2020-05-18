@@ -1,5 +1,5 @@
 import { safeLoad } from "js-yaml";
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync, promises } from "fs";
 import { compile, registerHelper } from "handlebars";
 
 type Arg = ObjectArg | ArrayArg | EnumArg | StringArg | NumberArg | BooleanArg;
@@ -72,8 +72,8 @@ function capitalize(s: string) {
 }
 
 function generate(filename: string) {
-  const template = compile(readFileSync(filename + ".hbs", "utf8"));
-  writeFileSync("src/generated/" + filename, template(doc), "utf8");
+  const template = compile(readFileSync("templates/" + filename, "utf8"));
+  writeFileSync("src/generated/" + filename.substring(0, filename.indexOf(".hbs")), template(doc), "utf8");
 }
 
 const doc = safeLoad(readFileSync("src/types.yml", "utf8"));
@@ -82,10 +82,4 @@ if (!existsSync("src/generated")) {
   mkdirSync("src/generated");
 }
 
-generate("types.ts");
-generate("client.ts");
-generate("server.ts");
-generate("methods.ts");
-generate("app.ts");
-generate("styles.css");
-generate("index.html");
+promises.readdir("templates").then((files) => files.forEach(generate));
