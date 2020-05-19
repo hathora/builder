@@ -1,6 +1,9 @@
+#!/usr/bin/env ts-node-script
+
 import { safeLoad } from "js-yaml";
 import { readFileSync, writeFileSync, existsSync, mkdirSync, promises } from "fs";
 import { compile, registerHelper } from "handlebars";
+import path from "path";
 
 type Arg = ObjectArg | ArrayArg | EnumArg | StringArg | NumberArg | BooleanArg;
 interface ObjectArg {
@@ -71,15 +74,15 @@ function capitalize(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-function generate(filename: string) {
-  const template = compile(readFileSync("templates/" + filename, "utf8"));
-  writeFileSync("src/generated/" + filename.substring(0, filename.indexOf(".hbs")), template(doc), "utf8");
+function generate(file: string) {
+  const template = compile(readFileSync(path.join(__dirname, "templates", file), "utf8"));
+  writeFileSync(path.join(".lsot", file.split(".hbs")[0]), template(doc), "utf8");
 }
 
-const doc = safeLoad(readFileSync("src/types.yml", "utf8"));
+const doc = safeLoad(readFileSync("types.yml", "utf8"));
 
-if (!existsSync("src/generated")) {
-  mkdirSync("src/generated");
+if (!existsSync(".lsot")) {
+  mkdirSync(".lsot");
 }
 
-promises.readdir("templates").then((files) => files.forEach(generate));
+promises.readdir(path.join(__dirname, "templates")).then((files) => files.forEach(generate));

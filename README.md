@@ -3,12 +3,13 @@
 Setup:
 ```
 npm install
-npm run generate
 ```
 
-To start server:
+To run lsot example:
 ```
-npm start
+cd examples/lsot
+../../generate.ts
+ts-node .lsot/server.ts
 ```
 
 View debug app at http://localhost:3000/

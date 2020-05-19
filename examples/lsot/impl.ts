@@ -17,8 +17,8 @@ import {
   IVoteForProposalRequest,
   IProposeQuestRequest,
   IVoteInQuestRequest,
-} from "./generated/types";
-import { Methods } from "./generated/methods";
+} from "./.lsot/types";
+import { Methods } from "./.lsot/methods";
 import { keyBy } from "./utils";
 
 const ROLES_INFO: RoleInfo[] = [

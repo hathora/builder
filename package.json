@@ -2,7 +2,7 @@
   "name": "lsot",
   "version": "0.0.1",
   "description": "Lsot game application",
-  "main": "server.js",
+  "bin": "./generate.ts",
   "dependencies": {
     "express": "^4.17.1",
     "handlebars": "^4.7.6",
@@ -15,7 +15,7 @@
   },
   "devDependencies": {
     "@types/express": "^4.17.6",
-    "@types/js-yaml": "^3.12.3",
+    "@types/js-yaml": "^3.12.4",
     "@types/jsonwebtoken": "^8.5.0",
     "@types/node": "^13.13.6",
     "@types/parcel-bundler": "^1.12.1",
@@ -25,10 +25,6 @@
   },
   "alias": {
     "vue": "./node_modules/vue/dist/vue.common.js"
-  },
-  "scripts": {
-    "generate": "ts-node generate.ts",
-    "start": "ts-node src/generated/server.ts"
   },
   "browserslist": [
     "Chrome > 50"
