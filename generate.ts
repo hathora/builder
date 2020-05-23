@@ -4,6 +4,7 @@ import { safeLoad } from "js-yaml";
 import { readFileSync, writeFileSync, existsSync, mkdirSync, promises } from "fs";
 import { compile, registerHelper } from "handlebars";
 import path from "path";
+import npm from "npm";
 
 type Arg = ObjectArg | ArrayArg | EnumArg | StringArg | NumberArg | BooleanArg;
 interface ObjectArg {
@@ -85,4 +86,12 @@ if (!existsSync(".lsot")) {
   mkdirSync(".lsot");
 }
 
-promises.readdir(path.join(__dirname, "templates")).then((files) => files.forEach(generate));
+promises
+  .readdir(path.join(__dirname, "templates"))
+  .then((files) => files.forEach(generate))
+  .then(() => {
+    process.chdir(".lsot");
+    npm.load(() => {
+      npm.commands.install([], (err, res) => {});
+    });
+  });
