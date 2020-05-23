@@ -106,4 +106,11 @@ Vue.component("string-input", {
     </div>`,
 });
 
+Vue.component("number-input", {
+  props: { arg: String, value: { type: Number, default: null } },
+  template: `<div>
+      <input type="number" :value="value" @input="$parent.$emit('update', arg, Number($event.target.value))" />
+    </div>`,
+});
+
 new Vue({ el: "#app" });
