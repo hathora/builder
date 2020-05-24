@@ -20,6 +20,7 @@ interface Client {
 
 interface UpdateRequest {
   method: string;
+  msgId: string;
   args: any;
 }
 
@@ -67,12 +68,12 @@ async function main() {
     });
 
     socket.on("message", (data) => {
-      const { method, args }: UpdateRequest = JSON.parse(data as string);
+      const { method, msgId, args }: UpdateRequest = JSON.parse(data as string);
       const error = impl[method as keyof typeof impl](state, userData, args) as string | void;
       if (error) {
-        socket.send(JSON.stringify({ type: "response", method, error }));
+        socket.send(JSON.stringify({ type: "response", msgId, error }));
       } else {
-        socket.send(JSON.stringify({ type: "response", method }));
+        socket.send(JSON.stringify({ type: "response", msgId }));
         broadcastUpdates(stateId, state);
       }
     });
