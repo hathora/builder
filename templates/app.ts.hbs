@@ -54,7 +54,7 @@ Vue.component("method-form", {
   },
   methods: {
     submit: function () {
-      client[this.method as keyof LsotClient](this.value as any);
+      client[this.method as keyof LsotClient](this.value as any, (error) => error && console.error(error));
     },
   },
 });

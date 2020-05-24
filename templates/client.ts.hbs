@@ -11,6 +11,8 @@ import {
 export type StateId = string;
 
 export class LsotClient {
+  private callbacks: Record<string, (error?: string) => void> = {};
+
   private constructor(private socket: WebSocket) {}
 
   public static async registerUser(username: PlayerName): Promise<string> {
@@ -43,15 +45,28 @@ export class LsotClient {
     onStateChange: (state: {{userState}}) => void
   ): Promise<LsotClient> {
     const socket = new WebSocket(`ws://${location.host}/${stateId}`);
+    const client = new LsotClient(socket);
     socket.onopen = () => socket.send(token);
-    socket.onmessage = ({ data }) => onStateChange(JSON.parse(data));
-    return new LsotClient(socket);
+    socket.onmessage = ({ data }) => {
+      const message = JSON.parse(data);
+      if (message.type === "response") {
+        client.callbacks[message.msgId](message.error);
+        delete client.callbacks[message.msgId];
+      } else if (message.type === "state") {
+        onStateChange(message.state);
+      } else {
+        console.error("Unknown message type: " + message.type);
+      }
+    };
+    return client;
   }
 
   {{#each methods}}
   {{#if (ne @key ../initialize)}}
-  public {{@key}}(request: {{makeRequestName @key}}): void {
-    this.socket.send(JSON.stringify({ method: "{{@key}}", args: request }));
+  public {{@key}}(request: {{makeRequestName @key}}, cb: (error?: string) => void): void {
+    const msgId = Math.random().toString(36).substring(2);
+    this.callbacks[msgId] = cb;
+    this.socket.send(JSON.stringify({ method: "{{@key}}", msgId, args: request }));
   }
 
   {{/if}}
