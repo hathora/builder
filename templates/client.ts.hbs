@@ -51,7 +51,7 @@ export class LsotClient {
       const message = JSON.parse(data);
       if (message.type === "response") {
         client.callbacks[message.msgId](message.error);
-        delete client.callbacks[message.msdId];
+        delete client.callbacks[message.msgId];
       } else if (message.type === "state") {
         onStateChange(message.state);
       } else {
