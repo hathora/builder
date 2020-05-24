@@ -51,7 +51,7 @@ export class LsotClient {
       } else if (message.type === "state") {
         onStateChange(message.state);
       } else {
-        console.log("Unknown message type: " + message.type);
+        console.error("Unknown message type: " + message.type);
       }
     };
     return new LsotClient(socket);
