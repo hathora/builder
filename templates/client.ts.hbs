@@ -44,7 +44,16 @@ export class LsotClient {
   ): Promise<LsotClient> {
     const socket = new WebSocket(`ws://${location.host}/${stateId}`);
     socket.onopen = () => socket.send(token);
-    socket.onmessage = ({ data }) => onStateChange(JSON.parse(data));
+    socket.onmessage = ({ data }) => {
+      const message = JSON.parse(data);
+      if (message.type === "response") {
+        console.log("Receieved response for " + message.method + " error: " + message.error);
+      } else if (message.type === "state") {
+        onStateChange(message.state);
+      } else {
+        console.log("Unknown message type: " + message.type);
+      }
+    };
     return new LsotClient(socket);
   }
 

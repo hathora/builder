@@ -61,15 +61,20 @@ async function main() {
   function handleConnection(stateId: string, userData: any, socket: WebSocket) {
     const state = states.get(stateId)!;
     addConnection(stateId, userData, socket);
-    socket.send(JSON.stringify(impl.getUserState(state, userData)));
+    socket.send(JSON.stringify({ type: "state", state: impl.getUserState(state, userData) }));
     socket.on("close", () => {
       deleteConnection(stateId, userData, socket);
     });
 
     socket.on("message", (data) => {
       const { method, args }: UpdateRequest = JSON.parse(data as string);
-      impl[method as keyof typeof impl](state, userData, args);
-      broadcastUpdates(stateId, state);
+      const error = impl[method as keyof typeof impl](state, userData, args) as string | void;
+      if (error) {
+        socket.send(JSON.stringify({ type: "response", method, error }));
+      } else {
+        socket.send(JSON.stringify({ type: "response", method }));
+        broadcastUpdates(stateId, state);
+      }
     });
   }
 
@@ -90,8 +95,7 @@ async function main() {
 
   function broadcastUpdates(stateId: string, state: any) {
     connections.get(stateId)!.forEach(({ userData, socket }) => {
-      const userState = impl.getUserState(state, userData);
-      socket.send(JSON.stringify(userState));
+      socket.send(JSON.stringify({ type: "state", state: impl.getUserState(state, userData) }));
     });
   }
 

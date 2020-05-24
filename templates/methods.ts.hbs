@@ -11,7 +11,7 @@ export interface Methods<T> {
   {{#if (eq @key ../initialize)}}
   {{../initialize}}(userData: {{../userData}}, request: {{makeRequestName @key}}): T;
   {{else}}
-  {{@key}}(state: T, userData: {{../userData}}, request: {{makeRequestName @key}}): void;
+  {{@key}}(state: T, userData: {{../userData}}, request: {{makeRequestName @key}}): string | void;
   {{/if}}
   {{/each}}
   getUserState(state: T, userData: {{userData}}): {{userState}};
