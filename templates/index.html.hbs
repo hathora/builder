@@ -19,12 +19,15 @@
         {{/each}}
       </div>
       <div class="json-state">
-        <pre id="state"></pre>
+        {{#with types}}
+        {{> renderState (getArgsInfo PlayerState)}}
+        {{/with}}
       </div>
     </div>
     <script src="./app.ts"></script>
   </body>
 </html>
+
 {{#*inline "renderForm"}}
 {{#if (eq type "object")}}
 <object-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} v-slot="{ value }">
@@ -47,5 +50,31 @@
 <number-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}}></number-input>
 {{else if (eq type "boolean")}}
 <boolean-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}}></boolean-input>
+{{/if}}
+{{/inline}}
+
+{{#*inline "renderState"}}
+{{#if (eq type "object")}}
+<object-display :value="value">
+  {{#each properties}}
+  <template v-slot:{{@key}}="{ value }">
+    {{> renderState}}
+  </template>
+  {{/each}}
+</object-display>
+{{else if (eq type "array")}}
+<array-display :value="value" v-slot="{ value }">
+  {{#with items}}
+  {{> renderState}}
+  {{/with}}
+</array-display>
+{{else if (eq type "enum")}}
+<enum-display :value="value" :options='{{{stringify options}}}'></enum-display>
+{{else if (eq type "string")}}
+<string-display :value="value"></string-display>
+{{else if (eq type "number")}}
+<number-display :value="value"></number-display>
+{{else if (eq type "boolean")}}
+<boolean-display :value="value"></boolean-display>
 {{/if}}
 {{/inline}}
