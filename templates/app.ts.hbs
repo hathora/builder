@@ -84,7 +84,7 @@ Vue.component("object-display", {
   template: `<div>
     <div v-for="(v, k) in value">
       \{{k}}:
-      <slot :name="k" :value="v"></slot>
+      <slot :name="k.toLowerCase()" :value="v"></slot>
     </div>
   </div>`,
 });
