@@ -83,7 +83,7 @@ Vue.component("object-display", {
   props: { value: Object },
   template: `<div>
     <div v-for="(v, k) in value">
-      \{{k}}:
+      <span>\{{k}}:</span>
       <slot :name="k.toLowerCase()" :value="v"></slot>
     </div>
   </div>`,
@@ -91,29 +91,31 @@ Vue.component("object-display", {
 
 Vue.component("array-display", {
   props: { value: Array },
-  template: `<div>
-    <slot v-for="v in value" :value="v"></slot>
+  template: `<div style="margin-left: 20px">
+    <div v-for="v in value">
+      <slot :value="v"></slot>
+    </div>
   </div>`,
 });
 
 Vue.component("enum-display", {
   props: { value: Number, options: Array },
-  template: `<div>\{{options[value].label}}</div>`,
+  template: `<span>\{{options[value].label}}</span>`,
 });
 
 Vue.component("string-display", {
   props: { value: String },
-  template: `<div>\{{value}}</div>`,
+  template: `<span>\{{value}}</span>`,
 });
 
 Vue.component("number-display", {
   props: { value: Number },
-  template: `<div>\{{value}}</div>`,
+  template: `<span>\{{value}}</span>`,
 });
 
 Vue.component("boolean-display", {
   props: { value: Boolean },
-  template: `<div>\{{value}}</div>`,
+  template: `<span>\{{value}}</span>`,
 });
 
 new Vue({
