@@ -3,40 +3,6 @@ import Vue from "vue";
 
 let client: LsotClient;
 
-function connect(token: string, stateId: string) {
-  return LsotClient.connect(
-    token,
-    stateId,
-    (state) => (document.getElementById("state")!.innerHTML = JSON.stringify(state, null, 2))
-  );
-}
-
-function setMetadata(userName: string, stateId: string) {
-  const urlParams = new URLSearchParams();
-  urlParams.set("stateId", stateId);
-  urlParams.set("userName", userName);
-  history.pushState({}, "", window.location.pathname + "?" + urlParams.toString());
-}
-
-const name = prompt("Enter username")!;
-LsotClient.registerUser(name)
-  .then((token) => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const stateId = urlParams.get("stateId") || prompt("Enter stateId (or enter if creating new)");
-    if (stateId != null && stateId.length > 0) {
-      setMetadata(name, stateId);
-      return connect(token, stateId);
-    } else {
-      return LsotClient.createState(token).then((stateId) => {
-        setMetadata(name, stateId);
-        return connect(token, stateId);
-      });
-    }
-  })
-  .then((c) => {
-    client = c;
-  });
-
 Vue.component("method-form", {
   props: { method: String },
   data: () => ({ value: {} }),
@@ -113,4 +79,79 @@ Vue.component("number-input", {
     </div>`,
 });
 
-new Vue({ el: "#app" });
+Vue.component("object-display", {
+  props: { value: Object },
+  template: `<div>
+    <div v-for="(v, k) in value">
+      <span>\{{k}}:</span>
+      <slot :name="k.toLowerCase()" :value="v"></slot>
+    </div>
+  </div>`,
+});
+
+Vue.component("array-display", {
+  props: { value: Array },
+  template: `<div style="margin-left: 20px">
+    <div v-for="v in value">
+      <slot :value="v"></slot>
+    </div>
+  </div>`,
+});
+
+Vue.component("enum-display", {
+  props: { value: Number, options: Array },
+  template: `<span>\{{options[value].label}}</span>`,
+});
+
+Vue.component("string-display", {
+  props: { value: String },
+  template: `<span>\{{value}}</span>`,
+});
+
+Vue.component("number-display", {
+  props: { value: Number },
+  template: `<span>\{{value}}</span>`,
+});
+
+Vue.component("boolean-display", {
+  props: { value: Boolean },
+  template: `<span>\{{value}}</span>`,
+});
+
+new Vue({
+  el: "#app",
+  data: () => ({ value: {} }),
+  created: function () {
+    const name = prompt("Enter username")!;
+    LsotClient.registerUser(name)
+      .then((token) => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const stateId = urlParams.get("stateId") || prompt("Enter stateId (or enter if creating new)");
+        if (stateId != null && stateId.length > 0) {
+          this.setMetadata(name, stateId);
+          return this.connect(token, stateId);
+        } else {
+          return LsotClient.createState(token).then((stateId) => {
+            this.setMetadata(name, stateId);
+            return this.connect(token, stateId);
+          });
+        }
+      })
+      .then((c) => {
+        client = c;
+      });
+  },
+  methods: {
+    connect: function (token: string, stateId: string) {
+      return LsotClient.connect(token, stateId, (state) => {
+        this.value = state;
+      });
+    },
+    setMetadata: function (userName: string, stateId: string) {
+      const urlParams = new URLSearchParams();
+      urlParams.set("stateId", stateId);
+      urlParams.set("userName", userName);
+      history.pushState({}, "", window.location.pathname + "?" + urlParams.toString());
+    },
+  },
+});
