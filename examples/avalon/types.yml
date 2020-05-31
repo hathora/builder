@@ -31,45 +31,30 @@ types:
   RoleInfo:
     role: Role
     isEvil: boolean
-    description: string
-  PlayerAndRole:
-    player: PlayerName
-    role: Role
+    knownRoles: Role[]
+    quantity: number
   PlayerAndVote:
     player: PlayerName
-    vote: Vote
+    vote?: Vote
   QuestAttempt:
     id: QuestId
+    status: QuestStatus
     roundNumber: number
     attemptNumber: number
-    size: number
     leader: PlayerName
     members: PlayerName[]
-    votes: PlayerAndVote[]
-    remainingVotes: number
-    results: Vote[]
-    remainingResults: number
+    proposalVotes: PlayerAndVote[]
+    results: PlayerAndVote[]
     numFailures: number
-    playerVote?: Vote
-    playerResult?: Vote
-    status: QuestStatus
   PlayerState:
-    # metadata
-    creator: PlayerName
-    # game rules
-    playersPerQuest: number[]
-    rolesInfo: RoleInfo[]
-    # game configuration
-    players: PlayerName[]
-    roles: Role[]
-    # player info
-    playerName: PlayerName
-    playerRole?: Role
-    knownRoles: PlayerAndRole[]
-    # game info
-    currentQuest: QuestAttempt
-    questHistory: QuestAttempt[]
     status: GameStatus
+    rolesInfo: RoleInfo[]
+    creator: PlayerName
+    players: PlayerName[]
+    role?: Role
+    knownPlayers: PlayerName[]
+    playersPerQuest: number[]
+    quests: QuestAttempt[]
   PlayerData:
     playerName: PlayerName
 

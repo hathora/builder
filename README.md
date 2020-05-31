@@ -5,9 +5,9 @@ Setup:
 npm install
 ```
 
-To run lsot example:
+To run avalon example:
 ```
-cd examples/lsot
+cd examples/avalon
 ../../generate.ts
 ts-node-script .lsot/server.ts
 ```
