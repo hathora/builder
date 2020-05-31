@@ -57,7 +57,7 @@ function getArgsInfo(args: any): Arg {
   } else if (typeof args === "object") {
     return {
       type: "object",
-      properties: Object.fromEntries(Object.entries(args).map(([name, type]) => [name, getArgsInfo(type)])),
+      properties: Object.fromEntries(Object.entries(args).map(([name, type]) => [sanitize(name), getArgsInfo(type)])),
     };
   } else if (typeof args === "string") {
     if (args.endsWith("[]")) {
@@ -73,6 +73,10 @@ function getArgsInfo(args: any): Arg {
 
 function capitalize(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function sanitize(s: string) {
+  return s.replace(/[\W]+/g, "");
 }
 
 function generate(file: string) {
