@@ -24,7 +24,6 @@ types:
   GameStatus:
     - NOT_STARTED
     - IN_PROGRESS
-    - ASSASSINATING
     - GOOD_WON
     - EVIL_WON
 

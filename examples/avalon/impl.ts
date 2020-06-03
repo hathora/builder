@@ -107,7 +107,7 @@ export class Impl implements Methods<InternalState> {
     const numPlayers = state.players.length;
     const roleCounts = histogram(state.players.flatMap((p) => (p.role != undefined ? [p.role] : [])));
     return {
-      status: GameStatus.NOT_STARTED,
+      status: gameStatus(state.quests, numPlayers),
       rolesInfo: [...ROLE_KNOWLEDGE].map(([role, knownRoles]) => ({
         role,
         knownRoles,
@@ -166,6 +166,17 @@ function histogram<T>(items: T[]) {
   const histo = new Map<T, number>();
   items.forEach((item) => histo.set(item, (histo.get(item) || 0) + 1));
   return histo;
+}
+
+function gameStatus(quests: InternalQuestAttempt[], numPlayers: number) {
+  if (quests.length == 0) {
+    return GameStatus.NOT_STARTED;
+  } else if (quests.filter((q) => questStatus(q, numPlayers) == QuestStatus.FAILED).length > 2) {
+    return GameStatus.EVIL_WON;
+  } else if (quests.filter((q) => questStatus(q, numPlayers) == QuestStatus.PASSED).length > 2) {
+    return GameStatus.GOOD_WON;
+  }
+  return GameStatus.IN_PROGRESS;
 }
 
 function sanitizeQuest(quest: InternalQuestAttempt, playerName: string, numPlayers: number): QuestAttempt {
