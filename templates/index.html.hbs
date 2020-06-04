@@ -5,7 +5,7 @@
 
   <body>
     <div class="container" id="app">
-      <div class="forms-container" id="forms">
+      <div class="forms-container">
         {{#each methods}}
         {{#if (ne @key ../initialize)}}
         {{#if this}}
@@ -55,26 +55,27 @@
 
 {{#*inline "renderState"}}
 {{#if (eq type "object")}}
-<object-display :value="value">
+<object-display {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} v-slot="{ value }">
   {{#each properties}}
-  <template v-slot:{{@key}}="{ value }">
-    {{> renderState}}
-  </template>
+  <div>
+    <span>{{@key}}:</span>
+    {{> renderState arg=@key}}
+  </div>
   {{/each}}
 </object-display>
 {{else if (eq type "array")}}
-<array-display :value="value" v-slot="{ value }">
+<array-display {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} v-slot="{ value }">
   {{#with items}}
   {{> renderState}}
   {{/with}}
 </array-display>
 {{else if (eq type "enum")}}
-<enum-display :value="value" :options='{{{stringify options}}}'></enum-display>
+<enum-display {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} :options='{{{stringify options}}}'></enum-display>
 {{else if (eq type "string")}}
-<string-display :value="value"></string-display>
+<string-display {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}}></string-display>
 {{else if (eq type "number")}}
-<number-display :value="value"></number-display>
+<number-display {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}}></number-display>
 {{else if (eq type "boolean")}}
-<boolean-display :value="value"></boolean-display>
+<boolean-display {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}}></boolean-display>
 {{/if}}
 {{/inline}}

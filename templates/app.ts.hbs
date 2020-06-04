@@ -87,12 +87,7 @@ Vue.component("number-input", {
 
 Vue.component("object-display", {
   props: { value: Object },
-  template: `<div>
-    <div v-for="(v, k) in value">
-      <span>\{{k}}:</span>
-      <slot :name="k.toLowerCase()" :value="v"></slot>
-    </div>
-  </div>`,
+  template: `<div><slot :value="value"></slot></div>`,
 });
 
 Vue.component("array-display", {
@@ -101,12 +96,13 @@ Vue.component("array-display", {
     <div v-for="v in value">
       <slot :value="v"></slot>
     </div>
+    <div v-if="value && value.length == 0">[]</div>
   </div>`,
 });
 
 Vue.component("enum-display", {
   props: { value: Number, options: Array },
-  template: `<span>\{{options[value].label}}</span>`,
+  template: `<span v-if="value != undefined">\{{options[value].label}}</span>`,
 });
 
 Vue.component("string-display", {
