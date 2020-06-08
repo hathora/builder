@@ -1,0 +1,25 @@
+types:
+  PlayerName: string
+  GameStatus:
+    - NOT_STARTED
+    - IN_PROGRESS
+    - FINISHED
+  MoveType:
+    - X
+    - O
+  PlayerState:
+    myTurn: boolean
+  PlayerData:
+    name: PlayerName
+    moveType: MoveType
+methods:
+  createGame:
+  joinGame:
+  startGame:
+    firstPlayer: PlayerName
+    secondPlayer: PlayerName
+  makeMove:
+    player: PlayerName
+userState: PlayerState
+userData: PlayerData
+initialize: createGame
