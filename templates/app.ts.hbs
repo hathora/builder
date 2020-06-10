@@ -92,7 +92,7 @@ Vue.component("object-display", {
 
 Vue.component("array-display", {
   props: { value: Array },
-  template: `<div style="margin-left: 20px">
+  template: `<div>
     <div v-for="v in value">
       <slot :value="v"></slot>
     </div>
