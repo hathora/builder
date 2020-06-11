@@ -1,5 +1,6 @@
 import { LsotClient } from "./client";
 import Vue from "vue";
+import VueRouter from "vue-router";
 
 let client: LsotClient;
 
@@ -13,13 +14,13 @@ Vue.component("method-form", {
         <span class="button-text">Submit</span>
       </button>
     </div>`,
-  created: function () {
+  created() {
     this.$on("update", (arg: string, value: any) => {
       this.$set(this.value, arg, value);
     });
   },
   methods: {
-    submit: function () {
+    submit() {
       client[this.method as keyof LsotClient](this.value as any, (error) => {
         if (error) {
           console.error(error);
@@ -34,7 +35,7 @@ Vue.component("method-form", {
 Vue.component("object-input", {
   props: { arg: String, value: { type: Object, default: () => ({}) } },
   template: `<div><slot :value="value"></slot></div>`,
-  created: function () {
+  created() {
     this.$on("update", (arg: number, value: any) => {
       this.$parent.$emit("update", arg, value);
     });
@@ -52,7 +53,7 @@ Vue.component("array-input", {
       </div>
       <button type="button" @click="$parent.$emit('update', arg, value.concat(null))">Add</button>
     </div>`,
-  created: function () {
+  created() {
     this.$on("update", (arg: string, value: any) => {
       this.$parent.$emit("update", this.arg, Object.assign([], this.value, { [Number(arg)]: value }));
     });
@@ -120,21 +121,59 @@ Vue.component("boolean-display", {
   template: `<span>\{{value}}</span>`,
 });
 
-Vue.component("debug-app", {
-  data: () => ({ currentRoute: window.location.pathname }),
-  computed: {
-    templateName() {
-      if (this.currentRoute == "/") {
-        return "home";
-      } else if (this.currentRoute == "/login") {
-        return "login";
-      }
-      return "state";
+const Login = Vue.component("login", {
+  data: () => ({ username: "" }),
+  template: `<form @submit.prevent="handleLogin">
+      <label for="username">Username</label>
+      <input v-model="username" type="text" />
+      <button type="submit" class="submit-button">
+        <span class="button-text">Submit</span>
+      </button>
+    </form>`,
+  methods: {
+    handleLogin() {
+      LsotClient.registerUser(this.username).then((token) => {
+        sessionStorage.setItem("user", JSON.stringify({ name: this.username, token }));
+        this.$router.push("/");
+      });
     },
   },
-  template: `<div><slot :name="this.templateName"></slot></div>`,
+});
+
+const Home = Vue.component("home", {
+  template: `<div>Hello \{{username}}!</div>`,
+  computed: {
+    username() {
+      return JSON.parse(sessionStorage.getItem("user")!).name;
+    },
+  },
+});
+
+const State = Vue.component("state", {
+  data: () => ({ value: {} }),
+  template: "#state-template",
+});
+
+Vue.use(VueRouter);
+
+const router = new VueRouter({
+  mode: "history",
+  routes: [
+    { path: "/login", component: Login },
+    { path: "/", component: Home },
+    { path: "/state/:stateId", component: State },
+  ],
+});
+
+router.beforeEach((to, from, next) => {
+  if (to.path != "/login" && sessionStorage.getItem("user") == null) {
+    next("/login");
+  } else {
+    next();
+  }
 });
 
 new Vue({
   el: "#app",
+  router,
 });
