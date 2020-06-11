@@ -120,40 +120,21 @@ Vue.component("boolean-display", {
   template: `<span>\{{value}}</span>`,
 });
 
+Vue.component("debug-app", {
+  data: () => ({ currentRoute: window.location.pathname }),
+  computed: {
+    templateName() {
+      if (this.currentRoute == "/") {
+        return "home";
+      } else if (this.currentRoute == "/login") {
+        return "login";
+      }
+      return "state";
+    },
+  },
+  template: `<div><slot :name="this.templateName"></slot></div>`,
+});
+
 new Vue({
   el: "#app",
-  data: () => ({ value: {} }),
-  created: function () {
-    const name = prompt("Enter username")!;
-    LsotClient.registerUser(name)
-      .then((token) => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const stateId = urlParams.get("stateId") || prompt("Enter stateId (or enter if creating new)");
-        if (stateId != null && stateId.length > 0) {
-          this.setMetadata(name, stateId);
-          return this.connect(token, stateId);
-        } else {
-          return LsotClient.createState(token).then((stateId) => {
-            this.setMetadata(name, stateId);
-            return this.connect(token, stateId);
-          });
-        }
-      })
-      .then((c) => {
-        client = c;
-      });
-  },
-  methods: {
-    connect: function (token: string, stateId: string) {
-      return LsotClient.connect(token, stateId, (state) => {
-        this.value = state;
-      });
-    },
-    setMetadata: function (userName: string, stateId: string) {
-      const urlParams = new URLSearchParams();
-      urlParams.set("stateId", stateId);
-      urlParams.set("userName", userName);
-      history.pushState({}, "", window.location.pathname + "?" + urlParams.toString());
-    },
-  },
 });

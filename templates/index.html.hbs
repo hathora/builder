@@ -5,25 +5,36 @@
 
   <body>
     <div class="container" id="app">
-      <div class="forms-container">
-        {{#each methods}}
-        {{#if (ne @key ../initialize)}}
-        {{#if this}}
-        <method-form method="{{@key}}" v-slot="{ arg, value }">
-          {{> renderForm (getArgsInfo this)}}
-        </method-form>
-        {{else}}
-        <method-form method="{{@key}}"></method-form>
-        {{/if}}
-        {{/if}}
-        {{/each}}
-      </div>
-      <div class="json-state">
-        {{#with types}}
-        {{> renderState (getArgsInfo PlayerState)}}
-        {{/with}}
-      </div>
+      <debug-app>
+        <template v-slot:login>
+          <div>Login</div>
+        </template>
+        <template v-slot:home>
+          <div>Join or Create game</div>
+        </template>
+        <template v-slot:state>
+          <div class="forms-container">
+            {{#each methods}}
+            {{#if (ne @key ../initialize)}}
+            {{#if this}}
+            <method-form method="{{@key}}" v-slot="{ arg, value }">
+              {{> renderForm (getArgsInfo this)}}
+            </method-form>
+            {{else}}
+            <method-form method="{{@key}}"></method-form>
+            {{/if}}
+            {{/if}}
+            {{/each}}
+          </div>
+          <div class="json-state">
+            {{#with types}}
+            {{> renderState (getArgsInfo PlayerState)}}
+            {{/with}}
+          </div>
+        </template>
+      </debug-app>
     </div>
+
     <script src="./app.ts"></script>
   </body>
 </html>
