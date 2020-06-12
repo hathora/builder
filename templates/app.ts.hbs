@@ -141,10 +141,17 @@ const Login = Vue.component("login", {
 });
 
 const Home = Vue.component("home", {
-  template: `<div>Hello \{{username}}!</div>`,
-  computed: {
-    username() {
-      return JSON.parse(sessionStorage.getItem("user")!).name;
+  template: `<div>
+      <button type="button" class="submit-button" @click="createState">
+        <span class="button-text">New</span>
+      </button>
+    </div>`,
+  methods: {
+    createState() {
+      const token = JSON.parse(sessionStorage.getItem("user")!).token;
+      LsotClient.createState(token).then((stateId) => {
+        this.$router.push("/state/" + stateId);
+      });
     },
   },
 });
@@ -152,6 +159,14 @@ const Home = Vue.component("home", {
 const State = Vue.component("state", {
   data: () => ({ value: {} }),
   template: "#state-template",
+  created() {
+    const token = JSON.parse(sessionStorage.getItem("user")!).token;
+    LsotClient.connect(token, this.$route.params.stateId, (state) => {
+      this.value = state;
+    }).then((c) => {
+      client = c;
+    });
+  },
 });
 
 Vue.use(VueRouter);
