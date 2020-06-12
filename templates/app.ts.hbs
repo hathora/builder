@@ -141,10 +141,18 @@ const Login = Vue.component("login", {
 });
 
 const Home = Vue.component("home", {
+  data: () => ({ stateId: "" }),
   template: `<div>
       <button type="button" class="submit-button" @click="createState">
-        <span class="button-text">New</span>
+        <span class="button-text">Create new</span>
       </button>
+      <div>Or</div>
+      <form @submit.prevent="joinState">
+        <input v-model="stateId" type="text" />
+        <button type="submit" class="submit-button">
+          <span class="button-text">Join existing</span>
+        </button>
+      </form>
     </div>`,
   methods: {
     createState() {
@@ -152,6 +160,9 @@ const Home = Vue.component("home", {
       LsotClient.createState(token).then((stateId) => {
         this.$router.push("/state/" + stateId);
       });
+    },
+    joinState() {
+      this.$router.push("/state/" + this.stateId);
     },
   },
 });
