@@ -62,7 +62,8 @@ methods:
   joinGame:
   startGame:
     roleList: Role[]
-    playerOrder: PlayerName[]
+    playerOrder?: PlayerName[]
+    leader?: PlayerName
   proposeQuest:
     questId: QuestId
     proposedMembers: PlayerName[]

@@ -75,7 +75,13 @@ export class Impl implements Methods<InternalState> {
   }
   startGame(state: InternalState, userData: PlayerData, request: IStartGameRequest): string | void {
     const numPlayers = state.players.length;
-    const leader = state.players[Math.floor(Math.random() * numPlayers)].name;
+    if (request.playerOrder != undefined) {
+      const order = request.playerOrder;
+      state.players.sort((a, b) => order.findIndex(name => name == a.name) - order.findIndex(name => name == b.name));
+    } else {
+      state.players = shuffle(state.players);
+    }
+    const leader = request.leader ?? state.players[Math.floor(Math.random() * numPlayers)].name;
     shuffle(request.roleList).forEach((role, i) => (state.players[i].role = role));
     state.quests.push(createQuest(1, 1, numPlayers, leader));
   }
