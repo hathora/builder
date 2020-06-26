@@ -1,5 +1,6 @@
 import { LsotClient } from "./client";
 import Vue from "vue";
+import VueRouter from "vue-router";
 
 let client: LsotClient;
 
@@ -13,13 +14,13 @@ Vue.component("method-form", {
         <span class="button-text">Submit</span>
       </button>
     </div>`,
-  created: function () {
+  created() {
     this.$on("update", (arg: string, value: any) => {
       this.$set(this.value, arg, value);
     });
   },
   methods: {
-    submit: function () {
+    submit() {
       client[this.method as keyof LsotClient](this.value as any, (error) => {
         if (error) {
           console.error(error);
@@ -34,7 +35,7 @@ Vue.component("method-form", {
 Vue.component("object-input", {
   props: { arg: String, value: { type: Object, default: () => ({}) } },
   template: `<div><slot :value="value"></slot></div>`,
-  created: function () {
+  created() {
     this.$on("update", (arg: number, value: any) => {
       this.$parent.$emit("update", arg, value);
     });
@@ -52,7 +53,7 @@ Vue.component("array-input", {
       </div>
       <button type="button" @click="$parent.$emit('update', arg, value.concat(null))">Add</button>
     </div>`,
-  created: function () {
+  created() {
     this.$on("update", (arg: string, value: any) => {
       this.$parent.$emit("update", this.arg, Object.assign([], this.value, { [Number(arg)]: value }));
     });
@@ -120,40 +121,85 @@ Vue.component("boolean-display", {
   template: `<span>\{{value}}</span>`,
 });
 
+const Login = Vue.component("login", {
+  data: () => ({ username: "" }),
+  template: `<form @submit.prevent="handleLogin">
+      <label for="username">Username</label>
+      <input v-model="username" type="text" />
+      <button type="submit" class="submit-button">
+        <span class="button-text">Submit</span>
+      </button>
+    </form>`,
+  methods: {
+    handleLogin() {
+      LsotClient.registerUser(this.username).then((token) => {
+        sessionStorage.setItem("user", JSON.stringify({ name: this.username, token }));
+        this.$router.push("/");
+      });
+    },
+  },
+});
+
+const Home = Vue.component("home", {
+  data: () => ({ stateId: "" }),
+  template: `<div>
+      <button type="button" class="submit-button" @click="createState">
+        <span class="button-text">Create new</span>
+      </button>
+      <div>Or</div>
+      <form @submit.prevent="joinState">
+        <input v-model="stateId" type="text" />
+        <button type="submit" class="submit-button">
+          <span class="button-text">Join existing</span>
+        </button>
+      </form>
+    </div>`,
+  methods: {
+    createState() {
+      const token = JSON.parse(sessionStorage.getItem("user")!).token;
+      LsotClient.createState(token).then((stateId) => {
+        this.$router.push("/state/" + stateId);
+      });
+    },
+    joinState() {
+      this.$router.push("/state/" + this.stateId);
+    },
+  },
+});
+
+const State = Vue.component("state", {
+  data: () => ({ value: {} }),
+  template: "#state-template",
+  created() {
+    const token = JSON.parse(sessionStorage.getItem("user")!).token;
+    LsotClient.connect(token, this.$route.params.stateId, (state) => {
+      this.value = state;
+    }).then((c) => {
+      client = c;
+    });
+  },
+});
+
+Vue.use(VueRouter);
+
+const router = new VueRouter({
+  mode: "history",
+  routes: [
+    { path: "/login", component: Login },
+    { path: "/", component: Home },
+    { path: "/state/:stateId", component: State },
+  ],
+});
+
+router.beforeEach((to, from, next) => {
+  if (to.path != "/login" && sessionStorage.getItem("user") == null) {
+    next("/login");
+  } else {
+    next();
+  }
+});
+
 new Vue({
   el: "#app",
-  data: () => ({ value: {} }),
-  created: function () {
-    const name = prompt("Enter username")!;
-    LsotClient.registerUser(name)
-      .then((token) => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const stateId = urlParams.get("stateId") || prompt("Enter stateId (or enter if creating new)");
-        if (stateId != null && stateId.length > 0) {
-          this.setMetadata(name, stateId);
-          return this.connect(token, stateId);
-        } else {
-          return LsotClient.createState(token).then((stateId) => {
-            this.setMetadata(name, stateId);
-            return this.connect(token, stateId);
-          });
-        }
-      })
-      .then((c) => {
-        client = c;
-      });
-  },
-  methods: {
-    connect: function (token: string, stateId: string) {
-      return LsotClient.connect(token, stateId, (state) => {
-        this.value = state;
-      });
-    },
-    setMetadata: function (userName: string, stateId: string) {
-      const urlParams = new URLSearchParams();
-      urlParams.set("stateId", stateId);
-      urlParams.set("userName", userName);
-      history.pushState({}, "", window.location.pathname + "?" + urlParams.toString());
-    },
-  },
+  router,
 });

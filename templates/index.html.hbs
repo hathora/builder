@@ -4,26 +4,31 @@
   </head>
 
   <body>
-    <div class="container" id="app">
-      <div class="forms-container">
-        {{#each methods}}
-        {{#if (ne @key ../initialize)}}
-        {{#if this}}
-        <method-form method="{{@key}}" v-slot="{ arg, value }">
-          {{> renderForm (getArgsInfo this)}}
-        </method-form>
-        {{else}}
-        <method-form method="{{@key}}"></method-form>
-        {{/if}}
-        {{/if}}
-        {{/each}}
-      </div>
-      <div class="json-state">
-        {{#with types}}
-        {{> renderState (getArgsInfo PlayerState)}}
-        {{/with}}
-      </div>
+    <div id="app">
+      <router-view></router-view>
     </div>
+    <script type="text/x-template" id="state-template">
+      <div class="container">
+        <div class="forms-container">
+          {{#each methods}}
+          {{#if (ne @key ../initialize)}}
+          {{#if this}}
+          <method-form method="{{@key}}" v-slot="{ arg, value }">
+            {{> renderForm (getArgsInfo this)}}
+          </method-form>
+          {{else}}
+          <method-form method="{{@key}}"></method-form>
+          {{/if}}
+          {{/if}}
+          {{/each}}
+        </div>
+        <div class="json-state">
+          {{#with types}}
+          {{> renderState (getArgsInfo PlayerState)}}
+          {{/with}}
+        </div>
+      </div>
+    </script>
     <script src="./app.ts"></script>
   </body>
 </html>
@@ -37,7 +42,7 @@
   {{/each}}
 </object-input>
 {{else if (eq type "array")}}
-<array-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :value="value" v-slot="{ arg, value }">
+<array-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} v-slot="{ arg, value }">
   {{#with items}}
   {{> renderForm}}
   {{/with}}
