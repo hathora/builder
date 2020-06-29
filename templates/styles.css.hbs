@@ -1,3 +1,11 @@
+html {
+  box-sizing: border-box;
+}
+
+*, :after, :before {
+  box-sizing: inherit;
+}
+
 body {
   width: 100vw;
   height: 100vh;
@@ -5,9 +13,18 @@ body {
   margin: 0;
 }
 
+h1 {
+  margin: 0 0 10px 0;
+  font-size: 28px;
+}
+
 pre {
   margin: 0;
   padding: 0;
+}
+
+:focus {
+  outline: none;
 }
 
 .container {
@@ -25,11 +42,12 @@ pre {
 }
 
 .json-state {
-  color: #f5f8fa;
+  color: #bfccd6;
   background: #182026;
   flex: 1;
   padding: 20px;
   overflow: auto;
+  font-size: 14px;
 }
 
 .form {
@@ -48,11 +66,68 @@ pre {
   background: #ebf1f5;
 }
 
-.submit-button {
+.form-group {
+  transform: translateZ(0);
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  border-radius: 0;
+}
+
+.form-group .input-group .input, .form-group .button, .form-group .select select {
+  border-radius: inherit;
+  z-index: 2;
+}
+
+.form-group {
+  transform: translateZ(0);
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+
+.form-group>:first-child {
+  border-radius: 3px 0 0 3px;
+  margin-right: 0;
+}
+
+.form-group>:last-child {
+  border-radius: 0 3px 3px 0;
+  margin-right: 0;
+}
+
+.input-group {
+  display: block;
+  position: relative;
+}
+
+.input {
+  position: relative;
+  width: 100%;
+  appearance: none;
+  background: #fff;
+  border: none;
+  border-radius: 3px;
+  box-shadow: 0 0 0 0 rgba(19,124,189,0), 0 0 0 0 rgba(19,124,189,0), inset 0 0 0 1px rgba(16,22,26,.15), inset 0 1px 1px rgba(16,22,26,.2);
+  color: #182026;
+  font-size: 14px;
+  font-weight: 400;
+  height: 30px;
+  line-height: 30px;
+  outline: none;
+  padding: 0 10px;
+  transition: box-shadow .1s cubic-bezier(.4,1,.75,.9);
+  vertical-align: middle;
+}
+
+.button-text {
+  flex: 0 1 auto;
+}
+
+.button {
   box-shadow: inset 0 0 0 1px rgba(16, 22, 26, 0.4), inset 0 -1px 0 rgba(16, 22, 26, 0.2);
-  background-color: #137cbd;
-  background-image: linear-gradient(180deg, hsla(0, 0%, 100%, 0.1), hsla(0, 0%, 100%, 0));
-  color: #fff;
+  background-color: #f5f8fa;
+  color: #182026;
   display: inline-flex;
   flex-direction: row;
   align-items: center;
@@ -60,7 +135,6 @@ pre {
   border: none;
   border-radius: 3px;
   cursor: pointer;
-  padding: 5px 10px;
   vertical-align: middle;
   text-align: left;
   font-size: 14px;
@@ -68,19 +142,118 @@ pre {
   min-height: 30px;
 }
 
-.object-display {
-  border: solid 3px black;
+.button:hover {
+  background-color: #E1E8ED;
 }
 
-.kv-display > div {
+.button:active {
+  background-color: #D8E1E8;
+  box-shadow: inset 0 0 0 1px rgba(16,22,26,.2), inset 0 1px 2px rgba(16,22,26,.2)
+}
+
+.submit {
+  background-color: #137cbd;
+  color: #fff;
+}
+
+.submit:hover {
+  background-color: #106BA3;
+}
+
+.submit:active {
+  background-color: #0E5A8A;
+}
+
+.danger {
+  background-color: #db3737;
+  color: #fff;
+}
+
+.danger:hover {
+  background-color: #C23030;
+}
+
+.danger:active {
+  background-color: #A82A2A;
+}
+
+.select {
+  display: block;
+  letter-spacing: normal;
+  position: relative;
+  vertical-align: middle;
+}
+
+.select:after {
+    font-family: Icons16,sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1;
+  content: "";
+  color: #5c7080;
+  pointer-events: none;
+  position: absolute;
+  right: 7px;
+  top: 7px;
+}
+
+.select select {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  justify-content: center;
+  text-align: left;
+  vertical-align: middle;
+  background-color: #f5f8fa;
+  background-image: linear-gradient(180deg,hsla(0,0%,100%,.8),hsla(0,0%,100%,0));
+  box-shadow: inset 0 0 0 1px rgba(16,22,26,.2), inset 0 -1px 0 rgba(16,22,26,.1);
+  color: #182026;
+  border-radius: 3px;
+  height: 30px;
+  padding: 0 25px 0 10px;
+  width: 100%;
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  appearance: none; // not widely adopted yet
+}
+
+.label {
+  display: block;
+  margin-bottom: 15px;
+  margin-top: 0;
+}
+
+.label>div {
+  display: block;
+  margin-top: 5px;
+  text-transform: none;
+}
+
+.object-display > div, .array-display > div {
   margin-left: 25px;
+}
+
+.enum-display {
+  color: #FF7373;
+}
+
+.boolean-display {
+  color: #48AFF0;
+}
+
+.string-display {
+  color: #3DCC91;
+}
+
+.number-display {
+  color: #AD99FF;
 }
 
 .kv-display, .array-display > div {
   margin-top: 2px;
   margin-bottom: 2px;
-}
-
-.key-display {
-  background-color: brown;
 }
