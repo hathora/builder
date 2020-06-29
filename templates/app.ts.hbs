@@ -10,7 +10,7 @@ Vue.component("method-form", {
   template: `<div class="form" :id="method">
       <h1 class="heading">\{{method}}</h1>
       <slot :arg="method" :value="value"></slot>
-      <button type="button" class="submit-button" @click="submit">
+      <button type="button" class="button submit" @click="submit">
         <span class="button-text">Submit</span>
       </button>
     </div>`,
@@ -45,13 +45,15 @@ Vue.component("object-input", {
 Vue.component("array-input", {
   props: { arg: String, value: { type: Array, default: () => [] } },
   template: `<div>
-      <div v-for="(v, i) in value">
+      <div class="form-group" v-for="(v, i) in value">
         <slot :arg="i.toString()" :value="v"></slot>
-        <button type="button" @click="$parent.$emit('update', arg, value.slice(0, i).concat(value.slice(i+1, value.length)))">x</button>
-        <button type="button" @click="$parent.$emit('update', arg, i === 0 ? value : [...value.slice(0, i-1), value[i], value[i-1], ...value.slice(i+1, value.length)])">up</button>
-        <button type="button" @click="$parent.$emit('update', arg, i === (value.length-1) ? value : [...value.slice(0, i), value[i+1], value[i], ...value.slice(i+2, value.length)])">dn</button>
+        <button class="button" type="button" @click="$parent.$emit('update', arg, i === 0 ? value : [...value.slice(0, i-1), value[i], value[i-1], ...value.slice(i+1, value.length)])">&#8593;</button>
+        <button class="button" type="button" @click="$parent.$emit('update', arg, i === (value.length-1) ? value : [...value.slice(0, i), value[i+1], value[i], ...value.slice(i+2, value.length)])">&#8595;</button>
+        <button class="button danger" type="button" @click="$parent.$emit('update', arg, value.slice(0, i).concat(value.slice(i+1, value.length)))">x</button>
       </div>
-      <button type="button" @click="$parent.$emit('update', arg, value.concat(null))">Add</button>
+      <button class="button" type="button" @click="$parent.$emit('update', arg, value.concat(null))">
+        <span class="button-text">Add</span>
+      </button>
     </div>`,
   created() {
     this.$on("update", (arg: string, value: any) => {
@@ -62,7 +64,7 @@ Vue.component("array-input", {
 
 Vue.component("enum-input", {
   props: { arg: String, value: { type: Number, default: null }, options: Array },
-  template: `<div>
+  template: `<div class="select">
       <select @change="$parent.$emit('update', arg, Number($event.target.value))">
         <option disabled :selected="value === null">Select a value...</option>
         <option v-for="option in options" :value="option.value" :selected="option.value === value">
@@ -74,15 +76,15 @@ Vue.component("enum-input", {
 
 Vue.component("string-input", {
   props: { arg: String, value: { type: String, default: "" } },
-  template: `<div>
-      <input type="text" :value="value" @input="$parent.$emit('update', arg, $event.target.value)" />
+  template: `<div class="input-group">
+      <input class="input" type="text" :value="value" @input="$parent.$emit('update', arg, $event.target.value)" />
     </div>`,
 });
 
 Vue.component("number-input", {
   props: { arg: String, value: { type: Number, default: null } },
-  template: `<div>
-      <input type="number" :value="value" @input="$parent.$emit('update', arg, Number($event.target.value))" />
+  template: `<div class="input-group">
+      <input class="input" type="number" :value="value" @input="$parent.$emit('update', arg, Number($event.target.value))" />
     </div>`,
 });
 
@@ -92,13 +94,23 @@ Vue.component("object-display", {
 });
 
 Vue.component("array-display", {
+  data: function () {
+    return {
+      isOpen: true
+    }
+  },
   props: { value: Array },
-  template: `<div>
-    <div v-for="v in value">
-      <slot :value="v"></slot>
-    </div>
-    <div v-if="value && value.length == 0">[]</div>
-  </div>`,
+  template: `
+    <span v-if="value && value.length > 0">
+      <button class="button small" type="button" v-on:click="isOpen=!isOpen">
+        <span class="button-text" v-if="isOpen">-</span>
+        <span class="button-text" v-else>+</span>
+      </button>
+      <span v-if="!isOpen">...</span>
+      <div v-else v-for="v in value">
+        <slot :value="v"></slot>
+      </div>
+    </span>`,
 });
 
 Vue.component("enum-display", {
@@ -108,7 +120,7 @@ Vue.component("enum-display", {
 
 Vue.component("string-display", {
   props: { value: String },
-  template: `<span>\{{value}}</span>`,
+  template: `<span>"\{{value}}"</span>`,
 });
 
 Vue.component("number-display", {
@@ -124,9 +136,13 @@ Vue.component("boolean-display", {
 const Login = Vue.component("login", {
   data: () => ({ username: "" }),
   template: `<form @submit.prevent="handleLogin">
-      <label for="username">Username</label>
-      <input v-model="username" type="text" />
-      <button type="submit" class="submit-button">
+      <label class="label">
+        Username
+        <div class="input-group">
+          <input class="input" v-model="username" type="text" />
+        </div>
+      </label>
+      <button type="submit" class="button submit">
         <span class="button-text">Submit</span>
       </button>
     </form>`,
@@ -143,13 +159,15 @@ const Login = Vue.component("login", {
 const Home = Vue.component("home", {
   data: () => ({ stateId: "" }),
   template: `<div>
-      <button type="button" class="submit-button" @click="createState">
+      <button type="button" class="button" @click="createState">
         <span class="button-text">Create new</span>
       </button>
       <div>Or</div>
-      <form @submit.prevent="joinState">
-        <input v-model="stateId" type="text" />
-        <button type="submit" class="submit-button">
+      <form class="form-group" @submit.prevent="joinState">
+        <div class="input-group">
+          <input class="input" v-model="stateId" type="text" />
+        </div>
+        <button type="submit" class="button submit">
           <span class="button-text">Join existing</span>
         </button>
       </form>

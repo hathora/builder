@@ -1,6 +1,7 @@
 <html>
   <head>
-    <link rel="stylesheet" type="text/css" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./node_modules/@blueprintjs/icons/lib/css/blueprint-icons.css" />
   </head>
 
   <body>
@@ -37,8 +38,10 @@
 {{#if (eq type "object")}}
 <object-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} v-slot="{ value }">
   {{#each properties}}
-  <label>{{@key}}</label>
-  {{> renderForm arg=@key}}
+  <label class="label">
+    {{@key}}
+    {{> renderForm arg=@key}}
+  </label>
   {{/each}}
 </object-input>
 {{else if (eq type "array")}}
@@ -60,27 +63,31 @@
 
 {{#*inline "renderState"}}
 {{#if (eq type "object")}}
+{
 <object-display class="object-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} v-slot="{ value }">
   {{#each properties}}
   <div class="kv-display">
-    <span class="key-display">{{@key}}</span>
+    <span class="key-display">{{@key}}</span>:
     {{> renderState arg=@key}}
   </div>
   {{/each}}
 </object-display>
+},
 {{else if (eq type "array")}}
-<array-display class="array-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} v-slot="{ value }">
-  {{#with items}}
-  {{> renderState}}
-  {{/with}}
-</array-display>
+[
+  <array-display class="array-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} v-slot="{ value }">
+    {{#with items}}
+      {{> renderState}}
+    {{/with}}
+  </array-display>
+],
 {{else if (eq type "enum")}}
-<enum-display class="enum-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} :options='{{{stringify options}}}'></enum-display>
+<enum-display class="enum-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} :options='{{{stringify options}}}'></enum-display>,
 {{else if (eq type "string")}}
-<string-display class="string-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}}></string-display>
+<string-display class="string-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}}></string-display>,
 {{else if (eq type "number")}}
-<number-display class="number-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}}></number-display>
+<number-display class="number-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}}></number-display>,
 {{else if (eq type "boolean")}}
-<boolean-display class="boolean-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}}></boolean-display>
+<boolean-display class="boolean-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}}></boolean-display>,
 {{/if}}
 {{/inline}}
