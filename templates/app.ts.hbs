@@ -94,16 +94,26 @@ Vue.component("object-display", {
 });
 
 Vue.component("array-display", {
+  data: function () {
+    return {
+      isOpen: true
+    }
+  },
   props: { value: Array },
   template: `
-    <span v-if="value && value.length > 0">
+    <span v-if="value && value.length === 0">[],</span>
+    <span v-else>
       [
-        <div v-for="v in value">
+        <button class="button small" type="button" v-on:click="isOpen=!isOpen">
+          <span class="button-text" v-if="isOpen">-</span>
+          <span class="button-text" v-else>+</span>
+        </button>
+        <span v-if="!isOpen">...</span>
+        <div v-else v-for="v in value">
           <slot :value="v"></slot>
         </div>
       ],
-    </span>
-    <span v-else>[],</span>`,
+    </span>`,
 });
 
 Vue.component("enum-display", {
