@@ -95,12 +95,15 @@ Vue.component("object-display", {
 
 Vue.component("array-display", {
   props: { value: Array },
-  template: `<div>
-    <div v-for="v in value">
-      <slot :value="v"></slot>
-    </div>
-    <div v-if="value && value.length == 0">[]</div>
-  </div>`,
+  template: `
+    <span v-if="value && value.length > 0">
+      [
+        <div v-for="v in value">
+          <slot :value="v"></slot>
+        </div>
+      ],
+    </span>
+    <span v-else>[],</span>`,
 });
 
 Vue.component("enum-display", {
