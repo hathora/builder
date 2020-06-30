@@ -21,6 +21,10 @@ Vue.component("method-form", {
   },
   methods: {
     submit() {
+      if (!Object.values(this.value).every((val) => val != undefined)) {
+        console.error("Required fields missing");
+        return;
+      }
       client[this.method as keyof LsotClient](this.value as any, (error) => {
         if (error) {
           console.error(error);
@@ -72,6 +76,9 @@ Vue.component("enum-input", {
         </option>
       </select>
     </div>`,
+  created() {
+    this.$parent.$emit("update", this.arg, undefined);
+  },
 });
 
 Vue.component("string-input", {
@@ -79,6 +86,9 @@ Vue.component("string-input", {
   template: `<div class="input-group">
       <input class="input" type="text" :value="value" @input="$parent.$emit('update', arg, $event.target.value)" />
     </div>`,
+  created() {
+    this.$parent.$emit("update", this.arg, undefined);
+  },
 });
 
 Vue.component("number-input", {
@@ -86,6 +96,9 @@ Vue.component("number-input", {
   template: `<div class="input-group">
       <input class="input" type="number" :value="value" @input="$parent.$emit('update', arg, Number($event.target.value))" />
     </div>`,
+  created() {
+    this.$parent.$emit("update", this.arg, undefined);
+  },
 });
 
 Vue.component("object-display", {
