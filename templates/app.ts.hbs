@@ -21,7 +21,7 @@ Vue.component("method-form", {
   },
   methods: {
     submit() {
-      if (!Object.values(this.value).every((val) => val != undefined)) {
+      if (!Object.values(this.value).every((val) => val !== undefined)) {
         console.error("Required fields missing");
         return;
       }
@@ -84,7 +84,7 @@ Vue.component("enum-input", {
 Vue.component("string-input", {
   props: { arg: String, value: { type: String, default: "" } },
   template: `<div class="input-group">
-      <input class="input" type="text" :value="value" @input="$parent.$emit('update', arg, $event.target.value)" />
+      <input class="input" type="text" :value="value" @input="$parent.$emit('update', arg, $event.target.value === '' ? undefined : $event.target.value)" />
     </div>`,
   created() {
     this.$parent.$emit("update", this.arg, undefined);
@@ -94,7 +94,7 @@ Vue.component("string-input", {
 Vue.component("number-input", {
   props: { arg: String, value: { type: Number, default: null } },
   template: `<div class="input-group">
-      <input class="input" type="number" :value="value" @input="$parent.$emit('update', arg, Number($event.target.value))" />
+      <input class="input" type="number" :value="value" @input="$parent.$emit('update', arg, $event.target.value === '' ? undefined : Number($event.target.value))" />
     </div>`,
   created() {
     this.$parent.$emit("update", this.arg, undefined);
