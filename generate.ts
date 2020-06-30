@@ -6,7 +6,7 @@ import { compile, registerHelper } from "handlebars";
 import path from "path";
 import npm from "npm";
 
-type Arg = ObjectArg | ArrayArg | EnumArg | StringArg | NumberArg | BooleanArg;
+type Arg = ObjectArg | ArrayArg | EnumArg | StringArg | NumberArg | BooleanArg | DisplayPluginArg;
 interface ObjectArg {
   type: "object";
   properties: Record<string, Arg>;
@@ -28,6 +28,10 @@ interface NumberArg {
 interface BooleanArg {
   type: "boolean";
 }
+interface DisplayPluginArg {
+  type: "display-plugin";
+  componentId: string;
+}
 
 registerHelper("eq", (a, b) => a === b);
 registerHelper("ne", (a, b) => a !== b);
@@ -35,6 +39,7 @@ registerHelper("stringify", JSON.stringify);
 registerHelper("isArray", Array.isArray);
 registerHelper("isObject", (x) => typeof x === "object");
 registerHelper("makeRequestName", (x) => "I" + capitalize(x) + "Request");
+registerHelper("makePluginName", (x, type) => `${x.replace("[]", "Array")}${type}Component`);
 registerHelper("join", (params, joinStr, prepend, postpend, options) => {
   let paramsStr;
   if (Array.isArray(params)) {
@@ -44,7 +49,11 @@ registerHelper("join", (params, joinStr, prepend, postpend, options) => {
       .map(([name, type]) => options.fn({ name, type }))
       .join(joinStr);
   }
-  return (prepend && paramsStr.length ? joinStr : "") + paramsStr + (postpend && paramsStr.length ? joinStr : "");
+  return (
+    (prepend && paramsStr.length ? joinStr : "") +
+    paramsStr +
+    (postpend && paramsStr.length ? joinStr : "")
+  );
 });
 registerHelper("getArgsInfo", getArgsInfo);
 
@@ -57,10 +66,14 @@ function getArgsInfo(args: any): Arg {
   } else if (typeof args === "object") {
     return {
       type: "object",
-      properties: Object.fromEntries(Object.entries(args).map(([name, type]) => [sanitize(name), getArgsInfo(type)])),
+      properties: Object.fromEntries(
+        Object.entries(args).map(([name, type]) => [sanitize(name), getArgsInfo(type)]),
+      ),
     };
   } else if (typeof args === "string") {
-    if (args.endsWith("[]")) {
+    if (args in doc.displayPlugins) {
+      return { type: "display-plugin", componentId: doc.displayPlugins[args] };
+    } else if (args.endsWith("[]")) {
       return { type: "array", items: getArgsInfo(args.substring(0, args.length - 2)) };
     } else if (args in doc.types) {
       return getArgsInfo(doc.types[args]);

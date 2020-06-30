@@ -1,4 +1,7 @@
 import { LsotClient } from "./client";
+{{#if displayPlugins}}
+import { {{#each displayPlugins}} {{makePluginName @key "Display"}}{{#unless @last}}, {{/unless}}{{/each}} } from "../plugins";
+{{/if}}
 import Vue from "vue";
 import VueRouter from "vue-router";
 
@@ -133,6 +136,10 @@ Vue.component("boolean-display", {
   template: `<span>\{{value}}</span>`,
 });
 
+{{#each displayPlugins}}
+Vue.component("{{this}}", {{makePluginName @key "Display"}});
+
+{{/each}}
 const Login = Vue.component("login", {
   data: () => ({ username: "" }),
   template: `<form @submit.prevent="handleLogin">
