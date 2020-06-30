@@ -1,4 +1,3 @@
-// export const PlayerNameArrayDisplayComponent = `<span><div v-for="v in value"><slot :value="v"></slot></div></span>`;
 export const PlayerNameArrayDisplayComponent = {
   data: function () {
     return {
