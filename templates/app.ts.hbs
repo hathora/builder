@@ -107,11 +107,7 @@ Vue.component("object-display", {
 });
 
 Vue.component("array-display", {
-  data: function () {
-    return {
-      isOpen: true
-    }
-  },
+  data: () => ({ isOpen: true }),
   props: { value: Array },
   template: `
     <span v-if="value && value.length > 0">
