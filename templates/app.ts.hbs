@@ -1,6 +1,6 @@
 import { LsotClient } from "./client";
 {{#if displayPlugins}}
-import { {{#each displayPlugins}} {{makePluginName @key "Display"}}{{#unless @last}}, {{/unless}}{{/each}} } from "../plugins";
+import { displayPlugins } from "../plugins";
 {{/if}}
 import Vue from "vue";
 import VueRouter from "vue-router";
@@ -137,7 +137,7 @@ Vue.component("boolean-display", {
 });
 
 {{#each displayPlugins}}
-Vue.component("{{this}}", {{makePluginName @key "Display"}});
+Vue.component("{{this.id}}"{{#if this.definition}}, displayPlugins["{{@key}}"].definition as any{{/if}});
 
 {{/each}}
 const Login = Vue.component("login", {

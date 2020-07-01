@@ -74,9 +74,6 @@ methods:
     questId: QuestId
     vote: Vote
 
-displayPlugins:
-  PlayerName[]: player-name-array-display
-
 userState: PlayerState
 userData: PlayerData
 initialize: createGame

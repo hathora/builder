@@ -1,5 +1,6 @@
 #!/usr/bin/env ts-node-script
 
+import { displayPlugins } from "./examples/avalon/plugins";
 import { safeLoad } from "js-yaml";
 import { readFileSync, writeFileSync, existsSync, mkdirSync, promises } from "fs";
 import { compile, registerHelper } from "handlebars";
@@ -65,8 +66,8 @@ function getArgsInfo(args: any): Arg {
       properties: Object.fromEntries(Object.entries(args).map(([name, type]) => [sanitize(name), getArgsInfo(type)])),
     };
   } else if (typeof args === "string") {
-    if (args in doc.displayPlugins) {
-      return { type: "display-plugin", componentId: doc.displayPlugins[args] };
+    if (args in displayPlugins) {
+      return { type: "display-plugin", componentId: displayPlugins[args].id };
     } else if (args.endsWith("[]")) {
       return { type: "array", items: getArgsInfo(args.substring(0, args.length - 2)) };
     } else if (args in doc.types) {
@@ -88,7 +89,7 @@ function sanitize(s: string) {
 
 function generate(file: string) {
   const template = compile(readFileSync(path.join(__dirname, "templates", file), "utf8"));
-  writeFileSync(path.join(".lsot", file.split(".hbs")[0]), template(doc), "utf8");
+  writeFileSync(path.join(".lsot", file.split(".hbs")[0]), template({ ...doc, displayPlugins }), "utf8");
 }
 
 const doc = safeLoad(readFileSync("types.yml", "utf8"));
