@@ -49,11 +49,7 @@ registerHelper("join", (params, joinStr, prepend, postpend, options) => {
       .map(([name, type]) => options.fn({ name, type }))
       .join(joinStr);
   }
-  return (
-    (prepend && paramsStr.length ? joinStr : "") +
-    paramsStr +
-    (postpend && paramsStr.length ? joinStr : "")
-  );
+  return (prepend && paramsStr.length ? joinStr : "") + paramsStr + (postpend && paramsStr.length ? joinStr : "");
 });
 registerHelper("getArgsInfo", getArgsInfo);
 
@@ -66,9 +62,7 @@ function getArgsInfo(args: any): Arg {
   } else if (typeof args === "object") {
     return {
       type: "object",
-      properties: Object.fromEntries(
-        Object.entries(args).map(([name, type]) => [sanitize(name), getArgsInfo(type)]),
-      ),
+      properties: Object.fromEntries(Object.entries(args).map(([name, type]) => [sanitize(name), getArgsInfo(type)])),
     };
   } else if (typeof args === "string") {
     if (args in doc.displayPlugins) {
