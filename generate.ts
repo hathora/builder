@@ -9,24 +9,30 @@ import npm from "npm";
 type Arg = ObjectArg | ArrayArg | EnumArg | StringArg | NumberArg | BooleanArg;
 interface ObjectArg {
   type: "object";
+  required: boolean;
   properties: Record<string, Arg>;
 }
 interface ArrayArg {
   type: "array";
+  required: boolean;
   items: Arg;
 }
 interface EnumArg {
   type: "enum";
+  required: boolean;
   options: { label: string; value: number }[];
 }
 interface StringArg {
   type: "string";
+  required: boolean;
 }
 interface NumberArg {
   type: "number";
+  required: boolean;
 }
 interface BooleanArg {
   type: "boolean";
+  required: boolean;
 }
 
 registerHelper("eq", (a, b) => a === b);
@@ -48,24 +54,28 @@ registerHelper("join", (params, joinStr, prepend, postpend, options) => {
 });
 registerHelper("getArgsInfo", getArgsInfo);
 
-function getArgsInfo(args: any): Arg {
+function getArgsInfo(args: any, required: boolean = true): Arg {
   if (Array.isArray(args)) {
     return {
       type: "enum",
+      required,
       options: args.map((label: string, value) => ({ label, value })),
     };
   } else if (typeof args === "object") {
     return {
       type: "object",
-      properties: Object.fromEntries(Object.entries(args).map(([name, type]) => [sanitize(name), getArgsInfo(type)])),
+      required,
+      properties: Object.fromEntries(
+        Object.entries(args).map(([name, type]) => [sanitize(name), getArgsInfo(type, !name.endsWith("?"))])
+      ),
     };
   } else if (typeof args === "string") {
     if (args.endsWith("[]")) {
-      return { type: "array", items: getArgsInfo(args.substring(0, args.length - 2)) };
+      return { type: "array", required, items: getArgsInfo(args.substring(0, args.length - 2), required) };
     } else if (args in doc.types) {
-      return getArgsInfo(doc.types[args]);
+      return getArgsInfo(doc.types[args], required);
     } else if (args === "string" || args === "number" || args === "boolean") {
-      return { type: args };
+      return { type: args, required };
     }
   }
   throw new Error("Invalid args: " + args);
