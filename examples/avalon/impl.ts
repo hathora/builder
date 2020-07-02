@@ -75,9 +75,11 @@ export class Impl implements Methods<InternalState> {
   }
   startGame(state: InternalState, userData: PlayerData, request: IStartGameRequest): string | void {
     const numPlayers = state.players.length;
-    if (request.playerOrder != undefined) {
+    if (request.playerOrder != undefined && request.playerOrder.length > 0) {
       const order = request.playerOrder;
-      state.players.sort((a, b) => order.findIndex(name => name == a.name) - order.findIndex(name => name == b.name));
+      state.players.sort(
+        (a, b) => order.findIndex((name) => name == a.name) - order.findIndex((name) => name == b.name)
+      );
     } else {
       state.players = shuffle(state.players);
     }
