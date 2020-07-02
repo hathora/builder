@@ -4,12 +4,12 @@ import VueRouter from "vue-router";
 
 let client: LsotClient;
 
-function patch(obj: any, val: any) {
+function patch(obj: any, val: any, topLevel: boolean = true) {
   const [k, v] = Object.entries(val)[0];
-  if (k in obj) {
-    patch(obj[k], v);
+  if (typeof v === "object" && !Array.isArray(v) && k in obj) {
+    patch(obj[k], v, false);
   } else {
-    obj[k] = v;
+    Vue.set(obj, k, v);
   }
 }
 
