@@ -37,6 +37,7 @@ interface BooleanArg {
 }
 interface DisplayPluginArg {
   type: "display-plugin";
+  required: boolean;
   componentId: string;
 }
 
