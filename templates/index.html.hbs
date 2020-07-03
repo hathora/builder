@@ -39,7 +39,7 @@
 <object-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" v-slot="{ value }">
   {{#each properties}}
   <label class="label">
-    {{@key}}
+    {{@key}}{{#if required}}*{{/if}}
     {{> renderForm arg=@key}}
   </label>
   {{/each}}
