@@ -149,8 +149,7 @@ Vue.component("object-display", {
 Vue.component("array-display", {
   data: () => ({ isOpen: true }),
   props: { value: Array },
-  template: `
-    <span v-if="value && value.length > 0">
+  template: `<span v-if="value && value.length > 0">
       <button class="button small" type="button" v-on:click="isOpen=!isOpen">
         <span class="button-text" v-if="isOpen">-</span>
         <span class="button-text" v-else>+</span>
@@ -180,6 +179,17 @@ Vue.component("number-display", {
 Vue.component("boolean-display", {
   props: { value: Boolean },
   template: `<span>\{{value}}</span>`,
+});
+
+Vue.component("key-display", {
+  props: { value: String, typeString: String },
+  data: () => ({ hover: false }),
+  template: `<span>
+      <span class="key-display" @mouseover="hover=true" @mouseleave="hover=false">
+        \{{value}}:
+      </span>
+      <span v-if="hover">(\{{typeString}})</span>
+    </span>`,
 });
 
 const Login = Vue.component("login", {
