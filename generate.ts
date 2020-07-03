@@ -83,7 +83,7 @@ function getArgsInfo(args: any, required: boolean, typeString?: string): Arg {
         type: "array",
         required,
         typeString: args,
-        items: getArgsInfo(args.substring(0, args.length - 2), required),
+        items: getArgsInfo(args.substring(0, args.length - 2), true),
       };
     } else if (args in doc.types) {
       return getArgsInfo(doc.types[args], required, args);
