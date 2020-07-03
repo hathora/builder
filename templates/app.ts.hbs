@@ -6,11 +6,22 @@ let client: LsotClient;
 
 function patch(obj: any, val: any, topLevel: boolean = true) {
   const [k, v] = Object.entries(val)[0];
-  if (typeof v === "object" && !Array.isArray(v) && k in obj) {
+  if (v !== null && typeof v === "object" && !Array.isArray(v) && k in obj) {
     patch(obj[k], v, false);
   } else {
     Vue.set(obj, k, v);
   }
+}
+
+function validate(obj: any): boolean {
+  if (obj === null) {
+    return false;
+  } else if (Array.isArray(obj)) {
+    return obj.every(validate);
+  } else if (typeof obj === "object") {
+    return Object.values(obj).every(validate);
+  }
+  return true;
 }
 
 Vue.component("method-form", {
@@ -30,7 +41,7 @@ Vue.component("method-form", {
   },
   methods: {
     submit() {
-      if (!Object.values(this.value).every((val) => val !== undefined)) {
+      if (!validate(this.value)) {
         console.error("Required fields missing");
         return;
       }
@@ -46,7 +57,7 @@ Vue.component("method-form", {
 });
 
 Vue.component("object-input", {
-  props: { arg: String, value: { type: Object, default: () => ({}) } },
+  props: { arg: String, required: Boolean, value: { type: Object, default: () => ({}) } },
   template: `<div><slot :value="value"></slot></div>`,
   created() {
     this.$on("update", (arg: number, value: any) => {
@@ -56,7 +67,7 @@ Vue.component("object-input", {
 });
 
 Vue.component("array-input", {
-  props: { arg: String, value: { type: Array, default: () => [] } },
+  props: { arg: String, required: Boolean, value: { type: Array, default: () => [] } },
   template: `<div>
       <div class="form-group" v-for="(v, i) in value">
         <slot :arg="i.toString()" :value="v"></slot>
@@ -77,7 +88,7 @@ Vue.component("array-input", {
 });
 
 Vue.component("enum-input", {
-  props: { arg: String, value: { type: Number, default: null }, options: Array },
+  props: { arg: String, required: Boolean, value: { type: Number, default: null }, options: Array },
   template: `<div class="select">
       <select @change="$parent.$emit('update', arg, Number($event.target.value))">
         <option disabled :selected="value === null">Select a value...</option>
@@ -87,27 +98,46 @@ Vue.component("enum-input", {
       </select>
     </div>`,
   created() {
-    this.$parent.$emit("update", this.arg, undefined);
+    this.$parent.$emit("update", this.arg, this.required ? null : undefined);
   },
 });
 
 Vue.component("string-input", {
-  props: { arg: String, value: { type: String, default: "" } },
+  props: { arg: String, required: Boolean, value: { type: String, default: "" } },
   template: `<div class="input-group">
-      <input class="input" type="text" :value="value" @input="$parent.$emit('update', arg, $event.target.value === '' ? undefined : $event.target.value)" />
+      <input class="input" type="text" :value="value" @input="update($event.target.value)" />
     </div>`,
   created() {
-    this.$parent.$emit("update", this.arg, undefined);
+    this.$parent.$emit("update", this.arg, this.required ? null : undefined);
+  },
+  methods: {
+    update(value: any) {
+      if (value === "") {
+        this.$parent.$emit("update", this.arg, this.required ? null : undefined);
+      } else {
+        this.$parent.$emit("update", this.arg, value);
+      }
+    },
   },
 });
 
 Vue.component("number-input", {
-  props: { arg: String, value: { type: Number, default: null } },
+  props: { arg: String, required: Boolean, value: { type: Number, default: "" } },
   template: `<div class="input-group">
-      <input class="input" type="number" :value="value" @input="$parent.$emit('update', arg, $event.target.value === '' ? undefined : Number($event.target.value))" />
+      <input class="input" type="number" :value="value" @input="update" />
     </div>`,
   created() {
-    this.$parent.$emit("update", this.arg, undefined);
+    this.$parent.$emit("update", this.arg, this.required ? null : undefined);
+  },
+  methods: {
+    update(event: any) {
+      const value = event.target.value;
+      if (value === "") {
+        this.$parent.$emit("update", this.required ? null : undefined);
+      } else {
+        this.$parent.$emit("update", Number(value));
+      }
+    },
   },
 });
 

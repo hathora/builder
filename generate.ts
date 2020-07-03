@@ -52,9 +52,9 @@ registerHelper("join", (params, joinStr, prepend, postpend, options) => {
   }
   return (prepend && paramsStr.length ? joinStr : "") + paramsStr + (postpend && paramsStr.length ? joinStr : "");
 });
-registerHelper("getArgsInfo", getArgsInfo);
+registerHelper("getArgsInfo", (args) => getArgsInfo(args, true));
 
-function getArgsInfo(args: any, required: boolean = true): Arg {
+function getArgsInfo(args: any, required: boolean): Arg {
   if (Array.isArray(args)) {
     return {
       type: "enum",
