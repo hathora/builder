@@ -67,7 +67,7 @@
 <object-display class="object-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} v-slot="{ value }">
   {{#each properties}}
   <div class="kv-display">
-    <span class="key-display">{{@key}}</span>:
+    <key-display value="{{@key}}" type-string="{{typeString}}"></key-display>
     {{> renderState arg=@key}}
   </div>
   {{/each}}
