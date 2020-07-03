@@ -188,7 +188,7 @@ Vue.component("key-display", {
       <span class="key-display" @mouseover="hover=true" @mouseleave="hover=false">
         \{{value}}:
       </span>
-      <span v-if="hover">\{{typeString}}</span>
+      <span v-if="hover">(\{{typeString}})</span>
     </span>`,
 });
 
