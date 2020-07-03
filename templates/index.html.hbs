@@ -14,7 +14,7 @@
           {{#each methods}}
           {{#if (ne @key ../initialize)}}
           {{#if this}}
-          <method-form method="{{@key}}" v-slot="{ arg, value }">
+          <method-form method="{{@key}}" v-slot="{ arg, value, showErrors }">
             {{> renderForm (getArgsInfo this)}}
           </method-form>
           {{else}}
@@ -51,13 +51,13 @@
   {{/with}}
 </array-input>
 {{else if (eq type "enum")}}
-<enum-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" :options='{{{stringify options}}}'></enum-input>
+<enum-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" :showErrors="showErrors" :options='{{{stringify options}}}'></enum-input>
 {{else if (eq type "string")}}
-<string-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}"></string-input>
+<string-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" :showErrors="showErrors"></string-input>
 {{else if (eq type "number")}}
-<number-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}"></number-input>
+<number-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" :showErrors="showErrors"></number-input>
 {{else if (eq type "boolean")}}
-<boolean-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}"></boolean-input>
+<boolean-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" :showErrors="showErrors"></boolean-input>
 {{/if}}
 {{/inline}}
 
