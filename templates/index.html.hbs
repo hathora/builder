@@ -36,7 +36,7 @@
 
 {{#*inline "renderForm"}}
 {{#if (eq type "object")}}
-<object-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} v-slot="{ value }">
+<object-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" v-slot="{ value }">
   {{#each properties}}
   <label class="label">
     {{@key}}
@@ -45,19 +45,19 @@
   {{/each}}
 </object-input>
 {{else if (eq type "array")}}
-<array-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} v-slot="{ arg, value }">
+<array-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" v-slot="{ arg, value }">
   {{#with items}}
   {{> renderForm}}
   {{/with}}
 </array-input>
 {{else if (eq type "enum")}}
-<enum-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :options='{{{stringify options}}}'></enum-input>
+<enum-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" :options='{{{stringify options}}}'></enum-input>
 {{else if (eq type "string")}}
-<string-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}}></string-input>
+<string-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}"></string-input>
 {{else if (eq type "number")}}
-<number-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}}></number-input>
+<number-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}"></number-input>
 {{else if (eq type "boolean")}}
-<boolean-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}}></boolean-input>
+<boolean-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}"></boolean-input>
 {{/if}}
 {{/inline}}
 
@@ -77,11 +77,11 @@
 },
 {{else if (eq type "array")}}
 [
-  <array-display class="array-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} v-slot="{ value }">
-    {{#with items}}
-      {{> renderState}}
-    {{/with}}
-  </array-display>
+<array-display class="array-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} v-slot="{ value }">
+  {{#with items}}
+    {{> renderState}}
+  {{/with}}
+</array-display>
 ],
 {{else if (eq type "enum")}}
 <enum-display class="enum-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} :options='{{{stringify options}}}'></enum-display>,
