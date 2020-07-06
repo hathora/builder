@@ -83,7 +83,7 @@ function getArgsInfo(args: any, required: boolean, typeString?: string): Arg {
       ),
     };
   } else if (typeof args === "string") {
-    if (plugins.includes(getPluginName(args).concat(".ts"))) {
+    if (plugins.includes(getPluginName(args))) {
       return { type: "display-plugin", required, componentId: getPluginName(args) };
     } else if (args.endsWith("[]")) {
       return {
@@ -119,7 +119,7 @@ function generate(file: string) {
 }
 
 const doc = safeLoad(readFileSync("types.yml", "utf8"));
-const plugins = readdirSync("plugins", "utf8");
+const plugins = readdirSync("plugins", "utf8").map((p) => p.replace(/\.ts$/, ""));
 
 if (!existsSync(".lsot")) {
   mkdirSync(".lsot");
