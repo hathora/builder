@@ -39,10 +39,8 @@
 {{#if (eq type "object")}}
 <object-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" v-slot="{ value }">
   {{#each properties}}
-  <label class="label">
-    {{@key}}{{#if required}}*{{/if}}
-    {{> renderForm arg=@key}}
-  </label>
+  <label class="label">{{@key}}{{#if required}}*{{/if}}</label>
+  {{> renderForm arg=@key}}
   {{/each}}
 </object-input>
 {{else if (eq type "array")}}
