@@ -14,7 +14,7 @@
           {{#each methods}}
           {{#if (ne @key ../initialize)}}
           {{#if this}}
-          <method-form method="{{@key}}" v-slot="{ arg, value }">
+          <method-form method="{{@key}}" v-slot="{ arg, value, showErrors }">
             {{> renderForm (getArgsInfo this)}}
           </method-form>
           {{else}}
@@ -39,25 +39,25 @@
 <object-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" v-slot="{ value }">
   {{#each properties}}
   <label class="label">
-    {{@key}}
+    {{@key}}{{#if required}}*{{/if}}
     {{> renderForm arg=@key}}
   </label>
   {{/each}}
 </object-input>
 {{else if (eq type "array")}}
-<array-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" v-slot="{ arg, value }">
+<array-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" :showErrors="showErrors" v-slot="{ arg, value }">
   {{#with items}}
   {{> renderForm}}
   {{/with}}
 </array-input>
 {{else if (eq type "enum")}}
-<enum-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" :options='{{{stringify options}}}'></enum-input>
+<enum-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" :showErrors="showErrors" :options='{{{stringify options}}}'></enum-input>
 {{else if (eq type "string")}}
-<string-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}"></string-input>
+<string-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" :showErrors="showErrors"></string-input>
 {{else if (eq type "number")}}
-<number-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}"></number-input>
+<number-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" :showErrors="showErrors"></number-input>
 {{else if (eq type "boolean")}}
-<boolean-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}"></boolean-input>
+<boolean-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" :showErrors="showErrors"></boolean-input>
 {{/if}}
 {{/inline}}
 
@@ -69,7 +69,7 @@
 <object-display class="object-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} v-slot="{ value }">
   {{#each properties}}
   <div class="kv-display">
-    <span class="key-display">{{@key}}</span>:
+    <key-display value="{{@key}}" type-string="{{typeString}}"></key-display>
     {{> renderState arg=@key}}
   </div>
   {{/each}}

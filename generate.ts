@@ -11,29 +11,35 @@ type Arg = ObjectArg | ArrayArg | EnumArg | StringArg | NumberArg | BooleanArg |
 interface ObjectArg {
   type: "object";
   required: boolean;
+  typeString?: string;
   properties: Record<string, Arg>;
 }
 interface ArrayArg {
   type: "array";
   required: boolean;
+  typeString?: string;
   items: Arg;
 }
 interface EnumArg {
   type: "enum";
   required: boolean;
+  typeString?: string;
   options: { label: string; value: number }[];
 }
 interface StringArg {
   type: "string";
   required: boolean;
+  typeString?: string;
 }
 interface NumberArg {
   type: "number";
   required: boolean;
+  typeString?: string;
 }
 interface BooleanArg {
   type: "boolean";
   required: boolean;
+  typeString?: string;
 }
 interface DisplayPluginArg {
   type: "display-plugin";
@@ -61,17 +67,19 @@ registerHelper("join", (params, joinStr, prepend, postpend, options) => {
 });
 registerHelper("getArgsInfo", (args) => getArgsInfo(args, true));
 
-function getArgsInfo(args: any, required: boolean): Arg {
+function getArgsInfo(args: any, required: boolean, typeString?: string): Arg {
   if (Array.isArray(args)) {
     return {
       type: "enum",
       required,
+      typeString,
       options: args.map((label: string, value) => ({ label, value })),
     };
   } else if (typeof args === "object") {
     return {
       type: "object",
       required,
+      typeString,
       properties: Object.fromEntries(
         Object.entries(args).map(([name, type]) => [sanitize(name), getArgsInfo(type, !name.endsWith("?"))])
       ),
@@ -80,11 +88,16 @@ function getArgsInfo(args: any, required: boolean): Arg {
     if (args in displayPlugins) {
       return { type: "display-plugin", required, componentId: displayPlugins[args].id };
     } else if (args.endsWith("[]")) {
-      return { type: "array", required, items: getArgsInfo(args.substring(0, args.length - 2), required) };
+      return {
+        type: "array",
+        required,
+        typeString: args,
+        items: getArgsInfo(args.substring(0, args.length - 2), true),
+      };
     } else if (args in doc.types) {
-      return getArgsInfo(doc.types[args], required);
+      return getArgsInfo(doc.types[args], required, args);
     } else if (args === "string" || args === "number" || args === "boolean") {
-      return { type: args, required };
+      return { type: args, required, typeString: typeString ?? args };
     }
   }
   throw new Error("Invalid args: " + args);
