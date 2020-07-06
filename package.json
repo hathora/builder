@@ -6,8 +6,7 @@
   "dependencies": {
     "handlebars": "^4.7.6",
     "js-yaml": "^3.13.1",
-    "npm": "^6.14.5",
-    "vue": "^2.6.11"
+    "npm": "^6.14.5"
   },
   "devDependencies": {
     "@types/js-yaml": "^3.12.4",

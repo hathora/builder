@@ -79,12 +79,12 @@ function getArgsInfo(args: any, required: boolean, typeString?: string): Arg {
       required,
       typeString,
       properties: Object.fromEntries(
-        Object.entries(args).map(([name, type]) => [sanitize(name), getArgsInfo(type, !name.endsWith("?"))]),
+        Object.entries(args).map(([name, type]) => [sanitize(name), getArgsInfo(type, !name.endsWith("?"))])
       ),
     };
   } else if (typeof args === "string") {
-    if (plugins.includes(getPluginName(args))) {
-      return { type: "display-plugin", required, componentId: getPluginName(args) };
+    if (plugins.includes(args)) {
+      return { type: "display-plugin", required, componentId: args };
     } else if (args.endsWith("[]")) {
       return {
         type: "array",
@@ -107,10 +107,6 @@ function capitalize(s: string) {
 
 function sanitize(s: string) {
   return s.replace(/[\W]+/g, "");
-}
-
-function getPluginName(s: string) {
-  return s.replace(/\[\]$/, "s");
 }
 
 function generate(file: string) {
