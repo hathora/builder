@@ -1,6 +1,9 @@
 import { LsotClient } from "./client";
 import Vue from "vue";
 import VueRouter from "vue-router";
+import vSelect from "vue-select";
+
+Vue.component("v-select", vSelect);
 
 let client: LsotClient;
 
@@ -95,15 +98,13 @@ Vue.component("enum-input", {
     value: { type: Number, default: null },
     options: Array,
   },
-  template: `<div class="select" :class="{ missing: showErrors && !validate() }">
-      <select @change="$parent.$emit('update', arg, Number($event.target.value))">
-        <option disabled :selected="value === null">Select a value...</option>
-        <option v-for="option in options" :value="option.value" :selected="option.value === value">
-          \{{option.label}}
-        </option>
-      </select>
+  template: `<div :class="{ missing: showErrors && !validate() }">
+      <v-select :value="value" :options="options" :reduce="x => x.value" @input="update"></v-select>
     </div>`,
   methods: {
+    update(value: string) {
+      this.$parent.$emit("update", this.arg, value === null ? null : Number(value));
+    },
     validate() {
       return !this.required || this.value !== null;
     },
