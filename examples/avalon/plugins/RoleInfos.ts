@@ -22,10 +22,10 @@ Vue.component("RoleInfos", {
             <th>Known Roles</th>
             <th>Quantity</th>
         </tr>
-        <tr v-for="v in value.filter(i => i.quantity > 0)">
+        <tr v-for="v in filterRoleInfos(value)">
             <td>{{roleToString(v.role)}}</td>
             <td>{{v.isEvil}}</td>
-            <td>{{formatKnownRoles(v.knownRoles, value.filter(i => i.quantity > 0))}}</td>
+            <td>{{formatKnownRoles(v.knownRoles, filterRoleInfos(value))}}</td>
             <td>{{v.quantity}}</td>
         </tr>
     </table>
@@ -37,6 +37,10 @@ Vue.component("RoleInfos", {
     formatKnownRoles(knownRoles: Role[], roleInfosInGame: RoleInfo[]) {
       const rolesInGame = roleInfosInGame.map((i) => i.role);
       return knownRoles.filter((r) => rolesInGame.includes(r)).map(this.roleToString);
+    },
+    filterRoleInfos(roleInfos: RoleInfo[]) {
+      const filtered = roleInfos.filter((r) => r.quantity > 0);
+      return filtered.length > 0 ? filtered : roleInfos;
     },
   },
 });
