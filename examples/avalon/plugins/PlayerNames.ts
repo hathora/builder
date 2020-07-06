@@ -1,7 +1,6 @@
-import { Component } from "vue";
+import Vue from "vue";
 
-const PlayerNameArrayDisplayComponentId = "player-name-array-display";
-const PlayerNameArrayDisplayComponent: Component = {
+Vue.component("PlayerNames", {
   data: function () {
     return {
       isOpen: true,
@@ -19,7 +18,4 @@ const PlayerNameArrayDisplayComponent: Component = {
       {{v + " this is mine"}}
     </div>
   </span>`,
-};
-export const displayPlugins: { [objectType: string]: { id: string; definition?: Component } } = {
-  "PlayerName[]": { id: PlayerNameArrayDisplayComponentId, definition: PlayerNameArrayDisplayComponent },
-};
+});

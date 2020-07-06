@@ -1,8 +1,7 @@
 #!/usr/bin/env ts-node-script
 
-import { displayPlugins } from "./examples/avalon/plugins";
 import { safeLoad } from "js-yaml";
-import { readFileSync, writeFileSync, existsSync, mkdirSync, promises } from "fs";
+import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync, promises } from "fs";
 import { compile, registerHelper } from "handlebars";
 import path from "path";
 import npm from "npm";
@@ -47,7 +46,6 @@ registerHelper("stringify", JSON.stringify);
 registerHelper("isArray", Array.isArray);
 registerHelper("isObject", (x) => typeof x === "object");
 registerHelper("makeRequestName", (x) => "I" + capitalize(x) + "Request");
-registerHelper("makePluginName", (x, type) => `${x.replace("[]", "Array")}${type}Component`);
 registerHelper("join", (params, joinStr, prepend, postpend, options) => {
   let paramsStr;
   if (Array.isArray(params)) {
@@ -73,12 +71,12 @@ function getArgsInfo(args: any, required: boolean): Arg {
       type: "object",
       required,
       properties: Object.fromEntries(
-        Object.entries(args).map(([name, type]) => [sanitize(name), getArgsInfo(type, !name.endsWith("?"))])
+        Object.entries(args).map(([name, type]) => [sanitize(name), getArgsInfo(type, !name.endsWith("?"))]),
       ),
     };
   } else if (typeof args === "string") {
-    if (args in displayPlugins) {
-      return { type: "display-plugin", required, componentId: displayPlugins[args].id };
+    if (plugins.includes(getPluginName(args).concat(".ts"))) {
+      return { type: "display-plugin", required, componentId: getPluginName(args) };
     } else if (args.endsWith("[]")) {
       return { type: "array", required, items: getArgsInfo(args.substring(0, args.length - 2), required) };
     } else if (args in doc.types) {
@@ -98,12 +96,17 @@ function sanitize(s: string) {
   return s.replace(/[\W]+/g, "");
 }
 
+function getPluginName(s: string) {
+  return s.replace(/\[\]$/, "s");
+}
+
 function generate(file: string) {
   const template = compile(readFileSync(path.join(__dirname, "templates", file), "utf8"));
-  writeFileSync(path.join(".lsot", file.split(".hbs")[0]), template({ ...doc, displayPlugins }), "utf8");
+  writeFileSync(path.join(".lsot", file.split(".hbs")[0]), template({ ...doc, plugins }), "utf8");
 }
 
 const doc = safeLoad(readFileSync("types.yml", "utf8"));
+const plugins = readdirSync("plugins", "utf8");
 
 if (!existsSync(".lsot")) {
   mkdirSync(".lsot");
