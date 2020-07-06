@@ -66,7 +66,7 @@ Vue.component("object-input", {
 });
 
 Vue.component("array-input", {
-  props: { arg: String, required: Boolean, value: { type: Array, default: () => [] } },
+  props: { arg: String, required: Boolean, showErrors: Boolean, value: { type: Array, default: () => [] } },
   template: `<div>
       <div class="form-group" v-for="(v, i) in value">
         <slot :arg="i.toString()" :value="v"></slot>
@@ -74,7 +74,7 @@ Vue.component("array-input", {
         <button class="button" type="button" @click="$parent.$emit('update', arg, i === (value.length-1) ? value : [...value.slice(0, i), value[i+1], value[i], ...value.slice(i+2, value.length)])">&#8595;</button>
         <button class="button danger" type="button" @click="$parent.$emit('update', arg, value.slice(0, i).concat(value.slice(i+1, value.length)))">x</button>
       </div>
-      <button class="button" type="button" @click="$parent.$emit('update', arg, value.concat(null))">
+      <button class="button" type="button" @click="$parent.$emit('update', arg, value.concat(null))" :class="{ missing: showErrors && required && value.length === 0 }">
         <span class="button-text">Add</span>
       </button>
     </div>`,
@@ -85,7 +85,7 @@ Vue.component("array-input", {
   },
   methods: {
     validate() {
-      return this.$children.every((child: any) => child.validate());
+      return this.$children.every((child: any) => child.validate()) && (!this.required || this.value.length > 0);
     },
   },
 });

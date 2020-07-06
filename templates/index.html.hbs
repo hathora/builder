@@ -46,7 +46,7 @@
   {{/each}}
 </object-input>
 {{else if (eq type "array")}}
-<array-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" v-slot="{ arg, value }">
+<array-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" :showErrors="showErrors" v-slot="{ arg, value }">
   {{#with items}}
   {{> renderForm}}
   {{/with}}
