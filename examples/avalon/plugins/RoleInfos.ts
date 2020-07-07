@@ -1,7 +1,7 @@
 import Vue from "vue";
 import { Role, RoleInfo } from "../.lsot/types";
 
-Vue.component("RoleInfos", {
+export default Vue.extend({
   data: function () {
     return {
       isOpen: true,
