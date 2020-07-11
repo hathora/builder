@@ -209,8 +209,8 @@ function questStatus(quest: InternalQuestAttempt) {
     return QuestStatus.VOTING_IN_QUEST;
   }
   return numFails(quest.results) >= maxFails(quest.numPlayers, quest.roundNumber)
-    ? QuestStatus.PASSED
-    : QuestStatus.FAILED;
+    ? QuestStatus.FAILED
+    : QuestStatus.PASSED;
 }
 
 function numQuestsForStatus(quests: InternalQuestAttempt[], status: QuestStatus): number {
