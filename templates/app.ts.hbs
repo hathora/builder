@@ -215,7 +215,8 @@ const Login = Vue.component("login", {
     handleLogin() {
       LsotClient.registerUser(this.username).then((token) => {
         sessionStorage.setItem("user", JSON.stringify({ name: this.username, token }));
-        this.$router.push("/");
+        const url = this.$route.query.url;
+        this.$router.push((Array.isArray(url) ? url[0] : url) || "/");
       });
     },
   },
@@ -276,7 +277,7 @@ const router = new VueRouter({
 
 router.beforeEach((to, from, next) => {
   if (to.path != "/login" && sessionStorage.getItem("user") == null) {
-    next("/login");
+    next(`/login${to.path === "/" ? "" : "?url=" + to.path}`);
   } else {
     next();
   }
