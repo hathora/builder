@@ -1,12 +1,12 @@
 #!/usr/bin/env ts-node-script
 
 import { safeLoad } from "js-yaml";
-import { readFileSync, writeFileSync, existsSync, mkdirSync, promises } from "fs";
+import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync, promises } from "fs";
 import { compile, registerHelper } from "handlebars";
 import path from "path";
 import npm from "npm";
 
-type Arg = ObjectArg | ArrayArg | EnumArg | StringArg | NumberArg | BooleanArg;
+type Arg = ObjectArg | ArrayArg | EnumArg | StringArg | NumberArg | BooleanArg | DisplayPluginArg;
 interface ObjectArg {
   type: "object";
   required: boolean;
@@ -38,6 +38,12 @@ interface NumberArg {
 interface BooleanArg {
   type: "boolean";
   required: boolean;
+  typeString?: string;
+}
+interface DisplayPluginArg {
+  type: "display-plugin";
+  required: boolean;
+  componentId: string;
   typeString?: string;
 }
 
@@ -78,7 +84,9 @@ function getArgsInfo(args: any, required: boolean, typeString?: string): Arg {
       ),
     };
   } else if (typeof args === "string") {
-    if (args.endsWith("[]")) {
+    if (plugins.includes(args)) {
+      return { type: "display-plugin", required, typeString: args, componentId: args };
+    } else if (args.endsWith("[]")) {
       return {
         type: "array",
         required,
@@ -104,10 +112,11 @@ function sanitize(s: string) {
 
 function generate(file: string) {
   const template = compile(readFileSync(path.join(__dirname, "templates", file), "utf8"));
-  writeFileSync(path.join(".lsot", file.split(".hbs")[0]), template(doc), "utf8");
+  writeFileSync(path.join(".lsot", file.split(".hbs")[0]), template({ ...doc, plugins }), "utf8");
 }
 
 const doc = safeLoad(readFileSync("types.yml", "utf8"));
+const plugins = readdirSync("plugins", "utf8").map((p) => p.replace(/\.ts$/, ""));
 
 if (!existsSync(".lsot")) {
   mkdirSync(".lsot");
