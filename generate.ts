@@ -44,6 +44,7 @@ interface DisplayPluginArg {
   type: "display-plugin";
   required: boolean;
   componentId: string;
+  typeString?: string;
 }
 
 registerHelper("eq", (a, b) => a === b);
@@ -84,7 +85,7 @@ function getArgsInfo(args: any, required: boolean, typeString?: string): Arg {
     };
   } else if (typeof args === "string") {
     if (plugins.includes(args)) {
-      return { type: "display-plugin", required, componentId: args };
+      return { type: "display-plugin", required, typeString: args, componentId: args };
     } else if (args.endsWith("[]")) {
       return {
         type: "array",
