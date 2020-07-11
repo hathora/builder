@@ -2,7 +2,7 @@ import { LsotClient } from "./client";
 import Vue from "vue";
 import VueRouter from "vue-router";
 {{#each plugins}}
-import {{this}} from "../plugins/{{this}}"
+import {{this}} from "../plugins/{{this}}";
 {{/each}}
 
 let client: LsotClient;
