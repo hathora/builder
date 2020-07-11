@@ -1,6 +1,9 @@
 import { LsotClient } from "./client";
 import Vue from "vue";
 import VueRouter from "vue-router";
+{{#each plugins}}
+import {{this}} from "../plugins/{{this}}"
+{{/each}}
 
 let client: LsotClient;
 
@@ -190,6 +193,10 @@ Vue.component("key-display", {
       <span v-if="hover">(\{{typeString}})</span>
     </span>`,
 });
+
+{{#each plugins}}
+Vue.component("{{this}}", {{this}});
+{{/each}}
 
 const Login = Vue.component("login", {
   data: () => ({ username: "" }),
