@@ -1,5 +1,5 @@
 import Vue from "vue";
-import { Role, RoleInfo } from "../.lsot/types";
+import { Role, RoleInfo } from "../.rtag/types";
 
 export default Vue.extend({
   data: function () {

@@ -112,18 +112,18 @@ function sanitize(s: string) {
 
 function generate(file: string) {
   const template = compile(readFileSync(path.join(__dirname, "templates", file), "utf8"));
-  writeFileSync(path.join(".lsot", file.split(".hbs")[0]), template({ ...doc, plugins }), "utf8");
+  writeFileSync(path.join(".rtag", file.split(".hbs")[0]), template({ ...doc, plugins }), "utf8");
 }
 
 const doc = safeLoad(readFileSync("types.yml", "utf8"));
 const plugins = readdirSync("plugins", "utf8").map((p) => p.replace(/\.ts$/, ""));
 
-if (!existsSync(".lsot")) {
-  mkdirSync(".lsot");
+if (!existsSync(".rtag")) {
+  mkdirSync(".rtag");
 }
 
 readdirSync(path.join(__dirname, "templates"), "utf8").forEach(generate);
-process.chdir(".lsot");
+process.chdir(".rtag");
 npm.load(() => {
   npm.commands.install([], (err, res) => {});
 });

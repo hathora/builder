@@ -10,7 +10,7 @@ import {
 
 export type StateId = string;
 
-export class LsotClient {
+export class RtagClient {
   private callbacks: Record<string, (error?: string) => void> = {};
 
   private constructor(private socket: WebSocket) {}
@@ -43,9 +43,9 @@ export class LsotClient {
     token: string,
     stateId: StateId,
     onStateChange: (state: {{userState}}) => void
-  ): Promise<LsotClient> {
+  ): Promise<RtagClient> {
     const socket = new WebSocket(`ws://${location.host}/${stateId}`);
-    const client = new LsotClient(socket);
+    const client = new RtagClient(socket);
     socket.onopen = () => socket.send(token);
     socket.onmessage = ({ data }) => {
       const message = JSON.parse(data);

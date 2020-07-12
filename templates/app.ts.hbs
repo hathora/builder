@@ -1,11 +1,11 @@
-import { LsotClient } from "./client";
+import { RtagClient } from "./client";
 import Vue from "vue";
 import VueRouter from "vue-router";
 {{#each plugins}}
 import {{this}} from "../plugins/{{this}}";
 {{/each}}
 
-let client: LsotClient;
+let client: RtagClient;
 
 function patch(obj: any, val: any, topLevel: boolean = true) {
   const [k, v] = Object.entries(val)[0];
@@ -38,7 +38,7 @@ Vue.component("method-form", {
         this.showErrors = true;
         return;
       }
-      client[this.method as keyof LsotClient](this.value as any, (error) => {
+      client[this.method as keyof RtagClient](this.value as any, (error) => {
         if (error) {
           console.error(error);
         } else {
@@ -213,7 +213,7 @@ const Login = Vue.component("login", {
     </form>`,
   methods: {
     handleLogin() {
-      LsotClient.registerUser(this.username).then((token) => {
+      RtagClient.registerUser(this.username).then((token) => {
         sessionStorage.setItem("user", JSON.stringify({ name: this.username, token }));
         const url = this.$route.query.url;
         this.$router.push((Array.isArray(url) ? url[0] : url) || "/");
@@ -241,7 +241,7 @@ const Home = Vue.component("home", {
   methods: {
     createState() {
       const token = JSON.parse(sessionStorage.getItem("user")!).token;
-      LsotClient.createState(token).then((stateId) => {
+      RtagClient.createState(token).then((stateId) => {
         this.$router.push("/state/" + stateId);
       });
     },
@@ -256,7 +256,7 @@ const State = Vue.component("state", {
   template: "#state-template",
   created() {
     const token = JSON.parse(sessionStorage.getItem("user")!).token;
-    LsotClient.connect(token, this.$route.params.stateId, (state) => {
+    RtagClient.connect(token, this.$route.params.stateId, (state) => {
       this.value = state;
     }).then((c) => {
       client = c;
