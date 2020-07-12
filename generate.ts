@@ -1,7 +1,7 @@
 #!/usr/bin/env ts-node-script
 
 import { safeLoad } from "js-yaml";
-import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync, promises } from "fs";
+import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { compile, registerHelper } from "handlebars";
 import path from "path";
 import npm from "npm";
@@ -122,12 +122,8 @@ if (!existsSync(".lsot")) {
   mkdirSync(".lsot");
 }
 
-promises
-  .readdir(path.join(__dirname, "templates"))
-  .then((files) => files.forEach(generate))
-  .then(() => {
-    process.chdir(".lsot");
-    npm.load(() => {
-      npm.commands.install([], (err, res) => {});
-    });
-  });
+readdirSync(path.join(__dirname, "templates"), "utf8").forEach(generate);
+process.chdir(".lsot");
+npm.load(() => {
+  npm.commands.install([], (err, res) => {});
+});
