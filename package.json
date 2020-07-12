@@ -1,7 +1,7 @@
 {
-  "name": "lsot",
+  "name": "rtag",
   "version": "0.0.1",
-  "description": "Lsot game application",
+  "description": "Real-time app generator",
   "bin": "./generate.ts",
   "dependencies": {
     "handlebars": "^4.7.6",
@@ -16,13 +16,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hpx7/lsot.git"
+    "url": "git+https://github.com/hpx7/rtag.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/hpx7/lsot/issues"
+    "url": "https://github.com/hpx7/rtag/issues"
   },
-  "homepage": "https://github.com/hpx7/lsot#readme"
+  "homepage": "https://github.com/hpx7/rtag#readme"
 }

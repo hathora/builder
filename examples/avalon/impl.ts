@@ -1,4 +1,4 @@
-import { Methods } from "./.lsot/methods";
+import { Methods } from "./.rtag/methods";
 import {
   PlayerData,
   ICreateGameRequest,
@@ -15,7 +15,7 @@ import {
   GameStatus,
   QuestAttempt,
   QuestStatus,
-} from "./.lsot/types";
+} from "./.rtag/types";
 import { shuffle, histogram } from "./utils";
 
 interface InternalPlayer {
