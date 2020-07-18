@@ -1,3 +1,5 @@
+import WebSocket from "isomorphic-ws";
+import axios from "axios";
 import {
   PlayerName,
   {{userState}},
@@ -16,35 +18,22 @@ export class RtagClient {
   private constructor(private socket: WebSocket) {}
 
   public static async registerUser(username: PlayerName): Promise<string> {
-    const res = await fetch("/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ playerName: username }),
-    });
-    const { token } = await res.json();
-    return token;
+    const res = await axios.post("/register", { playerName: username });
+    return res.data.token;
   }
 
   public static async createState(token: string): Promise<StateId> {
-    const res = await fetch("/new", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + token,
-      },
-    });
-    const { stateId } = await res.json();
-    return stateId;
+    const res = await axios.post("/new", {}, { headers: { Authorization: "Bearer " + token } });
+    return res.data.stateId;
   }
 
   public static async connect(
+    host: string,
     token: string,
     stateId: StateId,
     onStateChange: (state: {{userState}}) => void
   ): Promise<RtagClient> {
-    const socket = new WebSocket(`ws://${location.host}/${stateId}`);
+    const socket = new WebSocket(`ws://${host}/${stateId}`);
     const client = new RtagClient(socket);
     socket.onopen = () => socket.send(token);
     socket.onmessage = ({ data }) => {
