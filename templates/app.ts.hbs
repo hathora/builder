@@ -256,7 +256,7 @@ const State = Vue.component("state", {
   template: "#state-template",
   created() {
     const token = JSON.parse(sessionStorage.getItem("user")!).token;
-    RtagClient.connect(token, this.$route.params.stateId, (state) => {
+    RtagClient.connect(location.host, token, this.$route.params.stateId, (state) => {
       this.value = state;
     }).then((c) => {
       client = c;
