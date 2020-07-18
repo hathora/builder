@@ -61,7 +61,9 @@
 {{/inline}}
 
 {{#*inline "renderState"}}
-{{#if (eq type "object")}}
+{{#if (eq type "display-plugin")}}
+<{{componentId}} class="{{componentId}}" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}}></{{componentId}}>
+{{else if (eq type "object")}}
 {
 <object-display class="object-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} v-slot="{ value }">
   {{#each properties}}

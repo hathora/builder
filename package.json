@@ -1,28 +1,26 @@
 {
-  "name": "lsot",
-  "version": "0.0.1",
-  "description": "Lsot game application",
+  "name": "rtag",
+  "version": "0.0.4",
+  "description": "Real-time app generator",
   "bin": "./generate.ts",
   "dependencies": {
-    "handlebars": "^4.7.6",
-    "js-yaml": "^3.13.1",
-    "npm": "^6.14.5"
-  },
-  "devDependencies": {
-    "@types/js-yaml": "^3.12.4",
-    "@types/node": "^13.13.6",
+    "@types/js-yaml": "^3.12.5",
+    "@types/node": "^13.13.14",
     "@types/npm": "^2.0.31",
-    "typescript": "^3.9.2"
+    "handlebars": "^4.7.6",
+    "js-yaml": "^3.14.0",
+    "npm": "^6.14.6",
+    "typescript": "^3.9.6"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hpx7/lsot.git"
+    "url": "git+https://github.com/hpx7/rtag.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "Harsh Pandey",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/hpx7/lsot/issues"
+    "url": "https://github.com/hpx7/rtag/issues"
   },
-  "homepage": "https://github.com/hpx7/lsot#readme"
+  "homepage": "https://github.com/hpx7/rtag#readme"
 }
