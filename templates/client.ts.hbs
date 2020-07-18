@@ -31,7 +31,7 @@ export class RtagClient {
     host: string,
     token: string,
     stateId: StateId,
-    onStateChange: (state: PlayerState) => void
+    onStateChange: (state: {{userState}}) => void
   ): Promise<RtagClient> {
     const socket = new WebSocket(`ws://${host}/${stateId}`);
     const client = new RtagClient(socket);
