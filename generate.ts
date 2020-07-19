@@ -116,7 +116,7 @@ function generate(file: string) {
 }
 
 const doc: any = safeLoad(readFileSync("types.yml", "utf8"));
-const plugins = readdirSync("plugins", "utf8").map((p) => p.replace(/\.ts$/, ""));
+const plugins = existsSync("plugins") ? readdirSync("plugins", "utf8").map((p) => p.replace(/\.ts$/, "")) : [];
 
 if (!existsSync(".rtag")) {
   mkdirSync(".rtag");
