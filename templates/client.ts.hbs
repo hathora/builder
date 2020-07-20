@@ -27,27 +27,31 @@ export class RtagClient {
     return res.data.stateId;
   }
 
-  public static async connect(
+  public static connect(
     host: string,
     token: string,
     stateId: StateId,
     onStateChange: (state: {{userState}}) => void
   ): Promise<RtagClient> {
-    const socket = new WebSocket(`ws://${host}/${stateId}`);
-    const client = new RtagClient(socket);
-    socket.onopen = () => socket.send(token);
-    socket.onmessage = ({ data }) => {
-      const message = JSON.parse(data);
-      if (message.type === "response") {
-        client.callbacks[message.msgId](message.error);
-        delete client.callbacks[message.msgId];
-      } else if (message.type === "state") {
-        onStateChange(message.state);
-      } else {
-        console.error("Unknown message type: " + message.type);
+    return new Promise(resolve => {
+      const socket = new WebSocket(`ws://${host}/${stateId}`);
+      const client = new RtagClient(socket);
+      socket.onopen = () => {
+        socket.send(token);
+        resolve(client);
       }
-    };
-    return client;
+      socket.onmessage = ({ data }) => {
+        const message = JSON.parse(data.toString());
+        if (message.type === "response") {
+          client.callbacks[message.msgId](message.error);
+          delete client.callbacks[message.msgId];
+        } else if (message.type === "state") {
+          onStateChange(message.state);
+        } else {
+          console.error("Unknown message type: " + message.type);
+        }
+      };
+    })
   }
 
   {{#each methods}}
