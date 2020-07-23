@@ -1,7 +1,9 @@
 import Vue from "vue";
 import { Role, RoleInfo } from "../.rtag/types";
 
-export default Vue.extend({
+const wrap = require("@vue/web-component-wrapper").default;
+
+const Component = Vue.extend({
   data: function () {
     return {
       isOpen: true,
@@ -44,3 +46,5 @@ export default Vue.extend({
     },
   },
 });
+
+window.customElements.define("role-infos", wrap(Vue, Component));

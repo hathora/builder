@@ -2,6 +2,7 @@
   "name": "avalon",
   "version": "0.0.1",
   "dependencies": {
+    "@vue/web-component-wrapper": "^1.2.0",
     "vue": "^2.6.11"
   }
 }
