@@ -15,10 +15,10 @@ import { Role, RoleInfo } from "../.rtag/types";
         <th>Known Roles</th>
         <th>Quantity</th>
       </tr>
-      <tr v-for="v in filterRoleInfos(value)">
+      <tr v-for="v in filterRoleInfos()">
         <td>{{ roleToString(v.role) }}</td>
         <td>{{ v.isEvil }}</td>
-        <td>{{ formatKnownRoles(v.knownRoles, filterRoleInfos(value)) }}</td>
+        <td>{{ formatKnownRoles(v.knownRoles, filterRoleInfos()) }}</td>
         <td>{{ v.quantity }}</td>
       </tr>
     </table>
@@ -34,8 +34,8 @@ export default class RoleInfos extends Vue {
     const rolesInGame = roleInfosInGame.map((i) => i.role);
     return knownRoles.filter((r) => rolesInGame.includes(r)).map(this.roleToString);
   }
-  filterRoleInfos(roleInfos: RoleInfo[]) {
-    const filtered = roleInfos.filter((r) => r.quantity > 0);
-    return filtered.length > 0 ? filtered : roleInfos;
+  filterRoleInfos() {
+    const filtered = this.value.filter((r) => r.quantity > 0);
+    return filtered.length > 0 ? filtered : this.value;
   }
 }
