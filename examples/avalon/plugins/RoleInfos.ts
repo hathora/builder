@@ -1,6 +1,8 @@
 import { Vue, Component, Prop } from "vue-property-decorator";
 import { Role, RoleInfo } from "../.rtag/types";
 
+const wrap = require("@vue/web-component-wrapper").default;
+
 @Component({
   template: `<span v-if="value && value.length > 0">
     <button class="button small" type="button" v-on:click="isOpen=!isOpen">
@@ -24,7 +26,7 @@ import { Role, RoleInfo } from "../.rtag/types";
     </table>
   </span>`,
 })
-export default class RoleInfos extends Vue {
+class RoleInfos extends Vue {
   @Prop() value!: RoleInfo[];
   isOpen: boolean = true;
   roleToString(r: Role) {
@@ -39,3 +41,5 @@ export default class RoleInfos extends Vue {
     return filtered.length > 0 ? filtered : this.value;
   }
 }
+
+window.customElements.define("role-infos", wrap(Vue, RoleInfos));
