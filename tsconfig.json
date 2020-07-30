@@ -3,6 +3,7 @@
     "esModuleInterop": true,
     "module": "commonjs",
     "strict": true,
+    "experimentalDecorators": true,
     "target": "es2019"
   }
 }

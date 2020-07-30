@@ -3,7 +3,7 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 import vSelect from "vue-select";
 {{#each plugins}}
-import {{this}} from "../plugins/{{this}}";
+import "../plugins/{{this}}";
 {{/each}}
 
 Vue.component("v-select", vSelect);
@@ -198,7 +198,15 @@ Vue.component("key-display", {
 });
 
 {{#each plugins}}
-Vue.component("{{this}}", {{this}});
+Vue.component("{{makePluginName this}}", {
+  props: ["value"],
+  template: `<{{kebabCase this}}></{{kebabCase this}}>`,
+  watch: {
+    value(value) {
+      (this.$el as any).value = value;
+    },
+  },
+});
 {{/each}}
 
 const Login = Vue.component("login", {
