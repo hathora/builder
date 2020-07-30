@@ -79,7 +79,7 @@ Vue.component("array-input", {
         <button class="button" type="button" @click="$parent.$emit('update', arg, i === (value.length-1) ? value : [...value.slice(0, i), value[i+1], value[i], ...value.slice(i+2, value.length)])">&#8595;</button>
         <button class="button danger" type="button" @click="$parent.$emit('update', arg, value.slice(0, i).concat(value.slice(i+1, value.length)))">x</button>
       </div>
-      <button class="button" type="button" @click="$parent.$emit('update', arg, value.concat(null))" :class="{ missing: showErrors && required && value.length === 0 }">
+      <button class="button array-add-button" type="button" @click="$parent.$emit('update', arg, value.concat(null))" :class="{ missing: showErrors && required && value.length === 0 }">
         <span class="button-text">Add</span>
       </button>
     </div>`,
@@ -103,7 +103,7 @@ Vue.component("enum-input", {
     value: { type: Number, default: null },
     options: Array,
   },
-  template: `<div :class="{ missing: showErrors && !validate() }">
+  template: `<div  class="vue-select" :class="{ missing: showErrors && !validate() }">
       <v-select :value="value" :options="options" :reduce="x => x.value" @input="update"></v-select>
     </div>`,
   methods: {
