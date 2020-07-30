@@ -67,7 +67,6 @@ pre {
 }
 
 .form-group {
-  transform: translateZ(0);
   display: flex;
   flex-direction: row;
   align-items: stretch;
@@ -79,19 +78,26 @@ pre {
   z-index: 2;
 }
 
-.form-group {
-  transform: translateZ(0);
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
-}
-
 .form-group>:first-child {
   border-radius: 3px 0 0 3px;
   margin-right: 0;
 }
 
+.vs__dropdown-toggle {
+  border-radius: 3px;
+}
+
+.form-group>:first-child .vs__dropdown-toggle {
+  border-radius: 3px 0 0 3px;
+  margin-right: 0;
+}
+
 .form-group>:last-child {
+  border-radius: 0 3px 3px 0;
+  margin-right: 0;
+}
+
+.form-group>:last-child .vs__dropdown-toggle {
   border-radius: 0 3px 3px 0;
   margin-right: 0;
 }
