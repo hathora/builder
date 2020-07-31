@@ -54,7 +54,6 @@ registerHelper("kebabCase", (x) => x.replace(/([a-z])([A-Z])/g, "$1-$2").toLower
 registerHelper("isArray", Array.isArray);
 registerHelper("isObject", (x) => typeof x === "object");
 registerHelper("makeRequestName", (x) => "I" + capitalize(x) + "Request");
-registerHelper("makePluginName", (x) => x + "Plugin");
 registerHelper("join", (params, joinStr, prepend, postpend, options) => {
   let paramsStr;
   if (Array.isArray(params)) {

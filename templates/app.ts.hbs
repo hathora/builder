@@ -194,17 +194,15 @@ Vue.component("key-display", {
     </span>`,
 });
 
-{{#each plugins}}
-Vue.component("{{makePluginName this}}", {
-  props: ["value"],
-  template: `<{{kebabCase this}}></{{kebabCase this}}>`,
+Vue.component("plugin-display", {
+  props: ["value", "component"],
+  template: `<component :is="component"></component>`,
   watch: {
     value(value) {
       (this.$el as any).value = value;
     },
   },
 });
-{{/each}}
 
 const Login = Vue.component("login", {
   data: () => ({ username: "" }),
