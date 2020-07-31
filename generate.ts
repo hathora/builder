@@ -41,7 +41,7 @@ interface BooleanArg {
   typeString?: string;
 }
 interface DisplayPluginArg {
-  type: "display-plugin";
+  type: "plugin";
   required: boolean;
   componentId: string;
   typeString?: string;
@@ -86,7 +86,7 @@ function getArgsInfo(args: any, required: boolean, typeString?: string): Arg {
     };
   } else if (typeof args === "string") {
     if (plugins.includes(args)) {
-      return { type: "display-plugin", required, typeString: args, componentId: args };
+      return { type: "plugin", required, typeString: args, componentId: args };
     } else if (args.endsWith("[]")) {
       return {
         type: "array",
