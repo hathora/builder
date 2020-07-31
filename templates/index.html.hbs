@@ -63,7 +63,7 @@
 
 {{#*inline "renderState"}}
 {{#if (eq type "plugin")}}
-<plugin-display class="plugin-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} component="{{kebabCase componentId}}"></plugin-display>
+<plugin-display class="plugin-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} component="{{makePluginName componentId}}"></plugin-display>
 {{else if (eq type "object")}}
 {
 <object-display class="object-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} v-slot="{ value }">

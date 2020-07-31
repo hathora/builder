@@ -50,10 +50,10 @@ interface DisplayPluginArg {
 registerHelper("eq", (a, b) => a === b);
 registerHelper("ne", (a, b) => a !== b);
 registerHelper("stringify", JSON.stringify);
-registerHelper("kebabCase", (x) => x.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase());
 registerHelper("isArray", Array.isArray);
 registerHelper("isObject", (x) => typeof x === "object");
 registerHelper("makeRequestName", (x) => "I" + capitalize(x) + "Request");
+registerHelper("makePluginName", (x) => x.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase() + "-plugin");
 registerHelper("join", (params, joinStr, prepend, postpend, options) => {
   let paramsStr;
   if (Array.isArray(params)) {
