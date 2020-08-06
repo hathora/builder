@@ -149,13 +149,13 @@ Vue.component("number-input", {
 
 Vue.component("object-display", {
   props: { value: Object },
-  template: `<div><slot :value="value"></slot></div>`,
+  template: `<div><slot v-if="value != undefined" :value="value"></slot></div>`,
 });
 
 Vue.component("array-display", {
   data: () => ({ isOpen: true }),
   props: { value: Array },
-  template: `<span v-if="value && value.length > 0">
+  template: `<span v-if="value != undefined && value.length > 0">
       <button class="button small" type="button" v-on:click="isOpen=!isOpen">
         <span class="button-text" v-if="isOpen">-</span>
         <span class="button-text" v-else>+</span>
