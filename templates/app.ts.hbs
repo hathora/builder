@@ -9,8 +9,6 @@ import {{this}} from "../plugins/{{this}}";
 window.customElements.define("{{makePluginName this}}", {{this}});
 {{/each}}
 
-let client: RtagClient;
-
 function patch(obj: any, val: any, topLevel: boolean = true) {
   const [k, v] = Object.entries(val)[0];
   if (v !== null && typeof v === "object" && !Array.isArray(v) && k in obj) {
@@ -42,6 +40,7 @@ Vue.component("method-form", {
         this.showErrors = true;
         return;
       }
+      const client: RtagClient = this.$parent.$data.client;
       client[this.method as keyof RtagClient](this.value as any, (error) => {
         if (error) {
           console.error(error);
@@ -202,14 +201,22 @@ Vue.component("plugin-display", {
   props: ["value", "component"],
   template: `<component :is="component"></component>`,
   mounted() {
+    const plugin: any = this.$el;
+    const rootData = this.$root.$children[0].$data;
     this.$watch(
-      () => this.$root.$children[0].$data.value,
+      () => rootData.client,
+      (client) => {
+        plugin.client = client;
+      }
+    );
+    this.$watch(
+      () => rootData.value,
       (state) => {
-        (this.$el as any).state = state;
+        plugin.state = state;
       }
     );
     this.$watch("value", (value) => {
-      (this.$el as any).value = value;
+      plugin.value = value;
     });
   },
 });
@@ -268,14 +275,14 @@ const Home = Vue.component("home", {
 });
 
 const State = Vue.component("state", {
-  data: () => ({ value: {} }),
+  data: () => ({ value: {}, client: {} }),
   template: "#state-template",
   created() {
     const token = JSON.parse(sessionStorage.getItem("user")!).token;
     RtagClient.connect(location.host, token, this.$route.params.stateId, (state) => {
       this.value = state;
-    }).then((c) => {
-      client = c;
+    }).then((client) => {
+      this.client = client;
     });
   },
 });
