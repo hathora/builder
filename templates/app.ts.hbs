@@ -201,10 +201,16 @@ Vue.component("key-display", {
 Vue.component("plugin-display", {
   props: ["value", "component"],
   template: `<component :is="component"></component>`,
-  watch: {
-    value(value) {
+  mounted() {
+    this.$watch(
+      () => this.$root.$children[0].$data.value,
+      (state) => {
+        (this.$el as any).state = state;
+      }
+    );
+    this.$watch("value", (value) => {
       (this.$el as any).value = value;
-    },
+    });
   },
 });
 
