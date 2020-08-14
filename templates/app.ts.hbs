@@ -1,9 +1,13 @@
 import { RtagClient } from "./client";
 import Vue from "vue";
 import VueRouter from "vue-router";
+import Toasted from "vue-toasted";
 {{#each plugins}}
 import {{this}} from "../plugins/{{this}}";
 {{/each}}
+
+Vue.use(VueRouter);
+Vue.use(Toasted);
 
 {{#each plugins}}
 window.customElements.define("{{makePluginName this}}", {{this}});
@@ -43,7 +47,7 @@ Vue.component("method-form", {
       const client: RtagClient = this.$parent.$data.client;
       client[this.method as keyof RtagClient](this.value as any, (error) => {
         if (error) {
-          console.error(error);
+          this.$toasted.error(error, { position: "top-center", duration: 2000 });
         } else {
           this.showErrors = false;
           this.value = {};
@@ -286,8 +290,6 @@ const State = Vue.component("state", {
     });
   },
 });
-
-Vue.use(VueRouter);
 
 const router = new VueRouter({
   mode: "history",
