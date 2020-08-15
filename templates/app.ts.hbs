@@ -8,7 +8,7 @@ import {{this}} from "../plugins/{{this}}";
 {{/each}}
 
 Vue.use(VueRouter);
-Vue.use(Toasted);
+Vue.use(Toasted, { position: "top-center", duration: 2000 });
 Vue.component("v-select", vSelect);
 
 {{#each plugins}}
@@ -42,14 +42,14 @@ Vue.component("method-form", {
   methods: {
     submit() {
       if (!(this.$children[0] as any).validate()) {
-        console.error("Required fields missing");
+        this.$toasted.error("Required fields missing");
         this.showErrors = true;
         return;
       }
       const client: RtagClient = this.$parent.$data.client;
       client[this.method as keyof RtagClient](this.value as any, (error) => {
         if (error) {
-          this.$toasted.error(error, { position: "top-center", duration: 2000 });
+          this.$toasted.error(error);
         } else {
           this.showErrors = false;
           this.value = {};
