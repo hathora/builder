@@ -41,7 +41,7 @@ interface BooleanArg {
   typeString?: string;
 }
 interface DisplayPluginArg {
-  type: "display-plugin";
+  type: "plugin";
   required: boolean;
   componentId: string;
   typeString?: string;
@@ -50,11 +50,10 @@ interface DisplayPluginArg {
 registerHelper("eq", (a, b) => a === b);
 registerHelper("ne", (a, b) => a !== b);
 registerHelper("stringify", JSON.stringify);
-registerHelper("kebabCase", (x) => x.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase());
 registerHelper("isArray", Array.isArray);
 registerHelper("isObject", (x) => typeof x === "object");
 registerHelper("makeRequestName", (x) => "I" + capitalize(x) + "Request");
-registerHelper("makePluginName", (x) => x + "Plugin");
+registerHelper("makePluginName", (x) => x.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase() + "-plugin");
 registerHelper("join", (params, joinStr, prepend, postpend, options) => {
   let paramsStr;
   if (Array.isArray(params)) {
@@ -87,7 +86,7 @@ function getArgsInfo(args: any, required: boolean, typeString?: string): Arg {
     };
   } else if (typeof args === "string") {
     if (plugins.includes(args)) {
-      return { type: "display-plugin", required, typeString: args, componentId: args };
+      return { type: "plugin", required, typeString: args, componentId: args };
     } else if (args.endsWith("[]")) {
       return {
         type: "array",

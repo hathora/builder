@@ -1,14 +1,19 @@
 import { RtagClient } from "./client";
 import Vue from "vue";
 import VueRouter from "vue-router";
+import Toasted from "vue-toasted";
 import vSelect from "vue-select";
 {{#each plugins}}
-import "../plugins/{{this}}";
+import {{this}} from "../plugins/{{this}}";
 {{/each}}
 
+Vue.use(VueRouter);
+Vue.use(Toasted);
 Vue.component("v-select", vSelect);
 
-let client: RtagClient;
+{{#each plugins}}
+window.customElements.define("{{makePluginName this}}", {{this}});
+{{/each}}
 
 function patch(obj: any, val: any, topLevel: boolean = true) {
   const [k, v] = Object.entries(val)[0];
@@ -41,9 +46,10 @@ Vue.component("method-form", {
         this.showErrors = true;
         return;
       }
+      const client: RtagClient = this.$parent.$data.client;
       client[this.method as keyof RtagClient](this.value as any, (error) => {
         if (error) {
-          console.error(error);
+          this.$toasted.error(error, { position: "top-center", duration: 2000 });
         } else {
           this.showErrors = false;
           this.value = {};
@@ -148,13 +154,13 @@ Vue.component("number-input", {
 
 Vue.component("object-display", {
   props: { value: Object },
-  template: `<div><slot :value="value"></slot></div>`,
+  template: `<div><slot v-if="value != undefined" :value="value"></slot></div>`,
 });
 
 Vue.component("array-display", {
   data: () => ({ isOpen: true }),
   props: { value: Array },
-  template: `<span v-if="value && value.length > 0">
+  template: `<span v-if="value != undefined && value.length > 0">
       <button class="button small" type="button" v-on:click="isOpen=!isOpen">
         <span class="button-text" v-if="isOpen">-</span>
         <span class="button-text" v-else>+</span>
@@ -197,17 +203,29 @@ Vue.component("key-display", {
     </span>`,
 });
 
-{{#each plugins}}
-Vue.component("{{makePluginName this}}", {
-  props: ["value"],
-  template: `<{{kebabCase this}}></{{kebabCase this}}>`,
-  watch: {
-    value(value) {
-      (this.$el as any).value = value;
-    },
+Vue.component("plugin-display", {
+  props: ["value", "component"],
+  template: `<component :is="component"></component>`,
+  mounted() {
+    const plugin: any = this.$el;
+    const rootData = this.$root.$children[0].$data;
+    this.$watch(
+      () => rootData.client,
+      (client) => {
+        plugin.client = client;
+      }
+    );
+    this.$watch(
+      () => rootData.value,
+      (state) => {
+        plugin.state = state;
+      }
+    );
+    this.$watch("value", (value) => {
+      plugin.value = value;
+    });
   },
 });
-{{/each}}
 
 const Login = Vue.component("login", {
   data: () => ({ username: "" }),
@@ -263,19 +281,17 @@ const Home = Vue.component("home", {
 });
 
 const State = Vue.component("state", {
-  data: () => ({ value: {} }),
+  data: () => ({ value: {}, client: {} }),
   template: "#state-template",
   created() {
     const token = JSON.parse(sessionStorage.getItem("user")!).token;
     RtagClient.connect(location.host, token, this.$route.params.stateId, (state) => {
       this.value = state;
-    }).then((c) => {
-      client = c;
+    }).then((client) => {
+      this.client = client;
     });
   },
 });
-
-Vue.use(VueRouter);
 
 const router = new VueRouter({
   mode: "history",
