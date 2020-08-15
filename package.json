@@ -5,12 +5,12 @@
   "bin": "./generate.ts",
   "dependencies": {
     "@types/js-yaml": "^3.12.5",
-    "@types/node": "^13.13.14",
+    "@types/node": "^13.13.15",
     "@types/npm": "^2.0.31",
     "handlebars": "^4.7.6",
     "js-yaml": "^3.14.0",
-    "npm": "^6.14.6",
-    "typescript": "^3.9.6"
+    "npm": "^6.14.7",
+    "typescript": "^3.9.7"
   },
   "repository": {
     "type": "git",
