@@ -67,7 +67,6 @@ pre {
 }
 
 .form-group {
-  transform: translateZ(0);
   display: flex;
   flex-direction: row;
   align-items: stretch;
@@ -79,14 +78,16 @@ pre {
   z-index: 2;
 }
 
-.form-group {
-  transform: translateZ(0);
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
+.form-group>:first-child {
+  border-radius: 3px 0 0 3px;
+  margin-right: 0;
 }
 
-.form-group>:first-child {
+.vs__dropdown-toggle {
+  border-radius: 3px;
+}
+
+.form-group>:first-child .vue-select {
   border-radius: 3px 0 0 3px;
   margin-right: 0;
 }
@@ -94,6 +95,26 @@ pre {
 .form-group>:last-child {
   border-radius: 0 3px 3px 0;
   margin-right: 0;
+}
+
+.form-group>:last-child .vue-select {
+  border-radius: 0 3px 3px 0;
+  margin-right: 0;
+}
+
+.stretch-form-input {
+  flex: 1;
+}
+
+.vue-select {
+  box-shadow: inset 0 0 0 1px rgba(16, 22, 26, 0.4), inset 0 -1px 0 rgba(16, 22, 26, 0.2);
+  background-color: #f5f8fa;
+  color: #182026;
+}
+
+.vue-select .vs__dropdown-toggle {
+  border: none;
+  border-radius: 0;
 }
 
 .input-group {
@@ -268,4 +289,8 @@ pre {
 
 .missing {
   border: 1px solid red;
+}
+
+.array-item {
+  margin-bottom: 10px;
 }
