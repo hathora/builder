@@ -69,7 +69,8 @@ function getArgsInfo(args: any, required: boolean, typeString?: string): Arg {
   if (!required) {
     return {
       type: "optional",
-      item: getArgsInfo(args, true, typeString),
+      typeString: args + "?",
+      item: getArgsInfo(args, true),
     };
   } else if (Array.isArray(args)) {
     return {
