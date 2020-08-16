@@ -1,17 +1,21 @@
 {{#each types}}
-{{#if (isArray this)}}
+{{#with (getArgsInfo this)}}
+{{#if (eq type "enum")}}
 export enum {{@key}} {
-{{#join this ",
-" false true}}  {{name}}{{/join~}}
+{{#each options}}
+  {{label}},
+{{/each}}
 }
-{{else if (isObject this)}}
+{{else if (eq type "object")}}
 export interface {{@key}} {
-{{#join this ";
-" false true}}  {{name}}: {{type}}{{/join~}}
+{{#each properties}}
+  {{@key}}{{#unless required}}?{{/unless}}: {{typeString}};
+{{/each}}
 }
 {{else}}
-export type {{@key}} = {{this}};
+export type {{@key}} = {{../this}};
 {{/if}}
+{{/with}}
 {{/each}}
 {{#each methods}}
 export interface {{makeRequestName @key}} {
