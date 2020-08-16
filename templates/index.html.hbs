@@ -16,7 +16,7 @@
           {{#if (ne @key ../initialize)}}
           {{#if this}}
           <method-form method="{{@key}}" v-slot="{ arg, value, showErrors }">
-            {{> renderForm (getArgsInfo this)}}
+            {{> renderForm (getArgsInfo this) required=true}}
           </method-form>
           {{else}}
           <method-form method="{{@key}}"></method-form>
@@ -39,16 +39,20 @@
 {{#if (eq type "object")}}
 <object-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" v-slot="{ value }">
   {{#each properties}}
-  <label class="label">{{@key}}{{#if required}}*{{/if}}</label>
-  {{> renderForm arg=@key}}
+  <label class="label">{{@key}}{{#unless (eq type "optional")}}*{{/unless}}</label>
+  {{> renderForm arg=@key required=true}}
   {{/each}}
 </object-input>
 {{else if (eq type "array")}}
 <array-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" :showErrors="showErrors" v-slot="{ arg, value }">
   {{#with items}}
-  {{> renderForm}}
+  {{> renderForm required=true}}
   {{/with}}
 </array-input>
+{{else if (eq type "optional")}}
+{{#with item}}
+{{> renderForm arg=../arg required=false}}
+{{/with}}
 {{else if (eq type "enum")}}
 <enum-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" :showErrors="showErrors" :options='{{{stringify options}}}'></enum-input>
 {{else if (eq type "string")}}

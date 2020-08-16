@@ -9,7 +9,11 @@ export enum {{@key}} {
 {{else if (eq type "object")}}
 export interface {{@key}} {
 {{#each properties}}
-  {{@key}}{{#unless required}}?{{/unless}}: {{typeString}};
+{{#if (eq type "optional")}}
+  {{@key}}?: {{item.typeString}};
+{{else}}
+  {{@key}}: {{typeString}};
+{{/if}}
 {{/each}}
 }
 {{else}}
