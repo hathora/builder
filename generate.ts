@@ -25,6 +25,7 @@ interface OptionalArg {
 interface DisplayPluginArg {
   type: "plugin";
   typeString?: string;
+  item: Arg;
 }
 interface EnumArg {
   type: "enum";
@@ -86,18 +87,18 @@ function getArgsInfo(args: any, required: boolean, typeString?: string): Arg {
       ),
     };
   } else if (typeof args === "string") {
-    if (plugins.includes(args)) {
-      return { type: "plugin", typeString: args };
-    } else if (args.endsWith("[]")) {
+    if (args.endsWith("[]")) {
       return {
         type: "array",
         typeString: args,
         items: getArgsInfo(args.substring(0, args.length - 2), true),
       };
     } else if (args in doc.types) {
-      return getArgsInfo(doc.types[args], required, args);
+      const argsInfo = getArgsInfo(doc.types[args], required, args);
+      return plugins.includes(args) ? { type: "plugin", typeString: args, item: argsInfo } : argsInfo;
     } else if (args === "string" || args === "number" || args === "boolean") {
-      return { type: args, typeString: typeString ?? args };
+      const argsInfo: Arg = { type: args, typeString: typeString ?? args };
+      return plugins.includes(args) ? { type: "plugin", typeString: args, item: argsInfo } : argsInfo;
     }
   }
   throw new Error("Invalid args: " + args);
