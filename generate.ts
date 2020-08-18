@@ -6,44 +6,42 @@ import { compile, registerHelper } from "handlebars";
 import path from "path";
 import npm from "npm";
 
-type Arg = ObjectArg | ArrayArg | EnumArg | StringArg | NumberArg | BooleanArg | DisplayPluginArg;
+type Arg = ObjectArg | ArrayArg | OptionalArg | DisplayPluginArg | EnumArg | StringArg | NumberArg | BooleanArg;
 interface ObjectArg {
   type: "object";
-  required: boolean;
   typeString?: string;
   properties: Record<string, Arg>;
 }
 interface ArrayArg {
   type: "array";
-  required: boolean;
   typeString?: string;
   items: Arg;
 }
+interface OptionalArg {
+  type: "optional";
+  typeString?: string;
+  item: Arg;
+}
+interface DisplayPluginArg {
+  type: "plugin";
+  typeString?: string;
+  item: Arg;
+}
 interface EnumArg {
   type: "enum";
-  required: boolean;
   typeString?: string;
   options: { label: string; value: number }[];
 }
 interface StringArg {
   type: "string";
-  required: boolean;
   typeString?: string;
 }
 interface NumberArg {
   type: "number";
-  required: boolean;
   typeString?: string;
 }
 interface BooleanArg {
   type: "boolean";
-  required: boolean;
-  typeString?: string;
-}
-interface DisplayPluginArg {
-  type: "plugin";
-  required: boolean;
-  componentId: string;
   typeString?: string;
 }
 
@@ -68,36 +66,39 @@ registerHelper("join", (params, joinStr, prepend, postpend, options) => {
 registerHelper("getArgsInfo", (args) => getArgsInfo(args, true));
 
 function getArgsInfo(args: any, required: boolean, typeString?: string): Arg {
-  if (Array.isArray(args)) {
+  if (!required) {
+    return {
+      type: "optional",
+      typeString: args + "?",
+      item: getArgsInfo(args, true),
+    };
+  } else if (Array.isArray(args)) {
     return {
       type: "enum",
-      required,
       typeString,
       options: args.map((label: string, value) => ({ label, value })),
     };
   } else if (typeof args === "object") {
     return {
       type: "object",
-      required,
       typeString,
       properties: Object.fromEntries(
         Object.entries(args).map(([name, type]) => [sanitize(name), getArgsInfo(type, !name.endsWith("?"))])
       ),
     };
   } else if (typeof args === "string") {
-    if (plugins.includes(args)) {
-      return { type: "plugin", required, typeString: args, componentId: args };
-    } else if (args.endsWith("[]")) {
+    if (args.endsWith("[]")) {
       return {
         type: "array",
-        required,
         typeString: args,
         items: getArgsInfo(args.substring(0, args.length - 2), true),
       };
     } else if (args in doc.types) {
-      return getArgsInfo(doc.types[args], required, args);
+      const argsInfo = getArgsInfo(doc.types[args], required, args);
+      return plugins.includes(args) ? { type: "plugin", typeString: args, item: argsInfo } : argsInfo;
     } else if (args === "string" || args === "number" || args === "boolean") {
-      return { type: args, required, typeString: typeString ?? args };
+      const argsInfo: Arg = { type: args, typeString: typeString ?? args };
+      return plugins.includes(args) ? { type: "plugin", typeString: args, item: argsInfo } : argsInfo;
     }
   }
   throw new Error("Invalid args: " + args);
