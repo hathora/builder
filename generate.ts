@@ -6,7 +6,7 @@ import { compile, registerHelper } from "handlebars";
 import path from "path";
 import npm from "npm";
 
-type Arg = ObjectArg | ArrayArg | OptionalArg | EnumArg | StringArg | NumberArg | BooleanArg | DisplayPluginArg;
+type Arg = ObjectArg | ArrayArg | OptionalArg | DisplayPluginArg | EnumArg | StringArg | NumberArg | BooleanArg;
 interface ObjectArg {
   type: "object";
   typeString?: string;
@@ -21,6 +21,10 @@ interface OptionalArg {
   type: "optional";
   typeString?: string;
   item: Arg;
+}
+interface DisplayPluginArg {
+  type: "plugin";
+  typeString?: string;
 }
 interface EnumArg {
   type: "enum";
@@ -37,11 +41,6 @@ interface NumberArg {
 }
 interface BooleanArg {
   type: "boolean";
-  typeString?: string;
-}
-interface DisplayPluginArg {
-  type: "plugin";
-  componentId: string;
   typeString?: string;
 }
 
@@ -88,7 +87,7 @@ function getArgsInfo(args: any, required: boolean, typeString?: string): Arg {
     };
   } else if (typeof args === "string") {
     if (plugins.includes(args)) {
-      return { type: "plugin", typeString: args, componentId: args };
+      return { type: "plugin", typeString: args };
     } else if (args.endsWith("[]")) {
       return {
         type: "array",
