@@ -209,6 +209,9 @@ Vue.component("plugin-display", {
   mounted() {
     const plugin: any = this.$el;
     const rootData = this.$root.$children[0].$data;
+    plugin.client = rootData.client;
+    plugin.state = rootData.value;
+    plugin.value = this.value;
     this.$watch(
       () => rootData.client,
       (client) => {
