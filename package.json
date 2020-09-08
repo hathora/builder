@@ -1,6 +1,6 @@
 {
   "name": "rtag",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "Real-time app generator",
   "bin": "./generate.ts",
   "dependencies": {
