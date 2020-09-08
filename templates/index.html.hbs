@@ -36,7 +36,11 @@
 </html>
 
 {{#*inline "renderForm"}}
-{{#if (eq type "object")}}
+{{#if (eq type "plugin")}}
+{{#with item}}
+{{> renderForm arg=../arg required=true}}
+{{/with}}
+{{else if (eq type "object")}}
 <object-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" v-slot="{ value }">
   {{#each properties}}
   <label class="label">{{@key}}{{#unless (eq type "optional")}}*{{/unless}}</label>
