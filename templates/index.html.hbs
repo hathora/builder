@@ -90,6 +90,10 @@
   {{/with}}
 </array-display>
 ],
+{{else if (eq type "optional")}}
+{{#with item}}
+{{> renderState arg=../arg}}
+{{/with}}
 {{else if (eq type "enum")}}
 <enum-display class="enum-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} :options='{{{stringify options}}}'></enum-display>,
 {{else if (eq type "string")}}
