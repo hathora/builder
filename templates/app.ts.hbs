@@ -205,27 +205,14 @@ Vue.component("key-display", {
 
 Vue.component("plugin-display", {
   props: ["value", "component"],
-  template: `<component :is="component"></component>`,
-  mounted() {
-    const plugin: any = this.$el;
+  render(createElement) {
     const rootData = this.$root.$children[0].$data;
-    plugin.client = rootData.client;
-    plugin.state = rootData.value;
-    plugin.value = this.value;
-    this.$watch(
-      () => rootData.client,
-      (client) => {
-        plugin.client = client;
-      }
-    );
-    this.$watch(
-      () => rootData.value,
-      (state) => {
-        plugin.state = state;
-      }
-    );
-    this.$watch("value", (value) => {
-      plugin.value = value;
+    return createElement(this.component, {
+      domProps: {
+        val: this.value,
+        state: rootData.value,
+        client: rootData.client,
+      },
     });
   },
 });

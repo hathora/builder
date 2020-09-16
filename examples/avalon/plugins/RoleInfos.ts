@@ -5,7 +5,7 @@ const wrap = require("@vue/web-component-wrapper").default;
 
 @Component({
   template: `
-    <span v-if="value && value.length > 0">
+    <span>
       <button class="button small" type="button" v-on:click="isOpen=!isOpen">
         <span class="button-text" v-if="isOpen">-</span>
         <span class="button-text" v-else>+</span>
@@ -29,7 +29,7 @@ const wrap = require("@vue/web-component-wrapper").default;
   `,
 })
 class RoleInfos extends Vue {
-  @Prop() value!: RoleInfo[];
+  @Prop() val!: RoleInfo[];
   isOpen: boolean = true;
   roleToString(r: Role) {
     return Role[r].toLowerCase().replace(/^[a-z]/, (x) => x.toUpperCase());
@@ -39,8 +39,8 @@ class RoleInfos extends Vue {
     return knownRoles.filter((r) => rolesInGame.includes(r)).map(this.roleToString);
   }
   filterRoleInfos() {
-    const filtered = this.value.filter((r) => r.quantity > 0);
-    return filtered.length > 0 ? filtered : this.value;
+    const filtered = this.val.filter((r) => r.quantity > 0);
+    return filtered.length > 0 ? filtered : this.val;
   }
 }
 
