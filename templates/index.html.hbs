@@ -24,7 +24,7 @@
           {{/if}}
           {{/each}}
         </div>
-        <div class="json-state">
+        <div v-if="Object.keys(value).length > 0" class="json-state">
           {{#with types}}
           {{> renderState (getArgsInfo PlayerState)}}
           {{/with}}
