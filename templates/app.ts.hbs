@@ -213,6 +213,9 @@ Vue.component("plugin-display", {
         state: rootData.value,
         client: rootData.client,
       },
+      on: {
+        error: (e: CustomEvent) => this.$toasted.error(e.detail),
+      },
     });
   },
 });
