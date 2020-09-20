@@ -1,4 +1,5 @@
 import { RtagClient } from "./client";
+import * as Types from "./types";
 import Vue from "vue";
 import VueRouter from "vue-router";
 import Toasted from "vue-toasted";
@@ -107,7 +108,7 @@ Vue.component("enum-input", {
     required: Boolean,
     showErrors: Boolean,
     value: { type: Number, default: null },
-    options: Array,
+    enum: String,
   },
   template: `<div  class="vue-select" :class="{ missing: showErrors && !validate() }">
       <v-select :value="value" :options="options" :reduce="x => x.value" @input="update"></v-select>
@@ -118,6 +119,13 @@ Vue.component("enum-input", {
     },
     validate() {
       return !this.required || this.value !== null;
+    },
+  },
+  computed: {
+    options() {
+      return Object.entries(Types[this.enum as keyof typeof Types])
+        .filter(([_, value]) => typeof value == "number")
+        .map(([label, value]) => ({ label, value }));
     },
   },
 });
@@ -173,8 +181,15 @@ Vue.component("array-display", {
 });
 
 Vue.component("enum-display", {
-  props: { value: Number, options: Array },
+  props: { value: Number, enum: String },
   template: `<span v-if="value != undefined">\{{options[value].label}}</span>`,
+  computed: {
+    options() {
+      return Object.entries(Types[this.enum as keyof typeof Types])
+        .filter(([_, value]) => typeof value == "number")
+        .map(([label, value]) => ({ label, value }));
+    },
+  },
 });
 
 Vue.component("string-display", {

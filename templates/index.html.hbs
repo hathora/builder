@@ -58,7 +58,7 @@
 {{> renderForm arg=../arg required=false}}
 {{/with}}
 {{else if (eq type "enum")}}
-<enum-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" :showErrors="showErrors" :options='{{{stringify options}}}'></enum-input>
+<enum-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" :showErrors="showErrors" enum="{{typeString}}"></enum-input>
 {{else if (eq type "string")}}
 <string-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" :showErrors="showErrors"></string-input>
 {{else if (eq type "number")}}
@@ -95,7 +95,7 @@
 {{> renderState arg=../arg}}
 {{/with}}
 {{else if (eq type "enum")}}
-<enum-display class="enum-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} :options='{{{stringify options}}}'></enum-display>,
+<enum-display class="enum-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} enum="{{typeString}}"></enum-display>,
 {{else if (eq type "string")}}
 <string-display class="string-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}}></string-display>,
 {{else if (eq type "number")}}
