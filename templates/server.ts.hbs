@@ -1,6 +1,7 @@
 import WebSocket from "ws";
 import express from "express";
 import jwt from "jsonwebtoken";
+import onChange from "on-change";
 import Bundler from "parcel-bundler";
 import { reload } from "import-reload";
 import * as http from "http";
@@ -44,7 +45,12 @@ async function main() {
     const userData = jwt.verify(token, "secret");
     const state = impl.{{initialize}}(userData as any, req.body);
     const stateId = Math.random().toString(36).substring(2);
-    states.set(stateId, state);
+    states.set(
+      stateId,
+      onChange(state, () => {
+        broadcastUpdates(stateId, state);
+      })
+    );
     res.json({ stateId });
   });
   app.use(bundler.middleware());
@@ -74,7 +80,6 @@ async function main() {
         socket.send(JSON.stringify({ type: "response", msgId, error }));
       } else {
         socket.send(JSON.stringify({ type: "response", msgId }));
-        broadcastUpdates(stateId, state);
       }
     });
   }
