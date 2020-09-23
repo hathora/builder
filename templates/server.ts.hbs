@@ -34,6 +34,12 @@ async function main() {
     (Impl) => new Impl.Impl()
   );
 
+  {{#if tick}}
+  setInterval(() => {
+    states.forEach(impl.onTick);
+  }, 100);
+
+  {{/if}}
   app.use(express.json());
   app.post("/register", (req, res) => {
     const userData = req.body;
