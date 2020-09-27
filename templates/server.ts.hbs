@@ -75,13 +75,14 @@ async function main() {
   });
 
   function handleConnection(stateId: string, userData: any, socket: WebSocket) {
-    const state = states.get(stateId)!;
-    addConnection(stateId, userData, socket);
-    socket.send(encoder.encode({ type: "state", state: impl.getUserState(state, userData) }));
+    const client = { userData, socket, alive: true };
+    addConnection(stateId, client);
     socket.on("close", () => {
-      deleteConnection(stateId, userData, socket);
+      deleteConnection(stateId, client);
     });
 
+    const state = states.get(stateId)!;
+    socket.send(encoder.encode({ type: "state", state: impl.getUserState(state, userData) }));
     socket.on("message", (data) => {
       const { method, msgId, args }: UpdateRequest = JSON.parse(data as string);
       const error = impl[method as keyof typeof impl](state, userData, args) as string | void;
@@ -93,9 +94,10 @@ async function main() {
     });
   }
 
-  function addConnection(stateId: string, userData: any, socket: WebSocket) {
-    const client = { userData, socket, alive: true };
-    socket.on("pong", () => (client.alive = true));
+  function addConnection(stateId: string, client: Client) {
+    client.socket.on("pong", () => {
+      client.alive = true;
+    });
     if (!connections.has(stateId)) {
       connections.set(stateId, new Set([client]));
     } else {
@@ -103,9 +105,8 @@ async function main() {
     }
   }
 
-  function deleteConnection(stateId: string, userData: any, socket: WebSocket) {
-    connections.get(stateId)!.delete({ userData, socket, alive: true });
-    connections.get(stateId)!.delete({ userData, socket, alive: false });
+  function deleteConnection(stateId: string, client: Client) {
+    connections.get(stateId)!.delete(client);
     if (connections.get(stateId)!.size === 0) {
       connections.delete(stateId);
     }
@@ -122,15 +123,20 @@ async function main() {
   });
 
   setInterval(() => {
-    connections.forEach((clients) => {
+    const deadClients: Map<Client, string> = new Map();
+    connections.forEach((clients, stateId) => {
       clients.forEach((client) => {
         if (!client.alive) {
-          client.socket.terminate();
+          deadClients.set(client, stateId);
         } else {
           client.alive = false;
           client.socket.ping(() => {});
         }
       });
+    });
+    deadClients.forEach((stateId, client) => {
+      client.socket.terminate();
+      deleteConnection(stateId, client);
     });
   }, 30000);
 }
