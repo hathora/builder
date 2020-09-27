@@ -39,7 +39,7 @@ async function main() {
   {{#if tick}}
   setInterval(() => {
     states.forEach(impl.onTick);
-  }, 50);
+  }, 100);
 
   {{/if}}
   app.use(express.json());
