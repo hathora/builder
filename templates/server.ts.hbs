@@ -2,6 +2,7 @@ import WebSocket from "ws";
 import express from "express";
 import jwt from "jsonwebtoken";
 import onChange from "on-change";
+import { Encoder } from "@msgpack/msgpack";
 import Bundler from "parcel-bundler";
 import { reload } from "import-reload";
 import * as http from "http";
@@ -10,6 +11,7 @@ import * as path from "path";
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ noServer: true });
+const encoder = new Encoder();
 const bundler = new Bundler(path.join(__dirname, "index.html"), {
   cache: false,
 });
@@ -74,7 +76,7 @@ async function main() {
   function handleConnection(stateId: string, userData: any, socket: WebSocket) {
     const state = states.get(stateId)!;
     addConnection(stateId, userData, socket);
-    socket.send(JSON.stringify({ type: "state", state: impl.getUserState(state, userData) }));
+    socket.send(encoder.encode({ type: "state", state: impl.getUserState(state, userData) }));
     socket.on("close", () => {
       deleteConnection(stateId, userData, socket);
     });
@@ -83,9 +85,9 @@ async function main() {
       const { method, msgId, args }: UpdateRequest = JSON.parse(data as string);
       const error = impl[method as keyof typeof impl](state, userData, args) as string | void;
       if (error) {
-        socket.send(JSON.stringify({ type: "response", msgId, error }));
+        socket.send(encoder.encode({ type: "response", msgId, error }));
       } else {
-        socket.send(JSON.stringify({ type: "response", msgId }));
+        socket.send(encoder.encode({ type: "response", msgId }));
       }
     });
   }
@@ -107,7 +109,7 @@ async function main() {
 
   function broadcastUpdates(stateId: string, state: any) {
     connections.get(stateId)!.forEach(({ userData, socket }) => {
-      socket.send(JSON.stringify({ type: "state", state: impl.getUserState(state, userData) }));
+      socket.send(encoder.encode({ type: "state", state: impl.getUserState(state, userData) }));
     });
   }
 
