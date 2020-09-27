@@ -1,5 +1,6 @@
 import WebSocket from "isomorphic-ws";
 import axios from "axios";
+import { decode } from "@msgpack/msgpack";
 import {
   PlayerName,
   {{userState}},
@@ -40,8 +41,8 @@ export class RtagClient {
         socket.send(token);
         resolve(client);
       };
-      socket.onmessage = ({ data }) => {
-        const message = JSON.parse(data.toString());
+      socket.onmessage = async ({ data }) => {
+        const message: any = decode(await (data as any).arrayBuffer());
         if (message.type === "response") {
           client.callbacks[message.msgId](message.error);
           delete client.callbacks[message.msgId];
