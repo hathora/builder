@@ -19,6 +19,7 @@ const bundler = new Bundler(path.join(__dirname, "index.html"), {
 interface Client {
   userData: any;
   socket: WebSocket;
+  alive: boolean;
 }
 
 interface UpdateRequest {
@@ -93,15 +94,18 @@ async function main() {
   }
 
   function addConnection(stateId: string, userData: any, socket: WebSocket) {
+    const client = { userData, socket, alive: true };
+    socket.on("pong", () => (client.alive = true));
     if (!connections.has(stateId)) {
-      connections.set(stateId, new Set([{ userData, socket }]));
+      connections.set(stateId, new Set([client]));
     } else {
-      connections.get(stateId)!.add({ userData, socket });
+      connections.get(stateId)!.add(client);
     }
   }
 
   function deleteConnection(stateId: string, userData: any, socket: WebSocket) {
-    connections.get(stateId)!.delete({ userData, socket });
+    connections.get(stateId)!.delete({ userData, socket, alive: true });
+    connections.get(stateId)!.delete({ userData, socket, alive: false });
     if (connections.get(stateId)!.size === 0) {
       connections.delete(stateId);
     }
@@ -116,6 +120,19 @@ async function main() {
   server.listen(3000, () => {
     console.log("listening on *:3000");
   });
+
+  setInterval(() => {
+    connections.forEach((clients) => {
+      clients.forEach((client) => {
+        if (!client.alive) {
+          client.socket.terminate();
+        } else {
+          client.alive = false;
+          client.socket.ping(() => {});
+        }
+      });
+    });
+  }, 30000);
 }
 
 main();
