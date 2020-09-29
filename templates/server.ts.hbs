@@ -71,22 +71,27 @@ async function main() {
 
   server.on("upgrade", (req, socket, head) => {
     const stateId = req.url.substring(1);
+    const state = states.get(stateId);
+    if (state == undefined) {
+      socket.write("HTTP/1.1 404 Not Found\r\n\r\n");
+      socket.destroy();
+      return;
+    }
     wss.handleUpgrade(req, socket, head, (ws) => {
       ws.once("message", (token) => {
         const userData = jwt.verify(token, "secret");
-        handleConnection(stateId, userData, ws);
+        handleConnection(stateId, state, userData, ws);
       });
     });
   });
 
-  function handleConnection(stateId: string, userData: any, socket: WebSocket) {
+  function handleConnection(stateId: string, state: any, userData: any, socket: WebSocket) {
     const client = { userData, socket, alive: true };
     addConnection(stateId, client);
     socket.on("close", () => {
       deleteConnection(stateId, client);
     });
 
-    const state = states.get(stateId)!;
     socket.send(encoder.encode({ type: "state", state: impl.getUserState(state, userData) }));
     socket.on("message", (data) => {
       const { method, msgId, args }: UpdateRequest = JSON.parse(data as string);
