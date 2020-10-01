@@ -7,6 +7,7 @@ import Bundler from "parcel-bundler";
 import { reload } from "import-reload";
 import * as http from "http";
 import * as path from "path";
+import { {{userData}} } from "./types";
 
 const app = express();
 const server = http.createServer(app);
@@ -17,7 +18,7 @@ const bundler = new Bundler(path.join(__dirname, "index.html"), {
 });
 
 interface Client {
-  userData: any;
+  userData: {{userData}};
   socket: WebSocket;
   alive: boolean;
 }
@@ -56,8 +57,8 @@ async function main() {
   });
   app.post("/new", (req, res) => {
     const token = req.headers.authorization!.split(" ")[1];
-    const userData = jwt.verify(token, "secret");
-    const state = impl.{{initialize}}(userData as any, req.body);
+    const userData = jwt.verify(token, "secret") as {{userData}};
+    const state = impl.{{initialize}}(userData, req.body);
     const stateId = Math.random().toString(36).substring(2);
     states.set(
       stateId,
@@ -79,13 +80,13 @@ async function main() {
     }
     wss.handleUpgrade(req, socket, head, (ws) => {
       ws.once("message", (token) => {
-        const userData = jwt.verify(token, "secret");
+        const userData = jwt.verify(token, "secret") as {{userData}};
         handleConnection(stateId, state, userData, ws);
       });
     });
   });
 
-  function handleConnection(stateId: string, state: any, userData: any, socket: WebSocket) {
+  function handleConnection(stateId: string, state: any, userData: {{userData}}, socket: WebSocket) {
     const client = { userData, socket, alive: true };
     addConnection(stateId, client);
     socket.on("close", () => {
