@@ -29,15 +29,16 @@ interface UpdateRequest {
   args: any;
 }
 
-const states: Map<string, any> = new Map();
-const changedStates: Map<string, any> = new Map();
-const connections: Map<string, Set<Client>> = new Map();
-
 async function main() {
   const impl = await reload(
     () => import("../impl"),
     (Impl) => new Impl.Impl()
   );
+
+  type State = ReturnType<typeof impl.{{initialize}}>;
+  const states: Map<string, State> = new Map();
+  const changedStates: Map<string, State> = new Map();
+  const connections: Map<string, Set<Client>> = new Map();
 
   setInterval(() => {
     {{#if tick}}
@@ -86,7 +87,7 @@ async function main() {
     });
   });
 
-  function handleConnection(stateId: string, state: any, userData: {{userData}}, socket: WebSocket) {
+  function handleConnection(stateId: string, state: State, userData: {{userData}}, socket: WebSocket) {
     const client = { userData, socket, alive: true };
     addConnection(stateId, client);
     socket.on("close", () => {
@@ -123,7 +124,7 @@ async function main() {
     }
   }
 
-  function broadcastUpdates(stateId: string, state: any) {
+  function broadcastUpdates(stateId: string, state: State) {
     connections.get(stateId)!.forEach(({ userData, socket }) => {
       socket.send(encoder.encode({ type: "state", state: impl.getUserState(state, userData) }));
     });
