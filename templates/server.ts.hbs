@@ -13,7 +13,7 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ noServer: true });
 const encoder = new Encoder();
-const bundler = new Bundler(path.join(__dirname, "index.html"), {
+const bundler = new Bundler(path.join(__dirname, "{{appEntryPath}}"), {
   cache: false,
 });
 

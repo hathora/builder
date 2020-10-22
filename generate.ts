@@ -114,11 +114,12 @@ function sanitize(s: string) {
 
 function generate(file: string) {
   const template = compile(readFileSync(path.join(__dirname, "templates", file), "utf8"));
-  writeFileSync(path.join(".rtag", file.split(".hbs")[0]), template({ ...doc, plugins }), "utf8");
+  writeFileSync(path.join(".rtag", file.split(".hbs")[0]), template({ ...doc, plugins, appEntryPath }), "utf8");
 }
 
 const doc: any = safeLoad(readFileSync("types.yml", "utf8"));
 const plugins = existsSync("plugins") ? readdirSync("plugins", "utf8").map((p) => p.replace(/\..*$/, "")) : [];
+const appEntryPath = existsSync("index.html") ? "../index.html" : "index.html";
 
 if (!existsSync(".rtag")) {
   mkdirSync(".rtag");
