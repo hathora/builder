@@ -5,9 +5,7 @@ import {
   PlayerName,
   {{userState}},
   {{#each methods}}
-  {{#if (ne @key ../initialize)}}
   {{makeRequestName @key}},
-  {{/if}}
   {{/each}}
 } from "./types";
 
@@ -23,8 +21,8 @@ export class RtagClient {
     return res.data.token;
   }
 
-  public static async createState(token: string): Promise<StateId> {
-    const res = await axios.post("/new", {}, { headers: { Authorization: "Bearer " + token } });
+  public static async createState(token: string, request: {{makeRequestName initialize}}): Promise<StateId> {
+    const res = await axios.post("/new", request, { headers: { Authorization: "Bearer " + token } });
     return res.data.stateId;
   }
 

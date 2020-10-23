@@ -278,7 +278,7 @@ const Home = Vue.component("home", {
   methods: {
     createState() {
       const token = JSON.parse(sessionStorage.getItem("user")!).token;
-      RtagClient.createState(token).then((stateId) => {
+      RtagClient.createState(token, {}).then((stateId) => {
         this.$router.push("/state/" + stateId);
       });
     },
