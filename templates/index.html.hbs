@@ -9,6 +9,27 @@
     <div id="app">
       <router-view></router-view>
     </div>
+    <script type="text/x-template" id="home-template">
+      <div>
+        {{#with (lookup methods initialize)}}
+        {{#if this}}
+        {{> renderForm (getArgsInfo this) required=true}}
+        {{/if}}
+        {{/with}}
+        <button type="button" class="button" @click="createState">
+          <span class="button-text">Create new</span>
+        </button>
+        <div>Or</div>
+        <form class="form-group" @submit.prevent="joinState">
+          <div class="input-group">
+            <input class="input" v-model="stateId" type="text" />
+          </div>
+          <button type="submit" class="button submit">
+            <span class="button-text">Join existing</span>
+          </button>
+        </form>
+      </div>
+    </script>
     <script type="text/x-template" id="state-template">
       <div class="container">
         <div class="forms-container">

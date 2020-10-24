@@ -261,20 +261,7 @@ const Login = Vue.component("login", {
 
 const Home = Vue.component("home", {
   data: () => ({ stateId: "" }),
-  template: `<div>
-      <button type="button" class="button" @click="createState">
-        <span class="button-text">Create new</span>
-      </button>
-      <div>Or</div>
-      <form class="form-group" @submit.prevent="joinState">
-        <div class="input-group">
-          <input class="input" v-model="stateId" type="text" />
-        </div>
-        <button type="submit" class="button submit">
-          <span class="button-text">Join existing</span>
-        </button>
-      </form>
-    </div>`,
+  template: "#home-template",
   methods: {
     createState() {
       const token = JSON.parse(sessionStorage.getItem("user")!).token;
