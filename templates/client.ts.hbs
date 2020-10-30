@@ -41,7 +41,7 @@ export class RtagClient {
         resolve(client);
       };
       socket.onmessage = async ({ data }) => {
-        const message: any = decode(data as any);
+        const message: any = decode(data as ArrayBuffer);
         if (message.type === "response") {
           client.callbacks[message.msgId](message.error);
           delete client.callbacks[message.msgId];
