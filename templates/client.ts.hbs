@@ -40,7 +40,7 @@ export class RtagClient {
         socket.send(token);
         resolve(client);
       };
-      socket.onmessage = async ({ data }) => {
+      socket.onmessage = ({ data }) => {
         const message: any = decode(data as ArrayBuffer);
         if (message.type === "response") {
           client.callbacks[message.msgId](message.error);
