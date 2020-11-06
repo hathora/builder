@@ -60,7 +60,6 @@ types:
 
 methods:
   createGame:
-    foo: string
   joinGame:
   startGame:
     roleList: Role[]
