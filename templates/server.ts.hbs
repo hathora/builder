@@ -96,15 +96,22 @@ async function main() {
 
     socket.send(encoder.encode({ type: "state", state: impl.getUserState(state, userData) }));
     socket.on("message", (data) => {
-      const { method, msgId, args }: UpdateRequest = JSON.parse(data as string);
-      const fn = impl[method as keyof typeof impl] as (state: State, userData: {{userData}}, args: any) => string | void;
-      const error = fn(state, userData, args);
-      if (error) {
-        socket.send(encoder.encode({ type: "response", msgId, error }));
-      } else {
-        socket.send(encoder.encode({ type: "response", msgId }));
-      }
+      const { method, args, msgId } = JSON.parse(data as string);
+      const error = handleMessage(state, userData, method, args);
+      socket.send(encoder.encode({ type: "response", msgId, error }));
     });
+  }
+
+  function handleMessage(state: State, userData: PlayerData, method: string, args: any) {
+    switch (method) {
+      {{#each methods}}
+      {{#if (ne @key ../initialize)}}
+      case "{{@key}}":
+        return impl.{{@key}}(state, userData, args);
+      {{/if}}
+      {{/each}}
+    }
+    return "Invalid method";
   }
 
   function addConnection(stateId: string, client: Client) {
