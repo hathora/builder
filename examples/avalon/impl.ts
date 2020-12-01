@@ -18,11 +18,6 @@ import {
 } from "./.rtag/types";
 import { shuffle, histogram } from "./utils";
 
-interface InternalPlayer {
-  name: PlayerName;
-  role?: Role;
-}
-
 interface InternalQuestAttempt {
   id: QuestId;
   roundNumber: number;
@@ -37,7 +32,8 @@ interface InternalQuestAttempt {
 
 interface InternalState {
   creator: PlayerName;
-  players: InternalPlayer[];
+  players: PlayerName[];
+  roles?: Map<PlayerName, Role>;
   quests: InternalQuestAttempt[];
 }
 
@@ -67,24 +63,22 @@ export class Impl implements Methods<InternalState> {
   createGame(userData: PlayerData, request: ICreateGameRequest): InternalState {
     return {
       creator: userData.playerName,
-      players: [{ name: userData.playerName }],
+      players: [userData.playerName],
       quests: [],
     };
   }
   joinGame(state: InternalState, userData: PlayerData, request: IJoinGameRequest): string | void {
-    state.players.push({ name: userData.playerName });
+    state.players.push(userData.playerName);
   }
   startGame(state: InternalState, userData: PlayerData, request: IStartGameRequest): string | void {
     if (request.playerOrder != undefined && request.playerOrder.length > 0) {
       const order = request.playerOrder;
-      state.players.sort(
-        (a, b) => order.findIndex((name) => name == a.name) - order.findIndex((name) => name == b.name)
-      );
+      state.players.sort((a, b) => order.findIndex((name) => name == a) - order.findIndex((name) => name == b));
     } else {
       state.players = shuffle(state.players);
     }
-    const leader = request.leader ?? state.players[Math.floor(Math.random() * state.players.length)].name;
-    shuffle(request.roleList).forEach((role, i) => (state.players[i].role = role));
+    const leader = request.leader ?? state.players[Math.floor(Math.random() * state.players.length)];
+    state.roles = new Map(shuffle(request.roleList).map((role, i) => [state.players[i], role]));
     state.quests.push(createQuest(1, 1, state.players.length, leader));
   }
   proposeQuest(state: InternalState, userData: PlayerData, request: IProposeQuestRequest): string | void {
@@ -92,9 +86,8 @@ export class Impl implements Methods<InternalState> {
     quest.members = request.proposedMembers;
   }
   voteForProposal(state: InternalState, userData: PlayerData, request: IVoteForProposalRequest): string | void {
-    const player = state.players.find((p) => p.name == userData.playerName)!;
     const quest = state.quests.find((q) => q.id == request.questId)!;
-    quest.votes.set(player.name, request.vote);
+    quest.votes.set(userData.playerName, request.vote);
     if (questStatus(quest) == QuestStatus.PROPOSAL_REJECTED && quest.attemptNumber < 5) {
       state.quests.push(
         createQuest(
@@ -107,9 +100,8 @@ export class Impl implements Methods<InternalState> {
     }
   }
   voteInQuest(state: InternalState, userData: PlayerData, request: IVoteInQuestRequest): string | void {
-    const player = state.players.find((p) => p.name == userData.playerName)!;
     const quest = state.quests.find((q) => q.id == request.questId)!;
-    quest.results.set(player.name, request.vote);
+    quest.results.set(userData.playerName, request.vote);
     if (
       quest.results.size == quest.size &&
       numQuestsForStatus(state.quests, QuestStatus.FAILED) < 3 &&
@@ -121,8 +113,8 @@ export class Impl implements Methods<InternalState> {
     }
   }
   getUserState(state: InternalState, userData: PlayerData): PlayerState {
-    const player = state.players.find((p) => p.name == userData.playerName);
-    const roleCounts = histogram(state.players.flatMap((p) => (p.role != undefined ? [p.role] : [])));
+    const role = state.roles?.get(userData.playerName);
+    const roleCounts = histogram([...(state.roles?.values() || [])]);
     return {
       status: gameStatus(state.quests),
       rolesInfo: [...ROLE_KNOWLEDGE].map(([role, knownRoles]) => ({
@@ -132,11 +124,11 @@ export class Impl implements Methods<InternalState> {
         quantity: roleCounts.get(role) || 0,
       })),
       creator: state.creator,
-      players: state.players.map((p) => p.name),
-      role: player?.role,
-      knownPlayers: state.players
-        .filter((p) => (ROLE_KNOWLEDGE.get(player?.role!) || []).includes(p.role!))
-        .map((p) => p.name),
+      players: state.players,
+      role,
+      knownPlayers: [...(state.roles?.entries() || [])]
+        .filter(([_, r]) => (ROLE_KNOWLEDGE.get(role!) || []).includes(r))
+        .map(([p, _]) => p),
       playersPerQuest: QUEST_CONFIGURATIONS.get(state.players.length) || [],
       quests: state.quests.map((q) => sanitizeQuest(q, userData.playerName)),
     };
@@ -162,9 +154,9 @@ function createQuest(
   };
 }
 
-function getNextLeader(leader: PlayerName, players: InternalPlayer[]) {
-  const idx = players.findIndex((p) => p.name == leader);
-  return players[(idx + 1) % players.length].name;
+function getNextLeader(leader: PlayerName, players: PlayerName[]) {
+  const idx = players.findIndex((p) => p == leader);
+  return players[(idx + 1) % players.length];
 }
 
 function sanitizeQuest(quest: InternalQuestAttempt, playerName: string): QuestAttempt {
