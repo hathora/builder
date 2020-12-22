@@ -1,6 +1,6 @@
 import WebSocket from "isomorphic-ws";
 import axios from "axios";
-import { decode } from "@msgpack/msgpack";
+import { load } from "protobufjs";
 import {
   PlayerName,
   {{userState}},
@@ -33,27 +33,30 @@ export class RtagClient {
     onStateChange: (state: {{userState}}) => void
   ): Promise<RtagClient> {
     return new Promise((resolve, reject) => {
-      const socket = new WebSocket(`ws://${host}/${stateId}`);
-      socket.binaryType = "arraybuffer";
-      const client = new RtagClient(socket);
-      socket.onopen = () => {
-        socket.send(token);
-        resolve(client);
-      };
-      socket.onerror = () => {
-        reject();
-      };
-      socket.onmessage = ({ data }) => {
-        const message: any = decode(data as ArrayBuffer);
-        if (message.type === "response") {
-          client.callbacks[message.msgId](message.error);
-          delete client.callbacks[message.msgId];
-        } else if (message.type === "state") {
-          onStateChange(message.state);
-        } else {
-          console.error("Unknown message type: " + message.type);
-        }
-      };
+      load("/types.proto").then((root) => {
+        const Response = root.lookupType("Response");
+        const socket = new WebSocket(`ws://${host}/${stateId}`);
+        socket.binaryType = "arraybuffer";
+        const client = new RtagClient(socket);
+        socket.onopen = () => {
+          socket.send(token);
+          resolve(client);
+        };
+        socket.onerror = () => {
+          reject();
+        };
+        socket.onmessage = ({ data }) => {
+          const message: any = Response.decode(new Uint8Array(data as ArrayBuffer));
+          if (message.type === "res") {
+            client.callbacks[message.res.msgId](message.res.error);
+            delete client.callbacks[message.res.msgId];
+          } else if (message.type === "state") {
+            onStateChange(Response.toObject(message, { arrays: true }).state as PlayerState);
+          } else {
+            console.error("Unknown message type: " + message.type);
+          }
+        };
+      });
     });
   }
 
