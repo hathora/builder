@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+{{#each types}}
+{{#with (getArgsInfo this)}}
+{{#if (eq type "enum")}}
+enum {{@key}} {
+{{#each options}}
+  {{label}} = {{@index}};
+{{/each}}
+}
+{{else if (eq type "object")}}
+message {{@key}} {
+  {{#each properties}}
+  {{> renderArg}} {{snakeCase @key}} = {{add @index 1}};
+  {{/each}}
+}
+{{/if}}
+{{/with}}
+{{/each}}
+message MethodResponse {
+  string msg_id = 1;
+  string error = 2;
+}
+message Response {
+  oneof type {
+    {{userState}} state = 1;
+    MethodResponse res = 2;
+  }
+}
+{{#*inline "renderArg"}}
+{{#if (eq type "optional")}}
+optional {{> renderArg item}}
+{{~else if (eq type "array")}}
+repeated {{> renderArg items}}
+{{~else if (eq type "number")}}
+int64
+{{~else if (eq type "string")}}
+string
+{{~else if (eq type "boolean")}}
+bool
+{{~else if (eq type "plugin")}}
+{{> renderArg item}}
+{{~else}}
+{{typeString}}
+{{~/if}}
+{{~/inline}}
