@@ -1,8 +1,10 @@
 {
   "name": "avalon",
   "version": "0.0.1",
+  "type": "module",
   "dependencies": {
     "@vue/web-component-wrapper": "^1.2.0",
+    "ts-node": "^9.1.1",
     "vue": "^2.6.12",
     "vue-class-component": "^7.2.6",
     "vue-property-decorator": "^9.0.0"

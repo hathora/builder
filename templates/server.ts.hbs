@@ -2,17 +2,19 @@ import WebSocket from "ws";
 import express from "express";
 import jwt from "jsonwebtoken";
 import onChange from "on-change";
-import { load } from "protobufjs";
+import pb from "protobufjs";
 import Bundler from "parcel-bundler";
 import { reload } from "import-reload";
 import * as http from "http";
 import * as path from "path";
+import { fileURLToPath } from "url";
 import { {{userData}} } from "./types";
 
+const dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ noServer: true });
-const bundler = new Bundler(path.join(__dirname, "{{appEntryPath}}"), {
+const bundler = new Bundler(path.join(dirname, "{{appEntryPath}}"), {
   cache: false,
 });
 
@@ -34,7 +36,7 @@ async function main() {
     (Impl) => new Impl.Impl()
   );
 
-  const root = await load("./.rtag/types.proto");
+  const root = await pb.load("./types.proto");
   const Response = root.lookupType("Response");
 
   type State = ReturnType<typeof impl.{{initialize}}>;
@@ -72,7 +74,7 @@ async function main() {
     res.json({ stateId });
   });
   app.get("/types.proto", (req, res) => {
-    res.sendFile("types.proto", { root: __dirname });
+    res.sendFile("types.proto", { root: dirname });
   });
   app.use(bundler.middleware());
 
