@@ -9,7 +9,8 @@ To run avalon example:
 ```
 cd examples/avalon
 ../../generate.ts
-ts-node-script .rtag/server.ts
+cd .rtag
+node --loader ts-node/esm --experimental-specifier-resolution=node server.ts
 ```
 
 View debug app at http://localhost:3000/
