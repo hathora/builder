@@ -36,7 +36,7 @@ async function main() {
     (Impl) => new Impl.Impl()
   );
 
-  const root = await pb.load("./types.proto");
+  const root = await pb.load(path.join(dirname, "types.proto"));
   const Response = root.lookupType("Response");
 
   type State = ReturnType<typeof impl.{{initialize}}>;
