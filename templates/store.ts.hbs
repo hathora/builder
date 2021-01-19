@@ -1,0 +1,70 @@
+import onChange from "on-change";
+import { reload } from "import-reload";
+import { {{userData}}, PlayerState } from "./types";
+
+const impl = await reload(
+  () => import("../impl"),
+  (Impl) => new Impl.Impl()
+);
+
+type StateId = string;
+type State = ReturnType<typeof impl.{{initialize}}>;
+const states: Map<StateId, State> = new Map();
+const changedStates: Set<StateId> = new Set();
+const subscriptions: Map<StateId, Set<{{userData}}>> = new Map();
+
+export default class Store {
+  constructor(onNewUserState: (stateId: StateId, userData: {{userData}}, userState: PlayerState) => void) {
+    setInterval(() => {
+      {{#if tick}}
+      states.forEach(impl.onTick);
+      {{/if}}
+      changedStates.forEach((stateId) => {
+        subscriptions
+          .get(stateId)!
+          .forEach((userData) => onNewUserState(stateId, userData, impl.getUserState(states.get(stateId)!, userData)));
+      });
+      changedStates.clear();
+    }, 50);
+  }
+  newState(stateId: StateId, userData: {{userData}}, req: any) {
+    const state = impl.{{initialize}}(userData, req);
+    states.set(
+      stateId,
+      onChange(state, () => {
+        changedStates.add(stateId);
+      })
+    );
+  }
+  handleUpdate(stateId: StateId, userData: {{userData}}, method: string, args: any) {
+    const state = states.get(stateId)!;
+    switch (method) {
+      {{#each methods}}
+      {{#if (ne @key ../initialize)}}
+      case "{{@key}}":
+        return impl.{{@key}}(state, userData, args);
+      {{/if}}
+      {{/each}}
+    }
+    return "Invalid method";
+  }
+  getUserState(stateId: StateId, userData: {{userData}}) {
+    const state = states.get(stateId);
+    return state !== undefined ? impl.getUserState(state, userData) : undefined;
+  }
+  subscribeUser(stateId: StateId, userData: {{userData}}) {
+    if (!subscriptions.has(stateId)) {
+      subscriptions.set(stateId, new Set([userData]));
+    } else {
+      subscriptions.get(stateId)!.add(userData);
+    }
+  }
+  unsubscribeUser(stateId: StateId, userData: {{userData}}) {
+    const users = subscriptions.get(stateId)!;
+    if (users.size > 1) {
+      users.delete(userData);
+    } else {
+      subscriptions.delete(stateId);
+    }
+  }
+}
