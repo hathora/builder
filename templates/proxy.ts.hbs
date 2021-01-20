@@ -5,6 +5,8 @@ import jwt from "jsonwebtoken";
 import pb from "protobufjs";
 import { createServer } from "vite";
 import * as http from "http";
+import { dirname } from "path";
+import { fileURLToPath } from "url";
 import Store from "./store";
 import { {{userData}}, PlayerState } from "./types";
 
@@ -44,6 +46,9 @@ app.post("/new", (req, res) => {
   res.json({ stateId });
 });
 app.use(vite.middlewares);
+app.get("/*", (_, res) => {
+  res.sendFile("index.html", { root: dirname(fileURLToPath(import.meta.url)) });
+});
 
 server.on("upgrade", (req: http.IncomingMessage, socket: Socket, head: Buffer) => {
   const stateId = req.url!.substring(1);
