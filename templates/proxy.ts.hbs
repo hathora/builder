@@ -19,7 +19,10 @@ interface UpdateRequest {
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ noServer: true });
-const vite = await createServer({ server: { middlewareMode: true } });
+const vite = await createServer({
+  server: { middlewareMode: true },
+  alias: { vue: "vue/dist/vue.esm.js" },
+});
 
 const root = await pb.load("./types.proto");
 const Response = root.lookupType("Response");
