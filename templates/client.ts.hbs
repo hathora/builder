@@ -1,6 +1,6 @@
 import WebSocket from "isomorphic-ws";
 import axios from "axios";
-import { load } from "protobufjs";
+import pb from "protobufjs/dist/protobuf.js";
 import {
   PlayerName,
   {{userState}},
@@ -33,7 +33,7 @@ export class RtagClient {
     onStateChange: (state: {{userState}}) => void
   ): Promise<RtagClient> {
     return new Promise((resolve, reject) => {
-      load("/types.proto").then((root) => {
+      pb.load("/static/types.proto").then((root) => {
         const Response = root.lookupType("Response");
         const socket = new WebSocket(`ws://${host}/${stateId}`);
         socket.binaryType = "arraybuffer";

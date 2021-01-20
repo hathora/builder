@@ -1,7 +1,6 @@
 import { Vue, Component, Prop } from "vue-property-decorator";
 import { Role, RoleInfo } from "../.rtag/types";
-
-const wrap = require("@vue/web-component-wrapper").default;
+import wrap from "@vue/web-component-wrapper";
 
 @Component({
   template: `

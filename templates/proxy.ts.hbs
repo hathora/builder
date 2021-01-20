@@ -3,7 +3,7 @@ import { Socket } from "net";
 import express from "express";
 import jwt from "jsonwebtoken";
 import pb from "protobufjs";
-import Bundler from "parcel-bundler";
+import { startServer, createConfiguration } from "snowpack";
 import * as http from "http";
 import * as path from "path";
 import { fileURLToPath } from "url";
@@ -22,8 +22,14 @@ const dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ noServer: true });
-const bundler = new Bundler(path.join(dirname, "{{appEntryPath}}"), {
-  cache: false,
+const snowpack = await startServer({
+  config: createConfiguration({
+    exclude: ["proxy.ts"],
+    mount: { "./": "/static", "../plugins": "/plugins" },
+    packageOptions: { polyfillNode: true },
+    devOptions: { open: "none", output: "stream" },
+  }),
+  lockfile: null,
 });
 
 const root = await pb.load("./types.proto");
@@ -45,10 +51,15 @@ app.post("/new", (req, res) => {
   store.newState(stateId, userData, req.body);
   res.json({ stateId });
 });
-app.get("/types.proto", (_, res) => {
-  res.sendFile("types.proto", { root: dirname });
+app.use(async (req, res) => {
+  try {
+    const buildResult = await snowpack.loadUrl(req.url);
+    res.setHeader("content-type", buildResult.contentType as string);
+    res.send(buildResult.contents);
+  } catch (err) {
+    res.sendFile("index.html", { root: dirname });
+  }
 });
-app.use(bundler.middleware());
 
 server.on("upgrade", (req: http.IncomingMessage, socket: Socket, head: Buffer) => {
   const stateId = req.url!.substring(1);
