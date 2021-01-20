@@ -3,10 +3,8 @@ import { Socket } from "net";
 import express from "express";
 import jwt from "jsonwebtoken";
 import pb from "protobufjs";
-import { startServer, createConfiguration } from "snowpack";
+import { createServer } from "vite";
 import * as http from "http";
-import * as path from "path";
-import { fileURLToPath } from "url";
 import Store from "./store";
 import { {{userData}}, PlayerState } from "./types";
 
@@ -18,19 +16,10 @@ interface UpdateRequest {
   args: any;
 }
 
-const dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ noServer: true });
-const snowpack = await startServer({
-  config: createConfiguration({
-    exclude: ["proxy.ts"],
-    mount: { "./": "/static", "../plugins": "/plugins" },
-    packageOptions: { polyfillNode: true },
-    devOptions: { open: "none", output: "stream" },
-  }),
-  lockfile: null,
-});
+const vite = await createServer({ server: { middlewareMode: true } });
 
 const root = await pb.load("./types.proto");
 const Response = root.lookupType("Response");
@@ -51,15 +40,7 @@ app.post("/new", (req, res) => {
   store.newState(stateId, userData, req.body);
   res.json({ stateId });
 });
-app.use(async (req, res) => {
-  try {
-    const buildResult = await snowpack.loadUrl(req.url);
-    res.setHeader("content-type", buildResult.contentType as string);
-    res.send(buildResult.contents);
-  } catch (err) {
-    res.sendFile("index.html", { root: dirname });
-  }
-});
+app.use(vite.middlewares);
 
 server.on("upgrade", (req: http.IncomingMessage, socket: Socket, head: Buffer) => {
   const stateId = req.url!.substring(1);
