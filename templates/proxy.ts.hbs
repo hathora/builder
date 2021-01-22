@@ -26,7 +26,7 @@ const bundler = new Bundler(path.join(dirname, "{{appEntryPath}}"), {
   cache: false,
 });
 
-const root = await pb.load("./types.proto");
+const root = await pb.load(".rtag/types.proto");
 const Response = root.lookupType("Response");
 
 const connections: Map<StateId, Set<Connection>> = new Map();
