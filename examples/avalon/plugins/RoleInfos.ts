@@ -1,47 +1,55 @@
-import { Vue, Component, Prop } from "vue-property-decorator";
+import { LitElement, html, css, property } from "lit-element";
 import { Role, RoleInfo } from "../.rtag/types";
 
-const wrap = require("@vue/web-component-wrapper").default;
+export default class RoleInfos extends LitElement {
+  @property() val!: RoleInfo[];
+  @property() isOpen: boolean = true;
 
-@Component({
-  template: `
-    <span>
-      <button class="button small" type="button" v-on:click="isOpen=!isOpen">
-        <span class="button-text" v-if="isOpen">-</span>
-        <span class="button-text" v-else>+</span>
-      </button>
-      <span v-if="!isOpen">...</span>
-      <table style="color: white" v-else>
-        <tr>
-          <th>Role</th>
-          <th>Is Evil?</th>
-          <th>Known Roles</th>
-          <th>Quantity</th>
-        </tr>
-        <tr v-for="v in filterRoleInfos()">
-          <td>{{ roleToString(v.role) }}</td>
-          <td>{{ v.isEvil }}</td>
-          <td>{{ formatKnownRoles(v.knownRoles, filterRoleInfos()) }}</td>
-          <td>{{ v.quantity }}</td>
-        </tr>
-      </table>
-    </span>
-  `,
-})
-class RoleInfos extends Vue {
-  @Prop() val!: RoleInfo[];
-  isOpen: boolean = true;
+  render() {
+    return html`
+      <span>
+        <button
+          class="button small"
+          type="button"
+          @click="${() => {
+            this.isOpen = !this.isOpen;
+          }}"
+        >
+          ${this.isOpen ? html`<span class="button-text">-</span>` : html`<span class="button-text">+</span>`}
+        </button>
+        ${this.isOpen
+          ? html`<table style="color: white">
+              <tr>
+                <th>Role</th>
+                <th>Is Evil?</th>
+                <th>Known Roles</th>
+                <th>Quantity</th>
+              </tr>
+              ${this.filterRoleInfos().map(
+                (v) => html`<tr>
+                  <td>${this.roleToString(v.role)}</td>
+                  <td>${v.isEvil}</td>
+                  <td>${this.formatKnownRoles(v.knownRoles, this.filterRoleInfos())}</td>
+                  <td>${v.quantity}</td>
+                </tr>`
+              )}
+            </table>`
+          : html`<span>...</span>`}
+      </span>
+    `;
+  }
   roleToString(r: Role) {
     return Role[r].toLowerCase().replace(/^[a-z]/, (x) => x.toUpperCase());
-  }
-  formatKnownRoles(knownRoles: Role[], roleInfosInGame: RoleInfo[]) {
-    const rolesInGame = roleInfosInGame.map((i) => i.role);
-    return knownRoles.filter((r) => rolesInGame.includes(r)).map(this.roleToString);
   }
   filterRoleInfos() {
     const filtered = this.val.filter((r) => r.quantity > 0);
     return filtered.length > 0 ? filtered : this.val;
   }
+  formatKnownRoles(knownRoles: Role[], roleInfosInGame: RoleInfo[]) {
+    const rolesInGame = roleInfosInGame.map((i) => i.role);
+    return knownRoles
+      .filter((r) => rolesInGame.includes(r))
+      .map(this.roleToString)
+      .join(", ");
+  }
 }
-
-export default wrap(Vue, RoleInfos);
