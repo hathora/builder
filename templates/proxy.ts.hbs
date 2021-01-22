@@ -18,6 +18,7 @@ interface UpdateRequest {
   args: any;
 }
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ noServer: true });
@@ -28,7 +29,7 @@ const vite = await createServer({
   optimizeDeps: { link: ["./.rtag"] },
 });
 
-const root = await pb.load(".rtag/types.proto");
+const root = await pb.load(join(__dirname, "types.proto"));
 const Response = root.lookupType("Response");
 
 const connections: Map<StateId, Set<Connection>> = new Map();
@@ -49,7 +50,7 @@ app.post("/new", (req, res) => {
 });
 app.use(vite.middlewares);
 app.get("/*", (_, res) => {
-  res.sendFile(join(dirname(fileURLToPath(import.meta.url)), "{{appEntryPath}}"));
+  res.sendFile(join(__dirname, "{{appEntryPath}}"));
 });
 
 server.on("upgrade", (req: http.IncomingMessage, socket: Socket, head: Buffer) => {
