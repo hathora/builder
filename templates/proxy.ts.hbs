@@ -25,9 +25,10 @@ const vite = await createServer({
   server: { middlewareMode: true },
   clearScreen: false,
   alias: { vue: "vue/dist/vue.esm.js", protobufjs: "protobufjs/dist/protobuf.js" },
+  optimizeDeps: { link: ["./.rtag"] },
 });
 
-const root = await pb.load("./types.proto");
+const root = await pb.load(".rtag/types.proto");
 const Response = root.lookupType("Response");
 
 const connections: Map<StateId, Set<Connection>> = new Map();
