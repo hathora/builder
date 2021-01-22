@@ -41,15 +41,15 @@ export default class RoleInfos extends LitElement {
   roleToString(r: Role) {
     return Role[r].toLowerCase().replace(/^[a-z]/, (x) => x.toUpperCase());
   }
-  filterRoleInfos() {
-    const filtered = this.val.filter((r) => r.quantity > 0);
-    return filtered.length > 0 ? filtered : this.val;
-  }
   formatKnownRoles(knownRoles: Role[], roleInfosInGame: RoleInfo[]) {
     const rolesInGame = roleInfosInGame.map((i) => i.role);
     return knownRoles
       .filter((r) => rolesInGame.includes(r))
       .map(this.roleToString)
       .join(", ");
+  }
+  filterRoleInfos() {
+    const filtered = this.val.filter((r) => r.quantity > 0);
+    return filtered.length > 0 ? filtered : this.val;
   }
 }
