@@ -48,6 +48,9 @@ export default class Store {
     }
     return "Invalid method";
   }
+  hasState(stateId: StateId) {
+    return states.has(stateId);
+  }
   getUserState(stateId: StateId, userData: {{userData}}) {
     const state = states.get(stateId);
     return state !== undefined ? impl.getUserState(state, userData) : undefined;
