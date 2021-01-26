@@ -1,6 +1,6 @@
 #!/usr/bin/env ts-node-script
 
-import { safeLoad } from "js-yaml";
+import { load } from "js-yaml";
 import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { compile, registerHelper } from "handlebars";
 import path from "path";
@@ -121,7 +121,7 @@ function generate(file: string) {
   writeFileSync(path.join(".rtag", file.split(".hbs")[0]), template({ ...doc, plugins, appEntryPath }), "utf8");
 }
 
-const doc: any = safeLoad(readFileSync("types.yml", "utf8"));
+const doc: any = load(readFileSync("types.yml", "utf8"));
 const plugins = existsSync("plugins") ? readdirSync("plugins", "utf8").map((p) => p.replace(/\..*$/, "")) : [];
 const appEntryPath = existsSync("index.html") ? "../index.html" : "index.html";
 
