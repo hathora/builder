@@ -116,20 +116,32 @@ function sanitize(s: string) {
   return s.replace(/[\W]+/g, "");
 }
 
-function generate(file: string) {
-  const template = compile(readFileSync(path.join(__dirname, "templates", file), "utf8"));
-  writeFileSync(path.join(".rtag", file.split(".hbs")[0]), template({ ...doc, plugins, appEntryPath }), "utf8");
+function generate(file: string, outDir: string) {
+  const template = compile(readFileSync(file, "utf8"));
+  writeFileSync(
+    path.join(outDir, path.basename(file).split(".hbs")[0]),
+    template({ ...doc, plugins, appEntryPath, appName }),
+    "utf8"
+  );
 }
 
 const doc: any = load(readFileSync("types.yml", "utf8"));
 const plugins = existsSync("plugins") ? readdirSync("plugins", "utf8").map((p) => p.replace(/\..*$/, "")) : [];
 const appEntryPath = existsSync("index.html") ? "../index.html" : "index.html";
+const appName = path.basename(process.cwd());
 
+if (readdirSync(process.cwd()).length === 1) {
+  readdirSync(path.join(__dirname, "templates/lang/ts"), "utf8").forEach((file) =>
+    generate(path.join(__dirname, "templates/lang/ts", file), ".")
+  );
+}
 if (!existsSync(".rtag")) {
   mkdirSync(".rtag");
 }
+readdirSync(path.join(__dirname, "templates/base"), "utf8").forEach((file) =>
+  generate(path.join(__dirname, "templates/base", file), ".rtag")
+);
 
-readdirSync(path.join(__dirname, "templates"), "utf8").forEach(generate);
 process.chdir(".rtag");
 npm.load(() => {
   npm.commands.install([], (err, res) => {});
