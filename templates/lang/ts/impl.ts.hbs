@@ -21,7 +21,22 @@ export class Impl implements Methods<InternalState> {
   {{/if}}
   {{/each}}
   getUserState(state: InternalState, userData: {{userData}}): {{userState}} {
-    throw new Error("Method not implemented.");
+    return {
+      {{#with (getArgsInfo (lookup types userState))}}
+      {{#each properties}}
+      {{#if (eq type "array")}}
+      {{@key}}: [],
+      {{else if (eq type "string")}}
+      {{@key}}: "",
+      {{else if (eq type "enum")}}
+      {{@key}}: {{typeString}}.{{options.[0].label}},
+      {{else if (eq type "optional")}}
+      {{@key}}: undefined,
+      {{else~}}
+      {{/if}}
+      {{/each}}
+      {{/with}}
+    };
   }
   {{#if tick}}
   onTick(state: InternalState): void {}
