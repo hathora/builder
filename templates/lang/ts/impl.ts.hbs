@@ -1,0 +1,44 @@
+import { Methods } from "./.rtag/methods";
+import {
+  {{userData}},
+  {{userState}},
+  {{#each methods}}
+  {{makeRequestName @key}},
+  {{/each}}
+} from "./.rtag/types";
+
+interface InternalState {}
+
+export class Impl implements Methods<InternalState> {
+  {{initialize}}(userData: {{userData}}, request: {{makeRequestName initialize}}): InternalState {
+    return {};
+  }
+  {{#each methods}}
+  {{#if (ne @key ../initialize)}}
+  {{@key}}(state: InternalState, userData: {{../userData}}, request: {{makeRequestName @key}}): string | void {
+    throw new Error("Method not implemented.");
+  }
+  {{/if}}
+  {{/each}}
+  getUserState(state: InternalState, userData: {{userData}}): {{userState}} {
+    return {
+      {{#with (getArgsInfo (lookup types userState))}}
+      {{#each properties}}
+      {{#if (eq type "array")}}
+      {{@key}}: [],
+      {{else if (eq type "string")}}
+      {{@key}}: "",
+      {{else if (eq type "enum")}}
+      {{@key}}: {{typeString}}.{{options.[0].label}},
+      {{else if (eq type "optional")}}
+      {{@key}}: undefined,
+      {{else~}}
+      {{/if}}
+      {{/each}}
+      {{/with}}
+    };
+  }
+  {{#if tick}}
+  onTick(state: InternalState): void {}
+  {{/if}}
+}
