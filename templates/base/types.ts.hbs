@@ -2,19 +2,15 @@
 {{#with (getArgsInfo this)}}
 {{#if (eq type "enum")}}
 export enum {{@key}} {
-{{#each options}}
+  {{#each options}}
   {{label}},
-{{/each}}
+  {{/each}}
 }
 {{else if (eq type "object")}}
 export interface {{@key}} {
-{{#each properties}}
-{{#if (eq type "optional")}}
-  {{@key}}?: {{item.typeString}};
-{{else}}
-  {{@key}}: {{typeString}};
-{{/if}}
-{{/each}}
+  {{#each properties}}
+  {{@key}}: {{> renderArg}}
+  {{/each}}
 }
 {{else}}
 export type {{@key}} = {{../this}};
@@ -23,7 +19,29 @@ export type {{@key}} = {{../this}};
 {{/each}}
 {{#each methods}}
 export interface {{makeRequestName @key}} {
-{{#join this ";
-" false true}}  {{name}}: {{type}}{{/join~}}
+{{#if this}}
+{{#with (getArgsInfo this)}}
+  {{#each properties}}
+  {{@key}}: {{> renderArg}};
+  {{/each}}
+{{/with}}
+{{/if}}
 }
 {{/each}}
+{{#*inline "renderArg"}}
+{{#if alias}}
+{{typeString}}
+{{~else if (eq type "optional")}}
+{{> renderArg item}} | undefined
+{{~else if (eq type "array")}}
+{{> renderArg items}}[]
+{{~else if (eq type "number")}}
+number
+{{~else if (eq type "string")}}
+string
+{{~else if (eq type "boolean")}}
+boolean
+{{~else if (eq type "plugin")}}
+{{> renderArg item}}
+{{~/if}}
+{{~/inline}}

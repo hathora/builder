@@ -9,39 +9,47 @@ import npm from "npm";
 type Arg = ObjectArg | ArrayArg | OptionalArg | DisplayPluginArg | EnumArg | StringArg | NumberArg | BooleanArg;
 interface ObjectArg {
   type: "object";
+  alias: boolean;
   typeString?: string;
   properties: Record<string, Arg>;
 }
 interface ArrayArg {
   type: "array";
+  alias: boolean;
   typeString?: string;
   items: Arg;
 }
 interface OptionalArg {
   type: "optional";
+  alias: boolean;
   typeString?: string;
   item: Arg;
 }
 interface DisplayPluginArg {
   type: "plugin";
+  alias: boolean;
   typeString?: string;
   item: Arg;
 }
 interface EnumArg {
   type: "enum";
+  alias: boolean;
   typeString?: string;
   options: { label: string; value: number }[];
 }
 interface StringArg {
   type: "string";
+  alias: boolean;
   typeString?: string;
 }
 interface NumberArg {
   type: "number";
+  alias: boolean;
   typeString?: string;
 }
 interface BooleanArg {
   type: "boolean";
+  alias: boolean;
   typeString?: string;
 }
 
@@ -56,53 +64,46 @@ registerHelper("snakeCase", (x) =>
 );
 registerHelper("makeRequestName", (x) => "I" + capitalize(x) + "Request");
 registerHelper("makePluginName", (x) => x.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase() + "-plugin");
-registerHelper("join", (params, joinStr, prepend, postpend, options) => {
-  let paramsStr;
-  if (Array.isArray(params)) {
-    paramsStr = params.map((name) => options.fn({ name })).join(joinStr);
-  } else {
-    paramsStr = Object.entries(params || {})
-      .map(([name, type]) => options.fn({ name, type }))
-      .join(joinStr);
-  }
-  return (prepend && paramsStr.length ? joinStr : "") + paramsStr + (postpend && paramsStr.length ? joinStr : "");
-});
-registerHelper("getArgsInfo", (args) => getArgsInfo(args, true));
+registerHelper("getArgsInfo", (args) => getArgsInfo(args, true, false));
 
-function getArgsInfo(args: any, required: boolean, typeString?: string): Arg {
+function getArgsInfo(args: any, required: boolean, alias: boolean, typeString?: string): Arg {
   if (!required) {
     return {
       type: "optional",
       typeString: args + "?",
-      item: getArgsInfo(args, true),
+      alias,
+      item: getArgsInfo(args, true, false),
     };
   } else if (Array.isArray(args)) {
     return {
       type: "enum",
       typeString,
+      alias,
       options: args.map((label: string, value) => ({ label, value })),
     };
   } else if (typeof args === "object") {
     return {
       type: "object",
       typeString,
+      alias,
       properties: Object.fromEntries(
-        Object.entries(args).map(([name, type]) => [sanitize(name), getArgsInfo(type, !name.endsWith("?"))])
+        Object.entries(args).map(([name, type]) => [sanitize(name), getArgsInfo(type, !name.endsWith("?"), false)])
       ),
     };
   } else if (typeof args === "string") {
     if (args.endsWith("[]")) {
       return {
         type: "array",
-        typeString: args,
-        items: getArgsInfo(args.substring(0, args.length - 2), true),
+        typeString: typeString ?? args,
+        alias,
+        items: getArgsInfo(args.substring(0, args.length - 2), true, false),
       };
     } else if (args in doc.types) {
-      const argsInfo = getArgsInfo(doc.types[args], required, args);
-      return plugins.includes(args) ? { type: "plugin", typeString: args, item: argsInfo } : argsInfo;
+      const argsInfo = getArgsInfo(doc.types[args], required, true, args);
+      return plugins.includes(args) ? { type: "plugin", typeString: args, alias, item: argsInfo } : argsInfo;
     } else if (args === "string" || args === "number" || args === "boolean") {
-      const argsInfo: Arg = { type: args, typeString: typeString ?? args };
-      return plugins.includes(args) ? { type: "plugin", typeString: args, item: argsInfo } : argsInfo;
+      const argsInfo: Arg = { type: args, typeString: typeString ?? args, alias };
+      return plugins.includes(args) ? { type: "plugin", typeString: args, alias, item: argsInfo } : argsInfo;
     }
   }
   throw new Error("Invalid args: " + args);

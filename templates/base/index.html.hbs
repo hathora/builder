@@ -56,7 +56,6 @@
     <script type="module" src="/.rtag/app.ts"></script>
   </body>
 </html>
-
 {{#*inline "renderForm"}}
 {{#if (eq type "plugin")}}
 {{#with item}}
@@ -89,7 +88,6 @@
 <boolean-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" :showErrors="showErrors"></boolean-input>
 {{/if}}
 {{/inline}}
-
 {{#*inline "renderState"}}
 {{#if (eq type "plugin")}}
 <plugin-display class="plugin-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} component="{{makePluginName typeString}}"></plugin-display>
