@@ -1,14 +1,20 @@
 # rtag
 
-Setup:
+## Requirements
+  - node v15+
+  - ts-node on classpath (`npm install -g ts-node`)
+
+## Installation
 ```
-npm install
+npm install -g rtag
 ```
 
-To run avalon example:
+## Usage:
+
+Inside a new directory, create a `types.yml` file and run `rtag` to generate rtag project.
+
+Start server:
 ```
-cd examples/avalon
-../../generate.ts
 node --loader ts-node/esm --experimental-specifier-resolution=node .rtag/proxy.ts
 ```
 
