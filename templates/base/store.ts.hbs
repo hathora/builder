@@ -1,11 +1,13 @@
+import { watch } from "fs";
+import { createRequire } from "module";
 import onChange from "on-change";
-import { reload } from "import-reload";
 import { {{userData}}, PlayerState } from "./types";
 
-const impl = await reload(
-  () => import("../impl"),
-  (Impl) => new Impl.Impl()
-);
+const require = createRequire(import.meta.url);
+let impl = new (await import("../impl")).Impl();
+watch(require.resolve("../impl"), async () => {
+  impl = new (await import(`../impl.ts#${Math.random()}`)).Impl();
+});
 
 type StateId = string;
 type State = ReturnType<typeof impl.{{initialize}}>;
