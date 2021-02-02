@@ -2,7 +2,7 @@ import WebSocket from "isomorphic-ws";
 import axios from "axios";
 import { load } from "protobufjs";
 import {
-  PlayerName,
+  UserId,
   {{userState}},
   {{#each methods}}
   {{makeRequestName @key}},
@@ -16,8 +16,8 @@ export class RtagClient {
 
   private constructor(private socket: WebSocket) {}
 
-  public static async registerUser(username: PlayerName): Promise<string> {
-    const res = await axios.post("/register", { playerName: username });
+  public static async registerUser(userId: UserId): Promise<string> {
+    const res = await axios.post("/register", { userId });
     return res.data.token;
   }
 

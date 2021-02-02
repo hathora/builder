@@ -1,6 +1,6 @@
 types:
+  UserId: string
   QuestId: string
-  PlayerName: string
   RoleInfos: RoleInfo[]
 
   Role:
@@ -34,40 +34,38 @@ types:
     knownRoles: Role[]
     quantity: number
   PlayerAndVote:
-    player: PlayerName
+    player: UserId
     vote?: Vote
   QuestAttempt:
     id: QuestId
     status: QuestStatus
     roundNumber: number
     attemptNumber: number
-    leader: PlayerName
-    members: PlayerName[]
+    leader: UserId
+    members: UserId[]
     proposalVotes: PlayerAndVote[]
     results: PlayerAndVote[]
     numFailures: number
   PlayerState:
     status: GameStatus
     rolesInfo: RoleInfos
-    creator: PlayerName
-    players: PlayerName[]
+    creator: UserId
+    players: UserId[]
     role?: Role
-    knownPlayers: PlayerName[]
+    knownPlayers: UserId[]
     playersPerQuest: number[]
     quests: QuestAttempt[]
-  PlayerData:
-    playerName: PlayerName
 
 methods:
   createGame:
   joinGame:
   startGame:
     roleList: Role[]
-    playerOrder?: PlayerName[]
-    leader?: PlayerName
+    playerOrder?: UserId[]
+    leader?: UserId
   proposeQuest:
     questId: QuestId
-    proposedMembers: PlayerName[]
+    proposedMembers: UserId[]
   voteForProposal:
     questId: QuestId
     vote: Vote
@@ -76,5 +74,4 @@ methods:
     vote: Vote
 
 userState: PlayerState
-userData: PlayerData
 initialize: createGame

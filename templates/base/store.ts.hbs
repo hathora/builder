@@ -1,7 +1,7 @@
 import { watch } from "fs";
 import { createRequire } from "module";
 import onChange from "on-change";
-import { {{userData}}, PlayerState } from "./types";
+import { UserId, PlayerState } from "./types";
 
 const require = createRequire(import.meta.url);
 let impl = new (await import("../impl")).Impl();
@@ -13,10 +13,10 @@ type StateId = string;
 type State = ReturnType<typeof impl.{{initialize}}>;
 const states: Map<StateId, State> = new Map();
 const changedStates: Set<StateId> = new Set();
-const subscriptions: Map<StateId, Set<{{userData}}>> = new Map();
+const subscriptions: Map<StateId, Set<UserId>> = new Map();
 
 export default class Store {
-  constructor(onNewUserState: (stateId: StateId, userData: {{userData}}, userState: PlayerState) => void) {
+  constructor(onNewUserState: (stateId: StateId, userId: UserId, userState: PlayerState) => void) {
     setInterval(() => {
       {{#if tick}}
       states.forEach(impl.onTick);
@@ -24,13 +24,13 @@ export default class Store {
       changedStates.forEach((stateId) => {
         subscriptions
           .get(stateId)!
-          .forEach((userData) => onNewUserState(stateId, userData, impl.getUserState(states.get(stateId)!, userData)));
+          .forEach((userId) => onNewUserState(stateId, userId, impl.getUserState(states.get(stateId)!, userId)));
       });
       changedStates.clear();
     }, 50);
   }
-  newState(stateId: StateId, userData: {{userData}}, req: any) {
-    const state = impl.{{initialize}}(userData, req);
+  newState(stateId: StateId, userId: UserId, req: any) {
+    const state = impl.{{initialize}}(userId, req);
     states.set(
       stateId,
       onChange(state, () => {
@@ -38,13 +38,13 @@ export default class Store {
       })
     );
   }
-  handleUpdate(stateId: StateId, userData: {{userData}}, method: string, args: any) {
+  handleUpdate(stateId: StateId, userId: UserId, method: string, args: any) {
     const state = states.get(stateId)!;
     switch (method) {
       {{#each methods}}
       {{#if (ne @key ../initialize)}}
       case "{{@key}}":
-        return impl.{{@key}}(state, userData, args);
+        return impl.{{@key}}(state, userId, args);
       {{/if}}
       {{/each}}
     }
@@ -53,21 +53,21 @@ export default class Store {
   hasState(stateId: StateId) {
     return states.has(stateId);
   }
-  getUserState(stateId: StateId, userData: {{userData}}) {
+  getUserState(stateId: StateId, userId: UserId) {
     const state = states.get(stateId);
-    return state !== undefined ? impl.getUserState(state, userData) : undefined;
+    return state !== undefined ? impl.getUserState(state, userId) : undefined;
   }
-  subscribeUser(stateId: StateId, userData: {{userData}}) {
+  subscribeUser(stateId: StateId, userId: UserId) {
     if (!subscriptions.has(stateId)) {
-      subscriptions.set(stateId, new Set([userData]));
+      subscriptions.set(stateId, new Set([userId]));
     } else {
-      subscriptions.get(stateId)!.add(userData);
+      subscriptions.get(stateId)!.add(userId);
     }
   }
-  unsubscribeUser(stateId: StateId, userData: {{userData}}) {
+  unsubscribeUser(stateId: StateId, userId: UserId) {
     const users = subscriptions.get(stateId)!;
     if (users.size > 1) {
-      users.delete(userData);
+      users.delete(userId);
     } else {
       subscriptions.delete(stateId);
     }
