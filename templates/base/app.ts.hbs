@@ -3,6 +3,7 @@ import * as Types from "./types";
 import Vue from "vue";
 import VueRouter from "vue-router";
 import Toasted from "vue-toasted";
+import GAuth from "vue-google-oauth2";
 import vSelect from "vue-select";
 {{#each plugins}}
 import {{this}} from "../plugins/{{this}}";
@@ -10,6 +11,7 @@ import {{this}} from "../plugins/{{this}}";
 
 Vue.use(VueRouter);
 Vue.use(Toasted, { position: "top-center", duration: 2000 });
+Vue.use(GAuth, { clientId: "{{googleClientId}}" });
 Vue.component("v-select", vSelect);
 
 {{#each plugins}}
@@ -236,19 +238,33 @@ Vue.component("plugin-display", {
 });
 
 const Login = Vue.component("login", {
-  data: () => ({ username: "" }),
-  template: `<form @submit.prevent="handleLogin">
-      <button type="submit" class="button submit">
+  template: `<div>
+      <button type="submit" class="button submit" @click="handleLoginAnonymous">
         <span class="button-text">Login Anonymously</span>
       </button>
-    </form>`,
+      <button type="submit" class="button submit" @click="handleLoginGoogle">
+        <span class="button-text">Login with Google</span>
+      </button>
+    </div>`,
   methods: {
-    handleLogin() {
-      RtagClient.loginAnonymous().then(({ userId, token }) => {
-        sessionStorage.setItem("user", JSON.stringify({ id: userId, token }));
-        const url = this.$route.query.url;
-        this.$router.push((Array.isArray(url) ? url[0] : url) || "/");
-      });
+    async handleLoginAnonymous() {
+      const { userId, token } = await RtagClient.loginAnonymous();
+      sessionStorage.setItem("user", JSON.stringify({ id: userId, token }));
+      const url = this.$route.query.url;
+      this.$router.push((Array.isArray(url) ? url[0] : url) || "/");
+    },
+    async handleLoginGoogle() {
+      const googleUser = await (this as any).$gAuth.signIn();
+      const idToken = googleUser.getAuthResponse().id_token;
+      let res = await RtagClient.loginGoogle(idToken);
+      if (res.userId === undefined && res.token === undefined) {
+        const userId = prompt("Enter userId")!;
+        const { token } = await RtagClient.signupGoogle(userId, idToken);
+        res = { userId, token };
+      }
+      sessionStorage.setItem("user", JSON.stringify({ id: res.userId, token: res.token }));
+      const url = this.$route.query.url;
+      this.$router.push((Array.isArray(url) ? url[0] : url) || "/");
     },
   },
 });

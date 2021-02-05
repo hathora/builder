@@ -20,6 +20,14 @@ export class RtagClient {
     return (await axios.post("/login/anonymous")).data;
   }
 
+  public static async signupGoogle(userId: UserId, idToken: string): Promise<{ token: string }> {
+    return (await axios.post("/signup/google", { userId, idToken })).data;
+  }
+
+  public static async loginGoogle(idToken: string): Promise<{ userId: UserId; token: string }> {
+    return (await axios.post("/login/google", { idToken })).data;
+  }
+
   public static async createState(token: string, request: {{makeRequestName initialize}}): Promise<StateId> {
     const res = await axios.post("/new", request, { headers: { Authorization: "Bearer " + token } });
     return res.data.stateId;
