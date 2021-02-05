@@ -16,9 +16,8 @@ export class RtagClient {
 
   private constructor(private socket: WebSocket) {}
 
-  public static async registerUser(userId: UserId): Promise<string> {
-    const res = await axios.post("/register", { userId });
-    return res.data.token;
+  public static async loginAnonymous(): Promise<{ userId: UserId; token: string }> {
+    return (await axios.post("/login/anonymous")).data;
   }
 
   public static async createState(token: string, request: {{makeRequestName initialize}}): Promise<StateId> {

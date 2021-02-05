@@ -1,0 +1,62 @@
+import jwt from "jsonwebtoken";
+import { OAuth2Client } from "google-auth-library";
+import { Express } from "express";
+import { UserId } from "./types";
+
+const JWT_SECRET = "secret";
+const GOOGLE_CLIENT_ID = "{{googleClientId}}";
+const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
+
+interface UserData {
+  id: UserId;
+  googleId: string;
+}
+const db: UserData[] = [];
+
+export class Auth {
+  setUpRoutes(app: Express) {
+    app.post("/login/anonymous", (_, res) => {
+      const userId = Math.random().toString(36).substring(2);
+      const token = jwt.sign(userId, JWT_SECRET);
+      res.json({ userId, token });
+    });
+    app.post("/signup/google", async (req, res) => {
+      const { userId, idToken }: { userId: UserId; idToken: string } = req.body;
+      if (db.find((entry) => entry.id === userId) !== undefined) {
+        res.status(400).send("User id is taken");
+        return;
+      }
+      const googleId = (await googleClient.verifyIdToken({ idToken, audience: GOOGLE_CLIENT_ID })).getPayload()?.sub;
+      if (googleId === undefined) {
+        res.status(401).send("Invalid google access token");
+        return;
+      }
+      const userEntry = db.find((entry) => entry.googleId === googleId);
+      if (userEntry) {
+        res.status(400).send("Account already registered");
+      } else {
+        db.push({ id: userId, googleId });
+        const token = jwt.sign(userId, JWT_SECRET);
+        res.json({ token });
+      }
+    });
+    app.post("/login/google", async (req, res) => {
+      const { idToken }: { idToken: string } = req.body;
+      const googleId = (await googleClient.verifyIdToken({ idToken, audience: GOOGLE_CLIENT_ID })).getPayload()?.sub;
+      if (googleId === undefined) {
+        res.status(401).send("Invalid google access token");
+        return;
+      }
+      const userEntry = db.find((entry) => entry.googleId === googleId);
+      if (userEntry) {
+        const token = jwt.sign(userEntry.id, JWT_SECRET);
+        res.json({ userId: userEntry.id, token });
+      } else {
+        res.json({ userId: undefined, token: undefined });
+      }
+    });
+  }
+  getUserIdFromToken(token: string): UserId {
+    return jwt.verify(token, JWT_SECRET) as UserId;
+  }
+}

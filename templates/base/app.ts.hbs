@@ -238,20 +238,14 @@ Vue.component("plugin-display", {
 const Login = Vue.component("login", {
   data: () => ({ username: "" }),
   template: `<form @submit.prevent="handleLogin">
-      <label class="label">
-        Username
-        <div class="input-group">
-          <input class="input" v-model="username" type="text" />
-        </div>
-      </label>
       <button type="submit" class="button submit">
-        <span class="button-text">Submit</span>
+        <span class="button-text">Login Anonymously</span>
       </button>
     </form>`,
   methods: {
     handleLogin() {
-      RtagClient.registerUser(this.username).then((token) => {
-        sessionStorage.setItem("user", JSON.stringify({ name: this.username, token }));
+      RtagClient.loginAnonymous().then(({ userId, token }) => {
+        sessionStorage.setItem("user", JSON.stringify({ id: userId, token }));
         const url = this.$route.query.url;
         this.$router.push((Array.isArray(url) ? url[0] : url) || "/");
       });
@@ -264,7 +258,7 @@ const Home = Vue.component("home", {
   template: "#home-template",
   methods: {
     createState() {
-      const token = JSON.parse(sessionStorage.getItem("user")!).token;
+      const { token } = JSON.parse(sessionStorage.getItem("user")!);
       RtagClient.createState(token, {}).then((stateId) => {
         this.$router.push("/state/" + stateId);
       });
@@ -279,7 +273,7 @@ const State = Vue.component("state", {
   data: () => ({ value: {}, client: {} }),
   template: "#state-template",
   created() {
-    const token = JSON.parse(sessionStorage.getItem("user")!).token;
+      const { token } = JSON.parse(sessionStorage.getItem("user")!);
     RtagClient.connect(location.host, token, this.$route.params.stateId, (state) => {
       this.value = state;
     })

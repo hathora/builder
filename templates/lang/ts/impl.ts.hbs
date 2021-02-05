@@ -10,17 +10,17 @@ import {
 interface InternalState {}
 
 export class Impl implements Methods<InternalState> {
-  {{initialize}}(userId: UserId, request: {{makeRequestName initialize}}): InternalState {
+  {{initialize}}(user: UserId, request: {{makeRequestName initialize}}): InternalState {
     return {};
   }
   {{#each methods}}
   {{#if (ne @key ../initialize)}}
-  {{@key}}(state: InternalState, userId: UserId, request: {{makeRequestName @key}}): string | void {
+  {{@key}}(state: InternalState, user: UserId, request: {{makeRequestName @key}}): string | void {
     throw new Error("Method not implemented.");
   }
   {{/if}}
   {{/each}}
-  getUserState(state: InternalState, userId: UserId): {{userState}} {
+  getUserState(state: InternalState, user: UserId): {{userState}} {
     return {
       {{#with (getArgsInfo (lookup types userState))}}
       {{#each properties}}
