@@ -1,9 +1,9 @@
 import { watch } from "fs";
-import { createRequire } from "module";
+import module from "module";
 import onChange from "on-change";
 import { UserId, PlayerState } from "./types";
 
-const require = createRequire(import.meta.url);
+const require = module.createRequire(import.meta.url);
 let impl = new (await import("../impl")).Impl();
 watch(require.resolve("../impl"), async () => {
   impl = new (await import(`../impl.ts#${Math.random()}`)).Impl();
