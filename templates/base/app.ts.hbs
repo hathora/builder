@@ -124,7 +124,7 @@ Vue.component("enum-input", {
   computed: {
     options() {
       return Object.entries(Types[this.enum as keyof typeof Types])
-        .filter(([_, value]) => typeof value == "number")
+        .filter(([_, value]) => typeof value === "number")
         .map(([label, value]) => ({ label, value }));
     },
   },
@@ -162,13 +162,13 @@ Vue.component("number-input", {
 
 Vue.component("object-display", {
   props: { value: Object },
-  template: `<div><slot v-if="value != undefined" :value="value"></slot></div>`,
+  template: `<div><slot v-if="value !== undefined" :value="value"></slot></div>`,
 });
 
 Vue.component("array-display", {
   data: () => ({ isOpen: true }),
   props: { value: Array },
-  template: `<span v-if="value != undefined && value.length > 0">
+  template: `<span v-if="value !== undefined && value.length > 0">
       <button class="button small" type="button" v-on:click="isOpen=!isOpen">
         <span class="button-text" v-if="isOpen">-</span>
         <span class="button-text" v-else>+</span>
@@ -182,11 +182,11 @@ Vue.component("array-display", {
 
 Vue.component("enum-display", {
   props: { value: Number, enum: String },
-  template: `<span v-if="value != undefined">\{{options[value].label}}</span>`,
+  template: `<span v-if="value !== undefined">\{{options[value].label}}</span>`,
   computed: {
     options() {
       return Object.entries(Types[this.enum as keyof typeof Types])
-        .filter(([_, value]) => typeof value == "number")
+        .filter(([_, value]) => typeof value === "number")
         .map(([label, value]) => ({ label, value }));
     },
   },
@@ -302,7 +302,7 @@ const router = new VueRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  if (to.path != "/login" && sessionStorage.getItem("user") == null) {
+  if (to.path !== "/login" && sessionStorage.getItem("user") === null) {
     next(`/login${to.path === "/" ? "" : "?url=" + to.path}`);
   } else {
     next();

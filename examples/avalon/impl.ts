@@ -71,9 +71,9 @@ export class Impl implements Methods<InternalState> {
     state.players.push(userData.playerName);
   }
   startGame(state: InternalState, userData: PlayerData, request: IStartGameRequest): string | void {
-    if (request.playerOrder != undefined && request.playerOrder.length > 0) {
+    if (request.playerOrder !== undefined && request.playerOrder.length > 0) {
       const order = request.playerOrder;
-      state.players.sort((a, b) => order.findIndex((name) => name == a) - order.findIndex((name) => name == b));
+      state.players.sort((a, b) => order.findIndex((name) => name === a) - order.findIndex((name) => name === b));
     } else {
       state.players = shuffle(state.players);
     }
@@ -82,13 +82,13 @@ export class Impl implements Methods<InternalState> {
     state.quests.push(createQuest(1, 1, state.players.length, leader));
   }
   proposeQuest(state: InternalState, userData: PlayerData, request: IProposeQuestRequest): string | void {
-    const quest = state.quests.find((q) => q.id == request.questId)!;
+    const quest = state.quests.find((q) => q.id === request.questId)!;
     quest.members = request.proposedMembers;
   }
   voteForProposal(state: InternalState, userData: PlayerData, request: IVoteForProposalRequest): string | void {
-    const quest = state.quests.find((q) => q.id == request.questId)!;
+    const quest = state.quests.find((q) => q.id === request.questId)!;
     quest.votes.set(userData.playerName, request.vote);
-    if (questStatus(quest) == QuestStatus.PROPOSAL_REJECTED && quest.attemptNumber < 5) {
+    if (questStatus(quest) === QuestStatus.PROPOSAL_REJECTED && quest.attemptNumber < 5) {
       state.quests.push(
         createQuest(
           quest.roundNumber,
@@ -100,10 +100,10 @@ export class Impl implements Methods<InternalState> {
     }
   }
   voteInQuest(state: InternalState, userData: PlayerData, request: IVoteInQuestRequest): string | void {
-    const quest = state.quests.find((q) => q.id == request.questId)!;
+    const quest = state.quests.find((q) => q.id === request.questId)!;
     quest.results.set(userData.playerName, request.vote);
     if (
-      quest.results.size == quest.size &&
+      quest.results.size === quest.size &&
       numQuestsForStatus(state.quests, QuestStatus.FAILED) < 3 &&
       numQuestsForStatus(state.quests, QuestStatus.PASSED) < 3
     ) {
@@ -155,7 +155,7 @@ function createQuest(
 }
 
 function getNextLeader(leader: PlayerName, players: PlayerName[]) {
-  const idx = players.findIndex((p) => p == leader);
+  const idx = players.findIndex((p) => p === leader);
   return players[(idx + 1) % players.length];
 }
 
@@ -169,18 +169,18 @@ function sanitizeQuest(quest: InternalQuestAttempt, playerName: string): QuestAt
     members: quest.members,
     proposalVotes: [...quest.votes.entries()].map(([player, vote]) => ({
       player,
-      vote: player == playerName || quest.votes.size == quest.numPlayers ? vote : undefined,
+      vote: player === playerName || quest.votes.size === quest.numPlayers ? vote : undefined,
     })),
     results: [...quest.results.entries()].map(([player, vote]) => ({
       player,
-      vote: player == playerName || quest.results.size == quest.size ? vote : undefined,
+      vote: player === playerName || quest.results.size === quest.size ? vote : undefined,
     })),
     numFailures: numFails(quest.results),
   };
 }
 
 function gameStatus(quests: InternalQuestAttempt[]) {
-  if (quests.length == 0) {
+  if (quests.length === 0) {
     return GameStatus.NOT_STARTED;
   } else if (numQuestsForStatus(quests, QuestStatus.FAILED) > 2 || exceededQuestAttempts(quests[quests.length - 1])) {
     return GameStatus.EVIL_WON;
@@ -191,7 +191,7 @@ function gameStatus(quests: InternalQuestAttempt[]) {
 }
 
 function questStatus(quest: InternalQuestAttempt) {
-  if (quest.members.length == 0) {
+  if (quest.members.length === 0) {
     return QuestStatus.PROPOSING_QUEST;
   } else if (quest.votes.size < quest.numPlayers) {
     return QuestStatus.VOTING_FOR_PROPOSAL;
@@ -206,17 +206,17 @@ function questStatus(quest: InternalQuestAttempt) {
 }
 
 function numQuestsForStatus(quests: InternalQuestAttempt[], status: QuestStatus): number {
-  return quests.filter((q) => questStatus(q) == status).length;
+  return quests.filter((q) => questStatus(q) === status).length;
 }
 
 function numFails(votes: Map<PlayerName, Vote>) {
-  return [...votes.values()].filter((vote) => vote == Vote.FAIL).length;
+  return [...votes.values()].filter((vote) => vote === Vote.FAIL).length;
 }
 
 function maxFails(numPlayers: number, round: number): number {
-  return numPlayers > 6 && round == 4 ? 2 : 1;
+  return numPlayers > 6 && round === 4 ? 2 : 1;
 }
 
 function exceededQuestAttempts(quest: InternalQuestAttempt): boolean {
-  return quest.attemptNumber == 5 && questStatus(quest) == QuestStatus.PROPOSAL_REJECTED;
+  return quest.attemptNumber === 5 && questStatus(quest) === QuestStatus.PROPOSAL_REJECTED;
 }
