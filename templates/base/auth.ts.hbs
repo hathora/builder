@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
-import { Express } from "express";
+import express, { Request, Response } from "express";
 import { UserData } from "./types";
 
 const JWT_SECRET = "secret";
@@ -9,50 +9,51 @@ const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 const db: UserData[] = [];
 
-export class Auth {
-  setUpRoutes(app: Express) {
-    app.post("/login/anonymous", (_, res) => {
-      const username = Math.random().toString(36).substring(2);
-      const token = jwt.sign({ id: username, username }, JWT_SECRET);
+export function authMiddleware() {
+  const router = express.Router();
+  router.post("/login/anonymous", (_, res) => {
+    const username = Math.random().toString(36).substring(2);
+    const token = jwt.sign({ id: username, username }, JWT_SECRET);
+    res.json({ token });
+  });
+  router.post("/signup/google", async (req, res) => {
+    const { username, idToken }: { username: string; idToken: string } = req.body;
+    if (db.find((entry) => entry.username === username) !== undefined) {
+      res.status(400).send("User id is taken");
+      return;
+    }
+    const googleId = (await googleClient.verifyIdToken({ idToken, audience: GOOGLE_CLIENT_ID })).getPayload()?.sub;
+    if (googleId === undefined) {
+      res.status(401).send("Invalid google access token");
+      return;
+    }
+    const userEntry = db.find((entry) => entry.id === googleId);
+    if (userEntry !== undefined) {
+      res.status(400).send("Account already registered");
+    } else {
+      db.push({ id: googleId, username });
+      const token = jwt.sign({ id: googleId, username }, JWT_SECRET);
       res.json({ token });
-    });
-    app.post("/signup/google", async (req, res) => {
-      const { username, idToken }: { username: string; idToken: string } = req.body;
-      if (db.find((entry) => entry.username === username) !== undefined) {
-        res.status(400).send("User id is taken");
-        return;
-      }
-      const googleId = (await googleClient.verifyIdToken({ idToken, audience: GOOGLE_CLIENT_ID })).getPayload()?.sub;
-      if (googleId === undefined) {
-        res.status(401).send("Invalid google access token");
-        return;
-      }
-      const userEntry = db.find((entry) => entry.id === googleId);
-      if (userEntry !== undefined) {
-        res.status(400).send("Account already registered");
-      } else {
-        db.push({ id: googleId, username });
-        const token = jwt.sign({ id: googleId, username }, JWT_SECRET);
-        res.json({ token });
-      }
-    });
-    app.post("/login/google", async (req, res) => {
-      const { idToken }: { idToken: string } = req.body;
-      const googleId = (await googleClient.verifyIdToken({ idToken, audience: GOOGLE_CLIENT_ID })).getPayload()?.sub;
-      if (googleId === undefined) {
-        res.status(401).send("Invalid google access token");
-        return;
-      }
-      const userEntry = db.find((entry) => entry.id === googleId);
-      if (userEntry !== undefined) {
-        const token = jwt.sign({ userEntry }, JWT_SECRET);
-        res.json({ token });
-      } else {
-        res.json({ token: undefined });
-      }
-    });
-  }
-  getUserFromToken(token: string): UserData {
-    return jwt.verify(token, JWT_SECRET) as UserData;
-  }
+    }
+  });
+  router.post("/login/google", async (req, res) => {
+    const { idToken }: { idToken: string } = req.body;
+    const googleId = (await googleClient.verifyIdToken({ idToken, audience: GOOGLE_CLIENT_ID })).getPayload()?.sub;
+    if (googleId === undefined) {
+      res.status(401).send("Invalid google access token");
+      return;
+    }
+    const userEntry = db.find((entry) => entry.id === googleId);
+    if (userEntry !== undefined) {
+      const token = jwt.sign({ userEntry }, JWT_SECRET);
+      res.json({ token });
+    } else {
+      res.json({ token: undefined });
+    }
+  });
+  return router;
+}
+
+export function getUserFromToken(token: string): UserData {
+  return jwt.verify(token, JWT_SECRET) as UserData;
 }
