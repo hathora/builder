@@ -60,17 +60,17 @@ const QUEST_CONFIGURATIONS = new Map([
 ]);
 
 export class Impl implements Methods<InternalState> {
-  createGame({ username }: UserData, request: ICreateGameRequest): InternalState {
+  createGame(user: UserData, request: ICreateGameRequest): InternalState {
     return {
-      creator: username,
-      players: [username],
+      creator: user.username,
+      players: [user.username],
       quests: [],
     };
   }
-  joinGame(state: InternalState, { username }: UserData, request: IJoinGameRequest): string | void {
-    state.players.push(username);
+  joinGame(state: InternalState, user: UserData, request: IJoinGameRequest): string | void {
+    state.players.push(user.username);
   }
-  startGame(state: InternalState, { username }: UserData, request: IStartGameRequest): string | void {
+  startGame(state: InternalState, user: UserData, request: IStartGameRequest): string | void {
     if (request.playerOrder !== undefined && request.playerOrder.length > 0) {
       const order = request.playerOrder;
       state.players.sort((a, b) => order.findIndex((u) => u === a) - order.findIndex((u) => u === b));
@@ -81,13 +81,13 @@ export class Impl implements Methods<InternalState> {
     state.roles = new Map(shuffle(request.roleList).map((role, i) => [state.players[i], role]));
     state.quests.push(createQuest(1, 1, state.players.length, leader));
   }
-  proposeQuest(state: InternalState, { username }: UserData, request: IProposeQuestRequest): string | void {
+  proposeQuest(state: InternalState, user: UserData, request: IProposeQuestRequest): string | void {
     const quest = state.quests.find((q) => q.id === request.questId)!;
     quest.members = request.proposedMembers;
   }
-  voteForProposal(state: InternalState, { username }: UserData, request: IVoteForProposalRequest): string | void {
+  voteForProposal(state: InternalState, user: UserData, request: IVoteForProposalRequest): string | void {
     const quest = state.quests.find((q) => q.id === request.questId)!;
-    quest.votes.set(username, request.vote);
+    quest.votes.set(user.username, request.vote);
     if (questStatus(quest) === QuestStatus.PROPOSAL_REJECTED && quest.attemptNumber < 5) {
       state.quests.push(
         createQuest(
@@ -99,9 +99,9 @@ export class Impl implements Methods<InternalState> {
       );
     }
   }
-  voteInQuest(state: InternalState, { username }: UserData, request: IVoteInQuestRequest): string | void {
+  voteInQuest(state: InternalState, user: UserData, request: IVoteInQuestRequest): string | void {
     const quest = state.quests.find((q) => q.id === request.questId)!;
-    quest.results.set(username, request.vote);
+    quest.results.set(user.username, request.vote);
     if (
       quest.results.size === quest.size &&
       numQuestsForStatus(state.quests, QuestStatus.FAILED) < 3 &&
@@ -112,8 +112,8 @@ export class Impl implements Methods<InternalState> {
       );
     }
   }
-  getUserState(state: InternalState, { username }: UserData): PlayerState {
-    const role = state.roles?.get(username);
+  getUserState(state: InternalState, user: UserData): PlayerState {
+    const role = state.roles?.get(user.username);
     const roleCounts = histogram([...(state.roles?.values() || [])]);
     return {
       status: gameStatus(state.quests),
@@ -130,7 +130,7 @@ export class Impl implements Methods<InternalState> {
         .filter(([_, r]) => (ROLE_KNOWLEDGE.get(role!) || []).includes(r))
         .map(([p, _]) => p),
       playersPerQuest: QUEST_CONFIGURATIONS.get(state.players.length) || [],
-      quests: state.quests.map((q) => sanitizeQuest(q, username)),
+      quests: state.quests.map((q) => sanitizeQuest(q, user.username)),
     };
   }
 }
