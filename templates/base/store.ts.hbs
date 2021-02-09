@@ -1,7 +1,7 @@
 import { watch } from "fs";
 import module from "module";
 import onChange from "on-change";
-import { UserId, PlayerState } from "./types";
+import { UserData, PlayerState } from "./types";
 
 const require = module.createRequire(import.meta.url);
 let impl = new (await import("../impl")).Impl();
@@ -13,10 +13,10 @@ type StateId = string;
 type State = ReturnType<typeof impl.{{initialize}}>;
 const states: Map<StateId, State> = new Map();
 const changedStates: Set<StateId> = new Set();
-const subscriptions: Map<StateId, Set<UserId>> = new Map();
+const subscriptions: Map<StateId, Set<UserData>> = new Map();
 
 export default class Store {
-  constructor(onNewUserState: (stateId: StateId, userId: UserId, userState: PlayerState) => void) {
+  constructor(onNewUserState: (stateId: StateId, user: UserData, userState: PlayerState) => void) {
     setInterval(() => {
       {{#if tick}}
       states.forEach(impl.onTick);
@@ -24,13 +24,13 @@ export default class Store {
       changedStates.forEach((stateId) => {
         subscriptions
           .get(stateId)!
-          .forEach((userId) => onNewUserState(stateId, userId, impl.getUserState(states.get(stateId)!, userId)));
+          .forEach((user) => onNewUserState(stateId, user, impl.getUserState(states.get(stateId)!, user)));
       });
       changedStates.clear();
     }, 50);
   }
-  newState(stateId: StateId, userId: UserId, req: any) {
-    const state = impl.{{initialize}}(userId, req);
+  newState(stateId: StateId, user: UserData, req: any) {
+    const state = impl.createGame(user, req);
     states.set(
       stateId,
       onChange(state, () => {
@@ -38,13 +38,13 @@ export default class Store {
       })
     );
   }
-  handleUpdate(stateId: StateId, userId: UserId, method: string, args: any) {
+  handleUpdate(stateId: StateId, user: UserData, method: string, args: any) {
     const state = states.get(stateId)!;
     switch (method) {
       {{#each methods}}
       {{#if (ne @key ../initialize)}}
       case "{{@key}}":
-        return impl.{{@key}}(state, userId, args);
+        return impl.{{@key}}(state, user, args);
       {{/if}}
       {{/each}}
     }
@@ -53,21 +53,21 @@ export default class Store {
   hasState(stateId: StateId) {
     return states.has(stateId);
   }
-  getUserState(stateId: StateId, userId: UserId) {
+  getUserState(stateId: StateId, user: UserData) {
     const state = states.get(stateId);
-    return state !== undefined ? impl.getUserState(state, userId) : undefined;
+    return state !== undefined ? impl.getUserState(state, user) : undefined;
   }
-  subscribeUser(stateId: StateId, userId: UserId) {
+  subscribeUser(stateId: StateId, user: UserData) {
     if (!subscriptions.has(stateId)) {
-      subscriptions.set(stateId, new Set([userId]));
+      subscriptions.set(stateId, new Set([user]));
     } else {
-      subscriptions.get(stateId)!.add(userId);
+      subscriptions.get(stateId)!.add(user);
     }
   }
-  unsubscribeUser(stateId: StateId, userId: UserId) {
+  unsubscribeUser(stateId: StateId, user: UserData) {
     const users = subscriptions.get(stateId)!;
     if (users.size > 1) {
-      users.delete(userId);
+      users.delete(user);
     } else {
       subscriptions.delete(stateId);
     }

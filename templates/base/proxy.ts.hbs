@@ -8,7 +8,7 @@ import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 import Store from "./store";
 import { Auth } from "./auth";
-import { UserId, PlayerState } from "./types";
+import { UserData, PlayerState } from "./types";
 
 type StateId = string;
 type Connection = WebSocket & { isAlive: boolean };
@@ -38,9 +38,9 @@ const auth = new Auth();
 app.use(express.json());
 app.post("/new", (req, res) => {
   const token = req.headers.authorization!.split(" ")[1];
-  const userId = auth.getUserIdFromToken(token);
+  const user = auth.getUserFromToken(token);
   const stateId = Math.random().toString(36).substring(2);
-  store.newState(stateId, userId, req.body);
+  store.newState(stateId, user, req.body);
   res.json({ stateId });
 });
 app.use(vite.middlewares);
@@ -58,9 +58,9 @@ server.on("upgrade", (req: http.IncomingMessage, socket: Socket, head: Buffer) =
   }
   wss.handleUpgrade(req, socket, head, (ws) => {
     ws.once("message", (token) => {
-      const userId = auth.getUserIdFromToken(token);
-      ws.send(Response.encode({ state: store.getUserState(stateId, userId)! }).finish());
-      handleConnection(stateId, userId, Object.assign(ws, { isAlive: true }));
+      const user = auth.getUserFromToken(token);
+      ws.send(Response.encode({ state: store.getUserState(stateId, user)! }).finish());
+      handleConnection(stateId, user, Object.assign(ws, { isAlive: true }));
     });
   });
 });
@@ -82,43 +82,43 @@ setInterval(() => {
   });
 }, 30000);
 
-function handleConnection(stateId: StateId, userId: UserId, socket: Connection) {
-  addConnection(stateId, userId, socket);
+function handleConnection(stateId: StateId, user: UserData, socket: Connection) {
+  addConnection(stateId, user, socket);
   socket.on("close", () => {
-    deleteConnection(stateId, userId, socket);
+    deleteConnection(stateId, user, socket);
   });
 
   socket.on("message", (data) => {
     const { method, args, msgId }: UpdateRequest = JSON.parse(data as string);
-    const maybeError = store.handleUpdate(stateId, userId, method, args);
+    const maybeError = store.handleUpdate(stateId, user, method, args);
     socket.send(Response.encode({ res: { msgId, error: maybeError } }).finish());
   });
 }
 
-function addConnection(stateId: StateId, userId: UserId, socket: Connection) {
+function addConnection(stateId: StateId, user: UserData, socket: Connection) {
   socket.on("pong", () => {
     socket.isAlive = true;
   });
-  const client = stateId + userId;
+  const client = stateId + user.id;
   if (!connections.has(client)) {
     connections.set(client, new Set([socket]));
-    store.subscribeUser(stateId, userId);
+    store.subscribeUser(stateId, user);
   } else {
     connections.get(client)!.add(socket);
   }
 }
 
-function deleteConnection(stateId: StateId, userId: UserId, socket: Connection) {
-  const client = stateId + userId;
+function deleteConnection(stateId: StateId, user: UserData, socket: Connection) {
+  const client = stateId + user.id;
   connections.get(client)!.delete(socket);
   if (connections.get(client)!.size === 0) {
     connections.delete(client);
-    store.unsubscribeUser(stateId, userId);
+    store.unsubscribeUser(stateId, user);
   }
 }
 
-function onNewUserState(stateId: StateId, userId: UserId, userState: PlayerState) {
-  const client = stateId + userId;
+function onNewUserState(stateId: StateId, user: UserData, userState: PlayerState) {
+  const client = stateId + user.id;
   connections.get(client)!.forEach((socket) => {
     socket.send(Response.encode({ state: userState }).finish());
   });

@@ -1,5 +1,5 @@
 import {
-  UserId,
+  UserData,
   {{userState}},
   {{#each methods}}
   {{makeRequestName @key}},
@@ -9,12 +9,12 @@ import {
 export interface Methods<T> {
   {{#each methods}}
   {{#if (eq @key ../initialize)}}
-  {{../initialize}}(user: UserId, request: {{makeRequestName @key}}): T;
+  {{../initialize}}(user: UserData, request: {{makeRequestName @key}}): T;
   {{else}}
-  {{@key}}(state: T, user: UserId, request: {{makeRequestName @key}}): string | void;
+  {{@key}}(state: T, user: UserData, request: {{makeRequestName @key}}): string | void;
   {{/if}}
   {{/each}}
-  getUserState(state: T, user: UserId): {{userState}};
+  getUserState(state: T, user: UserData): {{userState}};
   {{#if tick}}
   onTick(state: T): void;
   {{/if}}

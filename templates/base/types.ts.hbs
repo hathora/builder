@@ -1,3 +1,9 @@
+export type AccountId = string;
+export interface UserData {
+  id: AccountId;
+  username: string;
+}
+
 {{#each types}}
 {{#with (getArgsInfo this)}}
 {{#if (eq type "enum")}}

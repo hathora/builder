@@ -2,7 +2,7 @@ import WebSocket from "isomorphic-ws";
 import axios from "axios";
 import { load } from "protobufjs";
 import {
-  UserId,
+  Username,
   {{userState}},
   {{#each methods}}
   {{makeRequestName @key}},
@@ -16,16 +16,16 @@ export class RtagClient {
 
   private constructor(private socket: WebSocket) {}
 
-  public static async loginAnonymous(): Promise<{ userId: UserId; token: string }> {
-    return (await axios.post("/login/anonymous")).data;
+  public static async loginAnonymous(): Promise<string> {
+    return (await axios.post("/login/anonymous")).data.token;
   }
 
-  public static async signupGoogle(userId: UserId, idToken: string): Promise<{ token: string }> {
-    return (await axios.post("/signup/google", { userId, idToken })).data;
+  public static async signupGoogle(username: Username, idToken: string): Promise<string> {
+    return (await axios.post("/signup/google", { username, idToken })).data.token;
   }
 
-  public static async loginGoogle(idToken: string): Promise<{ userId: UserId; token: string }> {
-    return (await axios.post("/login/google", { idToken })).data;
+  public static async loginGoogle(idToken: string): Promise<string> {
+    return (await axios.post("/login/google", { idToken })).data.token;
   }
 
   public static async createState(token: string, request: {{makeRequestName initialize}}): Promise<StateId> {

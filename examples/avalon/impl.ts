@@ -1,6 +1,7 @@
 import { Methods } from "./.rtag/methods";
 import {
-  UserId,
+  Username,
+  UserData,
   ICreateGameRequest,
   IJoinGameRequest,
   IStartGameRequest,
@@ -23,16 +24,16 @@ interface InternalQuestAttempt {
   attemptNumber: number;
   numPlayers: number;
   size: number;
-  leader: UserId;
-  members: UserId[];
-  votes: Map<UserId, Vote>;
-  results: Map<UserId, Vote>;
+  leader: Username;
+  members: Username[];
+  votes: Map<Username, Vote>;
+  results: Map<Username, Vote>;
 }
 
 interface InternalState {
-  creator: UserId;
-  players: UserId[];
-  roles?: Map<UserId, Role>;
+  creator: Username;
+  players: Username[];
+  roles?: Map<Username, Role>;
   quests: InternalQuestAttempt[];
 }
 
@@ -59,17 +60,17 @@ const QUEST_CONFIGURATIONS = new Map([
 ]);
 
 export class Impl implements Methods<InternalState> {
-  createGame(user: UserId, request: ICreateGameRequest): InternalState {
+  createGame({ username }: UserData, request: ICreateGameRequest): InternalState {
     return {
-      creator: user,
-      players: [user],
+      creator: username,
+      players: [username],
       quests: [],
     };
   }
-  joinGame(state: InternalState, user: UserId, request: IJoinGameRequest): string | void {
-    state.players.push(user);
+  joinGame(state: InternalState, { username }: UserData, request: IJoinGameRequest): string | void {
+    state.players.push(username);
   }
-  startGame(state: InternalState, user: UserId, request: IStartGameRequest): string | void {
+  startGame(state: InternalState, { username }: UserData, request: IStartGameRequest): string | void {
     if (request.playerOrder !== undefined && request.playerOrder.length > 0) {
       const order = request.playerOrder;
       state.players.sort((a, b) => order.findIndex((u) => u === a) - order.findIndex((u) => u === b));
@@ -80,13 +81,13 @@ export class Impl implements Methods<InternalState> {
     state.roles = new Map(shuffle(request.roleList).map((role, i) => [state.players[i], role]));
     state.quests.push(createQuest(1, 1, state.players.length, leader));
   }
-  proposeQuest(state: InternalState, user: UserId, request: IProposeQuestRequest): string | void {
+  proposeQuest(state: InternalState, { username }: UserData, request: IProposeQuestRequest): string | void {
     const quest = state.quests.find((q) => q.id === request.questId)!;
     quest.members = request.proposedMembers;
   }
-  voteForProposal(state: InternalState, user: UserId, request: IVoteForProposalRequest): string | void {
+  voteForProposal(state: InternalState, { username }: UserData, request: IVoteForProposalRequest): string | void {
     const quest = state.quests.find((q) => q.id === request.questId)!;
-    quest.votes.set(user, request.vote);
+    quest.votes.set(username, request.vote);
     if (questStatus(quest) === QuestStatus.PROPOSAL_REJECTED && quest.attemptNumber < 5) {
       state.quests.push(
         createQuest(
@@ -98,9 +99,9 @@ export class Impl implements Methods<InternalState> {
       );
     }
   }
-  voteInQuest(state: InternalState, user: UserId, request: IVoteInQuestRequest): string | void {
+  voteInQuest(state: InternalState, { username }: UserData, request: IVoteInQuestRequest): string | void {
     const quest = state.quests.find((q) => q.id === request.questId)!;
-    quest.results.set(user, request.vote);
+    quest.results.set(username, request.vote);
     if (
       quest.results.size === quest.size &&
       numQuestsForStatus(state.quests, QuestStatus.FAILED) < 3 &&
@@ -111,8 +112,8 @@ export class Impl implements Methods<InternalState> {
       );
     }
   }
-  getUserState(state: InternalState, user: UserId): PlayerState {
-    const role = state.roles?.get(user);
+  getUserState(state: InternalState, { username }: UserData): PlayerState {
+    const role = state.roles?.get(username);
     const roleCounts = histogram([...(state.roles?.values() || [])]);
     return {
       status: gameStatus(state.quests),
@@ -129,7 +130,7 @@ export class Impl implements Methods<InternalState> {
         .filter(([_, r]) => (ROLE_KNOWLEDGE.get(role!) || []).includes(r))
         .map(([p, _]) => p),
       playersPerQuest: QUEST_CONFIGURATIONS.get(state.players.length) || [],
-      quests: state.quests.map((q) => sanitizeQuest(q, user)),
+      quests: state.quests.map((q) => sanitizeQuest(q, username)),
     };
   }
 }
@@ -138,7 +139,7 @@ function createQuest(
   roundNumber: number,
   attemptNumber: number,
   numPlayers: number,
-  leader: UserId
+  leader: Username
 ): InternalQuestAttempt {
   return {
     id: Math.random().toString(36).substring(2),
@@ -153,12 +154,12 @@ function createQuest(
   };
 }
 
-function getNextLeader(leader: UserId, players: UserId[]) {
+function getNextLeader(leader: Username, players: Username[]) {
   const idx = players.findIndex((p) => p === leader);
   return players[(idx + 1) % players.length];
 }
 
-function sanitizeQuest(quest: InternalQuestAttempt, user: UserId): QuestAttempt {
+function sanitizeQuest(quest: InternalQuestAttempt, username: Username): QuestAttempt {
   return {
     id: quest.id,
     status: questStatus(quest),
@@ -168,11 +169,11 @@ function sanitizeQuest(quest: InternalQuestAttempt, user: UserId): QuestAttempt 
     members: quest.members,
     proposalVotes: [...quest.votes.entries()].map(([player, vote]) => ({
       player,
-      vote: player === user || quest.votes.size === quest.numPlayers ? vote : undefined,
+      vote: player === username || quest.votes.size === quest.numPlayers ? vote : undefined,
     })),
     results: [...quest.results.entries()].map(([player, vote]) => ({
       player,
-      vote: player === user || quest.results.size === quest.size ? vote : undefined,
+      vote: player === username || quest.results.size === quest.size ? vote : undefined,
     })),
     numFailures: numFails(quest.results),
   };
@@ -208,7 +209,7 @@ function numQuestsForStatus(quests: InternalQuestAttempt[], status: QuestStatus)
   return quests.filter((q) => questStatus(q) === status).length;
 }
 
-function numFails(votes: Map<UserId, Vote>) {
+function numFails(votes: Map<Username, Vote>) {
   return [...votes.values()].filter((vote) => vote === Vote.FAIL).length;
 }
 

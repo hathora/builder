@@ -1,28 +1,24 @@
 import jwt from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
 import { Express } from "express";
-import { UserId } from "./types";
+import { UserData } from "./types";
 
 const JWT_SECRET = "secret";
 const GOOGLE_CLIENT_ID = "{{googleClientId}}";
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
-interface UserData {
-  id: UserId;
-  googleId: string;
-}
 const db: UserData[] = [];
 
 export class Auth {
   setUpRoutes(app: Express) {
     app.post("/login/anonymous", (_, res) => {
-      const userId = Math.random().toString(36).substring(2);
-      const token = jwt.sign(userId, JWT_SECRET);
-      res.json({ userId, token });
+      const username = Math.random().toString(36).substring(2);
+      const token = jwt.sign({ id: username, username }, JWT_SECRET);
+      res.json({ token });
     });
     app.post("/signup/google", async (req, res) => {
-      const { userId, idToken }: { userId: UserId; idToken: string } = req.body;
-      if (db.find((entry) => entry.id === userId) !== undefined) {
+      const { username, idToken }: { username: string; idToken: string } = req.body;
+      if (db.find((entry) => entry.username === username) !== undefined) {
         res.status(400).send("User id is taken");
         return;
       }
@@ -31,12 +27,12 @@ export class Auth {
         res.status(401).send("Invalid google access token");
         return;
       }
-      const userEntry = db.find((entry) => entry.googleId === googleId);
-      if (userEntry) {
+      const userEntry = db.find((entry) => entry.id === googleId);
+      if (userEntry !== undefined) {
         res.status(400).send("Account already registered");
       } else {
-        db.push({ id: userId, googleId });
-        const token = jwt.sign(userId, JWT_SECRET);
+        db.push({ id: googleId, username });
+        const token = jwt.sign({ id: googleId, username }, JWT_SECRET);
         res.json({ token });
       }
     });
@@ -47,16 +43,16 @@ export class Auth {
         res.status(401).send("Invalid google access token");
         return;
       }
-      const userEntry = db.find((entry) => entry.googleId === googleId);
-      if (userEntry) {
-        const token = jwt.sign(userEntry.id, JWT_SECRET);
-        res.json({ userId: userEntry.id, token });
+      const userEntry = db.find((entry) => entry.id === googleId);
+      if (userEntry !== undefined) {
+        const token = jwt.sign({ userEntry }, JWT_SECRET);
+        res.json({ token });
       } else {
-        res.json({ userId: undefined, token: undefined });
+        res.json({ token: undefined });
       }
     });
   }
-  getUserIdFromToken(token: string): UserId {
-    return jwt.verify(token, JWT_SECRET) as UserId;
+  getUserFromToken(token: string): UserData {
+    return jwt.verify(token, JWT_SECRET) as UserData;
   }
 }
