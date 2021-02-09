@@ -1,8 +1,10 @@
 import WebSocket from "isomorphic-ws";
 import axios from "axios";
+import jwtDecode from "jwt-decode";
 import { load } from "protobufjs";
 import {
   Username,
+  UserData,
   {{userState}},
   {{#each methods}}
   {{makeRequestName @key}},
@@ -15,6 +17,10 @@ export class RtagClient {
   private callbacks: Record<string, (error?: string) => void> = {};
 
   private constructor(private socket: WebSocket) {}
+
+  public static getUserFromToken(token: string): UserData {
+    return jwtDecode(token);
+  }
 
   public static async loginAnonymous(): Promise<string> {
     return (await axios.post("/login/anonymous")).data.token;
