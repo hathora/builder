@@ -45,7 +45,7 @@ export function authMiddleware() {
     }
     const userEntry = db.find((entry) => entry.id === googleId);
     if (userEntry !== undefined) {
-      const token = jwt.sign({ userEntry }, JWT_SECRET);
+      const token = jwt.sign({ ...userEntry }, JWT_SECRET);
       res.json({ token });
     } else {
       res.json({ token: undefined });
