@@ -1,14 +1,14 @@
 import { Methods } from "./.rtag/methods";
 import {
-  Username,
   UserData,
+  PlayerState,
   ICreateGameRequest,
   IJoinGameRequest,
   IStartGameRequest,
   IProposeQuestRequest,
   IVoteForProposalRequest,
   IVoteInQuestRequest,
-  PlayerState,
+  Username,
   Role,
   QuestId,
   Vote,
