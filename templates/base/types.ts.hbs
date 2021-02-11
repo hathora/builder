@@ -1,8 +1,3 @@
-export interface UserData {
-  id: string;
-  username: string;
-}
-
 {{#each types}}
 {{#with (getArgsInfo this)}}
 {{#if (eq type "enum")}}
@@ -33,6 +28,22 @@ export interface {{makeRequestName @key}} {
 {{/if}}
 }
 {{/each}}
+{{#each auth}}
+export interface {{capitalize @key}}UserData {
+  type: "{{@key}}";
+  id: string;
+{{#if (eq @key "anonymous")}}
+  username: string;
+{{else if (eq @key "google")}}
+  username: string;
+  email: string;
+  name: string;
+  locale: string;
+  picture: string;
+{{/if}}
+}
+{{/each}}
+export type UserData = {{#each auth}}{{capitalize @key}}UserData{{#unless @last}} | {{/unless}}{{/each}};
 {{#*inline "renderArg"}}
 {{#if alias}}
 {{typeString}}

@@ -59,6 +59,7 @@ registerHelper("stringify", JSON.stringify);
 registerHelper("isArray", Array.isArray);
 registerHelper("isObject", (x) => typeof x === "object");
 registerHelper("add", (x, y) => x + y);
+registerHelper("capitalize", (x) => x.charAt(0).toUpperCase() + x.slice(1));
 registerHelper("snakeCase", (x) =>
   x.replace(/\.?([A-Z]+)/g, (_: string, s: string) => "_" + s.toLowerCase()).replace(/^_/, "")
 );

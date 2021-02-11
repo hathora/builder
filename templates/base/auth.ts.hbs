@@ -14,7 +14,7 @@ export function authMiddleware() {
   {{#if (eq @key "anonymous")}}
   router.post("/login/anonymous", (_, res) => {
     const username = Math.random().toString(36).substring(2);
-    const token = jwt.sign({ id: username, username }, JWT_SECRET);
+    const token = jwt.sign({ type: "anonymous", id: username, username }, JWT_SECRET);
     res.json({ token });
   });
   {{else if (eq @key "google")}}
@@ -26,17 +26,26 @@ export function authMiddleware() {
       res.status(400).send("User id is taken");
       return;
     }
-    const googleId = (await googleClient.verifyIdToken({ idToken, audience: GOOGLE_CLIENT_ID })).getPayload()?.sub;
-    if (googleId === undefined) {
+    const payload = (await googleClient.verifyIdToken({ idToken, audience: GOOGLE_CLIENT_ID })).getPayload();
+    if (payload === undefined) {
       res.status(401).send("Invalid google access token");
       return;
     }
-    const userEntry = db.find((entry) => entry.id === googleId);
+    const userEntry = db.find((entry) => entry.id === payload.sub);
     if (userEntry !== undefined) {
       res.status(400).send("Account already registered");
     } else {
-      db.push({ id: googleId, username });
-      const token = jwt.sign({ id: googleId, username }, JWT_SECRET);
+      const entry = {
+        type: "google",
+        id: payload.sub,
+        username,
+        email: payload.email!,
+        name: payload.name!,
+        locale: payload.locale!,
+        picture: payload.picture!,
+      };
+      db.push(entry as UserData);
+      const token = jwt.sign(entry, JWT_SECRET);
       res.json({ token });
     }
   });
@@ -49,7 +58,7 @@ export function authMiddleware() {
     }
     const userEntry = db.find((entry) => entry.id === googleId);
     if (userEntry !== undefined) {
-      const token = jwt.sign({ ...userEntry }, JWT_SECRET);
+      const token = jwt.sign(userEntry, JWT_SECRET);
       res.json({ token });
     } else {
       res.json({ token: undefined });
