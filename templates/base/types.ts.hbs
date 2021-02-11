@@ -9,7 +9,7 @@ export enum {{@key}} {
 {{else if (eq type "object")}}
 export interface {{@key}} {
   {{#each properties}}
-  {{@key}}: {{> renderArg}}
+  {{@key}}: {{> renderArg}};
   {{/each}}
 }
 {{else}}

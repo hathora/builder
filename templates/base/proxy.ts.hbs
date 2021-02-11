@@ -86,7 +86,9 @@ function handleConnection(stateId: StateId, user: UserData, socket: Connection) 
   socket.on("close", () => {
     deleteConnection(stateId, user, socket);
   });
-
+  socket.on("pong", () => {
+    socket.isAlive = true;
+  });
   socket.on("message", (data) => {
     const { method, args, msgId }: UpdateRequest = JSON.parse(data as string);
     const maybeError = store.handleUpdate(stateId, user, method, args);
@@ -95,9 +97,6 @@ function handleConnection(stateId: StateId, user: UserData, socket: Connection) 
 }
 
 function addConnection(stateId: StateId, user: UserData, socket: Connection) {
-  socket.on("pong", () => {
-    socket.isAlive = true;
-  });
   const client = stateId + user.id;
   if (!connections.has(client)) {
     connections.set(client, new Set([socket]));
