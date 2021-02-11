@@ -1,21 +1,25 @@
 import jwt from "jsonwebtoken";
+{{#if auth.google}}
 import { OAuth2Client } from "google-auth-library";
+{{/if}}
 import express from "express";
 import { UserData } from "./types";
 
 const JWT_SECRET = "secret";
-const GOOGLE_CLIENT_ID = "{{googleClientId}}";
-const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
-
 const db: UserData[] = [];
 
 export function authMiddleware() {
   const router = express.Router();
+  {{#each auth}}
+  {{#if (eq @key "anonymous")}}
   router.post("/login/anonymous", (_, res) => {
     const username = Math.random().toString(36).substring(2);
     const token = jwt.sign({ id: username, username }, JWT_SECRET);
     res.json({ token });
   });
+  {{else if (eq @key "google")}}
+  const GOOGLE_CLIENT_ID = "{{clientId}}";
+  const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
   router.post("/signup/google", async (req, res) => {
     const { username, idToken }: { username: string; idToken: string } = req.body;
     if (db.find((entry) => entry.username === username) !== undefined) {
@@ -51,6 +55,8 @@ export function authMiddleware() {
       res.json({ token: undefined });
     }
   });
+  {{/if}}
+  {{/each~}}
   return router;
 }
 
