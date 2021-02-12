@@ -29,10 +29,6 @@ export class RtagClient {
   }
 
   {{else if (eq @key "google")}}
-  public static async signupGoogle(username: Username, idToken: string): Promise<string> {
-    return (await axios.post("/signup/google", { username, idToken })).data.token;
-  }
-
   public static async loginGoogle(idToken: string): Promise<string> {
     return (await axios.post("/login/google", { idToken })).data.token;
   }

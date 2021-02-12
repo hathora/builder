@@ -33,11 +33,10 @@ export interface {{capitalize @key}}UserData {
   type: "{{@key}}";
   id: string;
 {{#if (eq @key "anonymous")}}
-  username: string;
-{{else if (eq @key "google")}}
-  username: string;
-  email: string;
   name: string;
+{{else if (eq @key "google")}}
+  name: string;
+  email: string;
   locale: string;
   picture: string;
 {{/if}}

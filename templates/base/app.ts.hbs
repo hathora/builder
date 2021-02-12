@@ -267,12 +267,7 @@ const Login = Vue.component("login", {
   {{else if (eq @key "google")}}
     async handleLoginGoogle() {
       const googleUser = await (this as any).$gAuth.signIn();
-      const idToken = googleUser.getAuthResponse().id_token;
-      let token = await RtagClient.loginGoogle(idToken);
-      if (token === undefined) {
-        const username = prompt("Enter userId")!;
-        token = await RtagClient.signupGoogle(username, idToken);
-      }
+      let token = await RtagClient.loginGoogle(googleUser.getAuthResponse().id_token);
       sessionStorage.setItem("user", token);
       const url = this.$route.query.url;
       this.$router.push((Array.isArray(url) ? url[0] : url) || "/");
