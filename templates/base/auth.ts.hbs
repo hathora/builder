@@ -16,7 +16,7 @@ export function authMiddleware() {
 {{#if (eq @key "anonymous")}}
   router.post("/login/anonymous", (_, res) => {
     const id = Math.random().toString(36).substring(2);
-    const name = uniqueNamesGenerator({ dictionaries: [adjectives, colors, animals] });
+    const name = uniqueNamesGenerator({ dictionaries: [adjectives, colors, animals], separator: "{{separator}}" });
     const user: UserData = { type: "anonymous", id, name };
     res.json({ token: jwt.sign(user, JWT_SECRET) });
   });
