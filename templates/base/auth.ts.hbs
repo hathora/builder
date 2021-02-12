@@ -1,8 +1,11 @@
 import jwt from "jsonwebtoken";
+import express from "express";
+{{#if auth.anonymous}}
+import { uniqueNamesGenerator, adjectives, colors, animals } from "unique-names-generator";
+{{/if}}
 {{#if auth.google}}
 import { OAuth2Client } from "google-auth-library";
 {{/if}}
-import express from "express";
 import { UserData } from "./types";
 
 const JWT_SECRET = "secret";
@@ -12,8 +15,9 @@ export function authMiddleware() {
 {{#each auth}}
 {{#if (eq @key "anonymous")}}
   router.post("/login/anonymous", (_, res) => {
-    const username = Math.random().toString(36).substring(2);
-    const user: UserData = { type: "anonymous", id: username, name: username };
+    const id = Math.random().toString(36).substring(2);
+    const name = uniqueNamesGenerator({ dictionaries: [adjectives, colors, animals] });
+    const user: UserData = { type: "anonymous", id, name };
     res.json({ token: jwt.sign(user, JWT_SECRET) });
   });
 {{else if (eq @key "google")}}

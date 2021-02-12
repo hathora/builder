@@ -12,6 +12,9 @@
     "jwt-decode": "3.1.2",
     "on-change": "2.1.4",
     "protobufjs": "6.10.2",
+    {{#if auth.anonymous}}
+    "unique-names-generator": "4.3.1",
+    {{/if}}
     "vue": "2.6.12",
     {{#if auth.google}}
     "vue-google-oauth2": "1.5.6",
