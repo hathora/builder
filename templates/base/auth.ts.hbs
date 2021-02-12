@@ -9,14 +9,14 @@ const JWT_SECRET = "secret";
 
 export function authMiddleware() {
   const router = express.Router();
-  {{#each auth}}
-  {{#if (eq @key "anonymous")}}
+{{#each auth}}
+{{#if (eq @key "anonymous")}}
   router.post("/login/anonymous", (_, res) => {
     const username = Math.random().toString(36).substring(2);
     const user: UserData = { type: "anonymous", id: username, name: username };
     res.json({ token: jwt.sign(user, JWT_SECRET) });
   });
-  {{else if (eq @key "google")}}
+{{else if (eq @key "google")}}
   const GOOGLE_CLIENT_ID = "{{clientId}}";
   const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
   router.post("/login/google", async (req, res) => {
@@ -36,8 +36,8 @@ export function authMiddleware() {
     };
     res.json({ token: jwt.sign(user, JWT_SECRET) });
   });
-  {{/if}}
-  {{/each~}}
+{{/if}}
+{{/each}}
   return router;
 }
 
