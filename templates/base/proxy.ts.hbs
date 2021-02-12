@@ -1,14 +1,14 @@
 import WebSocket from "ws";
 import { Socket } from "net";
 import express from "express";
-import jwt from "jsonwebtoken";
 import pb from "protobufjs";
 import { createServer } from "vite";
 import * as http from "http";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 import Store from "./store";
-import { {{userData}}, PlayerState } from "./types";
+import { authMiddleware, getUserFromToken } from "./auth";
+import { UserData, PlayerState } from "./types";
 
 type StateId = string;
 type Connection = WebSocket & { isAlive: boolean };
@@ -31,22 +31,18 @@ const vite = await createServer({
 const root = await pb.load(join(__dirname, "types.proto"));
 const Response = root.lookupType("Response");
 
-const connections: Map<StateId, Set<Connection>> = new Map();
+const connections: Map<string, Set<Connection>> = new Map();
 const store = new Store(onNewUserState);
 
 app.use(express.json());
-app.post("/register", (req, res) => {
-  const userData = req.body;
-  const token = jwt.sign(userData, "secret", { noTimestamp: true });
-  res.json({ token });
-});
 app.post("/new", (req, res) => {
   const token = req.headers.authorization!.split(" ")[1];
-  const userData = jwt.verify(token, "secret") as {{userData}};
+  const user = getUserFromToken(token);
   const stateId = Math.random().toString(36).substring(2);
-  store.newState(stateId, userData, req.body);
+  store.newState(stateId, user, req.body);
   res.json({ stateId });
 });
+app.use(authMiddleware());
 app.use(vite.middlewares);
 app.get("/*", (_, res) => {
   res.sendFile(join(__dirname, "{{appEntryPath}}"));
@@ -61,9 +57,9 @@ server.on("upgrade", (req: http.IncomingMessage, socket: Socket, head: Buffer) =
   }
   wss.handleUpgrade(req, socket, head, (ws) => {
     ws.once("message", (token) => {
-      const userData = jwt.verify(token, "secret") as {{userData}};
-      ws.send(Response.encode({ state: store.getUserState(stateId, userData)! }).finish());
-      handleConnection(stateId, userData, Object.assign(ws, { isAlive: true }));
+      const user = getUserFromToken(token);
+      ws.send(Response.encode({ state: store.getUserState(stateId, user)! }).finish());
+      handleConnection(stateId, user, Object.assign(ws, { isAlive: true }));
     });
   });
 });
@@ -85,42 +81,42 @@ setInterval(() => {
   });
 }, 30000);
 
-function handleConnection(stateId: StateId, userData: {{userData}}, socket: Connection) {
-  addConnection(stateId, userData, socket);
+function handleConnection(stateId: StateId, user: UserData, socket: Connection) {
+  addConnection(stateId, user, socket);
   socket.on("close", () => {
-    deleteConnection(stateId, userData, socket);
+    deleteConnection(stateId, user, socket);
   });
   socket.on("pong", () => {
     socket.isAlive = true;
   });
   socket.on("message", (data) => {
     const { method, args, msgId }: UpdateRequest = JSON.parse(data as string);
-    const maybeError = store.handleUpdate(stateId, userData, method, args);
+    const maybeError = store.handleUpdate(stateId, user, method, args);
     socket.send(Response.encode({ res: { msgId, error: maybeError } }).finish());
   });
 }
 
-function addConnection(stateId: StateId, userData: {{userData}}, socket: Connection) {
-  const client = JSON.stringify({ stateId, userData });
+function addConnection(stateId: StateId, user: UserData, socket: Connection) {
+  const client = stateId + user.id;
   if (!connections.has(client)) {
     connections.set(client, new Set([socket]));
-    store.subscribeUser(stateId, userData);
+    store.subscribeUser(stateId, user);
   } else {
     connections.get(client)!.add(socket);
   }
 }
 
-function deleteConnection(stateId: StateId, userData: {{userData}}, socket: Connection) {
-  const client = JSON.stringify({ stateId, userData });
+function deleteConnection(stateId: StateId, user: UserData, socket: Connection) {
+  const client = stateId + user.id;
   connections.get(client)!.delete(socket);
   if (connections.get(client)!.size === 0) {
     connections.delete(client);
-    store.unsubscribeUser(stateId, userData);
+    store.unsubscribeUser(stateId, user);
   }
 }
 
-function onNewUserState(stateId: StateId, userData: {{userData}}, userState: PlayerState) {
-  const client = JSON.stringify({ stateId, userData });
+function onNewUserState(stateId: StateId, user: UserData, userState: PlayerState) {
+  const client = stateId + user.id;
   connections.get(client)!.forEach((socket) => {
     socket.send(Response.encode({ state: userState }).finish());
   });

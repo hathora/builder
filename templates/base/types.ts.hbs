@@ -28,6 +28,21 @@ export interface {{makeRequestName @key}} {
 {{/if}}
 }
 {{/each}}
+{{#each auth}}
+export interface {{capitalize @key}}UserData {
+  type: "{{@key}}";
+  id: string;
+{{#if (eq @key "anonymous")}}
+  name: string;
+{{else if (eq @key "google")}}
+  name: string;
+  email: string;
+  locale: string;
+  picture: string;
+{{/if}}
+}
+{{/each}}
+export type UserData = {{#each auth}}{{capitalize @key}}UserData{{#unless @last}} | {{/unless}}{{/each}};
 {{#*inline "renderArg"}}
 {{#if alias}}
 {{typeString}}

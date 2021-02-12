@@ -1,8 +1,10 @@
 import WebSocket from "isomorphic-ws";
 import axios from "axios";
+import jwtDecode from "jwt-decode";
 import { load } from "protobufjs";
 import {
-  PlayerName,
+  Username,
+  UserData,
   {{userState}},
   {{#each methods}}
   {{makeRequestName @key}},
@@ -16,10 +18,23 @@ export class RtagClient {
 
   private constructor(private socket: WebSocket) {}
 
-  public static async registerUser(username: PlayerName): Promise<string> {
-    const res = await axios.post("/register", { playerName: username });
-    return res.data.token;
+  public static getUserFromToken(token: string): UserData {
+    return jwtDecode(token);
   }
+
+  {{#each auth}}
+  {{#if (eq @key "anonymous")}}
+  public static async loginAnonymous(): Promise<string> {
+    return (await axios.post("/login/anonymous")).data.token;
+  }
+
+  {{else if (eq @key "google")}}
+  public static async loginGoogle(idToken: string): Promise<string> {
+    return (await axios.post("/login/google", { idToken })).data.token;
+  }
+
+  {{/if}}
+  {{/each~}}
 
   public static async createState(token: string, request: {{makeRequestName initialize}}): Promise<StateId> {
     const res = await axios.post("/new", request, { headers: { Authorization: "Bearer " + token } });

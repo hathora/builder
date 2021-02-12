@@ -1,6 +1,6 @@
 import { Methods } from "./.rtag/methods";
 import {
-  {{userData}},
+  UserData,
   {{userState}},
   {{#each methods}}
   {{makeRequestName @key}},
@@ -10,17 +10,17 @@ import {
 interface InternalState {}
 
 export class Impl implements Methods<InternalState> {
-  {{initialize}}(userData: {{userData}}, request: {{makeRequestName initialize}}): InternalState {
+  {{initialize}}(user: UserData, request: {{makeRequestName initialize}}): InternalState {
     return {};
   }
   {{#each methods}}
   {{#if (ne @key ../initialize)}}
-  {{@key}}(state: InternalState, userData: {{../userData}}, request: {{makeRequestName @key}}): string | void {
+  {{@key}}(state: InternalState, user: UserData, request: {{makeRequestName @key}}): string | void {
     throw new Error("Method not implemented.");
   }
   {{/if}}
   {{/each}}
-  getUserState(state: InternalState, userData: {{userData}}): {{userState}} {
+  getUserState(state: InternalState, user: UserData): {{userState}} {
     return {
       {{#with (getArgsInfo (lookup types userState))}}
       {{#each properties}}
