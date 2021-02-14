@@ -20,18 +20,10 @@ Vue.component("v-select", vSelect);
 
 {{#each plugins}}
 window.customElements.define("{{makePluginName this}}", {{this}});
+{{#if @last}}
+
+{{/if}}
 {{/each}}
-
-function patch(obj: any, val: any) {
-  Object.entries(val).forEach(([k, v]) => {
-    if (v !== null && typeof v === "object" && !Array.isArray(v) && k in obj) {
-      patch(obj[k], v);
-    } else {
-      Vue.set(obj, k, v);
-    }
-  });
-}
-
 Vue.component("method-form", {
   props: { method: String },
   data: () => ({ value: {}, showErrors: false }),
@@ -44,7 +36,7 @@ Vue.component("method-form", {
     </div>`,
   created() {
     this.$on("update", (arg: string, value: any) => {
-      patch(this.value, value);
+      this.value = value;
     });
   },
   methods: {
