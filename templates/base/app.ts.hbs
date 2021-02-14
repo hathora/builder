@@ -22,13 +22,14 @@ Vue.component("v-select", vSelect);
 window.customElements.define("{{makePluginName this}}", {{this}});
 {{/each}}
 
-function patch(obj: any, val: any, topLevel: boolean = true) {
-  const [k, v] = Object.entries(val)[0];
-  if (v !== null && typeof v === "object" && !Array.isArray(v) && k in obj) {
-    patch(obj[k], v, false);
-  } else {
-    Vue.set(obj, k, v);
-  }
+function patch(obj: any, val: any) {
+  Object.entries(val).forEach(([k, v]) => {
+    if (v !== null && typeof v === "object" && !Array.isArray(v) && k in obj) {
+      patch(obj[k], v);
+    } else {
+      Vue.set(obj, k, v);
+    }
+  });
 }
 
 Vue.component("method-form", {
@@ -68,10 +69,10 @@ Vue.component("method-form", {
 
 Vue.component("object-input", {
   props: { arg: String, required: Boolean, value: { type: Object, default: () => ({}) } },
-  template: `<div><slot :value="value"></slot></div>`,
+  template: `<div><slot :value="value ?? {}"></slot></div>`,
   created() {
     this.$on("update", (arg: number, value: any) => {
-      this.$parent.$emit("update", this.arg, { [arg]: value });
+      this.$parent.$emit("update", this.arg, Object.assign({}, this.value, { [arg]: value }));
     });
   },
   methods: {
