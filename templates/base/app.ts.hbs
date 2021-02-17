@@ -61,7 +61,25 @@ Vue.component("method-form", {
 
 Vue.component("object-input", {
   props: { arg: String, required: Boolean, value: { type: Object, default: () => ({}) } },
-  template: `<div><slot :value="value ?? {}"></slot></div>`,
+  data: () => ({ isOpen: false }),
+  template: `<div class="object-input">
+      <div v-if="this.required">
+        <slot :value="value ?? {}"></slot>
+      </div>
+      <div v-else>
+        <div v-if="this.isOpen">
+          <slot :value="value ?? {}"></slot>
+          <button class="button" type="button" @click="isOpen = false">
+            <span class="button-text">Remove</span>
+          </button>
+        </div>
+        <div v-else>
+          <button class="button" type="button" @click="isOpen = true">
+            <span class="button-text">Add</span>
+          </button>
+        </div>
+      </div>
+    </div>`,
   created() {
     this.$on("update", (arg: number, value: any) => {
       this.$parent.$emit("update", this.arg, Object.assign({}, this.value, { [arg]: value }));
@@ -77,13 +95,15 @@ Vue.component("object-input", {
 Vue.component("array-input", {
   props: { arg: String, required: Boolean, showErrors: Boolean, value: { type: Array, default: () => [] } },
   template: `<div>
-      <div class="form-group array-item" v-for="(v, i) in value">
-        <div class="stretch-form-input">
-          <slot :arg="i.toString()" :value="v"></slot>
+      <div>
+        <div class="form-group array-item" v-for="(v, i) in value">
+          <div class="stretch-form-input">
+            <slot :arg="i.toString()" :value="v"></slot>
+          </div>
+          <button class="button" type="button" @click="$parent.$emit('update', arg, i === 0 ? value : [...value.slice(0, i-1), value[i], value[i-1], ...value.slice(i+1, value.length)])">&#8593;</button>
+          <button class="button" type="button" @click="$parent.$emit('update', arg, i === (value.length-1) ? value : [...value.slice(0, i), value[i+1], value[i], ...value.slice(i+2, value.length)])">&#8595;</button>
+          <button class="button danger" type="button" @click="$parent.$emit('update', arg, value.slice(0, i).concat(value.slice(i+1, value.length)))">x</button>
         </div>
-        <button class="button" type="button" @click="$parent.$emit('update', arg, i === 0 ? value : [...value.slice(0, i-1), value[i], value[i-1], ...value.slice(i+1, value.length)])">&#8593;</button>
-        <button class="button" type="button" @click="$parent.$emit('update', arg, i === (value.length-1) ? value : [...value.slice(0, i), value[i+1], value[i], ...value.slice(i+2, value.length)])">&#8595;</button>
-        <button class="button danger" type="button" @click="$parent.$emit('update', arg, value.slice(0, i).concat(value.slice(i+1, value.length)))">x</button>
       </div>
       <button class="button" type="button" @click="$parent.$emit('update', arg, value.concat(null))" :class="{ missing: showErrors && required && value.length === 0 }">
         <span class="button-text">Add</span>

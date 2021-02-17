@@ -134,7 +134,16 @@ h1 {
 
 .label {
   display: block;
+  margin-top: 10px;
+  margin-bottom: 5px;
+}
+
+.object-input {
   margin-bottom: 15px;
+}
+
+.object-input > div {
+  margin-left: 5px;
 }
 
 .object-display > div,
@@ -168,6 +177,6 @@ h1 {
   border: 1px solid red;
 }
 
-.array-item {
+.array-item:not(:last-child) {
   margin-bottom: 10px;
 }
