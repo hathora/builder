@@ -165,8 +165,8 @@ Vue.component("object-display", {
 });
 
 Vue.component("array-display", {
-  data: () => ({ isOpen: true }),
   props: { value: Array },
+  data: () => ({ isOpen: true }),
   template: `<span v-if="value !== undefined && value.length > 0">
       <button class="button small" type="button" v-on:click="isOpen=!isOpen">
         <span class="button-text" v-if="isOpen">-</span>
