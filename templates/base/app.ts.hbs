@@ -129,7 +129,7 @@ Vue.component("enum-input", {
     value: { type: Number, default: null },
     enum: String,
   },
-  template: `<div  class="vue-select" :class="{ missing: showErrors && !validate() }">
+  template: `<div class="vue-select" :class="{ missing: showErrors && !validate() }">
       <v-select :value="value" :options="options" :reduce="x => x.value" @input="update"></v-select>
     </div>`,
   methods: {
