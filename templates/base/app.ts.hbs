@@ -102,9 +102,9 @@ Vue.component("array-input", {
           <div class="stretch-form-input">
             <slot :arg="i.toString()" :value="v"></slot>
           </div>
-          <button class="button" type="button" @click="$parent.$emit('update', arg, i === 0 ? value : [...value.slice(0, i-1), value[i], value[i-1], ...value.slice(i+1, value.length)])">&#8593;</button>
-          <button class="button" type="button" @click="$parent.$emit('update', arg, i === (value.length-1) ? value : [...value.slice(0, i), value[i+1], value[i], ...value.slice(i+2, value.length)])">&#8595;</button>
-          <button class="button danger" type="button" @click="$parent.$emit('update', arg, value.slice(0, i).concat(value.slice(i+1, value.length)))">x</button>
+          <button class="button" type="button" @click="moveItemUp(value, i)">&#8593;</button>
+          <button class="button" type="button" @click="moveItemDown(value, i)">&#8595;</button>
+          <button class="button danger" type="button" @click="deleteItem(value, i)">x</button>
         </div>
       </div>
       <button class="button" type="button" @click="$parent.$emit('update', arg, value.concat(null))" :class="{ missing: showErrors && required && value.length === 0 }">
@@ -119,6 +119,19 @@ Vue.component("array-input", {
   methods: {
     validate() {
       return this.$children.every((child: any) => child.validate()) && (!this.required || this.value.length > 0);
+    },
+    moveItemUp(val: unknown[], i: number) {
+      if (i > 0) {
+        this.$parent.$emit("update", this.arg, [...val.slice(0, i - 1), val[i], val[i - 1], ...val.slice(i + 1)]);
+      }
+    },
+    moveItemDown(val: unknown[], i: number) {
+      if (i < val.length - 1) {
+        this.$parent.$emit("update", this.arg, [...val.slice(0, i), val[i + 1], val[i], ...val.slice(i + 2)]);
+      }
+    },
+    deleteItem(val: unknown[], i: number) {
+      this.$parent.$emit("update", this.arg, val.slice(0, i).concat(val.slice(i + 1)));
     },
   },
 });
