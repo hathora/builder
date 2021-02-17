@@ -26,17 +26,19 @@ window.customElements.define("{{makePluginName this}}", {{this}});
 {{/each}}
 Vue.component("method-form", {
   props: { method: String },
-  data: () => ({ value: {}, showErrors: false }),
+  data() {
+    return { value: { [this.method]: {} }, showErrors: false };
+  },
   template: `<div class="form" :id="method">
       <h1 class="heading">\{{method}}</h1>
-      <slot :arg="method" :value="value" :showErrors="showErrors"></slot>
+      <slot :value="value" :showErrors="showErrors"></slot>
       <button type="button" class="button submit" @click="submit">
         <span class="button-text">Submit</span>
       </button>
     </div>`,
   created() {
     this.$on("update", (arg: string, value: any) => {
-      this.value = value;
+      this.value[arg] = value;
     });
   },
   methods: {
@@ -47,12 +49,12 @@ Vue.component("method-form", {
         return;
       }
       const client: RtagClient = this.$parent.$data.client;
-      client[this.method as keyof RtagClient](this.value as any, (error) => {
+      client[this.method as keyof RtagClient](this.value[this.method] as any, (error) => {
         if (error) {
           this.$toasted.error(error);
         } else {
           this.showErrors = false;
-          this.value = {};
+          this.value = { [this.method]: {} };
         }
       });
     },

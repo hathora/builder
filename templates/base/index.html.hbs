@@ -35,8 +35,8 @@
           {{#each methods}}
           {{#if (ne @key ../initialize)}}
           {{#if this}}
-          <method-form method="{{@key}}" v-slot="{ arg, value, showErrors }">
-            {{> renderForm (getArgsInfo this) required=true}}
+          <method-form method="{{@key}}" v-slot="{ value, showErrors }">
+            {{> renderForm (getArgsInfo this) arg=@key required=true}}
           </method-form>
           {{else}}
           <method-form method="{{@key}}"></method-form>
