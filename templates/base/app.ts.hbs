@@ -31,17 +31,15 @@ Vue.component("method-form", {
   },
   template: `<div class="form" :id="method">
       <h1 class="heading">\{{method}}</h1>
-      <slot :value="value" :showErrors="showErrors"></slot>
+      <slot :value="value" :update="update" :showErrors="showErrors"></slot>
       <button type="button" class="button submit" @click="submit">
         <span class="button-text">Submit</span>
       </button>
     </div>`,
-  created() {
-    this.$on("update", (arg: string, value: any) => {
-      this.value[arg] = value;
-    });
-  },
   methods: {
+    update(arg: string, value: any) {
+      this.value[arg] = value;
+    },
     submit() {
       if (!(this.$children[0] as any).validate()) {
         this.$toasted.error("Required fields missing");
@@ -66,11 +64,11 @@ Vue.component("object-input", {
   data: () => ({ isOpen: false }),
   template: `<div class="object-input">
       <div v-if="this.required">
-        <slot :value="value ?? {}"></slot>
+        <slot :value="value ?? {}" :update="update"></slot>
       </div>
       <div v-else>
         <div v-if="this.isOpen">
-          <slot :value="value ?? {}"></slot>
+          <slot :value="value ?? {}" :update="update"></slot>
           <button class="button" type="button" @click="isOpen = false">
             <span class="button-text">Remove</span>
           </button>
@@ -82,12 +80,10 @@ Vue.component("object-input", {
         </div>
       </div>
     </div>`,
-  created() {
-    this.$on("update", (arg: number, value: any) => {
-      this.$parent.$emit("update", this.arg, Object.assign({}, this.value, { [arg]: value }));
-    });
-  },
   methods: {
+    update(arg: number, value: any) {
+      this.$emit("update", this.arg, Object.assign({}, this.value, { [arg]: value }));
+    },
     validate() {
       return this.$children.every((child: any) => child.validate());
     },
@@ -100,7 +96,7 @@ Vue.component("array-input", {
       <div>
         <div class="form-group array-item" v-for="(v, i) in value">
           <div class="stretch-form-input">
-            <slot :arg="i.toString()" :value="v"></slot>
+            <slot :arg="i.toString()" :value="v" :update="update"></slot>
           </div>
           <button class="button" type="button" @click="moveItemUp(value, i)">&#8593;</button>
           <button class="button" type="button" @click="moveItemDown(value, i)">&#8595;</button>
@@ -111,30 +107,28 @@ Vue.component("array-input", {
         <span class="button-text">Add</span>
       </button>
     </div>`,
-  created() {
-    this.$on("update", (arg: string, value: any) => {
-      this.$parent.$emit("update", this.arg, Object.assign([], this.value, { [Number(arg)]: value }));
-    });
-  },
   methods: {
+    update(arg: string, value: any) {
+      this.$emit("update", this.arg, Object.assign([], this.value, { [Number(arg)]: value }));
+    },
     validate() {
       return this.$children.every((child: any) => child.validate()) && (!this.required || this.value.length > 0);
     },
     addItem(val: unknown[]) {
-      this.$parent.$emit("update", this.arg, val.concat(undefined));
+      this.$emit("update", this.arg, val.concat(undefined));
     },
     moveItemUp(val: unknown[], i: number) {
       if (i > 0) {
-        this.$parent.$emit("update", this.arg, [...val.slice(0, i - 1), val[i], val[i - 1], ...val.slice(i + 1)]);
+        this.$emit("update", this.arg, [...val.slice(0, i - 1), val[i], val[i - 1], ...val.slice(i + 1)]);
       }
     },
     moveItemDown(val: unknown[], i: number) {
       if (i < val.length - 1) {
-        this.$parent.$emit("update", this.arg, [...val.slice(0, i), val[i + 1], val[i], ...val.slice(i + 2)]);
+        this.$emit("update", this.arg, [...val.slice(0, i), val[i + 1], val[i], ...val.slice(i + 2)]);
       }
     },
     deleteItem(val: unknown[], i: number) {
-      this.$parent.$emit("update", this.arg, val.slice(0, i).concat(val.slice(i + 1)));
+      this.$emit("update", this.arg, val.slice(0, i).concat(val.slice(i + 1)));
     },
   },
 });
@@ -152,7 +146,7 @@ Vue.component("enum-input", {
     </div>`,
   methods: {
     update(value: string) {
-      this.$parent.$emit("update", this.arg, value === null ? undefined : Number(value));
+      this.$emit("update", this.arg, value === null ? undefined : Number(value));
     },
     validate() {
       return !this.required || this.value !== undefined;
@@ -174,7 +168,7 @@ Vue.component("string-input", {
     </div>`,
   methods: {
     update(value: string) {
-      this.$parent.$emit("update", this.arg, value === "" ? undefined : value);
+      this.$emit("update", this.arg, value === "" ? undefined : value);
     },
     validate() {
       return !this.required || this.value !== undefined;
@@ -189,7 +183,7 @@ Vue.component("number-input", {
     </div>`,
   methods: {
     update(value: string) {
-      this.$parent.$emit("update", this.arg, value === "" ? undefined : Number(value));
+      this.$emit("update", this.arg, value === "" ? undefined : Number(value));
     },
     validate() {
       return !this.required || this.value !== undefined;
@@ -204,7 +198,7 @@ Vue.component("boolean-input", {
     </div>`,
   methods: {
     update(value: string) {
-      this.$parent.$emit("update", this.arg, value === null ? undefined : value === "true");
+      this.$emit("update", this.arg, value === null ? undefined : value === "true");
     },
     validate() {
       return !this.required || this.value !== undefined;
