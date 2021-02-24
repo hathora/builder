@@ -58,11 +58,7 @@ registerHelper("ne", (a, b) => a !== b);
 registerHelper("stringify", JSON.stringify);
 registerHelper("isArray", Array.isArray);
 registerHelper("isObject", (x) => typeof x === "object");
-registerHelper("add", (x, y) => x + y);
 registerHelper("capitalize", (x) => x.charAt(0).toUpperCase() + x.slice(1));
-registerHelper("snakeCase", (x) =>
-  x.replace(/\.?([A-Z]+)/g, (_: string, s: string) => "_" + s.toLowerCase()).replace(/^_/, "")
-);
 registerHelper("makeRequestName", (x) => "I" + capitalize(x) + "Request");
 registerHelper("makePluginName", (x) => x.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase() + "-plugin");
 registerHelper("getArgsInfo", (args) => getArgsInfo(args, true, false));
