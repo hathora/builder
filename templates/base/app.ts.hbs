@@ -237,13 +237,13 @@ Vue.component("boolean-input", {
 
 Vue.component("object-display", {
   props: { value: Object },
-  template: `<div><slot v-if="value !== undefined" :value="value"></slot></div>`,
+  template: `<div><slot v-if="value !== null && value !== undefined" :value="value"></slot></div>`,
 });
 
 Vue.component("array-display", {
   props: { value: Array },
   data: () => ({ isOpen: true }),
-  template: `<span v-if="value !== undefined && value.length > 0">
+  template: `<span v-if="value !== null && value !== undefined && value.length > 0">
       <button class="button small" type="button" v-on:click="isOpen=!isOpen">
         <span class="button-text" v-if="isOpen">-</span>
         <span class="button-text" v-else>+</span>
@@ -257,7 +257,7 @@ Vue.component("array-display", {
 
 Vue.component("enum-display", {
   props: { value: Number, enum: String },
-  template: `<span v-if="value !== undefined">\{{options[value].label}}</span>`,
+  template: `<span v-if="value !== null && value !== undefined">\{{options[value].label}}</span>`,
   computed: {
     options() {
       return Object.entries(Types[this.enum as keyof typeof Types])
