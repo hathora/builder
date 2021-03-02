@@ -58,7 +58,7 @@ registerHelper("ne", (a, b) => a !== b);
 registerHelper("stringify", JSON.stringify);
 registerHelper("isArray", Array.isArray);
 registerHelper("isObject", (x) => typeof x === "object");
-registerHelper("capitalize", (x) => x.charAt(0).toUpperCase() + x.slice(1));
+registerHelper("capitalize", capitalize);
 registerHelper("makeRequestName", (x) => "I" + capitalize(x) + "Request");
 registerHelper("makePluginName", (x) => x.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase() + "-plugin");
 registerHelper("getArgsInfo", (args) => getArgsInfo(args, true, false));
