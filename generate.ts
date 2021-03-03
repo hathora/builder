@@ -124,23 +124,39 @@ function generate(file: string, outDir: string) {
 }
 
 const doc: any = load(readFileSync("types.yml", "utf8"));
-const plugins = existsSync("plugins") ? readdirSync("plugins", "utf8").map((p) => p.replace(/\..*$/, "")) : [];
-const appEntryPath = existsSync("index.html") ? "../index.html" : "index.html";
-const appName = path.basename(process.cwd());
+const plugins = existsSync("client/plugins")
+  ? readdirSync("client/plugins", "utf8").map((p) => p.replace(/\..*$/, ""))
+  : [];
+const appEntryPath = existsSync("client/index.html") ? "../../client/index.html" : "../../client/.rtag/index.html";
+const pwd = process.cwd();
+const appName = path.basename(pwd);
 
-if (readdirSync(process.cwd()).length === 1) {
-  readdirSync(path.join(__dirname, "templates/lang/ts"), "utf8").forEach((file) =>
-    generate(path.join(__dirname, "templates/lang/ts", file), ".")
+if (readdirSync(pwd).length === 1) {
+  readdirSync(path.join(__dirname, "templates/lang/ts/client"), "utf8").forEach((file) =>
+    generate(path.join(__dirname, "templates/lang/ts/client", file), "client")
+  );
+  readdirSync(path.join(__dirname, "templates/lang/ts/server"), "utf8").forEach((file) =>
+    generate(path.join(__dirname, "templates/lang/ts/server", file), "server")
   );
 }
-if (!existsSync(".rtag")) {
-  mkdirSync(".rtag");
+if (!existsSync("client/.rtag")) {
+  mkdirSync("client/.rtag");
 }
-readdirSync(path.join(__dirname, "templates/base"), "utf8").forEach((file) =>
-  generate(path.join(__dirname, "templates/base", file), ".rtag")
+if (!existsSync("server/.rtag")) {
+  mkdirSync("server/.rtag");
+}
+readdirSync(path.join(__dirname, "templates/base/client"), "utf8").forEach((file) =>
+  generate(path.join(__dirname, "templates/base/client", file), "client/.rtag")
+);
+readdirSync(path.join(__dirname, "templates/base/server"), "utf8").forEach((file) =>
+  generate(path.join(__dirname, "templates/base/server", file), "server/.rtag")
 );
 
-process.chdir(".rtag");
+process.chdir(path.join(pwd, "client/.rtag"));
+npm.load(() => {
+  npm.commands.install([], (err, res) => {});
+});
+process.chdir(path.join(pwd, "server/.rtag"));
 npm.load(() => {
   npm.commands.install([], (err, res) => {});
 });

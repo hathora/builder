@@ -1,4 +1,4 @@
-import { LitElement, html, css, property } from "lit-element";
+import { LitElement, html, property } from "lit-element";
 import { Role, RoleInfo } from "../.rtag/types";
 
 export default class RoleInfos extends LitElement {

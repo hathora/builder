@@ -1,0 +1,24 @@
+{
+  "type": "module",
+  "dependencies": {
+    "@msgpack/msgpack": "2.1.0",
+    "axios": "0.21.1",
+    "isomorphic-ws": "4.0.1",
+    "jwt-decode": "3.1.2",
+    "vue": "2.6.12",
+    {{#if auth.google}}
+    "vue-google-oauth2": "1.5.6",
+    {{/if}}
+    "vue-router": "3.5.1",
+    "vue-select": "3.11.2",
+    "vue-toasted": "1.1.28",
+    "ws": "7.4.2"
+  },
+  "devDependencies": {
+    "@types/vue-select": "2.5.1",
+    "typescript": "4.1.3"
+  },
+  "browserslist": [
+    "Chrome > 50"
+  ]
+}
