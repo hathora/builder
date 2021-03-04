@@ -132,6 +132,8 @@ const pwd = process.cwd();
 const appName = path.basename(pwd);
 
 if (readdirSync(pwd).length === 1) {
+  mkdirSync("client");
+  mkdirSync("server");
   readdirSync(path.join(__dirname, "templates/lang/ts/client"), "utf8").forEach((file) =>
     generate(path.join(__dirname, "templates/lang/ts/client", file), "client")
   );
@@ -151,12 +153,3 @@ readdirSync(path.join(__dirname, "templates/base/client"), "utf8").forEach((file
 readdirSync(path.join(__dirname, "templates/base/server"), "utf8").forEach((file) =>
   generate(path.join(__dirname, "templates/base/server", file), "server/.rtag")
 );
-
-process.chdir(path.join(pwd, "client/.rtag"));
-npm.load(() => {
-  npm.commands.install([], (err, res) => {});
-});
-process.chdir(path.join(pwd, "server/.rtag"));
-npm.load(() => {
-  npm.commands.install([], (err, res) => {});
-});
