@@ -4,7 +4,6 @@ import { load } from "js-yaml";
 import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { compile, registerHelper } from "handlebars";
 import path from "path";
-import npm from "npm";
 
 type Arg = ObjectArg | ArrayArg | OptionalArg | DisplayPluginArg | EnumArg | StringArg | NumberArg | BooleanArg;
 interface ObjectArg {
@@ -128,10 +127,9 @@ const plugins = existsSync("client/plugins")
   ? readdirSync("client/plugins", "utf8").map((p) => p.replace(/\..*$/, ""))
   : [];
 const appEntryPath = existsSync("client/index.html") ? "../../client/index.html" : "../../client/.rtag/index.html";
-const pwd = process.cwd();
-const appName = path.basename(pwd);
+const appName = path.basename(process.cwd());
 
-if (readdirSync(pwd).length === 1) {
+if (readdirSync(process.cwd()).length === 1) {
   mkdirSync("client");
   mkdirSync("server");
   readdirSync(path.join(__dirname, "templates/lang/ts/client"), "utf8").forEach((file) =>
