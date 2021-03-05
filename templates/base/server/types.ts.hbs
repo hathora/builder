@@ -1,0 +1,62 @@
+{{#each types}}
+{{#with (getArgsInfo this)}}
+{{#if (eq type "enum")}}
+export enum {{@key}} {
+  {{#each options}}
+  {{label}},
+  {{/each}}
+}
+{{else if (eq type "object")}}
+export interface {{@key}} {
+  {{#each properties}}
+  {{@key}}: {{> renderArg}};
+  {{/each}}
+}
+{{else}}
+export type {{@key}} = {{../this}};
+{{/if}}
+{{/with}}
+{{/each}}
+{{#each methods}}
+export interface {{makeRequestName @key}} {
+{{#if this}}
+{{#with (getArgsInfo this)}}
+  {{#each properties}}
+  {{@key}}: {{> renderArg}};
+  {{/each}}
+{{/with}}
+{{/if}}
+}
+{{/each}}
+{{#each auth}}
+export interface {{capitalize @key}}UserData {
+  type: "{{@key}}";
+  id: string;
+{{#if (eq @key "anonymous")}}
+  name: string;
+{{else if (eq @key "google")}}
+  name: string;
+  email: string;
+  locale: string;
+  picture: string;
+{{/if}}
+}
+{{/each}}
+export type UserData = {{#each auth}}{{capitalize @key}}UserData{{#unless @last}} | {{/unless}}{{/each}};
+{{#*inline "renderArg"}}
+{{#if alias}}
+{{typeString}}
+{{~else if (eq type "optional")}}
+{{> renderArg item}} | undefined
+{{~else if (eq type "array")}}
+{{> renderArg items}}[]
+{{~else if (eq type "number")}}
+number
+{{~else if (eq type "string")}}
+string
+{{~else if (eq type "boolean")}}
+boolean
+{{~else if (eq type "plugin")}}
+{{> renderArg item}}
+{{~/if}}
+{{~/inline}}

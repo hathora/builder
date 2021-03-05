@@ -15,6 +15,7 @@ Inside a new directory, create a `types.yml` file and run `rtag` to generate rta
 
 Start server:
 ```
+cd server
 node --loader ts-node/esm --experimental-specifier-resolution=node .rtag/proxy.ts
 ```
 
