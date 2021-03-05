@@ -129,7 +129,8 @@ const plugins = existsSync("client/plugins")
 const appEntryPath = existsSync("client/index.html") ? "../../client/index.html" : "../../client/.rtag/index.html";
 const appName = path.basename(process.cwd());
 
-if (readdirSync(process.cwd()).length === 1) {
+const rootDirFiles = readdirSync(process.cwd()).filter((file) => !file.startsWith("."));
+if (rootDirFiles.length === 1 && rootDirFiles[0] === "types.yml") {
   mkdirSync("client");
   mkdirSync("server");
   readdirSync(path.join(__dirname, "templates/lang/ts/client"), "utf8").forEach((file) =>
