@@ -13,6 +13,8 @@ npm install -g rtag
 
 Inside a new directory, create a `types.yml` file and run `rtag` to generate rtag project.
 
+Run `npm install` inside both the client and server directories.
+
 Start server:
 ```
 cd server
