@@ -1,11 +1,16 @@
-import { watch } from "fs";
 import module from "module";
 import onChange from "on-change";
+import dependencyTree from "dependency-tree";
+import chokidar from "chokidar";
 import { UserData, PlayerState } from "./types";
 
-const require = module.createRequire(import.meta.url);
+const deps = dependencyTree.toList({
+  directory: ".",
+  filename: module.createRequire(import.meta.url).resolve("../impl"),
+  filter: (path) => !path.includes(".rtag") && !path.includes("node_modules"),
+});
 let impl = new (await import("../impl")).Impl();
-watch(require.resolve("../impl"), async () => {
+chokidar.watch(deps).on("change", async () => {
   impl = new (await import(`../impl.ts#${Math.random()}`)).Impl();
 });
 
