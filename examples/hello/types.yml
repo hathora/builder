@@ -1,0 +1,9 @@
+types:
+  Username: string
+methods:
+  createGame:
+
+auth:
+
+userState: Username
+initialize: createGame
