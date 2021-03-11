@@ -1,9 +1,15 @@
 types:
   Username: string
+  PlayerState:
+    username: Username
+
 methods:
   createGame:
 
-auth:
-
-userState: Username
+userState: PlayerState
 initialize: createGame
+
+
+auth:
+  anonymous:
+    separator: "-"
