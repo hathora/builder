@@ -4,6 +4,19 @@ import { load } from "js-yaml";
 import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { compile, registerHelper } from "handlebars";
 import path from "path";
+import * as z from "zod";
+
+const TypeArgs = z.union([z.string(), z.array(z.string()), z.record(z.string())]);
+const RtagConfig = z.object({
+  types: z.record(TypeArgs),
+  methods: z.record(z.nullable(z.record(z.string()))),
+  auth: z.object({
+    anonymous: z.optional(z.object({ separator: z.string() })),
+    google: z.optional(z.object({ clientId: z.string() })),
+  }),
+  userState: z.string(),
+  initialize: z.string(),
+});
 
 type Arg = ObjectArg | ArrayArg | OptionalArg | DisplayPluginArg | EnumArg | StringArg | NumberArg | BooleanArg;
 interface ObjectArg {
@@ -62,20 +75,13 @@ registerHelper("makeRequestName", (x) => "I" + capitalize(x) + "Request");
 registerHelper("makePluginName", (x) => x.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase() + "-plugin");
 registerHelper("getArgsInfo", (args) => getArgsInfo(args, true, false));
 
-function getArgsInfo(args: any, required: boolean, alias: boolean, typeString?: string): Arg {
-  if (!required) {
-    return {
-      type: "optional",
-      typeString: args + "?",
-      alias,
-      item: getArgsInfo(args, true, false),
-    };
-  } else if (Array.isArray(args)) {
+function getArgsInfo(args: z.infer<typeof TypeArgs>, required: boolean, alias: boolean, typeString?: string): Arg {
+  if (Array.isArray(args)) {
     return {
       type: "enum",
       typeString,
       alias,
-      options: args.map((label: string, value) => ({ label, value })),
+      options: args.map((label, value) => ({ label, value })),
     };
   } else if (typeof args === "object") {
     return {
@@ -86,8 +92,15 @@ function getArgsInfo(args: any, required: boolean, alias: boolean, typeString?: 
         Object.entries(args).map(([name, type]) => [sanitize(name), getArgsInfo(type, !name.endsWith("?"), false)])
       ),
     };
-  } else if (typeof args === "string") {
-    if (args.endsWith("[]")) {
+  } else {
+    if (!required) {
+      return {
+        type: "optional",
+        typeString: args + "?",
+        alias,
+        item: getArgsInfo(args, true, false),
+      };
+    } else if (args.endsWith("[]")) {
       return {
         type: "array",
         typeString: typeString ?? args,
@@ -100,9 +113,10 @@ function getArgsInfo(args: any, required: boolean, alias: boolean, typeString?: 
     } else if (args === "string" || args === "number" || args === "boolean") {
       const argsInfo: Arg = { type: args, typeString: typeString ?? args, alias };
       return plugins.includes(args) ? { type: "plugin", typeString: args, alias, item: argsInfo } : argsInfo;
+    } else {
+      throw new Error("Invalid args: " + args);
     }
   }
-  throw new Error("Invalid args: " + args);
 }
 
 function capitalize(s: string) {
@@ -122,7 +136,7 @@ function generate(file: string, outDir: string) {
   );
 }
 
-const doc: any = load(readFileSync("types.yml", "utf8"));
+const doc = RtagConfig.parse(load(readFileSync("types.yml", "utf8")));
 const plugins = existsSync("client/plugins")
   ? readdirSync("client/plugins", "utf8").map((p) => p.replace(/\..*$/, ""))
   : [];
