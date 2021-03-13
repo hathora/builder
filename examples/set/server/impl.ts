@@ -6,7 +6,7 @@ import {
   ICreateGameRequest,
   Card,
   Color,
-  Shading, Shape, Count, AnonymousUserData, ISubmitSetRequest
+  Shading, Shape, Count, AnonymousUserData, ISubmitSetRequest, IRequestHelpRequest
 } from "./.rtag/types";
 
 interface InternalState {
@@ -70,8 +70,32 @@ export class Impl implements Methods<InternalState> {
         state.board.splice(sortedCards[1], 1);
         state.board.splice(sortedCards[0], 1);
       }
+
+      return "Set found! Well done";
     }
     return "Not a set, try harder next time";
+  }
+  requestHelp(state: InternalState, user: AnonymousUserData, request: IRequestHelpRequest): string | void {
+    for (let i in [...Array(state.board.length).keys()]) {
+      for (let j in [...Array(state.board.length).keys()]) {
+        if (j <= i) {
+          continue;
+        }
+        for (let k in [...Array(state.board.length).keys()]) {
+          if (k <= j) {
+            continue;
+          }
+
+          let card1 = state.board[i];
+          let card2 = state.board[j];
+          let card3 = state.board[k];
+
+          if (isSet(card1, card2, card3)) {
+            return `Here's a set: ${i}, ${j}, ${k}`;
+          }
+        }
+      }
+    }
   }
 }
 
@@ -152,3 +176,5 @@ export function shuffle<T>(items: T[]) {
   }
   return shuffled;
 }
+
+

@@ -42,6 +42,7 @@ methods:
     card1: number
     card2: number
     card3: number
+  requestHelp:
 
 userState: PlayerState
 initialize: createGame
