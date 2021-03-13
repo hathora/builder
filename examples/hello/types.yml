@@ -1,10 +1,11 @@
 types:
-  Username: string
   PlayerState:
-    username: Username
+    text: string
 
 methods:
   createGame:
+  updateName:
+    name: string
 
 userState: PlayerState
 initialize: createGame
