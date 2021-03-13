@@ -38,6 +38,10 @@ auth:
 
 methods:
   createGame:
+  submitSet:
+    card1: number
+    card2: number
+    card3: number
 
 userState: PlayerState
 initialize: createGame
