@@ -1,0 +1,43 @@
+types:
+  Username: string
+
+  PlayerState:
+    deckSize: number
+    board: Card[]
+    score: number
+
+  Color:
+    - RED
+    - GREEN
+    - PURPLE
+
+  Shading:
+    - EMPTY
+    - PARTIAL
+    - FULL
+
+  Shape:
+    - OVAL
+    - SQUIGGLE
+    - DIAMOND
+
+  Count:
+    - ONE
+    - TWO
+    - THREE
+
+  Card:
+    color: Color
+    shading: Shading
+    shape: Shape
+    count: Count
+
+auth:
+  anonymous:
+    separator: "-"
+
+methods:
+  createGame:
+
+userState: PlayerState
+initialize: createGame
