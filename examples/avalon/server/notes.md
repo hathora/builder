@@ -166,3 +166,10 @@ had to add package.json
      |                         ^
   8  |  
   
+
+Would nice to be able to specify a directory to rtag; common dev flow seems to be to have pwd = server, and edit types.yml in ..
+so I want to be able to rtag ..
+
+modifying state? ewww
+
+what does returning a string do?
