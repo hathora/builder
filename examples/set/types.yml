@@ -1,9 +1,10 @@
 types:
   Username: string
+  Cards: Card[]
 
   PlayerState:
     deckSize: number
-    board: Card[]
+    board: Cards
     score: number
 
   Color:
