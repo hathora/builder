@@ -1,7 +1,7 @@
 #!/usr/bin/env ts-node-script
 
 import { load } from "js-yaml";
-import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
+import { readdirSync, readFileSync, outputFileSync, existsSync, mkdirSync, statSync } from "fs-extra";
 import { compile, registerHelper } from "handlebars";
 import path from "path";
 import * as z from "zod";
@@ -140,45 +140,34 @@ function main() {
     ),
     methods: Object.fromEntries(
       Object.entries(doc.methods).map(([key, val]) => {
-        return [key, val === null ? null : getArgsInfo(val, true, false)];
+        return [key, getArgsInfo(val === null ? {} : val, true, false)];
       })
     ),
   };
+  const rootDir = process.cwd();
   const appEntryPath = existsSync("client/index.html") ? "../../client/index.html" : "../../client/.rtag/index.html";
-  const appName = path.basename(process.cwd());
+  const appName = path.basename(rootDir);
 
-  function codegen(file: string, outDir: string) {
-    const template = compile(readFileSync(file, "utf8"));
-    writeFileSync(
-      path.join(outDir, path.basename(file).split(".hbs")[0]),
-      template({ ...enrichedDoc, plugins, appEntryPath, appName }),
-      "utf8"
-    );
+  function codegen(inDir: string, outDir: string, outPrefix: string) {
+    readdirSync(inDir).forEach((f) => {
+      const file = path.join(inDir, f);
+      if (statSync(file).isDirectory()) {
+        codegen(file, path.join(outDir, f), outPrefix);
+      } else {
+        const template = compile(readFileSync(file, "utf8"));
+        outputFileSync(
+          path.join(outDir, outPrefix, f.split(".hbs")[0]),
+          template({ ...enrichedDoc, plugins, appEntryPath, appName })
+        );
+      }
+    });
   }
 
-  const rootDirFiles = readdirSync(process.cwd()).filter((file) => !file.startsWith("."));
+  const rootDirFiles = readdirSync(rootDir).filter((file) => !file.startsWith("."));
   if (rootDirFiles.length === 1 && rootDirFiles[0] === "types.yml") {
-    mkdirSync("client");
-    mkdirSync("server");
-    readdirSync(path.join(__dirname, "templates/lang/ts/client"), "utf8").forEach((file) =>
-      codegen(path.join(__dirname, "templates/lang/ts/client", file), "client")
-    );
-    readdirSync(path.join(__dirname, "templates/lang/ts/server"), "utf8").forEach((file) =>
-      codegen(path.join(__dirname, "templates/lang/ts/server", file), "server")
-    );
+    codegen(path.join(__dirname, "templates/lang/ts"), rootDir, ".");
   }
-  if (!existsSync("client/.rtag")) {
-    mkdirSync("client/.rtag");
-  }
-  if (!existsSync("server/.rtag")) {
-    mkdirSync("server/.rtag");
-  }
-  readdirSync(path.join(__dirname, "templates/base/client"), "utf8").forEach((file) =>
-    codegen(path.join(__dirname, "templates/base/client", file), "client/.rtag")
-  );
-  readdirSync(path.join(__dirname, "templates/base/server"), "utf8").forEach((file) =>
-    codegen(path.join(__dirname, "templates/base/server", file), "server/.rtag")
-  );
+  codegen(path.join(__dirname, "templates/base"), rootDir, ".rtag");
 }
 
 main();
