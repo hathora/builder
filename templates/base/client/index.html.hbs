@@ -12,7 +12,7 @@
       <div>
         {{#with (lookup methods initialize)}}
         {{#if this}}
-        {{> renderForm (getArgsInfo this) required=true}}
+        {{> renderForm this required=true}}
         {{/if}}
         {{/with}}
         <button type="button" class="button" @click="createState">
@@ -36,7 +36,7 @@
           {{#if (ne @key ../initialize)}}
           {{#if this}}
           <method-form method="{{@key}}" v-slot="{ value, update, showErrors }">
-            {{> renderForm (getArgsInfo this) arg=@key required=true}}
+            {{> renderForm this arg=@key required=true}}
           </method-form>
           {{else}}
           <method-form method="{{@key}}"></method-form>
@@ -46,7 +46,7 @@
         </div>
         <div v-if="Object.keys(value).length > 0" class="json-state">
           {{#with types}}
-          {{> renderState (getArgsInfo ../userState)}}
+          {{> renderState ../userState}}
           {{/with}}
         </div>
       </div>

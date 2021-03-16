@@ -22,7 +22,7 @@ export class Impl implements Methods<InternalState> {
   {{/each}}
   getUserState(state: InternalState, user: UserData): {{userState}} {
     return {
-      {{#with (getArgsInfo (lookup types userState))}}
+      {{#with (lookup types userState)}}
       {{#each properties}}
       {{#if (eq type "array")}}
       {{@key}}: [],
