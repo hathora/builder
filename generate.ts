@@ -3,7 +3,7 @@
 import { load } from "js-yaml";
 import { readdirSync, readFileSync, outputFileSync, existsSync, mkdirSync, statSync } from "fs-extra";
 import { compile, registerHelper } from "handlebars";
-import path from "path";
+import { join, basename } from "path";
 import * as z from "zod";
 
 const TypeArgs = z.union([z.string(), z.array(z.string()), z.record(z.string())]);
@@ -79,9 +79,13 @@ function capitalize(s: string) {
 }
 
 function main() {
-  const doc = RtagConfig.parse(load(readFileSync("types.yml", "utf8")));
-  const plugins = existsSync("client/plugins")
-    ? readdirSync("client/plugins", "utf8").map((p) => p.replace(/\..*$/, ""))
+  const rootDir = process.cwd();
+  const clientDir = join(rootDir, "client");
+  const serverDir = join(rootDir, "server");
+
+  const doc = RtagConfig.parse(load(readFileSync(join(rootDir, "types.yml"), "utf8")));
+  const plugins = existsSync(join(clientDir, "plugins"))
+    ? readdirSync(join(clientDir, "plugins")).map((p) => p.replace(/\..*$/, ""))
     : [];
 
   function getArgsInfo(args: z.infer<typeof TypeArgs>, required: boolean, alias: boolean, typeString?: string): Arg {
@@ -144,19 +148,20 @@ function main() {
       })
     ),
   };
-  const rootDir = process.cwd();
-  const appEntryPath = existsSync("client/index.html") ? "../../client/index.html" : "../../client/.rtag/index.html";
-  const appName = path.basename(rootDir);
+  const appEntryPath = existsSync(join(clientDir, "index.html"))
+    ? "../../client/index.html"
+    : "../../client/.rtag/index.html";
+  const appName = basename(rootDir);
 
   function codegen(inDir: string, outDir: string, outPrefix: string) {
     readdirSync(inDir).forEach((f) => {
-      const file = path.join(inDir, f);
+      const file = join(inDir, f);
       if (statSync(file).isDirectory()) {
-        codegen(file, path.join(outDir, f), outPrefix);
+        codegen(file, join(outDir, f), outPrefix);
       } else {
         const template = compile(readFileSync(file, "utf8"));
         outputFileSync(
-          path.join(outDir, outPrefix, f.split(".hbs")[0]),
+          join(outDir, outPrefix, f.split(".hbs")[0]),
           template({ ...enrichedDoc, plugins, appEntryPath, appName })
         );
       }
@@ -165,9 +170,9 @@ function main() {
 
   const rootDirFiles = readdirSync(rootDir).filter((file) => !file.startsWith("."));
   if (rootDirFiles.length === 1 && rootDirFiles[0] === "types.yml") {
-    codegen(path.join(__dirname, "templates/lang/ts"), rootDir, ".");
+    codegen(join(__dirname, "templates/lang/ts"), rootDir, ".");
   }
-  codegen(path.join(__dirname, "templates/base"), rootDir, ".rtag");
+  codegen(join(__dirname, "templates/base"), rootDir, ".rtag");
 }
 
 main();
