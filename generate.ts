@@ -78,10 +78,6 @@ function capitalize(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-function sanitize(s: string) {
-  return s.replace(/[\W]+/g, "");
-}
-
 function main() {
   const doc = RtagConfig.parse(load(readFileSync("types.yml", "utf8")));
   const plugins = existsSync("client/plugins")
@@ -102,7 +98,10 @@ function main() {
         typeString,
         alias,
         properties: Object.fromEntries(
-          Object.entries(args).map(([name, type]) => [sanitize(name), getArgsInfo(type, !name.endsWith("?"), false)])
+          Object.entries(args).map(([name, type]) => [
+            name.replace(/[\W]+/g, ""),
+            getArgsInfo(type, !name.endsWith("?"), false),
+          ])
         ),
       };
     } else {
@@ -145,7 +144,6 @@ function main() {
       })
     ),
   };
-
   const appEntryPath = existsSync("client/index.html") ? "../../client/index.html" : "../../client/.rtag/index.html";
   const appName = path.basename(process.cwd());
 
