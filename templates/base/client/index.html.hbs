@@ -10,11 +10,6 @@
     </div>
     <script type="text/x-template" id="home-template">
       <div>
-        {{#with (lookup methods initialize)}}
-        {{#if this}}
-        {{> renderForm (getArgsInfo this) required=true}}
-        {{/if}}
-        {{/with}}
         <button type="button" class="button" @click="createState">
           <span class="button-text">Create new</span>
         </button>
@@ -34,20 +29,14 @@
         <div class="forms-container">
           {{#each methods}}
           {{#if (ne @key ../initialize)}}
-          {{#if this}}
           <method-form method="{{@key}}" v-slot="{ value, update, showErrors }">
-            {{> renderForm (getArgsInfo this) arg=@key required=true}}
+            {{> renderForm this arg=@key required=true}}
           </method-form>
-          {{else}}
-          <method-form method="{{@key}}"></method-form>
-          {{/if}}
           {{/if}}
           {{/each}}
         </div>
         <div v-if="Object.keys(value).length > 0" class="json-state">
-          {{#with types}}
-          {{> renderState (getArgsInfo ../userState)}}
-          {{/with}}
+          {{> renderState (lookup types userState)}}
         </div>
       </div>
     </script>

@@ -1,5 +1,4 @@
 {{#each types}}
-{{#with (getArgsInfo this)}}
 {{#if (eq type "enum")}}
 export enum {{@key}} {
   {{#each options}}
@@ -13,19 +12,14 @@ export interface {{@key}} {
   {{/each}}
 }
 {{else}}
-export type {{@key}} = {{../this}};
+export type {{@key}} = {{> renderArg}};
 {{/if}}
-{{/with}}
 {{/each}}
 {{#each methods}}
 export interface {{makeRequestName @key}} {
-{{#if this}}
-{{#with (getArgsInfo this)}}
-  {{#each properties}}
+{{#each properties}}
   {{@key}}: {{> renderArg}};
-  {{/each}}
-{{/with}}
-{{/if}}
+{{/each}}
 }
 {{/each}}
 {{#each auth}}
