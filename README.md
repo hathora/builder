@@ -13,12 +13,8 @@ npm install -g rtag
 
 Inside a new directory, create a `types.yml` file and run `rtag` to generate rtag project.
 
-Run `npm install` inside both the client and server directories.
+Run `rtag install` to install dependencies.
 
-Start server:
-```
-cd server
-node --loader ts-node/esm --experimental-specifier-resolution=node .rtag/proxy.ts
-```
+Start server using `rtag start`.
 
 View debug app at http://localhost:3000/

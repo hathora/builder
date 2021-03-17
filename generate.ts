@@ -4,6 +4,7 @@ import { load } from "js-yaml";
 import { readdirSync, readFileSync, outputFileSync, existsSync, mkdirSync, statSync } from "fs-extra";
 import { compile, registerHelper } from "handlebars";
 import { join, basename } from "path";
+import shelljs from "shelljs";
 import * as z from "zod";
 
 const TypeArgs = z.union([z.string(), z.array(z.string()), z.record(z.string())]);
@@ -87,6 +88,10 @@ function getProjectRoot(cwd: string): string {
     throw new Error("Doesn't appear to be inside an rtag project");
   }
   return getProjectRoot(parentDir);
+}
+
+function getCommand(argv: string[]) {
+  return argv.length <= 2 ? "generate" : argv[2];
 }
 
 function main() {
@@ -180,11 +185,28 @@ function main() {
     });
   }
 
-  const rootDirFiles = readdirSync(rootDir).filter((file) => !file.startsWith("."));
-  if (rootDirFiles.length === 1 && rootDirFiles[0] === "types.yml") {
-    codegen(join(__dirname, "templates/lang/ts"), rootDir, ".");
+  const command = getCommand(process.argv);
+  if (command === "generate") {
+    const rootDirFiles = readdirSync(rootDir).filter((file) => !file.startsWith("."));
+    if (rootDirFiles.length === 1 && rootDirFiles[0] === "types.yml") {
+      codegen(join(__dirname, "templates/lang/ts"), rootDir, ".");
+    }
+    codegen(join(__dirname, "templates/base"), rootDir, ".rtag");
+  } else if (command === "install") {
+    shelljs.cd(clientDir);
+    shelljs.exec("npm install --no-audit --no-fund");
+    shelljs.cd(".rtag");
+    shelljs.exec("npm install --no-audit --no-fund");
+    shelljs.cd(serverDir);
+    shelljs.exec("npm install --no-audit --no-fund");
+    shelljs.cd(".rtag");
+    shelljs.exec("npm install --no-audit --no-fund");
+  } else if (command === "start") {
+    shelljs.cd(serverDir);
+    shelljs.exec("node --loader ts-node/esm --experimental-specifier-resolution=node .rtag/proxy.ts");
+  } else {
+    console.error(`Unknown command: ${command}`);
   }
-  codegen(join(__dirname, "templates/base"), rootDir, ".rtag");
 }
 
 main();
