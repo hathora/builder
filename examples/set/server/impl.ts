@@ -1,4 +1,3 @@
-import { isSetAccessor } from "typescript";
 import { Methods } from "./.rtag/methods";
 import {
   UserData,
@@ -6,17 +5,21 @@ import {
   ICreateGameRequest,
   Card,
   Color,
-  Shading, Shape, Count, AnonymousUserData, ISubmitSetRequest, IRequestHelpRequest
+  Shading,
+  Shape,
+  Count,
+  AnonymousUserData,
+  ISubmitSetRequest,
+  IRequestHelpRequest,
 } from "./.rtag/types";
 
 interface InternalState {
-  deck: Card[],
-  board: Card[]
+  deck: Card[];
+  board: Card[];
 }
 
 export class Impl implements Methods<InternalState> {
   createGame(user: UserData, request: ICreateGameRequest): InternalState {
-
     const initialDeck = shuffle(allCards());
     let initialBoard: Card[] = [];
 
@@ -45,7 +48,7 @@ export class Impl implements Methods<InternalState> {
     const card3 = state.board[request.card3];
 
     if (card1 == card2 || card1 == card3 || card2 == card3) {
-      return "Three cards must be distinct"
+      return "Three cards must be distinct";
     }
 
     if (!card1 || !card2 || !card3) {
@@ -119,10 +122,10 @@ function allCards(): Card[] {
             continue;
           }
           result.push({
-            color: color as any as Color,
-            shading: shading as any as Shading,
-            shape: shape as any as Shape,
-            count: count as any as Count,
+            color: (color as any) as Color,
+            shading: (shading as any) as Shading,
+            shape: (shape as any) as Shape,
+            count: (count as any) as Count,
           });
         }
       }
@@ -176,5 +179,3 @@ export function shuffle<T>(items: T[]) {
   }
   return shuffled;
 }
-
-
