@@ -21,13 +21,11 @@ interface InternalState {
 export class Impl implements Methods<InternalState> {
   createGame(user: UserData, request: ICreateGameRequest): InternalState {
     const initialDeck = shuffle(allCards());
-    let initialBoard: Card[] = [];
+    const initialBoard: Card[] = [];
 
-    for (let _ in [...Array(12).keys()]) {
-      let topCard = initialDeck.pop();
-      if (topCard) {
-        initialBoard.push(topCard);
-      }
+    for (let i = 0; i < 12; i++) {
+      const topCard = initialDeck.pop()!;
+      initialBoard.push(topCard);
     }
 
     return {
@@ -79,19 +77,12 @@ export class Impl implements Methods<InternalState> {
     return "Not a set, try harder next time";
   }
   requestHelp(state: InternalState, user: AnonymousUserData, request: IRequestHelpRequest): string | void {
-    for (let i in [...Array(state.board.length).keys()]) {
-      for (let j in [...Array(state.board.length).keys()]) {
-        if (j <= i) {
-          continue;
-        }
-        for (let k in [...Array(state.board.length).keys()]) {
-          if (k <= j) {
-            continue;
-          }
-
-          let card1 = state.board[i];
-          let card2 = state.board[j];
-          let card3 = state.board[k];
+    for (let i = 0; i < state.board.length; i++) {
+      for (let j = i + 1; j < state.board.length; j++) {
+        for (let k = j + 1; k < state.board.length; k++) {
+          const card1 = state.board[i];
+          const card2 = state.board[j];
+          const card3 = state.board[k];
 
           if (isSet(card1, card2, card3)) {
             return `Here's a set: ${i}, ${j}, ${k}`;
@@ -105,34 +96,27 @@ export class Impl implements Methods<InternalState> {
 function allCards(): Card[] {
   let result: Card[] = [];
 
-  for (const color in Color) {
-    if (!isNaN(Number(color))) {
-      continue;
-    }
-    for (const shading in Shading) {
-      if (!isNaN(Number(shading))) {
-        continue;
-      }
-      for (const shape in Shape) {
-        if (!isNaN(Number(shape))) {
-          continue;
-        }
-        for (const count in Count) {
-          if (!isNaN(Number(count))) {
-            continue;
-          }
-          result.push({
-            color: (color as any) as Color,
-            shading: (shading as any) as Shading,
-            shape: (shape as any) as Shape,
-            count: (count as any) as Count,
-          });
+  for (const color of enumValues(Color)) {
+    for (const shading of enumValues(Shading)) {
+      for (const shape of enumValues(Shape)) {
+        for (const count of enumValues(Count)) {
+          result.push({ color, shading, shape, count });
         }
       }
     }
   }
 
   return result;
+}
+
+function enumValues<T extends Record<string, string | number>>(e: T): T[keyof T][] {
+  const vals: T[keyof T][] = [];
+  for (const x of Object.values(e)) {
+    if (typeof x === "number") {
+      vals.push((x as unknown) as T[keyof T]);
+    }
+  }
+  return vals;
 }
 
 function isSet(card1: Card, card2: Card, card3: Card): boolean {
@@ -171,7 +155,7 @@ function isSet(card1: Card, card2: Card, card3: Card): boolean {
   return true;
 }
 
-export function shuffle<T>(items: T[]) {
+function shuffle<T>(items: T[]) {
   const shuffled = [...items];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
