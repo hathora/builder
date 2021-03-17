@@ -94,6 +94,12 @@ function getCommand(argv: string[]) {
   return argv.length <= 2 ? "generate" : argv[2];
 }
 
+function npmInstall(dir: string) {
+  console.log(`Installing dependencies in ${dir}`);
+  shelljs.cd(dir);
+  shelljs.exec("npm install");
+}
+
 function main() {
   const rootDir = getProjectRoot(process.cwd());
   const clientDir = join(rootDir, "client");
@@ -193,14 +199,10 @@ function main() {
     }
     codegen(join(__dirname, "templates/base"), rootDir, ".rtag");
   } else if (command === "install") {
-    shelljs.cd(clientDir);
-    shelljs.exec("npm install --no-audit --no-fund");
-    shelljs.cd(".rtag");
-    shelljs.exec("npm install --no-audit --no-fund");
-    shelljs.cd(serverDir);
-    shelljs.exec("npm install --no-audit --no-fund");
-    shelljs.cd(".rtag");
-    shelljs.exec("npm install --no-audit --no-fund");
+    npmInstall(clientDir);
+    npmInstall(join(clientDir, ".rtag"));
+    npmInstall(serverDir);
+    npmInstall(join(serverDir, ".rtag"));
   } else if (command === "start") {
     shelljs.cd(serverDir);
     shelljs.exec("node --loader ts-node/esm --experimental-specifier-resolution=node .rtag/proxy.ts");
