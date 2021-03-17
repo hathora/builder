@@ -1,7 +1,7 @@
 #!/usr/bin/env ts-node-script
 
 import { load } from "js-yaml";
-import { readdirSync, readFileSync, outputFileSync, existsSync, mkdirSync, statSync } from "fs-extra";
+import { readdirSync, readFileSync, outputFileSync, existsSync, statSync } from "fs-extra";
 import { compile, registerHelper } from "handlebars";
 import { join, basename } from "path";
 import shelljs from "shelljs";
