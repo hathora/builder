@@ -78,11 +78,23 @@ function capitalize(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+function getProjectRoot(cwd: string): string {
+  if (existsSync(join(cwd, "types.yml"))) {
+    return cwd;
+  }
+  const parentDir = join(cwd, "..");
+  if (parentDir === cwd) {
+    throw new Error("Doesn't appear to be inside an rtag project");
+  }
+  return getProjectRoot(parentDir);
+}
+
 function main() {
-  const rootDir = process.cwd();
+  const rootDir = getProjectRoot(process.cwd());
   const clientDir = join(rootDir, "client");
   const serverDir = join(rootDir, "server");
 
+  console.log(`Project root: ${rootDir}`);
   const doc = RtagConfig.parse(load(readFileSync(join(rootDir, "types.yml"), "utf8")));
   const plugins = existsSync(join(clientDir, "plugins"))
     ? readdirSync(join(clientDir, "plugins")).map((p) => p.replace(/\..*$/, ""))
