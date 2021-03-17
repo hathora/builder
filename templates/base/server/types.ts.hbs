@@ -12,7 +12,7 @@ export interface {{@key}} {
   {{/each}}
 }
 {{else}}
-export type {{@key}} = {{typeString}};
+export type {{@key}} = {{> renderArg}};
 {{/if}}
 {{/each}}
 {{#each methods}}
