@@ -26,6 +26,8 @@ export class Impl implements Methods<InternalState> {
       {{#each properties}}
       {{#if (eq type "array")}}
       {{@key}}: [],
+      {{else if (eq type "number")}}
+      {{@key}}: 0,
       {{else if (eq type "string")}}
       {{@key}}: "",
       {{else if (eq type "enum")}}
