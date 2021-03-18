@@ -1,6 +1,13 @@
 import { Methods } from "./.rtag/methods";
 import {
   UserData,
+  {{#with (lookup types userState)}}
+  {{#each properties}}
+  {{#if (eq type "enum")}}
+  {{typeString}},
+  {{/if}}
+  {{/each}}
+  {{/with}}
   {{userState}},
   {{#each methods}}
   {{makeRequestName @key}},
