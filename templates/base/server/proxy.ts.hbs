@@ -8,7 +8,7 @@ import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 import Store from "./store";
 import { authMiddleware, getUserFromToken } from "./auth";
-import { UserData, PlayerState } from "./types";
+import { UserData, {{userState}} } from "./types";
 
 type StateId = string;
 type Connection = WebSocket & { isAlive: boolean };
@@ -114,7 +114,7 @@ function deleteConnection(stateId: StateId, user: UserData, socket: Connection) 
   }
 }
 
-function onNewUserState(stateId: StateId, user: UserData, userState: PlayerState) {
+function onNewUserState(stateId: StateId, user: UserData, userState: {{userState}}) {
   const client = stateId + user.id;
   connections.get(client)!.forEach((socket) => {
     socket.send(encoder.encode({ type: "state", state: userState }));
