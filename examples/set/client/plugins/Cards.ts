@@ -1,4 +1,4 @@
-import { Card, Color, Shading } from "../.rtag/types";
+import { Card, Color, Count, Shading, Shape, } from "../.rtag/types";
 import { LitElement, html, property, css } from "lit-element";
 
 export default class Cards extends LitElement {
@@ -30,32 +30,36 @@ export default class Cards extends LitElement {
     let baseSymbol = this.baseSymbol(card);
     let repeated = this.count(baseSymbol, card);
 
-    return html`<b class="${card.color}${card.shading}"> ${repeated} </b>`;
+    console.log(repeated);
+
+    return html`<b class="${Color[card.color]}${Shading[card.shading]}"> ${repeated} </b>`;
   }
 
   baseSymbol(card: Card) {
-    if (`${card.shape}` == "SQUIGGLE") {
-      return "S";
+    switch (card.shape) {
+      case Shape.SQUIGGLE: {
+        return "S";
+      }
+      case Shape.OVAL: {
+        return "⬬";
+      }
+      case Shape.DIAMOND: {
+        return "◆";
+      }
     }
-    if (`${card.shape}` == "OVAL") {
-      return "⬬";
-    }
-    if (`${card.shape}` == "DIAMOND") {
-      return "◆";
-    }
-
-    return "";
   }
 
   count(baseSymbol: string, card: Card) {
-    if (`${card.count}` == "ONE") {
-      return baseSymbol;
-    }
-    if (`${card.count}` == "TWO") {
-      return baseSymbol.repeat(2);
-    }
-    if (`${card.count}` == "THREE") {
-      return baseSymbol.repeat(3);
+    switch (card.count) {
+      case Count.ONE: {
+        return baseSymbol;
+      }
+      case Count.TWO: {
+        return baseSymbol.repeat(2);
+      }
+      case Count.THREE: {
+        return baseSymbol.repeat(3);
+      }
     }
   }
 
