@@ -53,7 +53,7 @@ export default class Store {
       {{/if}}
       {{/each}}
     }
-    return "Invalid method";
+    throw new Error(`Invalid method ${method}`);
   }
   hasState(stateId: StateId) {
     return states.has(stateId);

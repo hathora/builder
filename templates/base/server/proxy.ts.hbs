@@ -90,8 +90,12 @@ function handleConnection(stateId: StateId, user: UserData, socket: Connection) 
   });
   socket.on("message", (data) => {
     const { method, args, msgId }: UpdateRequest = JSON.parse(data as string);
-    const maybeError = store.handleUpdate(stateId, user, method, args);
-    socket.send(encoder.encode({ type: "response", msgId, error: maybeError }));
+    try {
+      const result = store.handleUpdate(stateId, user, method, args);
+      socket.send(encoder.encode({ type: "response", msgId, result }));
+    } catch (error) {
+      console.error(error);
+    }
   });
 }
 

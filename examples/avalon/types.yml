@@ -81,3 +81,4 @@ auth:
 
 userState: PlayerState
 initialize: createGame
+error: string

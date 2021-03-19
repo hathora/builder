@@ -1,5 +1,6 @@
 import {
   UserData,
+  Result,
   {{userState}},
   {{#each methods}}
   {{makeRequestName @key}},
@@ -11,7 +12,7 @@ export interface Methods<T> {
   {{#if (eq @key ../initialize)}}
   {{../initialize}}(user: UserData, request: {{makeRequestName @key}}): T;
   {{else}}
-  {{@key}}(state: T, user: UserData, request: {{makeRequestName @key}}): string | void;
+  {{@key}}(state: T, user: UserData, request: {{makeRequestName @key}}): Result;
   {{/if}}
   {{/each}}
   getUserState(state: T, user: UserData): {{userState}};

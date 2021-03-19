@@ -4,6 +4,7 @@ import jwtDecode from "jwt-decode";
 import { decode } from "@msgpack/msgpack";
 import {
   UserData,
+  Result,
   {{userState}},
   {{#each methods}}
   {{makeRequestName @key}},
@@ -13,7 +14,7 @@ import {
 export type StateId = string;
 
 export class RtagClient {
-  private callbacks: Record<string, (error?: string) => void> = {};
+  private callbacks: Record<string, (result: Result) => void> = {};
 
   private constructor(private socket: WebSocket) {}
 
@@ -60,7 +61,7 @@ export class RtagClient {
       socket.onmessage = ({ data }) => {
         const message: any = decode(data as ArrayBuffer);
         if (message.type === "response") {
-          client.callbacks[message.msgId](message.error);
+          client.callbacks[message.msgId](message.result);
           delete client.callbacks[message.msgId];
         } else if (message.type === "state") {
           onStateChange(message.state);
@@ -73,10 +74,12 @@ export class RtagClient {
 
   {{#each methods}}
   {{#if (ne @key ../initialize)}}
-  public {{@key}}(request: {{makeRequestName @key}}, cb: (error?: string) => void): void {
+  public {{@key}}(request: {{makeRequestName @key}}): Promise<Result> {
     const msgId = Math.random().toString(36).substring(2);
-    this.callbacks[msgId] = cb;
     this.socket.send(JSON.stringify({ method: "{{@key}}", msgId, args: request }));
+    return new Promise((resolve) => {
+      this.callbacks[msgId] = resolve;
+    });
   }
 
   {{/if}}

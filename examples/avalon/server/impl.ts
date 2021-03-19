@@ -1,6 +1,7 @@
 import { Methods } from "./.rtag/methods";
 import {
   UserData,
+  Result,
   PlayerState,
   ICreateGameRequest,
   IJoinGameRequest,
@@ -67,10 +68,14 @@ export class Impl implements Methods<InternalState> {
       quests: [],
     };
   }
-  joinGame(state: InternalState, user: UserData, request: IJoinGameRequest): string | void {
+  joinGame(state: InternalState, user: UserData, request: IJoinGameRequest): Result {
     state.players.push(user.name);
+    return { type: "success" };
   }
-  startGame(state: InternalState, user: UserData, request: IStartGameRequest): string | void {
+  startGame(state: InternalState, user: UserData, request: IStartGameRequest): Result {
+    if (!QUEST_CONFIGURATIONS.has(state.players.length)) {
+      return { type: "error", error: "Invalid number of players" };
+    }
     if (request.playerOrder !== undefined && request.playerOrder.length > 0) {
       const order = request.playerOrder;
       state.players.sort((a, b) => order.findIndex((name) => name === a) - order.findIndex((name) => name === b));
@@ -80,12 +85,14 @@ export class Impl implements Methods<InternalState> {
     const leader = request.leader ?? state.players[Math.floor(Math.random() * state.players.length)];
     state.roles = new Map(shuffle(request.roleList).map((role, i) => [state.players[i], role]));
     state.quests.push(createQuest(1, 1, state.players.length, leader));
+    return { type: "success" };
   }
-  proposeQuest(state: InternalState, user: UserData, request: IProposeQuestRequest): string | void {
+  proposeQuest(state: InternalState, user: UserData, request: IProposeQuestRequest): Result {
     const quest = state.quests.find((q) => q.id === request.questId)!;
     quest.members = request.proposedMembers;
+    return { type: "success" };
   }
-  voteForProposal(state: InternalState, user: UserData, request: IVoteForProposalRequest): string | void {
+  voteForProposal(state: InternalState, user: UserData, request: IVoteForProposalRequest): Result {
     const quest = state.quests.find((q) => q.id === request.questId)!;
     quest.votes.set(user.name, request.vote);
     if (questStatus(quest) === QuestStatus.PROPOSAL_REJECTED && quest.attemptNumber < 5) {
@@ -98,8 +105,9 @@ export class Impl implements Methods<InternalState> {
         )
       );
     }
+    return { type: "success" };
   }
-  voteInQuest(state: InternalState, user: UserData, request: IVoteInQuestRequest): string | void {
+  voteInQuest(state: InternalState, user: UserData, request: IVoteInQuestRequest): Result {
     const quest = state.quests.find((q) => q.id === request.questId)!;
     quest.results.set(user.name, request.vote);
     if (
@@ -111,6 +119,7 @@ export class Impl implements Methods<InternalState> {
         createQuest(quest.roundNumber + 1, 1, quest.numPlayers, getNextLeader(quest.leader, state.players))
       );
     }
+    return { type: "success" };
   }
   getUserState(state: InternalState, user: UserData): PlayerState {
     const role = state.roles?.get(user.name);
