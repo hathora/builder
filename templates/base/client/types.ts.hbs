@@ -45,6 +45,15 @@ export interface ErrorResult {
   error: {{error}};
 }
 export type Result = SuccessResult | ErrorResult;
+export const Result: { success: () => SuccessResult; error: (error: {{error}}) => ErrorResult } = {
+  success: () => ({
+    type: "success",
+  }),
+  error: (error: {{error}}) => ({
+    type: "error",
+    error,
+  }),
+};
 {{#*inline "renderArg"}}
 {{#if alias}}
 {{typeString}}

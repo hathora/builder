@@ -70,11 +70,11 @@ export class Impl implements Methods<InternalState> {
   }
   joinGame(state: InternalState, user: UserData, request: IJoinGameRequest): Result {
     state.players.push(user.name);
-    return { type: "success" };
+    return Result.success();
   }
   startGame(state: InternalState, user: UserData, request: IStartGameRequest): Result {
     if (!QUEST_CONFIGURATIONS.has(state.players.length)) {
-      return { type: "error", error: "Invalid number of players" };
+      return Result.error("Invalid number of players");
     }
     if (request.playerOrder !== undefined && request.playerOrder.length > 0) {
       const order = request.playerOrder;
@@ -85,12 +85,12 @@ export class Impl implements Methods<InternalState> {
     const leader = request.leader ?? state.players[Math.floor(Math.random() * state.players.length)];
     state.roles = new Map(shuffle(request.roleList).map((role, i) => [state.players[i], role]));
     state.quests.push(createQuest(1, 1, state.players.length, leader));
-    return { type: "success" };
+    return Result.success();
   }
   proposeQuest(state: InternalState, user: UserData, request: IProposeQuestRequest): Result {
     const quest = state.quests.find((q) => q.id === request.questId)!;
     quest.members = request.proposedMembers;
-    return { type: "success" };
+    return Result.success();
   }
   voteForProposal(state: InternalState, user: UserData, request: IVoteForProposalRequest): Result {
     const quest = state.quests.find((q) => q.id === request.questId)!;
@@ -105,7 +105,7 @@ export class Impl implements Methods<InternalState> {
         )
       );
     }
-    return { type: "success" };
+    return Result.success();
   }
   voteInQuest(state: InternalState, user: UserData, request: IVoteInQuestRequest): Result {
     const quest = state.quests.find((q) => q.id === request.questId)!;
@@ -119,7 +119,7 @@ export class Impl implements Methods<InternalState> {
         createQuest(quest.roundNumber + 1, 1, quest.numPlayers, getNextLeader(quest.leader, state.players))
       );
     }
-    return { type: "success" };
+    return Result.success();
   }
   getUserState(state: InternalState, user: UserData): PlayerState {
     const role = state.roles?.get(user.name);
