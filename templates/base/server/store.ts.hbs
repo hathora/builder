@@ -2,7 +2,7 @@ import module from "module";
 import onChange from "on-change";
 import dependencyTree from "dependency-tree";
 import chokidar from "chokidar";
-import { UserData, PlayerState } from "./types";
+import { UserData, {{userState}} } from "./types";
 
 const deps = dependencyTree.toList({
   directory: ".",
@@ -21,7 +21,7 @@ const changedStates: Set<StateId> = new Set();
 const subscriptions: Map<StateId, Set<UserData>> = new Map();
 
 export default class Store {
-  constructor(onNewUserState: (stateId: StateId, user: UserData, userState: PlayerState) => void) {
+  constructor(onNewUserState: (stateId: StateId, user: UserData, userState: {{userState}}) => void) {
     setInterval(() => {
       {{#if tick}}
       states.forEach(impl.onTick);
@@ -53,7 +53,7 @@ export default class Store {
       {{/if}}
       {{/each}}
     }
-    return "Invalid method";
+    throw new Error(`Invalid method ${method}`);
   }
   hasState(stateId: StateId) {
     return states.has(stateId);

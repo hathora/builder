@@ -17,6 +17,7 @@ const RtagConfig = z.object({
   }),
   userState: z.string(),
   initialize: z.string(),
+  error: z.string(),
 });
 
 type Arg = ObjectArg | ArrayArg | OptionalArg | DisplayPluginArg | EnumArg | StringArg | NumberArg | BooleanArg;
@@ -95,17 +96,13 @@ function getCommand(argv: string[]) {
 }
 
 function npmInstall(dir: string) {
-  console.log(`Installing dependencies in ${dir}`);
-  shelljs.cd(dir);
-  shelljs.exec("npm install");
+  if (existsSync(dir)) {
+    console.log(`Installing dependencies in ${dir}`);
+    shelljs.exec(`npm install --prefix ${dir}`);
+  }
 }
 
-function main() {
-  const rootDir = getProjectRoot(process.cwd());
-  const clientDir = join(rootDir, "client");
-  const serverDir = join(rootDir, "server");
-
-  console.log(`Project root: ${rootDir}`);
+function generate() {
   const doc = RtagConfig.parse(load(readFileSync(join(rootDir, "types.yml"), "utf8")));
   const plugins = existsSync(join(clientDir, "plugins"))
     ? readdirSync(join(clientDir, "plugins")).map((p) => p.replace(/\..*$/, ""))
@@ -190,25 +187,29 @@ function main() {
       }
     });
   }
-
-  const command = getCommand(process.argv);
-  if (command === "generate") {
-    const rootDirFiles = readdirSync(rootDir).filter((file) => !file.startsWith("."));
-    if (rootDirFiles.length === 1 && rootDirFiles[0] === "types.yml") {
-      codegen(join(__dirname, "templates/lang/ts"), rootDir, ".");
-    }
-    codegen(join(__dirname, "templates/base"), rootDir, ".rtag");
-  } else if (command === "install") {
-    npmInstall(clientDir);
-    npmInstall(join(clientDir, ".rtag"));
-    npmInstall(serverDir);
-    npmInstall(join(serverDir, ".rtag"));
-  } else if (command === "start") {
-    shelljs.cd(serverDir);
-    shelljs.exec("node --loader ts-node/esm --experimental-specifier-resolution=node .rtag/proxy.ts");
-  } else {
-    console.error(`Unknown command: ${command}`);
+  const rootDirFiles = readdirSync(rootDir).filter((file) => !file.startsWith("."));
+  if (rootDirFiles.length === 1 && rootDirFiles[0] === "types.yml") {
+    codegen(join(__dirname, "templates/lang/ts"), rootDir, ".");
   }
+  codegen(join(__dirname, "templates/base"), rootDir, ".rtag");
 }
 
-main();
+const rootDir = getProjectRoot(process.cwd());
+const clientDir = join(rootDir, "client");
+const serverDir = join(rootDir, "server");
+
+console.log(`Project root: ${rootDir}`);
+const command = getCommand(process.argv);
+if (command === "generate") {
+  generate();
+} else if (command === "install") {
+  npmInstall(clientDir);
+  npmInstall(join(clientDir, ".rtag"));
+  npmInstall(serverDir);
+  npmInstall(join(serverDir, ".rtag"));
+} else if (command === "start") {
+  shelljs.cd(serverDir);
+  shelljs.exec("node --loader ts-node/esm --experimental-specifier-resolution=node .rtag/proxy.ts");
+} else {
+  console.error(`Unknown command: ${command}`);
+}

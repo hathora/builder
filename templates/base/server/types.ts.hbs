@@ -37,6 +37,23 @@ export interface {{capitalize @key}}UserData {
 }
 {{/each}}
 export type UserData = {{#each auth}}{{capitalize @key}}UserData{{#unless @last}} | {{/unless}}{{/each}};
+export interface SuccessResult {
+  type: "success";
+}
+export interface ErrorResult {
+  type: "error";
+  error: {{error}};
+}
+export type Result = SuccessResult | ErrorResult;
+export const Result: { success: () => SuccessResult; error: (error: {{error}}) => ErrorResult } = {
+  success: () => ({
+    type: "success",
+  }),
+  error: (error: {{error}}) => ({
+    type: "error",
+    error,
+  }),
+};
 {{#*inline "renderArg"}}
 {{#if alias}}
 {{typeString}}
