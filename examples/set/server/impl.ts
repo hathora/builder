@@ -11,6 +11,7 @@ import {
   AnonymousUserData,
   ISubmitSetRequest,
   IRequestHelpRequest,
+  Result,
 } from "./.rtag/types";
 
 interface InternalState {
@@ -40,17 +41,17 @@ export class Impl implements Methods<InternalState> {
       score: 0,
     };
   }
-  submitSet(state: InternalState, user: AnonymousUserData, request: ISubmitSetRequest): string | void {
+  submitSet(state: InternalState, user: AnonymousUserData, request: ISubmitSetRequest): Result {
     const card1 = state.board[request.card1];
     const card2 = state.board[request.card2];
     const card3 = state.board[request.card3];
 
     if (card1 == card2 || card1 == card3 || card2 == card3) {
-      return "Three cards must be distinct";
+      return Result.error("Three cards must be distinct");
     }
 
     if (!card1 || !card2 || !card3) {
-      return "At least one card was invalid";
+      return Result.error("At least one card was invalid");
     }
 
     if (isSet(card1, card2, card3)) {
@@ -72,11 +73,11 @@ export class Impl implements Methods<InternalState> {
         state.board.splice(sortedCards[0], 1);
       }
 
-      return "Set found! Well done";
+      return Result.success();
     }
-    return "Not a set, try harder next time";
+    return Result.error("Not a set, try harder next time");
   }
-  requestHelp(state: InternalState, user: AnonymousUserData, request: IRequestHelpRequest): string | void {
+  requestHelp(state: InternalState, user: AnonymousUserData, request: IRequestHelpRequest): Result {
     for (let i = 0; i < state.board.length; i++) {
       for (let j = i + 1; j < state.board.length; j++) {
         for (let k = j + 1; k < state.board.length; k++) {
@@ -85,11 +86,12 @@ export class Impl implements Methods<InternalState> {
           const card3 = state.board[k];
 
           if (isSet(card1, card2, card3)) {
-            return `Here's a set: ${i}, ${j}, ${k}`;
+            return Result.error(`Here's a set: ${i}, ${j}, ${k}`);
           }
         }
       }
     }
+    return Result.success();
   }
 }
 

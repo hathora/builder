@@ -47,3 +47,4 @@ methods:
 
 userState: PlayerState
 initialize: createGame
+error: string
