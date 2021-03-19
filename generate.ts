@@ -95,9 +95,10 @@ function getCommand(argv: string[]) {
 }
 
 function npmInstall(dir: string) {
-  console.log(`Installing dependencies in ${dir}`);
-  shelljs.cd(dir);
-  shelljs.exec("npm install");
+  if (existsSync(dir)) {
+    console.log(`Installing dependencies in ${dir}`);
+    shelljs.exec(`npm install --prefix ${dir}`);
+  }
 }
 
 function main() {
