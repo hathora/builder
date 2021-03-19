@@ -17,6 +17,7 @@ const RtagConfig = z.object({
   }),
   userState: z.string(),
   initialize: z.string(),
+  error: z.string(),
 });
 
 type Arg = ObjectArg | ArrayArg | OptionalArg | DisplayPluginArg | EnumArg | StringArg | NumberArg | BooleanArg;
