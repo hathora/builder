@@ -2,7 +2,7 @@ import module from "module";
 import onChange from "on-change";
 import dependencyTree from "dependency-tree";
 import chokidar from "chokidar";
-import { UserData, {{userState}} } from "./types";
+import { UserData, {{userState}} as UserState } from "./types";
 
 const deps = dependencyTree.toList({
   directory: ".",
@@ -21,7 +21,7 @@ const changedStates: Set<StateId> = new Set();
 const subscriptions: Map<StateId, Set<UserData>> = new Map();
 
 export default class Store {
-  constructor(onNewUserState: (stateId: StateId, user: UserData, userState: {{userState}}) => void) {
+  constructor(onNewUserState: (stateId: StateId, user: UserData, userState: UserState) => void) {
     setInterval(() => {
       {{#if tick}}
       states.forEach(impl.onTick);
