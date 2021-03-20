@@ -5,20 +5,22 @@ import { readdirSync, readFileSync, outputFileSync, existsSync, statSync } from 
 import { compile, registerHelper } from "handlebars";
 import { join, basename } from "path";
 import shelljs from "shelljs";
-import * as z from "zod";
+import { z } from "zod";
 
 const TypeArgs = z.union([z.string(), z.array(z.string()), z.record(z.string())]);
-const RtagConfig = z.object({
-  types: z.record(TypeArgs),
-  methods: z.record(z.nullable(z.record(z.string()))),
-  auth: z.object({
-    anonymous: z.optional(z.object({ separator: z.string() })),
-    google: z.optional(z.object({ clientId: z.string() })),
-  }),
-  userState: z.string(),
-  initialize: z.string(),
-  error: z.string(),
-});
+const RtagConfig = z
+  .object({
+    types: z.record(TypeArgs),
+    methods: z.record(z.nullable(z.record(z.string()))),
+    auth: z.object({
+      anonymous: z.optional(z.object({ separator: z.string() })),
+      google: z.optional(z.object({ clientId: z.string() })),
+    }),
+    userState: z.string(),
+    initialize: z.string(),
+    error: z.string(),
+  })
+  .strict();
 
 type Arg = ObjectArg | ArrayArg | OptionalArg | DisplayPluginArg | EnumArg | StringArg | NumberArg | BooleanArg;
 interface ObjectArg {
