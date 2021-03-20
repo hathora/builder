@@ -24,7 +24,7 @@ export class Impl implements Methods<InternalState> {
   {{#each methods}}
   {{#if (ne @key ../initialize)}}
   {{@key}}(state: InternalState, user: UserData, request: {{makeRequestName @key}}): Result {
-    return { type: "success" };
+    return Result.success();
   }
   {{/if}}
   {{/each}}
