@@ -55,23 +55,22 @@ Vue.component("method-form", {
       patch(this.value, value);
       this.valid = valid;
     },
-    submit() {
+    async submit() {
       if (!this.valid) {
         this.$toasted.error("Required fields missing");
         return;
       }
       const client: RtagClient = this.$parent.$data.client;
-      client[this.method as keyof RtagClient](this.value as any, (error) => {
-        if (error) {
-          this.$toasted.error(error);
-        } else {
-          this.value = {};
-          this.hack = false;
-          this.$nextTick(() => {
-            this.hack = true;
-          });
-        }
-      });
+      const res: Types.Result = await client[this.method](this.value);
+      if (res.type === "error") {
+        this.$toasted.error(JSON.stringify(res.error));
+      } else {
+        this.value = {};
+        this.hack = false;
+        this.$nextTick(() => {
+          this.hack = true;
+        });
+      }
     },
   },
 });
