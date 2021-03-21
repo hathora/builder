@@ -41,23 +41,23 @@ function patch(obj: any, val: any) {
 Vue.component("method-form", {
   props: { method: String },
   data() {
-    return { value: {}, showErrors: false, hack: true };
+    return { value: {}, valid: true, hack: true };
   },
   template: `<div class="form" :id="method">
       <h1 class="heading">\{{method}}</h1>
-      <slot v-if="hack" :value="{[method]: value}" :update="update" :showErrors="showErrors"></slot>
+      <slot v-if="hack" :value="{[method]: value}" :update="update"></slot>
       <button type="button" class="button submit" @click="submit">
         <span class="button-text">Submit</span>
       </button>
     </div>`,
   methods: {
-    update(arg: string, value: any) {
+    update(arg: string, value: any, valid: boolean) {
       patch(this.value, value);
+      this.valid = valid;
     },
     async submit() {
-      if (!(this.$children[0] as any).validate()) {
+      if (!this.valid) {
         this.$toasted.error("Required fields missing");
-        this.showErrors = true;
         return;
       }
       const client: RtagClient = this.$parent.$data.client;
@@ -65,7 +65,6 @@ Vue.component("method-form", {
       if (res.type === "error") {
         this.$toasted.error(JSON.stringify(res.error));
       } else {
-        this.showErrors = false;
         this.value = {};
         this.hack = false;
         this.$nextTick(() => {
@@ -78,7 +77,7 @@ Vue.component("method-form", {
 
 Vue.component("object-input", {
   props: { arg: String, required: Boolean, value: { type: Object, default: () => ({}) } },
-  data: () => ({ isOpen: false }),
+  data: () => ({ isOpen: false, invalidArgs: new Set<string>() }),
   template: `<div class="object-input">
       <div v-if="this.required">
         <slot :value="value ?? {}" :update="update"></slot>
@@ -98,17 +97,16 @@ Vue.component("object-input", {
       </div>
     </div>`,
   methods: {
-    update(arg: number, value: any) {
-      this.$emit("update", this.arg, { [arg]: value });
-    },
-    validate() {
-      return this.$children.every((child: any) => child.validate());
+    update(arg: string, value: any, valid: boolean) {
+      this.invalidArgs[valid ? "delete" : "add"](arg);
+      this.$emit("update", this.arg, { [arg]: value }, this.invalidArgs.size === 0);
     },
   },
 });
 
 Vue.component("array-input", {
-  props: { arg: String, required: Boolean, showErrors: Boolean, value: { type: Array, default: () => [] } },
+  props: { arg: String, required: Boolean, value: { type: Array, default: () => [] } },
+  data: () => ({ invalidArgs: new Set<string>() }),
   template: `<div>
       <div>
         <div class="form-group array-item" v-for="(v, i) in value">
@@ -120,7 +118,7 @@ Vue.component("array-input", {
           <button class="button danger" type="button" @click="deleteItem(i)">x</button>
         </div>
       </div>
-      <button class="button" type="button" @click="addItem()" :class="{ missing: showErrors && required && value.length === 0 }">
+      <button class="button" type="button" @click="addItem()">
         <span class="button-text">Add</span>
       </button>
     </div>`,
@@ -128,27 +126,42 @@ Vue.component("array-input", {
     this.$emit("update", this.arg, this.value, !this.required);
   },
   methods: {
-    update(arg: string, value: any) {
-      this.$emit("update", this.arg, { [Number(arg)]: value });
-    },
-    validate() {
-      return this.$children.every((child: any) => child.validate()) && (!this.required || this.value.length > 0);
+    update(arg: string, value: any, valid: boolean) {
+      this.invalidArgs[valid ? "delete" : "add"](arg);
+      this.$emit("update", this.arg, { [Number(arg)]: value }, this.invalidArgs.size === 0);
     },
     addItem() {
-      this.$emit("update", this.arg, { [this.value.length]: undefined });
+      this.$emit("update", this.arg, { [this.value.length]: undefined }, false);
     },
     moveItemUp(i: number) {
       if (i > 0) {
-        this.$emit("update", this.arg, { [i]: this.value[i - 1], [i - 1]: this.value[i] });
+        this._swapsArgs(i.toString(), (i - 1).toString());
+        this.$emit("update", this.arg, { [i]: this.value[i - 1], [i - 1]: this.value[i] }, this.invalidArgs.size === 0);
       }
     },
     moveItemDown(i: number) {
       if (i < this.value.length - 1) {
-        this.$emit("update", this.arg, { [i]: this.value[i + 1], [i + 1]: this.value[i] });
+        this._swapsArgs(i.toString(), (i + 1).toString());
+        this.$emit("update", this.arg, { [i]: this.value[i + 1], [i + 1]: this.value[i] }, this.invalidArgs.size === 0);
       }
     },
     deleteItem(i: number) {
-      this.$emit("update", this.arg, { [i]: DELETED });
+      this.invalidArgs.delete(i.toString());
+      this.$emit(
+        "update",
+        this.arg,
+        { [i]: DELETED },
+        this.invalidArgs.size === 0 && (!this.required || this.value.length > 1)
+      );
+    },
+    _swapsArgs(arg1: string, arg2: string) {
+      if (this.invalidArgs.has(arg1) && !this.invalidArgs.has(arg2)) {
+        this.invalidArgs.delete(arg1);
+        this.invalidArgs.add(arg2);
+      } else if (this.invalidArgs.has(arg2) && !this.invalidArgs.has(arg1)) {
+        this.invalidArgs.delete(arg2);
+        this.invalidArgs.add(arg1);
+      }
     },
   },
 });
@@ -157,22 +170,19 @@ Vue.component("enum-input", {
   props: {
     arg: String,
     required: Boolean,
-    showErrors: Boolean,
     value: { type: Number, default: undefined },
     enum: String,
   },
-  template: `<div class="vue-select" :class="{ missing: showErrors && !validate() }">
+  template: `<div class="vue-select">
       <v-select :value="value" :options="options" :reduce="x => x.value" @input="update"></v-select>
     </div>`,
   created() {
     this.$emit("update", this.arg, this.value, !this.required);
   },
   methods: {
-    update(value: string) {
-      this.$emit("update", this.arg, value === null ? undefined : Number(value));
-    },
-    validate() {
-      return !this.required || this.value !== undefined;
+    update(value: string | null) {
+      const val = value === null ? undefined : Number(value);
+      this.$emit("update", this.arg, val, !this.required || val !== undefined);
     },
   },
   computed: {
@@ -185,8 +195,8 @@ Vue.component("enum-input", {
 });
 
 Vue.component("string-input", {
-  props: { arg: String, required: Boolean, showErrors: Boolean, value: { type: String, default: undefined } },
-  template: `<div class="input-group" :class="{ missing: showErrors && !validate() }">
+  props: { arg: String, required: Boolean, value: { type: String, default: undefined } },
+  template: `<div class="input-group">
       <input class="input" type="text" :value="value" @input="update($event.target.value)" />
     </div>`,
   created() {
@@ -194,17 +204,15 @@ Vue.component("string-input", {
   },
   methods: {
     update(value: string) {
-      this.$emit("update", this.arg, value === "" ? undefined : value);
-    },
-    validate() {
-      return !this.required || this.value !== undefined;
+      const val = value === "" ? undefined : value;
+      this.$emit("update", this.arg, val, !this.required || val !== undefined);
     },
   },
 });
 
 Vue.component("number-input", {
-  props: { arg: String, required: Boolean, showErrors: Boolean, value: { type: Number, default: undefined } },
-  template: `<div class="input-group" :class="{ missing: showErrors && !validate() }">
+  props: { arg: String, required: Boolean, value: { type: Number, default: undefined } },
+  template: `<div class="input-group">
       <input class="input" type="number" :value="value" @input="update($event.target.value)" />
     </div>`,
   created() {
@@ -212,28 +220,24 @@ Vue.component("number-input", {
   },
   methods: {
     update(value: string) {
-      this.$emit("update", this.arg, value === "" ? undefined : Number(value));
-    },
-    validate() {
-      return !this.required || this.value !== undefined;
+      const val = value === "" ? undefined : Number(value);
+      this.$emit("update", this.arg, val, !this.required || val !== undefined);
     },
   },
 });
 
 Vue.component("boolean-input", {
-  props: { arg: String, required: Boolean, showErrors: Boolean, value: { type: Boolean, default: undefined } },
-  template: `<div class="vue-select" :class="{ missing: showErrors && !validate() }">
+  props: { arg: String, required: Boolean, value: { type: Boolean, default: undefined } },
+  template: `<div class="vue-select">
       <v-select :value="value === undefined ? undefined : String(value)" :options="['true', 'false']" @input="update"></v-select>
     </div>`,
   created() {
     this.$emit("update", this.arg, this.value, !this.required);
   },
   methods: {
-    update(value: string) {
-      this.$emit("update", this.arg, value === null ? undefined : value === "true");
-    },
-    validate() {
-      return !this.required || this.value !== undefined;
+    update(value: string | null) {
+      const val = value === null ? undefined : value === "true";
+      this.$emit("update", this.arg, val, !this.required || val !== undefined);
     },
   },
 });
