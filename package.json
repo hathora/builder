@@ -1,14 +1,19 @@
 {
   "name": "rtag",
-  "version": "0.0.51",
+  "version": "0.0.60",
   "description": "Real-time app generator",
   "bin": "./generate.ts",
   "dependencies": {
+    "@types/fs-extra": "9.0.8",
     "@types/js-yaml": "4.0.0",
-    "@types/node": "14.14.31",
+    "@types/node": "14.14.35",
+    "@types/shelljs": "0.8.8",
+    "fs-extra": "9.1.0",
     "handlebars": "4.7.7",
     "js-yaml": "4.0.0",
-    "typescript": "4.2.3"
+    "shelljs": "0.8.4",
+    "typescript": "4.2.3",
+    "zod": "3.0.0-alpha.9"
   },
   "repository": {
     "type": "git",

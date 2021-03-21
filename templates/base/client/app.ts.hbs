@@ -28,7 +28,7 @@ const DELETED = Symbol();
 
 function patch(obj: any, val: any) {
   Object.entries(val).forEach(([k, v]) => {
-    if (typeof v === "object" && k in obj) {
+    if (typeof v === "object" && k in obj && obj[k] !== undefined) {
       patch(obj[k], v);
     } else if (v === DELETED) {
       obj.splice(Number(k), 1);

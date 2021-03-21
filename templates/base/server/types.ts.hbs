@@ -1,5 +1,4 @@
 {{#each types}}
-{{#with (getArgsInfo this)}}
 {{#if (eq type "enum")}}
 export enum {{@key}} {
   {{#each options}}
@@ -13,19 +12,14 @@ export interface {{@key}} {
   {{/each}}
 }
 {{else}}
-export type {{@key}} = {{../this}};
+export type {{@key}} = {{> renderArg}};
 {{/if}}
-{{/with}}
 {{/each}}
 {{#each methods}}
 export interface {{makeRequestName @key}} {
-{{#if this}}
-{{#with (getArgsInfo this)}}
-  {{#each properties}}
+{{#each properties}}
   {{@key}}: {{> renderArg}};
-  {{/each}}
-{{/with}}
-{{/if}}
+{{/each}}
 }
 {{/each}}
 {{#each auth}}
@@ -43,6 +37,23 @@ export interface {{capitalize @key}}UserData {
 }
 {{/each}}
 export type UserData = {{#each auth}}{{capitalize @key}}UserData{{#unless @last}} | {{/unless}}{{/each}};
+export interface SuccessResult {
+  type: "success";
+}
+export interface ErrorResult {
+  type: "error";
+  error: {{error}};
+}
+export type Result = SuccessResult | ErrorResult;
+export const Result: { success: () => SuccessResult; error: (error: {{error}}) => ErrorResult } = {
+  success: () => ({
+    type: "success",
+  }),
+  error: (error: {{error}}) => ({
+    type: "error",
+    error,
+  }),
+};
 {{#*inline "renderArg"}}
 {{#if alias}}
 {{typeString}}
