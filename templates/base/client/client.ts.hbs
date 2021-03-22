@@ -22,20 +22,19 @@ export class RtagClient {
     return jwtDecode(token);
   }
 
-  {{#each auth}}
-  {{#if (eq @key "anonymous")}}
+{{#each auth}}
+{{#if (eq @key "anonymous")}}
   public static async loginAnonymous(): Promise<string> {
     return (await axios.post("/login/anonymous")).data.token;
   }
 
-  {{else if (eq @key "google")}}
+{{else if (eq @key "google")}}
   public static async loginGoogle(idToken: string): Promise<string> {
     return (await axios.post("/login/google", { idToken })).data.token;
   }
 
-  {{/if}}
-  {{/each~}}
-
+{{/if}}
+{{/each}}
   public static async createState(token: string, request: {{makeRequestName initialize}}): Promise<StateId> {
     const res = await axios.post("/new", request, { headers: { Authorization: "Bearer " + token } });
     return res.data.stateId;
