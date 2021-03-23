@@ -11,7 +11,7 @@ npm install -g rtag
 
 ## Usage:
 
-Inside a new directory, create a `types.yml` file and run `rtag` to generate rtag project.
+Inside a new directory, create a `rtag.yml` file and run `rtag` to generate rtag project.
 
 Run `rtag install` to install dependencies.
 

@@ -83,7 +83,7 @@ function capitalize(s: string) {
 }
 
 function getProjectRoot(cwd: string): string {
-  if (existsSync(join(cwd, "types.yml"))) {
+  if (existsSync(join(cwd, "rtag.yml"))) {
     return cwd;
   }
   const parentDir = join(cwd, "..");
@@ -105,7 +105,7 @@ function npmInstall(dir: string) {
 }
 
 function generate() {
-  const doc = RtagConfig.parse(load(readFileSync(join(rootDir, "types.yml"), "utf8")));
+  const doc = RtagConfig.parse(load(readFileSync(join(rootDir, "rtag.yml"), "utf8")));
   const plugins = existsSync(join(clientDir, "plugins"))
     ? readdirSync(join(clientDir, "plugins")).map((p) => p.replace(/\..*$/, ""))
     : [];
@@ -196,7 +196,7 @@ function generate() {
     });
   }
   const rootDirFiles = readdirSync(rootDir).filter((file) => !file.startsWith("."));
-  if (rootDirFiles.length === 1 && rootDirFiles[0] === "types.yml") {
+  if (rootDirFiles.length === 1 && rootDirFiles[0] === "rtag.yml") {
     codegen(join(__dirname, "templates/lang/ts"), rootDir, ".");
   }
   codegen(join(__dirname, "templates/base"), rootDir, ".rtag");
