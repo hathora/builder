@@ -157,6 +157,12 @@ function generate() {
     }
   }
 
+  if (!Object.keys(doc.types).includes(doc.userState)) {
+    throw new Error("Invalid userState");
+  }
+  if (!Object.keys(doc.methods).includes(doc.initialize)) {
+    throw new Error("Invalid initialize");
+  }
   const enrichedDoc = {
     ...doc,
     types: Object.fromEntries(
