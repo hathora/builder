@@ -96,7 +96,7 @@ Returns the initial internal state based on the user context and arguments.
 
 ### Mutation methods
 
-Modifies internal state based on the user context and arguments. Returns a success or error result.
+Modify internal state based on the user context and arguments. Perform input/state validation by returning an error result if invalid request or a success result otherwise.
 
 ### getUserState method
 
