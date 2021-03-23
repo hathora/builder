@@ -88,9 +88,9 @@ The entry point for the application's backend logic lives in the root of the `se
 
 ### Internal state
 
-The server side state representation.
+The server side representation of a single state instance.
 
-### Initialize
+### Initialize method
 
 Returns the initial internal state based on the user context and arguments.
 
@@ -98,9 +98,15 @@ Returns the initial internal state based on the user context and arguments.
 
 Modifies internal state based on the user context and arguments. Returns a success or error result.
 
-### getUserState
+### getUserState method
 
 Maps from the internal state to the user state based on the user context. This mapping allows privacy rules to be enforced so that the user only gets the data they should have access to.
+
+### onTick method
+
+Server ticks can be enabled by setting `tick: true` in `rtag.yml`.
+
+This method is called at a regular interval in the server and has access to the internal state. It is used for background tasks that can update the state, e.g. physics simulations etc.
 
 ## Frontend
 
