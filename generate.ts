@@ -100,7 +100,11 @@ function getCommand(argv: string[]) {
 function npmInstall(dir: string) {
   if (existsSync(dir)) {
     console.log(`Installing dependencies in ${dir}`);
-    shelljs.exec(`npm install --prefix ${dir}`);
+    if (existsSync(join(dir, "yarn.lock"))) {
+      shelljs.exec(`yarn install --cwd ${dir}`);
+    } else {
+      shelljs.exec(`npm install --prefix ${dir}`);
+    }
   }
 }
 
