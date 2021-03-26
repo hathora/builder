@@ -1,7 +1,7 @@
 import WebSocket from "ws";
 import { Socket } from "net";
 import express from "express";
-import { Encoder } from "@msgpack/msgpack";
+import { encode } from "@msgpack/msgpack";
 import { createServer } from "vite";
 import * as http from "http";
 import { dirname, join } from "path";
@@ -28,7 +28,6 @@ const vite = await createServer({
   clearScreen: false,
   alias: { vue: "vue/dist/vue.esm.js" },
 });
-const encoder = new Encoder();
 
 const connections: Map<string, Set<Connection>> = new Map();
 const store = new Store(onNewUserState);
@@ -57,7 +56,7 @@ server.on("upgrade", (req: http.IncomingMessage, socket: Socket, head: Buffer) =
   wss.handleUpgrade(req, socket, head, (ws) => {
     ws.once("message", (token) => {
       const user = getUserFromToken(token);
-      ws.send(encoder.encode({ type: "state", state: store.getUserState(stateId, user)! }));
+      ws.send(encode({ type: "state", state: store.getUserState(stateId, user)! }, { ignoreUndefined: true }));
       handleConnection(stateId, user, Object.assign(ws, { isAlive: true }));
     });
   });
@@ -92,7 +91,7 @@ function handleConnection(stateId: StateId, user: UserData, socket: Connection) 
     const { method, args, msgId }: UpdateRequest = JSON.parse(data as string);
     try {
       const result = store.handleUpdate(stateId, user, method, args);
-      socket.send(encoder.encode({ type: "response", msgId, result }));
+      socket.send(encode({ type: "response", msgId, result }));
     } catch (error) {
       console.error(error);
     }
@@ -121,6 +120,6 @@ function deleteConnection(stateId: StateId, user: UserData, socket: Connection) 
 function onNewUserState(stateId: StateId, user: UserData, userState: UserState) {
   const client = stateId + user.id;
   connections.get(client)!.forEach((socket) => {
-    socket.send(encoder.encode({ type: "state", state: userState }));
+    socket.send(encode({ type: "state", state: userState }, { ignoreUndefined: true }));
   });
 }
