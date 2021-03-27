@@ -13,7 +13,7 @@ Rtag also comes with a powerful development server with features like hot code r
 
 ## Installation
 
-### Requirements
+#### Requirements
 
 - node v15+
 - ts-node on classpath (`npm install -g ts-node`)
@@ -35,7 +35,7 @@ npm install -g rtag
 
 Rtag apps contain a yaml configuration file in the root directory. This file sets up the contract between client and server and contains other relevant configuration for the application.
 
-### Client state object
+#### Client state object
 
 This is the state object each connected client will have access to. Rtag automatically keeps the client state up to date as it is updated in the server.
 
@@ -64,7 +64,7 @@ A custom error type can also be defined, although in many cases using a primitiv
 error: string
 ```
 
-### Mutation methods
+#### Mutation methods
 
 Methods are the way through which the state can be modified in the server. Methods take 0 or more user-defined arguments and have to be implemented in the server, possibly mutating the state and returning either a success or error response.
 
@@ -81,7 +81,7 @@ methods:
 initialize: createState
 ```
 
-### Authentication
+#### Authentication
 
 The `auth` section is used to configure the authentication modes that the application can use. The two currently supported modes are `anonymous` and `google`. At least one authentication method must be configured.
 
@@ -97,23 +97,23 @@ auth:
 
 The entry point for the application's backend logic lives in the root of the `server` directory, in a file called `impl.ts`.
 
-### Internal state
+#### Internal state
 
 The server side representation of a single state instance.
 
-### Initialize method
+#### Initialize method
 
 Returns the initial internal state based on the user context and arguments.
 
-### Mutation methods
+#### Mutation methods
 
 Modify internal state based on the user context and arguments. Perform input/state validation by returning an error result if invalid request or a success result otherwise.
 
-### getUserState method
+#### getUserState method
 
 Maps from the internal state to the user state based on the user context. This mapping allows privacy rules to be enforced so that the user only gets the data they should have access to.
 
-### onTick method
+#### onTick method
 
 Server ticks can be enabled by setting `tick: true` in `rtag.yml`.
 
@@ -123,7 +123,7 @@ This method is called at a regular interval in the server and has access to the 
 
 One of rtag's most powerful prototyping features is the generated debug app, which lets you interact with your application and test your backend logic without writing any frontend code. Furthermore, rtag provides ways to incrementally add custom presentation logic as you become ready for it.
 
-### Plugins
+#### Plugins
 
 Plugins go inside the `client/plugins` directory. To create a plugin for type `Foo`, create a file named `Foo.ts` and rerun the `rtag` command. This will cause the debug app to render your plugin's component anywhere `Foo` shows up in the state tree (instead of the rendering the default json view).
 
@@ -137,6 +137,6 @@ Plugins receive the following props as input:
 - state -- this is the entire state tree, it has the type of `userState`
 - client -- this is the rtag client instance (so you can make method calls from within your plugin), with type `RtagClient`
 
-### Fully custom frontend
+#### Fully custom frontend
 
 When you're ready to move away from the debug app, create an `index.html` file at the root of the `client` directory and rerun the `rtag` command. This file now serves as the entry point to your frontend. You are free to use any technologies you wish to build your frontend, just make sure to import the generated client to communicate with the rtag server.
