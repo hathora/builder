@@ -2,7 +2,14 @@
 
 ## Overview
 
-TODO
+Rtag is a framework that aims to simplify application development by allowing the developer focus only on application-specific logic, without having to think about adjacent concerns such as infrastructure, tooling, networking, storage, etc.
+
+Rtag uses a YAML file (`rtag.yml`) to define the application specification. The developer declares the client data model, mutation functions, and other relevant configuration in this file. Rtag then uses this specification to automatically generate several key components:
+- server side method stubs that set up the entire server code structure and just need to be filled in with the application's business logic
+- clients for frontends to use to communicate with the rtag server in a typesafe manner
+- a web-based debug application that allows for testing backend logic right away without writing any frontend code
+
+Rtag also comes with a powerful development server with features like hot code reloading and live code bundling, which aim to get out of the way of the developer and create an enjoyable development experience. 
 
 ## Installation
 
@@ -114,7 +121,7 @@ This method is called at a regular interval in the server and has access to the 
 
 ## Frontend
 
-One of rtag's most powerful prototyping features is the generated debug app, which lets you interact with your application and test your backend logic without writing any frontend code. Furthurmore, rtag provides ways to incrementally add custom presentation logic as you become ready for it.
+One of rtag's most powerful prototyping features is the generated debug app, which lets you interact with your application and test your backend logic without writing any frontend code. Furthermore, rtag provides ways to incrementally add custom presentation logic as you become ready for it.
 
 ### Plugins
 
