@@ -35,7 +35,7 @@ export default class Store {
     }, 50);
   }
   newState(stateId: StateId, user: UserData, req: any) {
-    const state = impl.createGame(user, req);
+    const state = impl.{{initialize}}(user, req);
     states.set(
       stateId,
       onChange(state, () => {
