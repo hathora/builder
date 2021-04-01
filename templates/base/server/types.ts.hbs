@@ -62,7 +62,7 @@ export const Result: { success: () => SuccessResult; error: (error: {{error}}) =
 {{~else if (eq type "array")}}
 {{> renderArg items}}[]
 {{~else if (eq type "set")}}
-Set<{{> renderArg items}}>
+{{> renderArg items}}[]
 {{~else if (eq type "number")}}
 number
 {{~else if (eq type "string")}}
