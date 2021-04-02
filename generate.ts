@@ -12,10 +12,12 @@ const RtagConfig = z
   .object({
     types: z.record(TypeArgs),
     methods: z.record(z.nullable(z.record(z.string()))),
-    auth: z.object({
-      anonymous: z.optional(z.object({ separator: z.string() })),
-      google: z.optional(z.object({ clientId: z.string() })),
-    }),
+    auth: z
+      .object({
+        anonymous: z.optional(z.object({ separator: z.string() }).strict()),
+        google: z.optional(z.object({ clientId: z.string() }).strict()),
+      })
+      .strict(),
     userState: z.string(),
     initialize: z.string(),
     error: z.string(),

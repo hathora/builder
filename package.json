@@ -4,16 +4,16 @@
   "description": "Real-time app generator",
   "bin": "./generate.ts",
   "dependencies": {
-    "@types/fs-extra": "9.0.8",
+    "@types/fs-extra": "9.0.9",
     "@types/js-yaml": "4.0.0",
-    "@types/node": "14.14.35",
+    "@types/node": "14.14.37",
     "@types/shelljs": "0.8.8",
     "fs-extra": "9.1.0",
     "handlebars": "4.7.7",
     "js-yaml": "4.0.0",
     "shelljs": "0.8.4",
     "typescript": "4.2.3",
-    "zod": "3.0.0-alpha.9"
+    "zod": "3.0.0-alpha.33"
   },
   "repository": {
     "type": "git",
