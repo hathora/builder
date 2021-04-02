@@ -107,16 +107,14 @@ Vue.component("object-input", {
 Vue.component("array-input", {
   props: { arg: String, required: Boolean, value: { type: Array, default: () => [] } },
   data: () => ({ invalidArgs: new Set<string>() }),
-  template: `<div>
-      <div>
-        <div class="form-group array-item" v-for="(v, i) in value">
-          <div class="stretch-form-input">
-            <slot :arg="i.toString()" :value="v" :update="update"></slot>
-          </div>
-          <button class="button" type="button" @click="moveItemUp(i)">&#8593;</button>
-          <button class="button" type="button" @click="moveItemDown(i)">&#8595;</button>
-          <button class="button danger" type="button" @click="deleteItem(i)">x</button>
+  template: `<div class="array-input">
+      <div class="form-group array-item" v-for="(v, i) in value">
+        <div class="stretch-form-input">
+          <slot :arg="i.toString()" :value="v" :update="update"></slot>
         </div>
+        <button class="button" type="button" @click="moveItemUp(i)">&#8593;</button>
+        <button class="button" type="button" @click="moveItemDown(i)">&#8595;</button>
+        <button class="button danger" type="button" @click="deleteItem(i)">x</button>
       </div>
       <button class="button" type="button" @click="addItem()">
         <span class="button-text">Add</span>
@@ -173,7 +171,7 @@ Vue.component("enum-input", {
     value: { type: Number, default: undefined },
     enum: String,
   },
-  template: `<div class="vue-select">
+  template: `<div class="enum-input vue-select">
       <v-select :value="value" :options="options" :reduce="x => x.value" @input="update"></v-select>
     </div>`,
   created() {
@@ -196,7 +194,7 @@ Vue.component("enum-input", {
 
 Vue.component("string-input", {
   props: { arg: String, required: Boolean, value: { type: String, default: undefined } },
-  template: `<div class="input-group">
+  template: `<div class="string-input input-group">
       <input class="input" type="text" :value="value" @input="update($event.target.value)" />
     </div>`,
   created() {
@@ -212,7 +210,7 @@ Vue.component("string-input", {
 
 Vue.component("number-input", {
   props: { arg: String, required: Boolean, value: { type: Number, default: undefined } },
-  template: `<div class="input-group">
+  template: `<div class="number-input input-group">
       <input class="input" type="number" :value="value" @input="update($event.target.value)" />
     </div>`,
   created() {
@@ -228,7 +226,7 @@ Vue.component("number-input", {
 
 Vue.component("boolean-input", {
   props: { arg: String, required: Boolean, value: { type: Boolean, default: undefined } },
-  template: `<div class="vue-select">
+  template: `<div class="boolean-input vue-select">
       <v-select :value="value === undefined ? undefined : String(value)" :options="['true', 'false']" @input="update"></v-select>
     </div>`,
   created() {
