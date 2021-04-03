@@ -52,7 +52,7 @@
 {{else if (eq type "object")}}
 <object-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" @update="update" v-slot="{ value, update }">
   {{#each properties}}
-  <label class="label">{{@key}}{{#unless (eq type "optional")}}*{{/unless}}</label>
+  <key-display class="label" value="{{@key}}{{#unless (eq type "optional")}}*{{/unless}}" type-string="{{typeString}}"></key-display>
   {{> renderForm arg=@key required=true}}
   {{/each}}
 </object-input>
