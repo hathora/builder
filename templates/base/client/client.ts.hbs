@@ -1,7 +1,7 @@
 import WebSocket from "isomorphic-ws";
 import axios from "axios";
 import jwtDecode from "jwt-decode";
-import { decode } from "@msgpack/msgpack";
+import { decode, encode } from "@msgpack/msgpack";
 import {
   UserData,
   Result,
@@ -75,7 +75,7 @@ export class RtagClient {
   {{#if (ne @key ../initialize)}}
   public {{@key}}(request: {{makeRequestName @key}}): Promise<Result> {
     const msgId = Math.random().toString(36).substring(2);
-    this.socket.send(JSON.stringify({ method: "{{@key}}", msgId, args: request }));
+    this.socket.send(encode({ method: "{{@key}}", msgId, args: request }));
     return new Promise((resolve) => {
       this.callbacks[msgId] = resolve;
     });
