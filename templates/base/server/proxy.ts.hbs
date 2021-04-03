@@ -1,7 +1,7 @@
 import WebSocket from "ws";
 import { Socket } from "net";
 import express from "express";
-import { encode } from "@msgpack/msgpack";
+import { decode, encode } from "@msgpack/msgpack";
 import { createServer } from "vite";
 import * as http from "http";
 import { dirname, join } from "path";
@@ -88,7 +88,7 @@ function handleConnection(stateId: StateId, user: UserData, socket: Connection) 
     socket.isAlive = true;
   });
   socket.on("message", (data) => {
-    const { method, args, msgId }: UpdateRequest = JSON.parse(data as string);
+    const { method, args, msgId } = decode(data as ArrayBuffer) as UpdateRequest;
     try {
       const result = store.handleUpdate(stateId, user, method, args);
       socket.send(encode({ type: "response", msgId, result }));

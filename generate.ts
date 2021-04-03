@@ -105,7 +105,8 @@ function npmInstall(dir: string) {
     if (existsSync(join(dir, "yarn.lock"))) {
       shelljs.exec(`yarn install --cwd ${dir}`);
     } else {
-      shelljs.exec(`npm install --prefix ${dir}`);
+      shelljs.cd(dir);
+      shelljs.exec("npm install");
     }
   }
 }
