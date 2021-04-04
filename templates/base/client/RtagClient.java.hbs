@@ -1,0 +1,159 @@
+package rtag;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.RequestBody;
+
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.handshake.ServerHandshake;
+import org.msgpack.jackson.dataformat.MessagePackFactory;
+
+import lombok.Getter;
+import lombok.Setter;
+
+import rtag.Types.{{userState}};
+{{#each methods}}
+import rtag.Types.{{makeRequestName @key}};
+{{/each}}
+import rtag.Types.StateChangeRunnable;
+import rtag.Types.CallbackRunnable;
+import rtag.Types.Message;
+import rtag.Types.ResponseMessage;
+import rtag.Types.StateMessage;
+import rtag.Types.LoginResponse;
+import rtag.Types.CreateStateResponse;
+
+public class RtagClient {
+    private Map<String, CallbackRunnable> callbacks = new HashMap<String, CallbackRunnable>();
+    private static OkHttpClient client = new OkHttpClient();
+    private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+    private static ObjectMapper jsonMapper = new ObjectMapper();
+    private static ObjectMapper msgPackMapper = new ObjectMapper(new MessagePackFactory());
+
+    @Getter
+    @Setter
+    private WebSocketClient socket;
+
+    private RtagClient() {
+    }
+
+    // public static Types.UserData getUserFromToken(String token) {
+    // try {
+    // UserData data = JWT.decode(token);
+    // return data;
+    // } catch (JWTDecodeException exception) {
+    // // Invalid token
+    // }
+    // }
+
+    {{#each auth}}
+    {{#if (eq @key "anonymous")}}
+    public static String loginAnonymous(String origin) throws IOException {
+        Request request = new Request.Builder().url(String.format("%s/login/anonymous", origin))
+                .post(RequestBody.create(JSON, "{}")).build();
+        String response = client.newCall(request).execute().body().string();
+        return jsonMapper.readValue(response, LoginResponse.class).getToken();
+    }
+
+    {{else if (eq @key "google")}}
+    public static String loginGoogle(String origin) throws IOException {
+        Request request = new Request.Builder().url(String.format("%s/login/google", origin))
+                .post(RequestBody.create(JSON, "{}")).build();
+        String response = client.newCall(request).execute().body().string();
+        return jsonMapper.readValue(response, LoginResponse.class).getToken();
+    }
+
+    {{/if}}
+    {{/each}}
+
+    public static String createState(String origin, String token, ICreateGameRequest request) throws IOException {
+        String response = client.newCall(new Request.Builder().url(String.format("%s/new", origin))
+                .post(RequestBody.create(JSON, "{}")).header("Authorization", "Bearer " + token).build()).execute()
+                .body().string();
+        return jsonMapper.readValue(response, CreateStateResponse.class).getStateId();
+    }
+
+    public static RtagClient connect(String host, String token, String stateId, StateChangeRunnable onStateChange)
+            throws URISyntaxException {
+        RtagClient client = new RtagClient();
+        WebSocketClient socket = new WebSocketClient(new URI(String.format("ws://%s/%s", host, stateId))) {
+
+            @Override
+            public void onOpen(ServerHandshake handshakedata) {
+                this.send(token);
+            }
+
+            @Override
+            public void onMessage(String message) {
+                onMessage(ByteBuffer.wrap(message.getBytes()));
+            }
+
+            @Override
+            public void onMessage(ByteBuffer message) {
+                try {
+                    byte[] data = message.array();
+                    Message msg = msgPackMapper.readValue(data, Message.class);
+                    if (msg.getType().equals("response")) {
+                        ResponseMessage responseMsg = msgPackMapper.readValue(data, ResponseMessage.class);
+                        client.callbacks.get(responseMsg.getMsgId()).run(responseMsg.getError());
+                        client.callbacks.remove(responseMsg.getMsgId());
+                    } else if (msg.getType().equals("state")) {
+                        StateMessage stateMsg = msgPackMapper.readValue(data, StateMessage.class);
+                        onStateChange.run(stateMsg.getState());
+                    } else {
+                        throw new Exception(String.format("Unknown message type: %s", msg.getType()));
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onClose(int code, String reason, boolean remote) {
+                System.out.println("connection closed");
+            }
+
+            @Override
+            public void onError(Exception ex) {
+                ex.printStackTrace();
+            }
+
+        };
+        socket.connect();
+        client.setSocket(socket);
+        return client;
+    }
+
+    {{#each methods}}
+    public void {{@key}}({{makeRequestName @key}} request, CallbackRunnable cb) {
+        final String msgId = Integer.toString((int) (Math.random() * 1000000000), 36).substring(2);
+        this.callbacks.put(msgId, cb);
+        ObjectNode obj = msgPackMapper.createObjectNode();
+        obj.put("method", "{{@key}}");
+        obj.put("msgId", msgId);
+        try {
+            obj.set("args", msgPackMapper.convertValue(request, JsonNode.class));
+            this.socket.send(msgPackMapper.writeValueAsBytes(obj));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+    }
+    {{/each}}
+
+    public void disconnect() {
+        this.socket.close();
+    }
+}

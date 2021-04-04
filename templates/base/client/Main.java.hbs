@@ -1,0 +1,28 @@
+package app;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+
+import rtag.RtagClient;
+import rtag.Types.*;
+
+public class Main {
+    public static final String HOST = "localhost:3000";
+    public static {{userState}} userState;
+
+    public static void main(String[] args) {
+        try {
+            String token = RtagClient.loginAnonymous("http://" + HOST);
+            System.out.println("TOKEN: " + token);
+
+            String stateId = RtagClient.createState("http://" + HOST, token, {{makeRequestName initialize}}.builder().build());
+            System.out.println("STATE ID: " + stateId);
+        } catch (IOException e) {
+            System.out.println("IO Exception " + e.toString());
+        }
+    }
+
+    public static void setUserState({{userState}} state) {
+        Main.userState = state;
+    }
+}

@@ -205,6 +205,7 @@ function generate() {
   const rootDirFiles = readdirSync(rootDir).filter((file) => !file.startsWith("."));
   if (rootDirFiles.length === 1 && rootDirFiles[0] === "rtag.yml") {
     codegen(join(__dirname, "templates/lang/ts"), rootDir, ".");
+    codegen(join(__dirname, "templates/lang/java"), rootDir, ".");
   }
   codegen(join(__dirname, "templates/base"), rootDir, ".rtag");
 }

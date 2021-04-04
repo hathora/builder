@@ -1,0 +1,184 @@
+package rtag;
+
+import java.util.Optional;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
+
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.Setter;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+
+public class Types {
+    {{#each types}}
+    {{#if (eq type "enum")}}
+    public enum {{@key}} {
+        {{#each options}}
+        {{label}}{{#unless @last}},{{else}};{{/unless}}
+        {{/each}}
+
+        @JsonValue
+        public int toValue() {
+            return ordinal();
+        }
+    }
+    {{else if (eq type "object")}}
+    @Value
+    @Jacksonized
+    @Builder
+    @NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
+    @AllArgsConstructor
+    public static class {{@key}} {
+        {{#each properties}}
+        @JsonProperty("{{@key}}")
+        private {{> renderArg}} {{@key}};
+        {{/each}}
+    }
+    {{else}}
+    public static final class {{@key}} {
+        private final {{> renderArg}} value;
+
+        private {{@key}}(@NonNull {{> renderArg}} value) {
+            this.value = value;
+        }
+
+        @JsonValue
+        public {{> renderArg}} get() {
+            return value;
+        }
+
+        @Override
+        public String toString() {
+            return value.toString();
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            return this == other
+                    || (other instanceof {{@key}} && this.value.equals((({{@key}}) other).value));
+        }
+
+        @Override
+        public int hashCode() {
+            return value.hashCode();
+        }
+
+        public static {{@key}} valueOf({{> renderArg}} value) {
+            return of(value);
+        }
+
+        @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
+        public static {{@key}} of(@NonNull {{> renderArg}} value) {
+            return new {{@key}}(value);
+        }
+    }
+    {{/if}}
+    {{/each}}
+    {{#each methods}}
+    @Value
+    @Builder
+    public static class {{makeRequestName @key}} {
+        {{#each properties}}
+        private {{> renderArg}} {{@key}};
+        {{/each}}
+    }
+    {{/each}}
+    {{!-- {{#each auth}}
+    export interface {{capitalize @key}}UserData {
+    type: "{{@key}}";
+    id: string;
+    {{#if (eq @key "anonymous")}}
+    name: string;
+    {{else if (eq @key "google")}}
+    name: string;
+    email: string;
+    locale: string;
+    picture: string;
+    {{/if}}
+    }
+    {{/each}} --}}
+    {{!-- export type UserData = {{#each auth}}{{capitalize @key}}UserData{{#unless @last}} | {{/unless}}{{/each}}; --}}
+    {{!-- export interface SuccessResult {
+    type: "success";
+    }
+    export interface ErrorResult {
+    type: "error";
+    error: {{error}};
+    }
+    export type Result = SuccessResult | ErrorResult;
+    export const Result: { success: () => SuccessResult; error: (error: {{error}}) => ErrorResult } = {
+    success: () => ({
+        type: "success",
+    }),
+    error: (error: {{error}}) => ({
+        type: "error",
+        error,
+    }),
+    }; --}}
+    public interface StateChangeRunnable {
+        public void run(Types.PlayerState state);
+    }
+
+    public interface CallbackRunnable {
+        public void run(String error);
+    }
+
+    @Getter
+    @Setter
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Message {
+        private String type;
+    }
+
+    @Getter
+    @Setter
+    public static class ResponseMessage extends Message {
+        private String type;
+        private String msgId;
+        private String error;
+    }
+
+    @Getter
+    @Setter
+    public static class StateMessage extends Message {
+        private String type;
+        private {{userState}} state;
+    }
+
+    @Getter
+    @Setter
+    public static class LoginResponse {
+        private String token;
+    }
+
+    @Getter
+    @Setter
+    public static class CreateStateResponse {
+        private String stateId;
+    }
+}
+{{#*inline "renderArg"}}
+{{#if alias}}
+{{typeString}}
+{{~else if (eq type "optional")}}
+Optional<{{> renderArg item}}>
+{{~else if (eq type "array")}}
+{{> renderArg items}}[]
+{{~else if (eq type "number")}}
+int
+{{~else if (eq type "string")}}
+String
+{{~else if (eq type "boolean")}}
+boolean
+{{~else if (eq type "plugin")}}
+{{> renderArg item}}
+{{~/if}}
+{{~/inline}}
