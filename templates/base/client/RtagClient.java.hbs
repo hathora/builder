@@ -97,8 +97,8 @@ public class RtagClient {
             }
 
             @Override
-            public void onMessage(String message) {
-                onMessage(ByteBuffer.wrap(message.getBytes()));
+            public void onMessage(String message) throws IllegalArgumentException {
+                throw new IllegalArgumentException("String messages are not allowed. Message must be of type ByteBuffer");
             }
 
             @Override
