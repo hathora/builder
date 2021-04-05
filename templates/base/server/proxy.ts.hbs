@@ -88,7 +88,7 @@ function handleConnection(stateId: StateId, user: UserData, socket: Connection) 
     socket.isAlive = true;
   });
   socket.on("message", (data) => {
-    const { method, args, msgId } = decode(data as ArrayBuffer) as UpdateRequest;
+    const { method, args, msgId } = decode(data as Buffer) as UpdateRequest;
     try {
       const result = store.handleUpdate(stateId, user, method, args);
       socket.send(encode({ type: "response", msgId, result }));
