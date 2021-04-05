@@ -1,5 +1,6 @@
 package rtag;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -10,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -43,6 +45,7 @@ public class Types {
         {{/each}}
     }
     {{else}}
+    @EqualsAndHashCode
     public static final class {{@key}} {
         private final {{> renderArg}} value;
 
@@ -58,21 +61,6 @@ public class Types {
         @Override
         public String toString() {
             return value.toString();
-        }
-
-        @Override
-        public boolean equals(Object other) {
-            return this == other
-                    || (other instanceof {{@key}} && this.value.equals((({{@key}}) other).value));
-        }
-
-        @Override
-        public int hashCode() {
-            return value.hashCode();
-        }
-
-        public static {{@key}} valueOf({{> renderArg}} value) {
-            return of(value);
         }
 
         @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
@@ -123,10 +111,12 @@ public class Types {
         error,
     }),
     }; --}}
+    @FunctionalInterface
     public interface StateChangeRunnable {
         public void run(Types.PlayerState state);
     }
 
+    @FunctionalInterface
     public interface CallbackRunnable {
         public void run(String error);
     }
@@ -171,13 +161,13 @@ public class Types {
 {{~else if (eq type "optional")}}
 Optional<{{> renderArg item}}>
 {{~else if (eq type "array")}}
-{{> renderArg items}}[]
+List<{{> renderArg items}}>
 {{~else if (eq type "number")}}
-int
+Integer
 {{~else if (eq type "string")}}
 String
 {{~else if (eq type "boolean")}}
-boolean
+Boolean
 {{~else if (eq type "plugin")}}
 {{> renderArg item}}
 {{~/if}}
