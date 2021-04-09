@@ -2,7 +2,7 @@ import module from "module";
 import onChange from "on-change";
 import dependencyTree from "dependency-tree";
 import chokidar from "chokidar";
-import { UserData, {{userState}} as UserState } from "./types";
+import { UserData, {{userState}} as UserState, {{makeRequestName initialize}} } from "./types";
 
 const deps = dependencyTree.toList({
   directory: ".",
@@ -34,7 +34,7 @@ export default class Store {
       changedStates.clear();
     }, 50);
   }
-  newState(stateId: StateId, user: UserData, req: any) {
+  newState(stateId: StateId, user: UserData, req: {{makeRequestName initialize}}) {
     const state = impl.{{initialize}}(user, req);
     states.set(
       stateId,
