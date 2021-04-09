@@ -43,7 +43,6 @@ public class RtagClient {
     private static ObjectMapper jsonMapper = new ObjectMapper();
     private static ObjectMapper msgPackMapper = new ObjectMapper(new MessagePackFactory());
 
-    @Getter
     @Setter
     private WebSocketClient socket;
 
