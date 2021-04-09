@@ -188,15 +188,15 @@ function generate() {
     : "../../client/.rtag/index.html";
   const appName = basename(rootDir);
 
-  function codegen(inDir: string, outDir: string, outPrefix: string) {
+  function codegen(inDir: string, outDir: string) {
     readdirSync(inDir).forEach((f) => {
       const file = join(inDir, f);
       if (statSync(file).isDirectory()) {
-        codegen(file, join(outDir, f), outPrefix);
+        codegen(file, join(outDir, f));
       } else {
         const template = compile(readFileSync(file, "utf8"));
         outputFileSync(
-          join(outDir, outPrefix, f.split(".hbs")[0]),
+          join(outDir, f.split(".hbs")[0]),
           template({ ...enrichedDoc, plugins, appEntryPath, appName })
         );
       }
@@ -204,9 +204,9 @@ function generate() {
   }
   const rootDirFiles = readdirSync(rootDir).filter((file) => !file.startsWith("."));
   if (rootDirFiles.length === 1 && rootDirFiles[0] === "rtag.yml") {
-    codegen(join(__dirname, "templates/lang/ts"), rootDir, ".");
+    codegen(join(__dirname, "templates/lang/ts"), rootDir);
   }
-  codegen(join(__dirname, "templates/base"), rootDir, ".rtag");
+  codegen(join(__dirname, "templates/base"), rootDir);
 }
 
 const rootDir = getProjectRoot(process.cwd());
