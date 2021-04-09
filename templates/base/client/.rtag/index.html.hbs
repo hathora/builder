@@ -1,0 +1,114 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="/.rtag/styles.css" />
+    <link rel="stylesheet" href="/.rtag/node_modules/vue-select/dist/vue-select.css" />
+  </head>
+
+  <body>
+    <div id="app">
+      <router-view></router-view>
+    </div>
+    <script type="text/x-template" id="home-template">
+      <div>
+        <button type="button" class="button" @click="createState">
+          <span class="button-text">Create new</span>
+        </button>
+        <div>Or</div>
+        <form class="form-group" @submit.prevent="joinState">
+          <div class="input-group">
+            <input class="input" v-model="stateId" type="text" />
+          </div>
+          <button type="submit" class="button submit">
+            <span class="button-text">Join existing</span>
+          </button>
+        </form>
+      </div>
+    </script>
+    <script type="text/x-template" id="state-template">
+      <div class="container">
+        <div class="forms-container">
+          {{#each methods}}
+          {{#if (ne @key ../initialize)}}
+          <method-form method="{{@key}}" v-slot="{ value, update }">
+            {{> renderForm this arg=@key required=true}}
+          </method-form>
+          {{/if}}
+          {{/each}}
+        </div>
+        <div v-if="Object.keys(value).length > 0" class="json-state">
+          {{> renderState (lookup types userState)}}
+        </div>
+      </div>
+    </script>
+    <script type="module" src="/@vite/client"></script>
+    <script type="module" src="/.rtag/app.ts"></script>
+  </body>
+</html>
+{{#*inline "renderForm"}}
+{{#if (eq type "plugin")}}
+{{#with item}}
+{{> renderForm arg=../arg required=true}}
+{{/with}}
+{{else if (eq type "object")}}
+<object-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" @update="update" v-slot="{ value, update }">
+  {{#each properties}}
+  <key-display class="label" value="{{@key}}{{#unless (eq type "optional")}}*{{/unless}}" type-string="{{typeString}}"></key-display>
+  {{> renderForm arg=@key required=true}}
+  {{/each}}
+</object-input>
+{{else if (eq type "array")}}
+<array-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" @update="update" v-slot="{ arg, value, update }">
+  {{#with items}}
+  {{> renderForm required=true}}
+  {{/with}}
+</array-input>
+{{else if (eq type "optional")}}
+{{#with item}}
+{{> renderForm arg=../arg required=false}}
+{{/with}}
+{{else if (eq type "enum")}}
+<enum-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" @update="update" enum="{{typeString}}"></enum-input>
+{{else if (eq type "string")}}
+<string-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" @update="update"></string-input>
+{{else if (eq type "number")}}
+<number-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" @update="update"></number-input>
+{{else if (eq type "boolean")}}
+<boolean-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" @update="update"></boolean-input>
+{{/if}}
+{{/inline}}
+{{#*inline "renderState"}}
+{{#if (eq type "plugin")}}
+<plugin-display class="plugin-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} component="{{makePluginName typeString}}"></plugin-display>
+{{else if (eq type "object")}}
+{
+<object-display class="object-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} v-slot="{ value }">
+  {{#each properties}}
+  <div class="kv-display">
+    <key-display value="{{@key}}" type-string="{{typeString}}"></key-display>
+    {{> renderState arg=@key}}
+  </div>
+  {{/each}}
+</object-display>
+},
+{{else if (eq type "array")}}
+[
+<array-display class="array-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} v-slot="{ value }">
+  {{#with items}}
+    {{> renderState}}
+  {{/with}}
+</array-display>
+],
+{{else if (eq type "optional")}}
+{{#with item}}
+{{> renderState arg=../arg}}
+{{/with}}
+{{else if (eq type "enum")}}
+<enum-display class="enum-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} enum="{{typeString}}"></enum-display>,
+{{else if (eq type "string")}}
+<string-display class="string-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}}></string-display>,
+{{else if (eq type "number")}}
+<number-display class="number-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}}></number-display>,
+{{else if (eq type "boolean")}}
+<boolean-display class="boolean-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}}></boolean-display>,
+{{/if}}
+{{/inline}}
