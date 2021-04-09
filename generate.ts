@@ -207,7 +207,8 @@ function generate() {
     codegen(join(__dirname, "templates/lang/ts"), rootDir, ".");
     codegen(join(__dirname, "templates/lang/java"), rootDir, ".");
   }
-  codegen(join(__dirname, "templates/base"), rootDir, ".rtag");
+  codegen(join(__dirname, "templates/base/ts"), rootDir, ".rtag");
+  codegen(join(__dirname, "templates/base/java"), rootDir, ".rtag/src/main/java/rtag");
 }
 
 const rootDir = getProjectRoot(process.cwd());
