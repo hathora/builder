@@ -24,12 +24,18 @@ const RtagConfig = z
   })
   .strict();
 
-type Arg = ObjectArg | ArrayArg | OptionalArg | DisplayPluginArg | EnumArg | StringArg | NumberArg | BooleanArg;
+type Arg = ObjectArg | ArrayArg | OptionalArg | DisplayPluginArg | EnumArg | UnionArg | StringArg | NumberArg | BooleanArg;
 interface ObjectArg {
   type: "object";
   alias: boolean;
   typeString?: string;
   properties: Record<string, Arg>;
+}
+interface UnionArg {
+  type: "union";
+  alias: boolean;
+  typeString?: string;
+  options: Arg[];
 }
 interface ArrayArg {
   type: "array";
@@ -119,6 +125,15 @@ function generate() {
 
   function getArgsInfo(args: z.infer<typeof TypeArgs>, required: boolean, alias: boolean, typeString?: string): Arg {
     if (Array.isArray(args)) {
+      const isUnion = args.every(arg => arg in doc.types);
+      if(isUnion) {
+        return {
+          type: "union",
+          typeString,
+          alias,
+          options: args.map(type => getArgsInfo(type, true, false))
+        }
+      }
       return {
         type: "enum",
         typeString,
