@@ -6,19 +6,14 @@ export enum {{@key}} {
   {{/each}}
 }
 {{else if (eq type "union")}}
-{{#each options}}
-interface {{@../key}}_{{> renderArg}} {
-  type: "{{> renderArg}}"
-  value: {{> renderArg}}
-}
-{{/each}}
 export type {{@key}} =
 {{#each options}}
- | {{@../key}}_{{> renderArg}}
+  | ({type: "{{> renderArg}}"} & {{> renderArg}})
 {{/each}}
 export const {{@key}} = {
 {{#each options}}
-  is{{> renderArg}}: ({{@../key}}: {{@../key}}): {{@../key}} is {{@../key}}_{{> renderArg}} => {{@../key}}.type === "{{> renderArg}}",
+  is{{> renderArg}}: ({{@../key}}: {{@../key}}): {{@../key}} is ({type: "{{> renderArg}}"} & {{> renderArg}}) => {{@../key}}.type === "{{> renderArg}}",
+  {{> renderArg}}: (val: {{> renderArg}}): {{@../key}} => ({...val, type: "{{> renderArg}}"}),
 {{/each}}
 }
 {{else if (eq type "object")}}
