@@ -120,7 +120,13 @@ public class Types {
     @Builder
     @Jacksonized
     public static class Result {
-        private String type;
+        public enum ResultType {
+            @JsonProperty("success")
+            SUCCESS,
+            @JsonProperty("error")
+            ERROR;
+        }
+        private ResultType type;
         private {{> renderError}} error;
     }
 
