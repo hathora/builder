@@ -4,6 +4,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,8 +32,9 @@ import rtag.Types.{{userState}};
 {{#each methods}}
 import rtag.Types.{{makeRequestName @key}};
 {{/each}}
+import rtag.Types.Result;
+import rtag.Types.ResultCallback;
 import rtag.Types.StateChangeRunnable;
-import rtag.Types.CallbackRunnable;
 import rtag.Types.Message;
 import rtag.Types.ResponseMessage;
 import rtag.Types.StateMessage;
@@ -37,7 +42,8 @@ import rtag.Types.LoginResponse;
 import rtag.Types.CreateStateResponse;
 
 public class RtagClient {
-    private Map<String, CallbackRunnable> callbacks = new HashMap<String, CallbackRunnable>();
+    private Map<String, ResultCallback> callbacks = new HashMap<String, ResultCallback>();
+    private static ExecutorService es = Executors.newSingleThreadExecutor();
     private static OkHttpClient client = new OkHttpClient();
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     private static ObjectMapper jsonMapper = new ObjectMapper();
@@ -107,7 +113,9 @@ public class RtagClient {
                     Message msg = msgPackMapper.readValue(data, Message.class);
                     if (msg.getType().equals("response")) {
                         ResponseMessage responseMsg = msgPackMapper.readValue(data, ResponseMessage.class);
-                        client.callbacks.get(responseMsg.getMsgId()).run(responseMsg.getError());
+                        ResultCallback resultCallback = client.callbacks.get(responseMsg.getMsgId());
+                        resultCallback.getCb().setResult(responseMsg.getResult());
+                        es.execute(resultCallback.getFuture());
                         client.callbacks.remove(responseMsg.getMsgId());
                     } else if (msg.getType().equals("state")) {
                         StateMessage stateMsg = msgPackMapper.readValue(data, StateMessage.class);
@@ -137,18 +145,18 @@ public class RtagClient {
     }
 
     {{#each methods}}
-    public void {{@key}}({{makeRequestName @key}} request, CallbackRunnable cb) {
+    public Result {{@key}}({{makeRequestName @key}} request)
+            throws InterruptedException, ExecutionException, JsonProcessingException {
         final String msgId = Integer.toString((int) (Math.random() * 1000000000), 36).substring(2);
-        this.callbacks.put(msgId, cb);
+        ResultCallback.ResultCallable cb = new ResultCallback.ResultCallable();
+        FutureTask<Result> future = new FutureTask<>(cb);
+        this.callbacks.put(msgId, ResultCallback.builder().future(future).cb(cb).build());
         ObjectNode obj = msgPackMapper.createObjectNode();
         obj.put("method", "{{@key}}");
         obj.put("msgId", msgId);
-        try {
-            obj.set("args", msgPackMapper.convertValue(request, JsonNode.class));
-            this.socket.send(msgPackMapper.writeValueAsBytes(obj));
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
+        obj.set("args", msgPackMapper.convertValue(request, JsonNode.class));
+        this.socket.send(msgPackMapper.writeValueAsBytes(obj));
+        return this.callbacks.get(msgId).get();
     }
     {{/each}}
 

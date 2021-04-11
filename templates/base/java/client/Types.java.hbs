@@ -2,6 +2,9 @@ package rtag;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -34,10 +37,10 @@ public class Types {
     }
     {{else if (eq type "object")}}
     @Value
-    @Jacksonized
     @Builder
-    @NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
-    @AllArgsConstructor
+    @Jacksonized
+    {{!-- @NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
+    @AllArgsConstructor --}}
     public static class {{@key}} {
         {{#each properties}}
         @JsonProperty("{{@key}}")
@@ -73,6 +76,7 @@ public class Types {
     {{#each methods}}
     @Value
     @Builder
+    @Jacksonized
     public static class {{makeRequestName @key}} {
         {{#each properties}}
         private {{> renderArg}} {{@key}};
@@ -111,14 +115,39 @@ public class Types {
         error,
     }),
     }; --}}
+
+    @Value
+    @Builder
+    @Jacksonized
+    public static class Result {
+        private String type;
+        private {{> renderError}} error;
+    }
+
     @FunctionalInterface
     public interface StateChangeRunnable {
         public void run(Types.PlayerState state);
     }
 
-    @FunctionalInterface
-    public interface CallbackRunnable {
-        public void run(String error);
+    @Value
+    @Builder
+    public static class ResultCallback {
+        private FutureTask<Result> future;
+        private ResultCallable cb;
+
+        @Getter
+        @Setter
+        public static class ResultCallable implements Callable<Result> {
+            private Result result;
+
+            public Result call() {
+                return this.result;
+            }
+        }
+
+        public Result get() throws InterruptedException, ExecutionException {
+            return this.future.get();
+        }
     }
 
     @Getter
@@ -130,10 +159,11 @@ public class Types {
 
     @Getter
     @Setter
+    @Jacksonized
     public static class ResponseMessage extends Message {
         private String type;
         private String msgId;
-        private String error;
+        private Result result;
     }
 
     @Getter
@@ -170,5 +200,15 @@ String
 Boolean
 {{~else if (eq type "plugin")}}
 {{> renderArg item}}
+{{~/if}}
+{{~/inline}}
+
+{{#*inline "renderError"}}
+{{#if (eq error "number")}}
+Integer
+{{~else if (eq error "string")}}
+String
+{{~else if (eq error "boolean")}}
+Boolean
 {{~/if}}
 {{~/inline}}
