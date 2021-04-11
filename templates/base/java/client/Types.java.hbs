@@ -9,6 +9,9 @@ import java.util.concurrent.FutureTask;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import lombok.Builder;
@@ -36,8 +39,6 @@ public class Types {
     @Value
     @Builder
     @Jacksonized
-    {{!-- @NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
-    @AllArgsConstructor --}}
     public static class {{@key}} {
         {{#each properties}}
         @JsonProperty("{{@key}}")
@@ -80,38 +81,99 @@ public class Types {
         {{/each}}
     }
     {{/each}}
-    {{!-- {{#each auth}}
-    export interface {{capitalize @key}}UserData {
-    type: "{{@key}}";
-    id: string;
-    {{#if (eq @key "anonymous")}}
-    name: string;
-    {{else if (eq @key "google")}}
-    name: string;
-    email: string;
-    locale: string;
-    picture: string;
-    {{/if}}
+
+    @Value
+    @Builder
+    @Jacksonized
+    public static class UserData {
+        private Base value;
+
+        @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
+        private UserData(Base value) {
+            this.value = value;
+        }
+
+        @JsonValue
+        private Base get() {
+            return value;
+        }
+
+        @Override
+        public String toString() {
+            return value.toString();
+        }
+
+        @JsonTypeInfo(
+            use = JsonTypeInfo.Id.NAME,
+            include = JsonTypeInfo.As.EXISTING_PROPERTY,
+            property = "type",
+            visible = true
+        )
+        @JsonSubTypes({
+            {{#each auth}}
+            @JsonSubTypes.Type({{capitalize @key}}UserData.class),
+            {{/each}}
+        })    
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public interface Base {
+            <T> T accept(Visitor<T> visitor);
+        }
+
+        public interface Visitor<T> {
+            {{#each auth}}
+            T visit{{capitalize @key}}({{capitalize @key}} value);
+            {{/each}}    
+        }
+
+        {{#each auth}}
+        @Value
+        @Builder
+        @Jacksonized
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class {{capitalize @key}} {
+            private String type;
+            private String id;
+            {{#if (eq @key "anonymous")}}
+            private String name;
+            {{else if (eq @key "google")}}
+            private String name;
+            private String email;
+            private String locale;
+            private String picture;
+            {{/if}}
+        }
+
+        @JsonTypeName("{{@key}}")
+        private static class {{capitalize @key}}UserData implements Base {
+            private {{capitalize @key}} value;
+
+            @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
+            private {{capitalize @key}}UserData({{capitalize @key}} value) {
+                this.value = value;
+            }
+
+            @JsonProperty(value = "type", index = 0)
+            private String getType() {
+                return "{{@key}}";
+            }
+
+            @JsonProperty("{{@key}}")
+            private {{capitalize @key}} get() {
+                return value;
+            }
+
+            @Override
+            public String toString() {
+                return value.toString();
+            }
+
+            @Override
+            public <T> T accept(Visitor<T> visitor) {
+                return visitor.visit{{capitalize @key}}(value);
+            }
+        }
+        {{/each}}
     }
-    {{/each}} --}}
-    {{!-- export type UserData = {{#each auth}}{{capitalize @key}}UserData{{#unless @last}} | {{/unless}}{{/each}}; --}}
-    {{!-- export interface SuccessResult {
-    type: "success";
-    }
-    export interface ErrorResult {
-    type: "error";
-    error: {{error}};
-    }
-    export type Result = SuccessResult | ErrorResult;
-    export const Result: { success: () => SuccessResult; error: (error: {{error}}) => ErrorResult } = {
-    success: () => ({
-        type: "success",
-    }),
-    error: (error: {{error}}) => ({
-        type: "error",
-        error,
-    }),
-    }; --}}
 
     @Value
     @Builder
@@ -162,7 +224,6 @@ public class Types {
 
     @Getter
     @Setter
-    @Jacksonized
     public static class ResponseMessage extends Message {
         private String type;
         private String msgId;

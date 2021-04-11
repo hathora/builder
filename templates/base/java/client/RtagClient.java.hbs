@@ -8,9 +8,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.auth0.jwt.JWT;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,6 +39,7 @@ import rtag.Types.ResponseMessage;
 import rtag.Types.StateMessage;
 import rtag.Types.LoginResponse;
 import rtag.Types.CreateStateResponse;
+import rtag.Types.UserData;
 
 public class RtagClient {
     private Map<String, ResultCallback> callbacks = new HashMap<String, ResultCallback>();
@@ -52,14 +55,11 @@ public class RtagClient {
     private RtagClient() {
     }
 
-    // public static Types.UserData getUserFromToken(String token) {
-    // try {
-    // UserData data = JWT.decode(token);
-    // return data;
-    // } catch (JWTDecodeException exception) {
-    // // Invalid token
-    // }
-    // }
+    public static UserData getUserFromToken(String token) throws IOException {
+        JWT.decode(token);
+        byte[] data = Base64.getDecoder().decode(JWT.decode(token).getPayload());
+        return UserData.builder().value(jsonMapper.readValue(data, UserData.Base.class)).build();
+    }
 
     {{#each auth}}
     {{#if (eq @key "anonymous")}}
