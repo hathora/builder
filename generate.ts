@@ -24,7 +24,16 @@ const RtagConfig = z
   })
   .strict();
 
-type Arg = ObjectArg | ArrayArg | OptionalArg | DisplayPluginArg | EnumArg | UnionArg | StringArg | NumberArg | BooleanArg;
+type Arg =
+  | ObjectArg
+  | ArrayArg
+  | OptionalArg
+  | DisplayPluginArg
+  | EnumArg
+  | UnionArg
+  | StringArg
+  | NumberArg
+  | BooleanArg;
 interface ObjectArg {
   type: "object";
   alias: boolean;
@@ -35,7 +44,7 @@ interface UnionArg {
   type: "union";
   alias: boolean;
   typeString?: string;
-  options: Arg[];
+  options: Record<string, Arg>;
 }
 interface ArrayArg {
   type: "array";
@@ -125,14 +134,13 @@ function generate() {
 
   function getArgsInfo(args: z.infer<typeof TypeArgs>, required: boolean, alias: boolean, typeString?: string): Arg {
     if (Array.isArray(args)) {
-      const isUnion = args.every(arg => arg in doc.types);
-      if(isUnion) {
+      if (args.every((arg) => arg in doc.types)) {
         return {
           type: "union",
           typeString,
           alias,
-          options: args.map(type => getArgsInfo(type, true, false))
-        }
+          options: Object.fromEntries(args.map((type) => [type, getArgsInfo(type, true, false)])),
+        };
       }
       return {
         type: "enum",
@@ -210,10 +218,7 @@ function generate() {
         codegen(file, join(outDir, f));
       } else {
         const template = compile(readFileSync(file, "utf8"));
-        outputFileSync(
-          join(outDir, f.split(".hbs")[0]),
-          template({ ...enrichedDoc, plugins, appEntryPath, appName })
-        );
+        outputFileSync(join(outDir, f.split(".hbs")[0]), template({ ...enrichedDoc, plugins, appEntryPath, appName }));
       }
     });
   }
