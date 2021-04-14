@@ -1,4 +1,4 @@
-import { Methods } from "./.rtag/methods";
+import { Context, Methods } from "./.rtag/methods";
 import {
   UserData,
   Result,
@@ -18,6 +18,7 @@ import {
   QuestStatus,
 } from "./.rtag/types";
 import { shuffle, histogram } from "./utils";
+import seedrandom from "seedrandom";
 
 interface InternalQuestAttempt {
   id: QuestId;
@@ -61,18 +62,18 @@ const QUEST_CONFIGURATIONS = new Map([
 ]);
 
 export class Impl implements Methods<InternalState> {
-  createGame(user: UserData, request: ICreateGameRequest): InternalState {
+  createGame(user: UserData, ctx: Context, request: ICreateGameRequest): InternalState {
     return {
       creator: user.name,
       players: [user.name],
       quests: [],
     };
   }
-  joinGame(state: InternalState, user: UserData, request: IJoinGameRequest): Result {
+  joinGame(state: InternalState, user: UserData, ctx: Context, request: IJoinGameRequest): Result {
     state.players.push(user.name);
     return Result.success();
   }
-  startGame(state: InternalState, user: UserData, request: IStartGameRequest): Result {
+  startGame(state: InternalState, user: UserData, ctx: Context, request: IStartGameRequest): Result {
     if (!QUEST_CONFIGURATIONS.has(state.players.length)) {
       return Result.error("Invalid number of players");
     }
@@ -80,24 +81,25 @@ export class Impl implements Methods<InternalState> {
       const order = request.playerOrder;
       state.players.sort((a, b) => order.findIndex((name) => name === a) - order.findIndex((name) => name === b));
     } else {
-      state.players = shuffle(state.players);
+      state.players = shuffle(ctx.seed, state.players);
     }
-    const leader = request.leader ?? state.players[Math.floor(Math.random() * state.players.length)];
-    state.roles = new Map(shuffle(request.roleList).map((role, i) => [state.players[i], role]));
-    state.quests.push(createQuest(1, 1, state.players.length, leader));
+    const leader = request.leader ?? state.players[seedrandom(ctx.seed).int32() % state.players.length];
+    state.roles = new Map(shuffle(ctx.seed, request.roleList).map((role, i) => [state.players[i], role]));
+    state.quests.push(createQuest(ctx.seed, 1, 1, state.players.length, leader));
     return Result.success();
   }
-  proposeQuest(state: InternalState, user: UserData, request: IProposeQuestRequest): Result {
+  proposeQuest(state: InternalState, user: UserData, ctx: Context, request: IProposeQuestRequest): Result {
     const quest = state.quests.find((q) => q.id === request.questId)!;
     quest.members = request.proposedMembers;
     return Result.success();
   }
-  voteForProposal(state: InternalState, user: UserData, request: IVoteForProposalRequest): Result {
+  voteForProposal(state: InternalState, user: UserData, ctx: Context, request: IVoteForProposalRequest): Result {
     const quest = state.quests.find((q) => q.id === request.questId)!;
     quest.votes.set(user.name, request.vote);
     if (questStatus(quest) === QuestStatus.PROPOSAL_REJECTED && quest.attemptNumber < 5) {
       state.quests.push(
         createQuest(
+          ctx.seed,
           quest.roundNumber,
           quest.attemptNumber + 1,
           quest.numPlayers,
@@ -107,7 +109,7 @@ export class Impl implements Methods<InternalState> {
     }
     return Result.success();
   }
-  voteInQuest(state: InternalState, user: UserData, request: IVoteInQuestRequest): Result {
+  voteInQuest(state: InternalState, user: UserData, ctx: Context, request: IVoteInQuestRequest): Result {
     const quest = state.quests.find((q) => q.id === request.questId)!;
     quest.results.set(user.name, request.vote);
     if (
@@ -116,12 +118,12 @@ export class Impl implements Methods<InternalState> {
       numQuestsForStatus(state.quests, QuestStatus.PASSED) < 3
     ) {
       state.quests.push(
-        createQuest(quest.roundNumber + 1, 1, quest.numPlayers, getNextLeader(quest.leader, state.players))
+        createQuest(ctx.seed, quest.roundNumber + 1, 1, quest.numPlayers, getNextLeader(quest.leader, state.players))
       );
     }
     return Result.success();
   }
-  getUserState(state: InternalState, user: UserData): PlayerState {
+  getUserState(state: InternalState, user: UserData, ctx: Context): PlayerState {
     const role = state.roles?.get(user.name);
     const roleCounts = histogram([...(state.roles?.values() || [])]);
     return {
@@ -145,13 +147,14 @@ export class Impl implements Methods<InternalState> {
 }
 
 function createQuest(
+  seed: string,
   roundNumber: number,
   attemptNumber: number,
   numPlayers: number,
   leader: Username
 ): InternalQuestAttempt {
   return {
-    id: Math.random().toString(36).substring(2),
+    id: seedrandom(seed)().toString(36).substring(2),
     roundNumber,
     attemptNumber,
     numPlayers: numPlayers,

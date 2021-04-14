@@ -1,7 +1,10 @@
-export function shuffle<T>(items: T[]) {
+import seedrandom from "seedrandom";
+
+export function shuffle<T>(seed: string, items: T[]) {
+  const rng = seedrandom(seed);
   const shuffled = [...items];
   for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = rng.int32() % (i + 1);
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   return shuffled;

@@ -24,18 +24,18 @@ export default class Store {
   constructor(onNewUserState: (stateId: StateId, user: UserData, userState: UserState) => void) {
     setInterval(() => {
       {{#if tick}}
-      states.forEach(impl.onTick);
+      states.forEach((state) => impl.onTick(state, ctx()));
       {{/if}}
       changedStates.forEach((stateId) => {
         subscriptions
           .get(stateId)!
-          .forEach((user) => onNewUserState(stateId, user, impl.getUserState(states.get(stateId)!, user)));
+          .forEach((user) => onNewUserState(stateId, user, impl.getUserState(states.get(stateId)!, user, ctx())));
       });
       changedStates.clear();
     }, 50);
   }
   newState(stateId: StateId, user: UserData, req: {{makeRequestName initialize}}) {
-    const state = impl.{{initialize}}(user, req);
+    const state = impl.{{initialize}}(user, ctx(), req);
     states.set(
       stateId,
       onChange(state, () => {
@@ -49,7 +49,7 @@ export default class Store {
       {{#each methods}}
       {{#if (ne @key ../initialize)}}
       case "{{@key}}":
-        return impl.{{@key}}(state, user, args);
+        return impl.{{@key}}(state, user, ctx(), args);
       {{/if}}
       {{/each}}
     }
@@ -60,7 +60,7 @@ export default class Store {
   }
   getUserState(stateId: StateId, user: UserData) {
     const state = states.get(stateId);
-    return state !== undefined ? impl.getUserState(state, user) : undefined;
+    return state !== undefined ? impl.getUserState(state, user, ctx()) : undefined;
   }
   subscribeUser(stateId: StateId, user: UserData) {
     if (!subscriptions.has(stateId)) {
@@ -77,4 +77,11 @@ export default class Store {
       subscriptions.delete(stateId);
     }
   }
+}
+
+function ctx() {
+  return {
+    seed: Math.random().toString(36),
+    time: Date.now(),
+  };
 }
