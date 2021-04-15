@@ -1,10 +1,9 @@
-import seedrandom from "seedrandom";
+import { Context } from "./.rtag/methods";
 
-export function shuffle<T>(seed: string, items: T[]) {
-  const rng = seedrandom(seed);
+export function shuffle<T>(ctx: Context, items: T[]) {
   const shuffled = [...items];
   for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = rng.int32() % (i + 1);
+    const j = ctx.randInt() % (i + 1);
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   return shuffled;

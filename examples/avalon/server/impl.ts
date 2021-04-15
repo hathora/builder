@@ -18,7 +18,6 @@ import {
   QuestStatus,
 } from "./.rtag/types";
 import { shuffle, histogram } from "./utils";
-import seedrandom from "seedrandom";
 
 interface InternalQuestAttempt {
   id: QuestId;
@@ -81,10 +80,10 @@ export class Impl implements Methods<InternalState> {
       const order = request.playerOrder;
       state.players.sort((a, b) => order.findIndex((name) => name === a) - order.findIndex((name) => name === b));
     } else {
-      state.players = shuffle(ctx.seed, state.players);
+      state.players = shuffle(ctx, state.players);
     }
-    const leader = request.leader ?? state.players[seedrandom(ctx.seed).int32() % state.players.length];
-    state.roles = new Map(shuffle(ctx.seed, request.roleList).map((role, i) => [state.players[i], role]));
+    const leader = request.leader ?? state.players[ctx.randInt() % state.players.length];
+    state.roles = new Map(shuffle(ctx, request.roleList).map((role, i) => [state.players[i], role]));
     state.quests.push(createQuest(1, 1, state.players.length, leader));
     return Result.success();
   }

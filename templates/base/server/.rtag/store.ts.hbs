@@ -81,7 +81,7 @@ export default class Store {
 
 function ctx() {
   return {
-    seed: Math.random().toString(36),
+    randInt: () => Math.random(),
     time: Date.now(),
   };
 }
