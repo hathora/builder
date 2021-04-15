@@ -85,7 +85,7 @@ export class Impl implements Methods<InternalState> {
     }
     const leader = request.leader ?? state.players[seedrandom(ctx.seed).int32() % state.players.length];
     state.roles = new Map(shuffle(ctx.seed, request.roleList).map((role, i) => [state.players[i], role]));
-    state.quests.push(createQuest(ctx.seed, 1, 1, state.players.length, leader));
+    state.quests.push(createQuest(1, 1, state.players.length, leader));
     return Result.success();
   }
   proposeQuest(state: InternalState, user: UserData, ctx: Context, request: IProposeQuestRequest): Result {
@@ -99,7 +99,6 @@ export class Impl implements Methods<InternalState> {
     if (questStatus(quest) === QuestStatus.PROPOSAL_REJECTED && quest.attemptNumber < 5) {
       state.quests.push(
         createQuest(
-          ctx.seed,
           quest.roundNumber,
           quest.attemptNumber + 1,
           quest.numPlayers,
@@ -118,7 +117,7 @@ export class Impl implements Methods<InternalState> {
       numQuestsForStatus(state.quests, QuestStatus.PASSED) < 3
     ) {
       state.quests.push(
-        createQuest(ctx.seed, quest.roundNumber + 1, 1, quest.numPlayers, getNextLeader(quest.leader, state.players))
+        createQuest(quest.roundNumber + 1, 1, quest.numPlayers, getNextLeader(quest.leader, state.players))
       );
     }
     return Result.success();
@@ -147,18 +146,18 @@ export class Impl implements Methods<InternalState> {
 }
 
 function createQuest(
-  seed: string,
   roundNumber: number,
   attemptNumber: number,
   numPlayers: number,
   leader: Username
 ): InternalQuestAttempt {
+  const playersPerRound = QUEST_CONFIGURATIONS.get(numPlayers)!;
   return {
-    id: seedrandom(seed)().toString(36).substring(2),
+    id: (roundNumber - 1) * playersPerRound.length + (attemptNumber - 1),
     roundNumber,
     attemptNumber,
-    numPlayers: numPlayers,
-    size: QUEST_CONFIGURATIONS.get(numPlayers)![roundNumber - 1],
+    numPlayers,
+    size: playersPerRound[roundNumber - 1],
     leader,
     members: [],
     votes: new Map(),
