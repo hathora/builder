@@ -82,6 +82,6 @@ export default class Store {
 function ctx() {
   return {
     randInt: () => Math.random(),
-    time: Date.now(),
+    time: () => Date.now(),
   };
 }
