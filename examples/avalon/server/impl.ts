@@ -80,10 +80,10 @@ export class Impl implements Methods<InternalState> {
       const order = request.playerOrder;
       state.players.sort((a, b) => order.findIndex((name) => name === a) - order.findIndex((name) => name === b));
     } else {
-      state.players = shuffle(ctx, state.players);
+      state.players = shuffle(ctx.randInt, state.players);
     }
     const leader = request.leader ?? state.players[ctx.randInt() % state.players.length];
-    state.roles = new Map(shuffle(ctx, request.roleList).map((role, i) => [state.players[i], role]));
+    state.roles = new Map(shuffle(ctx.randInt, request.roleList).map((role, i) => [state.players[i], role]));
     state.quests.push(createQuest(1, 1, state.players.length, leader));
     return Result.success();
   }
