@@ -150,12 +150,13 @@ function createQuest(
   numPlayers: number,
   leader: Username
 ): InternalQuestAttempt {
+  const playersPerRound = QUEST_CONFIGURATIONS.get(numPlayers)!;
   return {
-    id: Math.random().toString(36).substring(2),
+    id: (roundNumber - 1) * playersPerRound.length + (attemptNumber - 1),
     roundNumber,
     attemptNumber,
-    numPlayers: numPlayers,
-    size: QUEST_CONFIGURATIONS.get(numPlayers)![roundNumber - 1],
+    numPlayers,
+    size: playersPerRound[roundNumber - 1],
     leader,
     members: [],
     votes: new Map(),

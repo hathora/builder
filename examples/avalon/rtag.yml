@@ -1,6 +1,6 @@
 types:
   Username: string
-  QuestId: string
+  QuestId: number
   RoleInfos: RoleInfo[]
 
   Role:
