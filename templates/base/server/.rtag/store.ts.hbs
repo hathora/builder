@@ -2,6 +2,7 @@ import module from "module";
 import onChange from "on-change";
 import dependencyTree from "dependency-tree";
 import chokidar from "chokidar";
+import seedrandom from "seedrandom";
 import { UserData, {{userState}} as UserState, {{makeRequestName initialize}} } from "./types";
 
 const deps = dependencyTree.toList({
@@ -19,6 +20,7 @@ type State = ReturnType<typeof impl.{{initialize}}>;
 const states: Map<StateId, State> = new Map();
 const changedStates: Set<StateId> = new Set();
 const subscriptions: Map<StateId, Set<UserData>> = new Map();
+const rng = seedrandom("seed");
 
 export default class Store {
   constructor(onNewUserState: (stateId: StateId, user: UserData, userState: UserState) => void) {
@@ -60,7 +62,7 @@ export default class Store {
   }
   getUserState(stateId: StateId, user: UserData) {
     const state = states.get(stateId);
-    return state !== undefined ? impl.getUserState(state, user, ctx()) : undefined;
+    return state !== undefined ? impl.getUserState(state, user) : undefined;
   }
   subscribeUser(stateId: StateId, user: UserData) {
     if (!subscriptions.has(stateId)) {
@@ -81,7 +83,7 @@ export default class Store {
 
 function ctx() {
   return {
-    randInt: () => Math.random(),
+    randInt: rng.int32,
     time: () => Date.now(),
   };
 }
