@@ -189,11 +189,6 @@ public class Types {
         private {{> renderError}} error;
     }
 
-    @FunctionalInterface
-    public interface StateChangeRunnable {
-        public void run(Types.PlayerState state);
-    }
-
     @Value
     @Builder
     public static class ResultCallback {
