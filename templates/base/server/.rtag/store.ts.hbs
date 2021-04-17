@@ -31,7 +31,7 @@ export default class Store {
       changedStates.forEach((stateId) => {
         subscriptions
           .get(stateId)!
-          .forEach((user) => onNewUserState(stateId, user, impl.getUserState(states.get(stateId)!, user, ctx())));
+          .forEach((user) => onNewUserState(stateId, user, impl.getUserState(states.get(stateId)!, user)));
       });
       changedStates.clear();
     }, 50);
