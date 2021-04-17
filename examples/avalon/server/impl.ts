@@ -121,7 +121,7 @@ export class Impl implements Methods<InternalState> {
     }
     return Result.success();
   }
-  getUserState(state: InternalState, user: UserData, ctx: Context): PlayerState {
+  getUserState(state: InternalState, user: UserData): PlayerState {
     const role = state.roles.get(user.name);
     return {
       status: gameStatus(state.quests),
