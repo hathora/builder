@@ -20,7 +20,7 @@ type State = ReturnType<typeof impl.{{initialize}}>;
 const states: Map<StateId, State> = new Map();
 const changedStates: Set<StateId> = new Set();
 const subscriptions: Map<StateId, Set<UserData>> = new Map();
-const rng = seedrandom("seed");
+const rng = seedrandom(Math.random().toString());
 
 export default class Store {
   constructor(onNewUserState: (stateId: StateId, user: UserData, userState: UserState) => void) {
