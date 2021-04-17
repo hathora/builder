@@ -6,9 +6,3 @@ export function shuffle<T>(randInt: () => number, items: T[]) {
   }
   return shuffled;
 }
-
-export function histogram<T>(items: T[]) {
-  const histo = new Map<T, number>();
-  items.forEach((item) => histo.set(item, (histo.get(item) || 0) + 1));
-  return histo;
-}
