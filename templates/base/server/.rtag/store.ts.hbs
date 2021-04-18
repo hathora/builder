@@ -83,7 +83,8 @@ export default class Store {
 
 function ctx() {
   return {
-    randInt: rng.int32,
+    rand: () => rng(),
+    randInt: (limit?: number) => (limit === undefined ? rng.int32() : Math.floor(rng() * limit)),
     time: () => Date.now(),
   };
 }
