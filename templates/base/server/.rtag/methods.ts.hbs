@@ -7,16 +7,22 @@ import {
   {{/each}}
 } from "./types";
 
+export interface Context {
+  rand(): number;
+  randInt(limit?: number): number;
+  time(): number;
+}
+
 export interface Methods<T> {
   {{#each methods}}
   {{#if (eq @key ../initialize)}}
-  {{../initialize}}(user: UserData, request: {{makeRequestName @key}}): T;
+  {{../initialize}}(user: UserData, ctx: Context, request: {{makeRequestName @key}}): T;
   {{else}}
-  {{@key}}(state: T, user: UserData, request: {{makeRequestName @key}}): Result;
+  {{@key}}(state: T, user: UserData, ctx: Context, request: {{makeRequestName @key}}): Result;
   {{/if}}
   {{/each}}
   getUserState(state: T, user: UserData): UserState;
   {{#if tick}}
-  onTick(state: T): void;
+  onTick(state: T, ctx: Context): void;
   {{/if}}
 }
