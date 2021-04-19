@@ -4,14 +4,14 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import java.util.function.Consumer;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 
 import com.auth0.jwt.JWT;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -28,18 +28,17 @@ import org.java_websocket.handshake.ServerHandshake;
 import org.msgpack.jackson.dataformat.MessagePackFactory;
 
 import lombok.Setter;
-
 {{#each methods}}
 import rtag.Types.{{makeRequestName @key}};
 {{/each}}
 import rtag.Types.{{userState}};
-import rtag.Types.Result;
-import rtag.Types.ResultCallback;
+import rtag.Types.CreateStateResponse;
+import rtag.Types.LoginResponse;
 import rtag.Types.Message;
 import rtag.Types.ResponseMessage;
+import rtag.Types.Result;
+import rtag.Types.ResultCallback;
 import rtag.Types.StateMessage;
-import rtag.Types.LoginResponse;
-import rtag.Types.CreateStateResponse;
 import rtag.Types.UserData;
 
 public class RtagClient {
