@@ -43,12 +43,14 @@ import rtag.Types.CreateStateResponse;
 import rtag.Types.UserData;
 
 public class RtagClient {
-    private Map<String, ResultCallback> callbacks = new HashMap<String, ResultCallback>();
-    private static ExecutorService es = Executors.newSingleThreadExecutor();
-    private static OkHttpClient client = new OkHttpClient();
+
+    private static final ExecutorService ES = Executors.newSingleThreadExecutor();
+    private static final OkHttpClient CLIENT = new OkHttpClient();
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-    private static ObjectMapper jsonMapper = new ObjectMapper();
-    private static ObjectMapper msgPackMapper = new ObjectMapper(new MessagePackFactory());
+    private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+    private static final ObjectMapper MSGPACK_MAPPER = new ObjectMapper(new MessagePackFactory());
+
+    private Map<String, ResultCallback> callbacks = new HashMap<String, ResultCallback>();
 
     @Setter
     private WebSocketClient socket;
@@ -56,45 +58,30 @@ public class RtagClient {
     private RtagClient() {
     }
 
-    public static String makeHttpPostRequest(String url, String body) throws IOException {
-        return makeHttpPostRequest(url, body, null);
-    }
-
-    public static String makeHttpPostRequest(String url, String body, String token) throws IOException {
-        Request.Builder request = new Request.Builder().url(url).post(RequestBody.create(JSON, body));
-        if (token != null) {
-            request.header("Authorization", "Bearer " + token);
-        }
-        return client.newCall(request.build()).execute().body().string();
-    }
-
     public static UserData getUserFromToken(String token) throws IOException {
         byte[] data = Base64.getDecoder().decode(JWT.decode(token).getPayload());
-        return UserData.builder().value(jsonMapper.readValue(data, UserData.Base.class)).build();
+        return UserData.builder().value(JSON_MAPPER.readValue(data, UserData.Base.class)).build();
     }
 
 {{#each auth}}
 {{#if (eq @key "anonymous")}}
     public static String loginAnonymous(String origin) throws IOException {
-        String url = String.format("%s/login/anonymous", origin);
-        String response = makeHttpPostRequest(url, "{}");
-        return jsonMapper.readValue(response, LoginResponse.class).getToken();
+        String response = makeHttpPostRequest(String.format("%s/login/anonymous", origin), "{}");
+        return JSON_MAPPER.readValue(response, LoginResponse.class).getToken();
     }
 
 {{else if (eq @key "google")}}
     public static String loginGoogle(String idToken, String origin) throws IOException {
-        String url = String.format("%s/login/google", origin);
-        String body = String.format("{ idToken: %s }", idToken);
-        String response = makeHttpPostRequest(url, body);
-        return jsonMapper.readValue(response, LoginResponse.class).getToken();
+        String response = makeHttpPostRequest(String.format("%s/login/google", origin),
+                String.format("{ idToken: %s }", idToken));
+        return JSON_MAPPER.readValue(response, LoginResponse.class).getToken();
     }
 {{/if}}
 {{/each}}
 
     public static String createState(String origin, String token, ICreateGameRequest request) throws IOException {
-        String url = String.format("%s/new", origin);
-        String response = makeHttpPostRequest(url, "{}", token);
-        return jsonMapper.readValue(response, CreateStateResponse.class).getStateId();
+        String response = makeHttpPostRequest(String.format("%s/new", origin), "{}", token);
+        return JSON_MAPPER.readValue(response, CreateStateResponse.class).getStateId();
     }
 
     public static RtagClient connect(String host, String token, String stateId, Consumer<{{userState}}> onStateChange)
@@ -117,15 +104,15 @@ public class RtagClient {
             public void onMessage(ByteBuffer message) {
                 try {
                     byte[] data = message.array();
-                    Message msg = msgPackMapper.readValue(data, Message.class);
+                    Message msg = MSGPACK_MAPPER.readValue(data, Message.class);
                     if (msg.getType().equals("response")) {
-                        ResponseMessage responseMsg = msgPackMapper.readValue(data, ResponseMessage.class);
+                        ResponseMessage responseMsg = MSGPACK_MAPPER.readValue(data, ResponseMessage.class);
                         ResultCallback resultCallback = client.callbacks.get(responseMsg.getMsgId());
                         resultCallback.getCb().setResult(responseMsg.getResult());
-                        es.execute(resultCallback.getFuture());
+                        ES.execute(resultCallback.getFuture());
                         client.callbacks.remove(responseMsg.getMsgId());
                     } else if (msg.getType().equals("state")) {
-                        StateMessage stateMsg = msgPackMapper.readValue(data, StateMessage.class);
+                        StateMessage stateMsg = MSGPACK_MAPPER.readValue(data, StateMessage.class);
                         onStateChange.accept(stateMsg.getState());
                     } else {
                         throw new Exception(String.format("Unknown message type: %s", msg.getType()));
@@ -154,20 +141,32 @@ public class RtagClient {
 
     public Result {{@key}}({{makeRequestName @key}} request)
             throws InterruptedException, ExecutionException, JsonProcessingException {
-        final String msgId = Integer.toString((int) (Math.random() * 1000000000), 36).substring(2);
+        String msgId = Integer.toString((int) (Math.random() * 1000000000), 36).substring(2);
         ResultCallback.ResultCallable cb = new ResultCallback.ResultCallable();
         FutureTask<Result> future = new FutureTask<>(cb);
         this.callbacks.put(msgId, ResultCallback.builder().future(future).cb(cb).build());
-        ObjectNode obj = msgPackMapper.createObjectNode();
+        ObjectNode obj = MSGPACK_MAPPER.createObjectNode();
         obj.put("method", "{{@key}}");
         obj.put("msgId", msgId);
-        obj.set("args", msgPackMapper.convertValue(request, JsonNode.class));
-        this.socket.send(msgPackMapper.writeValueAsBytes(obj));
+        obj.set("args", MSGPACK_MAPPER.convertValue(request, JsonNode.class));
+        this.socket.send(MSGPACK_MAPPER.writeValueAsBytes(obj));
         return this.callbacks.get(msgId).get();
     }
     {{/each}}
 
     public void disconnect() {
         this.socket.close();
+    }
+
+    private static String makeHttpPostRequest(String url, String body) throws IOException {
+        return makeHttpPostRequest(url, body, null);
+    }
+
+    private static String makeHttpPostRequest(String url, String body, String token) throws IOException {
+        Request.Builder request = new Request.Builder().url(url).post(RequestBody.create(JSON, body));
+        if (token != null) {
+            request.header("Authorization", "Bearer " + token);
+        }
+        return CLIENT.newCall(request.build()).execute().body().string();
     }
 }
