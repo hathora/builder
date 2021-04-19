@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -61,26 +62,25 @@ public class RtagClient {
         byte[] data = Base64.getDecoder().decode(JWT.decode(token).getPayload());
         return UserData.builder().value(JSON_MAPPER.readValue(data, UserData.Base.class)).build();
     }
-
 {{#each auth}}
 {{#if (eq @key "anonymous")}}
-    public static String loginAnonymous(String origin) throws IOException {
-        String response = makeHttpPostRequest(String.format("%s/login/anonymous", origin), "{}");
-        return JSON_MAPPER.readValue(response, LoginResponse.class).getToken();
-    }
 
+    public static String loginAnonymous(String origin) throws IOException {
+        return httpPost(String.format("%s/login/anonymous", origin), "{}", Optional.empty(), LoginResponse.class)
+                .getToken();
+    }
 {{else if (eq @key "google")}}
+
     public static String loginGoogle(String idToken, String origin) throws IOException {
-        String response = makeHttpPostRequest(String.format("%s/login/google", origin),
-                String.format("{ idToken: %s }", idToken));
-        return JSON_MAPPER.readValue(response, LoginResponse.class).getToken();
+        return httpPost(String.format("%s/login/google", origin), String.format("{ idToken: %s }", idToken),
+                Optional.empty(), LoginResponse.class).getToken();
     }
 {{/if}}
 {{/each}}
 
     public static String createState(String origin, String token, ICreateGameRequest request) throws IOException {
-        String response = makeHttpPostRequest(String.format("%s/new", origin), "{}", token);
-        return JSON_MAPPER.readValue(response, CreateStateResponse.class).getStateId();
+        return httpPost(String.format("%s/new", origin), "{}", Optional.of(token), CreateStateResponse.class)
+                .getStateId();
     }
 
     public static RtagClient connect(String host, String token, String stateId, Consumer<{{userState}}> onStateChange)
@@ -157,15 +157,11 @@ public class RtagClient {
         this.socket.close();
     }
 
-    private static String makeHttpPostRequest(String url, String body) throws IOException {
-        return makeHttpPostRequest(url, body, null);
-    }
-
-    private static String makeHttpPostRequest(String url, String body, String token) throws IOException {
+    private static <T> T httpPost(String url, String body, Optional<String> token, Class<T> responseType)
+            throws IOException {
         Request.Builder request = new Request.Builder().url(url).post(RequestBody.create(JSON, body));
-        if (token != null) {
-            request.header("Authorization", "Bearer " + token);
-        }
-        return CLIENT.newCall(request.build()).execute().body().string();
+        token.ifPresent(t -> request.header("Authorization", "Bearer " + t));
+        String response = CLIENT.newCall(request.build()).execute().body().string();
+        return JSON_MAPPER.readValue(response, responseType);
     }
 }
