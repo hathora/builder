@@ -8,6 +8,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -50,7 +51,8 @@ public class RtagClient {
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
     private static final ObjectMapper MSGPACK_MAPPER = new ObjectMapper(new MessagePackFactory());
 
-    private Map<String, ResultCallback> callbacks = new HashMap<String, ResultCallback>();
+    private final Map<String, ResultCallback> callbacks = new HashMap<>();
+    private final Random rng = new Random();
 
     @Setter
     private WebSocketClient socket;
@@ -140,7 +142,7 @@ public class RtagClient {
 
     public Result {{@key}}({{makeRequestName @key}} request)
             throws InterruptedException, ExecutionException, JsonProcessingException {
-        String msgId = Integer.toString((int) (Math.random() * 1000000000), 36).substring(2);
+        String msgId = Integer.toString(rng.nextInt(Integer.MAX_VALUE), 36);
         ResultCallback.ResultCallable cb = new ResultCallback.ResultCallable();
         FutureTask<Result> future = new FutureTask<>(cb);
         this.callbacks.put(msgId, ResultCallback.builder().future(future).cb(cb).build());
