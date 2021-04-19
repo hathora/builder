@@ -73,23 +73,23 @@ public class RtagClient {
         return UserData.builder().value(jsonMapper.readValue(data, UserData.Base.class)).build();
     }
 
-    {{#each auth}}
-    {{#if (eq @key "anonymous")}}
+{{#each auth}}
+{{#if (eq @key "anonymous")}}
     public static String loginAnonymous(String origin) throws IOException {
         String url = String.format("%s/login/anonymous", origin);
         String response = makeHttpPostRequest(url, "{}");
         return jsonMapper.readValue(response, LoginResponse.class).getToken();
     }
 
-    {{else if (eq @key "google")}}
+{{else if (eq @key "google")}}
     public static String loginGoogle(String idToken, String origin) throws IOException {
         String url = String.format("%s/login/google", origin);
         String body = String.format("{ idToken: %s }", idToken);
         String response = makeHttpPostRequest(url, body);
         return jsonMapper.readValue(response, LoginResponse.class).getToken();
     }
-    {{/if}}
-    {{/each}}
+{{/if}}
+{{/each}}
 
     public static String createState(String origin, String token, ICreateGameRequest request) throws IOException {
         String url = String.format("%s/new", origin);
@@ -109,7 +109,8 @@ public class RtagClient {
 
             @Override
             public void onMessage(String message) throws IllegalArgumentException {
-                throw new IllegalArgumentException("String messages are not allowed. Message must be of type ByteBuffer");
+                throw new IllegalArgumentException(
+                        "String messages are not allowed. Message must be of type ByteBuffer");
             }
 
             @Override
@@ -149,8 +150,8 @@ public class RtagClient {
         client.setSocket(socket);
         return client;
     }
-
     {{#each methods}}
+
     public Result {{@key}}({{makeRequestName @key}} request)
             throws InterruptedException, ExecutionException, JsonProcessingException {
         final String msgId = Integer.toString((int) (Math.random() * 1000000000), 36).substring(2);
