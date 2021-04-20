@@ -182,6 +182,7 @@ function generate() {
         return [key, getArgsInfo(val === null ? {} : val, true, false)];
       })
     ),
+    error: getArgsInfo(doc.error, true, false),
   };
   const appEntryPath = existsSync(join(clientDir, "index.html"))
     ? "../../client/index.html"
@@ -195,10 +196,7 @@ function generate() {
         codegen(file, join(outDir, f));
       } else {
         const template = compile(readFileSync(file, "utf8"));
-        outputFileSync(
-          join(outDir, f.split(".hbs")[0]),
-          template({ ...enrichedDoc, plugins, appEntryPath, appName })
-        );
+        outputFileSync(join(outDir, f.split(".hbs")[0]), template({ ...enrichedDoc, plugins, appEntryPath, appName }));
       }
     });
   }
