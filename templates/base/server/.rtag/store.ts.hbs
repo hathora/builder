@@ -2,6 +2,7 @@ import module from "module";
 import onChange from "on-change";
 import dependencyTree from "dependency-tree";
 import chokidar from "chokidar";
+import seedrandom from "seedrandom";
 import { UserData, {{userState}} as UserState, {{makeRequestName initialize}} } from "./types";
 
 const deps = dependencyTree.toList({
@@ -19,12 +20,13 @@ type State = ReturnType<typeof impl.{{initialize}}>;
 const states: Map<StateId, State> = new Map();
 const changedStates: Set<StateId> = new Set();
 const subscriptions: Map<StateId, Set<UserData>> = new Map();
+const rng = seedrandom(Math.random().toString());
 
 export default class Store {
   constructor(onNewUserState: (stateId: StateId, user: UserData, userState: UserState) => void) {
     setInterval(() => {
       {{#if tick}}
-      states.forEach(impl.onTick);
+      states.forEach((state) => impl.onTick(state, ctx()));
       {{/if}}
       changedStates.forEach((stateId) => {
         subscriptions
@@ -35,7 +37,7 @@ export default class Store {
     }, 50);
   }
   newState(stateId: StateId, user: UserData, req: {{makeRequestName initialize}}) {
-    const state = impl.{{initialize}}(user, req);
+    const state = impl.{{initialize}}(user, ctx(), req);
     states.set(
       stateId,
       onChange(state, () => {
@@ -49,7 +51,7 @@ export default class Store {
       {{#each methods}}
       {{#if (ne @key ../initialize)}}
       case "{{@key}}":
-        return impl.{{@key}}(state, user, args);
+        return impl.{{@key}}(state, user, ctx(), args);
       {{/if}}
       {{/each}}
     }
@@ -77,4 +79,12 @@ export default class Store {
       subscriptions.delete(stateId);
     }
   }
+}
+
+function ctx() {
+  return {
+    rand: () => rng(),
+    randInt: (limit?: number) => (limit === undefined ? rng.int32() : Math.floor(rng() * limit)),
+    time: () => Date.now(),
+  };
 }

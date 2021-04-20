@@ -1,4 +1,4 @@
-import { Methods } from "./.rtag/methods";
+import { Context, Methods } from "./.rtag/methods";
 import {
   UserData,
   Result,
@@ -17,7 +17,7 @@ import {
   QuestAttempt,
   QuestStatus,
 } from "./.rtag/types";
-import { shuffle, histogram } from "./utils";
+import { shuffle } from "./utils";
 
 interface InternalQuestAttempt {
   id: QuestId;
@@ -34,22 +34,20 @@ interface InternalQuestAttempt {
 interface InternalState {
   creator: Username;
   players: Username[];
-  roles?: Map<Username, Role>;
+  roles: Map<Username, Role>;
   quests: InternalQuestAttempt[];
 }
 
-const ROLE_KNOWLEDGE = new Map([
-  [Role.MERLIN, [Role.MORGANA, Role.ASSASSIN, Role.MINION, Role.OBERON]],
-  [Role.PERCIVAL, [Role.MERLIN, Role.MORGANA]],
-  [Role.LOYAL_SERVANT, []],
-  [Role.MORGANA, [Role.MORDRED, Role.ASSASSIN, Role.MINION]],
-  [Role.MORDRED, [Role.MORGANA, Role.ASSASSIN, Role.MINION]],
-  [Role.OBERON, []],
-  [Role.ASSASSIN, [Role.MORGANA, Role.MORDRED, Role.MINION]],
-  [Role.MINION, [Role.MORGANA, Role.MORDRED, Role.ASSASSIN, Role.MINION]],
+const ROLES_INFO: Map<Role, { isEvil: boolean; knownRoles: Set<Role> }> = new Map([
+  [Role.MERLIN, { isEvil: false, knownRoles: new Set([Role.MORGANA, Role.ASSASSIN, Role.MINION, Role.OBERON]) }],
+  [Role.PERCIVAL, { isEvil: false, knownRoles: new Set([Role.MERLIN, Role.MORGANA]) }],
+  [Role.LOYAL_SERVANT, { isEvil: false, knownRoles: new Set() }],
+  [Role.MORGANA, { isEvil: true, knownRoles: new Set([Role.MORDRED, Role.ASSASSIN, Role.MINION]) }],
+  [Role.MORDRED, { isEvil: true, knownRoles: new Set([Role.MORGANA, Role.ASSASSIN, Role.MINION]) }],
+  [Role.OBERON, { isEvil: true, knownRoles: new Set() }],
+  [Role.ASSASSIN, { isEvil: true, knownRoles: new Set([Role.MORGANA, Role.MORDRED, Role.MINION]) }],
+  [Role.MINION, { isEvil: true, knownRoles: new Set([Role.MORGANA, Role.MORDRED, Role.ASSASSIN, Role.MINION]) }],
 ]);
-
-const EVIL_ROLES = new Set([Role.MORGANA, Role.MORGANA, Role.OBERON, Role.ASSASSIN, Role.MINION]);
 
 const QUEST_CONFIGURATIONS = new Map([
   [5, [2, 3, 2, 3, 3]],
@@ -61,38 +59,38 @@ const QUEST_CONFIGURATIONS = new Map([
 ]);
 
 export class Impl implements Methods<InternalState> {
-  createGame(user: UserData, request: ICreateGameRequest): InternalState {
+  createGame(user: UserData, ctx: Context, request: ICreateGameRequest): InternalState {
     return {
       creator: user.name,
       players: [user.name],
+      roles: new Map(),
       quests: [],
     };
   }
-  joinGame(state: InternalState, user: UserData, request: IJoinGameRequest): Result {
+  joinGame(state: InternalState, user: UserData, ctx: Context, request: IJoinGameRequest): Result {
     state.players.push(user.name);
     return Result.success();
   }
-  startGame(state: InternalState, user: UserData, request: IStartGameRequest): Result {
+  startGame(state: InternalState, user: UserData, ctx: Context, request: IStartGameRequest): Result {
     if (!QUEST_CONFIGURATIONS.has(state.players.length)) {
       return Result.error("Invalid number of players");
     }
     if (request.playerOrder !== undefined && request.playerOrder.length > 0) {
-      const order = request.playerOrder;
-      state.players.sort((a, b) => order.findIndex((name) => name === a) - order.findIndex((name) => name === b));
+      state.players = request.playerOrder;
     } else {
-      state.players = shuffle(state.players);
+      state.players = shuffle(ctx.randInt, state.players);
     }
-    const leader = request.leader ?? state.players[Math.floor(Math.random() * state.players.length)];
-    state.roles = new Map(shuffle(request.roleList).map((role, i) => [state.players[i], role]));
+    const leader = request.leader ?? state.players[ctx.randInt(state.players.length)];
+    state.roles = new Map(shuffle(ctx.randInt, request.roleList).map((role, i) => [state.players[i], role]));
     state.quests.push(createQuest(1, 1, state.players.length, leader));
     return Result.success();
   }
-  proposeQuest(state: InternalState, user: UserData, request: IProposeQuestRequest): Result {
+  proposeQuest(state: InternalState, user: UserData, ctx: Context, request: IProposeQuestRequest): Result {
     const quest = state.quests.find((q) => q.id === request.questId)!;
     quest.members = request.proposedMembers;
     return Result.success();
   }
-  voteForProposal(state: InternalState, user: UserData, request: IVoteForProposalRequest): Result {
+  voteForProposal(state: InternalState, user: UserData, ctx: Context, request: IVoteForProposalRequest): Result {
     const quest = state.quests.find((q) => q.id === request.questId)!;
     quest.votes.set(user.name, request.vote);
     if (questStatus(quest) === QuestStatus.PROPOSAL_REJECTED && quest.attemptNumber < 5) {
@@ -107,7 +105,7 @@ export class Impl implements Methods<InternalState> {
     }
     return Result.success();
   }
-  voteInQuest(state: InternalState, user: UserData, request: IVoteInQuestRequest): Result {
+  voteInQuest(state: InternalState, user: UserData, ctx: Context, request: IVoteInQuestRequest): Result {
     const quest = state.quests.find((q) => q.id === request.questId)!;
     quest.results.set(user.name, request.vote);
     if (
@@ -122,22 +120,20 @@ export class Impl implements Methods<InternalState> {
     return Result.success();
   }
   getUserState(state: InternalState, user: UserData): PlayerState {
-    const role = state.roles?.get(user.name);
-    const roleCounts = histogram([...(state.roles?.values() || [])]);
+    const role = state.roles.get(user.name);
+    const knownRoles = role !== undefined ? ROLES_INFO.get(role)!.knownRoles : new Set();
     return {
       status: gameStatus(state.quests),
-      rolesInfo: [...ROLE_KNOWLEDGE].map(([role, knownRoles]) => ({
-        role,
-        knownRoles,
-        isEvil: EVIL_ROLES.has(role),
-        quantity: roleCounts.get(role) || 0,
+      rolesInfo: [...ROLES_INFO].map(([rl, info]) => ({
+        role: rl,
+        isEvil: info.isEvil,
+        knownRoles: [...info.knownRoles],
+        quantity: [...state.roles.values()].filter((r) => r === rl).length,
       })),
       creator: state.creator,
       players: state.players,
       role,
-      knownPlayers: [...(state.roles?.entries() || [])]
-        .filter(([_, r]) => (ROLE_KNOWLEDGE.get(role!) || []).includes(r))
-        .map(([p, _]) => p),
+      knownPlayers: [...state.roles].filter(([_, r]) => knownRoles.has(r)).map(([p, _]) => p),
       playersPerQuest: QUEST_CONFIGURATIONS.get(state.players.length) || [],
       quests: state.quests.map((q) => sanitizeQuest(q, user.name)),
     };
@@ -150,12 +146,13 @@ function createQuest(
   numPlayers: number,
   leader: Username
 ): InternalQuestAttempt {
+  const playersPerRound = QUEST_CONFIGURATIONS.get(numPlayers)!;
   return {
-    id: Math.random().toString(36).substring(2),
+    id: (roundNumber - 1) * playersPerRound.length + (attemptNumber - 1),
     roundNumber,
     attemptNumber,
-    numPlayers: numPlayers,
-    size: QUEST_CONFIGURATIONS.get(numPlayers)![roundNumber - 1],
+    numPlayers,
+    size: playersPerRound[roundNumber - 1],
     leader,
     members: [],
     votes: new Map(),
@@ -191,7 +188,7 @@ function sanitizeQuest(quest: InternalQuestAttempt, username: Username): QuestAt
 function gameStatus(quests: InternalQuestAttempt[]) {
   if (quests.length === 0) {
     return GameStatus.NOT_STARTED;
-  } else if (numQuestsForStatus(quests, QuestStatus.FAILED) > 2 || exceededQuestAttempts(quests[quests.length - 1])) {
+  } else if (numQuestsForStatus(quests, QuestStatus.FAILED) > 2 || exceededQuestAttempts(quests.slice(-1)[0])) {
     return GameStatus.EVIL_WON;
   } else if (numQuestsForStatus(quests, QuestStatus.PASSED) > 2) {
     return GameStatus.GOOD_WON;
@@ -209,9 +206,7 @@ function questStatus(quest: InternalQuestAttempt) {
   } else if (quest.results.size < quest.size) {
     return QuestStatus.VOTING_IN_QUEST;
   }
-  return numFails(quest.results) >= maxFails(quest.numPlayers, quest.roundNumber)
-    ? QuestStatus.FAILED
-    : QuestStatus.PASSED;
+  return numFails(quest.results) >= maxFails(quest) ? QuestStatus.FAILED : QuestStatus.PASSED;
 }
 
 function numQuestsForStatus(quests: InternalQuestAttempt[], status: QuestStatus): number {
@@ -222,8 +217,8 @@ function numFails(votes: Map<Username, Vote>) {
   return [...votes.values()].filter((vote) => vote === Vote.FAIL).length;
 }
 
-function maxFails(numPlayers: number, round: number): number {
-  return numPlayers > 6 && round === 4 ? 2 : 1;
+function maxFails(quest: InternalQuestAttempt): number {
+  return quest.numPlayers > 6 && quest.roundNumber === 4 ? 2 : 1;
 }
 
 function exceededQuestAttempts(quest: InternalQuestAttempt): boolean {
