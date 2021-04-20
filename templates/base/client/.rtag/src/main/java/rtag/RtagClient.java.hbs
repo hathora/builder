@@ -158,15 +158,18 @@ public class RtagClient {
     }
 
     private static <T> T httpPost(String url, String body, Class<T> responseType) throws IOException {
-        Request.Builder request = new Request.Builder().url(url).post(RequestBody.create(JSON, body));
-        String response = CLIENT.newCall(request.build()).execute().body().string();
-        return JSON_MAPPER.readValue(response, responseType);
+        Request request = new Request.Builder().url(url).post(RequestBody.create(JSON, body)).build();
+        return makeCall(request, responseType);
     }
 
     private static <T> T httpPost(String url, String body, String token, Class<T> responseType) throws IOException {
-        Request.Builder request = new Request.Builder().url(url).post(RequestBody.create(JSON, body))
-                .header("Authorization", "Bearer " + token);
-        String response = CLIENT.newCall(request.build()).execute().body().string();
+        Request request = new Request.Builder().url(url).post(RequestBody.create(JSON, body))
+                .header("Authorization", "Bearer " + token).build();
+        return makeCall(request, responseType);
+    }
+
+    private static <T> T makeCall(Request request, Class<T> responseType) throws IOException {
+        String response = CLIENT.newCall(request).execute().body().string();
         return JSON_MAPPER.readValue(response, responseType);
     }
 }
