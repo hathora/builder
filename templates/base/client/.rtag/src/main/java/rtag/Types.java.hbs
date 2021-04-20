@@ -180,7 +180,7 @@ public class Types {
         }
 
         private ResultType type;
-        private {{> renderError}} error;
+        private {{> renderArg error}} error;
     }
 
     @Value
@@ -253,14 +253,5 @@ String
 Boolean
 {{~else if (eq type "plugin")}}
 {{> renderArg item}}
-{{~/if}}
-{{~/inline}}
-{{#*inline "renderError"}}
-{{#if (eq error "number")}}
-Integer
-{{~else if (eq error "string")}}
-String
-{{~else if (eq error "boolean")}}
-Boolean
 {{~/if}}
 {{~/inline}}
