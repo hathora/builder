@@ -6,6 +6,6 @@
     "lit-element": "^2.4.0"
   },
   "devDependencies": {
-    "typescript": "^4.2.3"
+    "typescript": "^4.2.4"
   }
 }
