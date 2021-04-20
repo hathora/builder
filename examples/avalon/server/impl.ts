@@ -179,9 +179,9 @@ function sanitizeQuest(quest: InternalQuestAttempt, username: Username): QuestAt
     })),
     results: [...quest.results.entries()].map(([player, vote]) => ({
       player,
-      vote: player === username || quest.results.size === quest.size ? vote : undefined,
+      vote: player === username ? vote : undefined,
     })),
-    numFailures: numFails(quest.results),
+    numFailures: quest.results.size === quest.size ? numFails(quest.results) : 0,
   };
 }
 
