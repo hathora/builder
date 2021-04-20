@@ -38,18 +38,16 @@ interface InternalState {
   quests: InternalQuestAttempt[];
 }
 
-const ROLE_KNOWLEDGE = new Map([
-  [Role.MERLIN, [Role.MORGANA, Role.ASSASSIN, Role.MINION, Role.OBERON]],
-  [Role.PERCIVAL, [Role.MERLIN, Role.MORGANA]],
-  [Role.LOYAL_SERVANT, []],
-  [Role.MORGANA, [Role.MORDRED, Role.ASSASSIN, Role.MINION]],
-  [Role.MORDRED, [Role.MORGANA, Role.ASSASSIN, Role.MINION]],
-  [Role.OBERON, []],
-  [Role.ASSASSIN, [Role.MORGANA, Role.MORDRED, Role.MINION]],
-  [Role.MINION, [Role.MORGANA, Role.MORDRED, Role.ASSASSIN, Role.MINION]],
+const ROLES_INFO: Map<Role, { isEvil: boolean; knownRoles: Set<Role> }> = new Map([
+  [Role.MERLIN, { isEvil: false, knownRoles: new Set([Role.MORGANA, Role.ASSASSIN, Role.MINION, Role.OBERON]) }],
+  [Role.PERCIVAL, { isEvil: false, knownRoles: new Set([Role.MERLIN, Role.MORGANA]) }],
+  [Role.LOYAL_SERVANT, { isEvil: false, knownRoles: new Set() }],
+  [Role.MORGANA, { isEvil: true, knownRoles: new Set([Role.MORDRED, Role.ASSASSIN, Role.MINION]) }],
+  [Role.MORDRED, { isEvil: true, knownRoles: new Set([Role.MORGANA, Role.ASSASSIN, Role.MINION]) }],
+  [Role.OBERON, { isEvil: true, knownRoles: new Set() }],
+  [Role.ASSASSIN, { isEvil: true, knownRoles: new Set([Role.MORGANA, Role.MORDRED, Role.MINION]) }],
+  [Role.MINION, { isEvil: true, knownRoles: new Set([Role.MORGANA, Role.MORDRED, Role.ASSASSIN, Role.MINION]) }],
 ]);
-
-const EVIL_ROLES = new Set([Role.MORGANA, Role.MORGANA, Role.OBERON, Role.ASSASSIN, Role.MINION]);
 
 const QUEST_CONFIGURATIONS = new Map([
   [5, [2, 3, 2, 3, 3]],
@@ -123,20 +121,19 @@ export class Impl implements Methods<InternalState> {
   }
   getUserState(state: InternalState, user: UserData): PlayerState {
     const role = state.roles.get(user.name);
+    const knownRoles = role !== undefined ? ROLES_INFO.get(role)!.knownRoles : new Set();
     return {
       status: gameStatus(state.quests),
-      rolesInfo: [...ROLE_KNOWLEDGE].map(([role, knownRoles]) => ({
-        role,
-        knownRoles,
-        isEvil: EVIL_ROLES.has(role),
-        quantity: [...state.roles.values()].filter((r) => r === role).length,
+      rolesInfo: [...ROLES_INFO].map(([rl, info]) => ({
+        role: rl,
+        isEvil: info.isEvil,
+        knownRoles: [...info.knownRoles],
+        quantity: [...state.roles.values()].filter((r) => r === rl).length,
       })),
       creator: state.creator,
       players: state.players,
       role,
-      knownPlayers: [...state.roles.entries()]
-        .filter(([_, r]) => (ROLE_KNOWLEDGE.get(role!) || []).includes(r))
-        .map(([p, _]) => p),
+      knownPlayers: [...state.roles].filter(([_, r]) => knownRoles.has(r)).map(([p, _]) => p),
       playersPerQuest: QUEST_CONFIGURATIONS.get(state.players.length) || [],
       quests: state.quests.map((q) => sanitizeQuest(q, user.name)),
     };
