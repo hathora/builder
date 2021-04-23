@@ -84,7 +84,7 @@ public class RtagClient {
     }
 
     public static RtagClient connect(String host, String token, String stateId, Consumer<{{userState}}> onStateChange)
-            throws URISyntaxException {
+            throws URISyntaxException, InterruptedException {
         RtagClient client = new RtagClient();
         WebSocketClient socket = new WebSocketClient(new URI(String.format("ws://%s/%s", host, stateId))) {
 
@@ -132,7 +132,7 @@ public class RtagClient {
             }
 
         };
-        socket.connect();
+        socket.connectBlocking();
         client.setSocket(socket);
         return client;
     }
@@ -153,8 +153,9 @@ public class RtagClient {
     }
     {{/each}}
 
-    public void disconnect() {
-        this.socket.close();
+    public void disconnect() throws InterruptedException {
+        this.socket.closeBlocking();
+        ES.shutdown();
     }
 
     private static <T> T httpPost(String url, String body, Class<T> responseType) throws IOException {
