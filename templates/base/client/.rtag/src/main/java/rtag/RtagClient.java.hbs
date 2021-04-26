@@ -137,6 +137,7 @@ public class RtagClient {
         return client;
     }
     {{#each methods}}
+    {{#if (ne @key ../initialize)}}
 
     public Result {{@key}}({{makeRequestName @key}} request)
             throws InterruptedException, ExecutionException, JsonProcessingException {
@@ -151,6 +152,7 @@ public class RtagClient {
         this.socket.send(MSGPACK_MAPPER.writeValueAsBytes(obj));
         return this.callbacks.get(msgId).get();
     }
+    {{/if}}
     {{/each}}
 
     public void disconnect() throws InterruptedException {
