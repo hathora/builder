@@ -5,6 +5,7 @@
     "strict": true,
     "target": "esnext",
     "moduleResolution": "node",
+    "isolatedModules": true,
     "experimentalDecorators": true
   }
 }
