@@ -78,7 +78,7 @@ public class RtagClient {
 {{/if}}
 {{/each}}
 
-    public static String createState(String origin, String token, ICreateGameRequest request) throws IOException {
+    public static String createState(String origin, String token, {{makeRequestName initialize}} request) throws IOException {
         return httpPost(String.format("%s/new", origin), JSON_MAPPER.writeValueAsString(request), token,
                 CreateStateResponse.class).getStateId();
     }
