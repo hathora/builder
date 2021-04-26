@@ -35,7 +35,7 @@ export class RtagClient {
 
 {{/if}}
 {{/each}}
-  public static async createState(token: string, request: ICreateGameRequest, origin: string = ""): Promise<StateId> {
+  public static async createState(token: string, request: {{makeRequestName initialize}}, origin: string = ""): Promise<StateId> {
     const res = await axios.post(`${origin}/new`, request, { headers: { Authorization: "Bearer " + token } });
     return res.data.stateId;
   }
