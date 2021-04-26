@@ -8,6 +8,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -15,6 +16,7 @@ import java.util.concurrent.FutureTask;
 import java.util.function.Consumer;
 
 import com.auth0.jwt.JWT;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,18 +30,15 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.msgpack.jackson.dataformat.MessagePackFactory;
 
+import lombok.Builder;
+import lombok.Getter;
 import lombok.Setter;
+import lombok.Value;
 {{#each methods}}
 import rtag.Types.{{makeRequestName @key}};
 {{/each}}
 import rtag.Types.{{userState}};
-import rtag.Types.CreateStateResponse;
-import rtag.Types.LoginResponse;
-import rtag.Types.Message;
-import rtag.Types.ResponseMessage;
 import rtag.Types.Result;
-import rtag.Types.ResultCallback;
-import rtag.Types.StateMessage;
 import rtag.Types.UserData;
 
 public class RtagClient {
@@ -174,5 +173,60 @@ public class RtagClient {
     private static <T> T makeCall(Request request, Class<T> responseType) throws IOException {
         String response = CLIENT.newCall(request).execute().body().string();
         return JSON_MAPPER.readValue(response, responseType);
+    }
+
+    @Value
+    @Builder
+    private static class ResultCallback {
+        private FutureTask<Result> future;
+        private ResultCallable cb;
+
+        @Getter
+        @Setter
+        public static class ResultCallable implements Callable<Result> {
+            private Result result;
+
+            public Result call() {
+                return this.result;
+            }
+        }
+
+        public Result get() throws InterruptedException, ExecutionException {
+            return this.future.get();
+        }
+    }
+
+    @Getter
+    @Setter
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private static class Message {
+        private String type;
+    }
+
+    @Getter
+    @Setter
+    private static class ResponseMessage extends Message {
+        private String type;
+        private String msgId;
+        private Result result;
+    }
+
+    @Getter
+    @Setter
+    private static class StateMessage extends Message {
+        private String type;
+        private {{userState}} state;
+    }
+
+    @Getter
+    @Setter
+    private static class LoginResponse {
+        private String token;
+    }
+
+    @Getter
+    @Setter
+    private static class CreateStateResponse {
+        private String stateId;
     }
 }
