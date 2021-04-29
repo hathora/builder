@@ -3,7 +3,7 @@ import onChange from "on-change";
 import dependencyTree from "dependency-tree";
 import chokidar from "chokidar";
 import seedrandom from "seedrandom";
-import { UserData, {{userState}} as UserState, {{makeRequestName initialize}} } from "./types";
+import { UserData, {{userState}} as UserState, Result, {{makeRequestName initialize}} } from "./types";
 
 const deps = dependencyTree.toList({
   directory: ".",
@@ -19,11 +19,14 @@ type StateId = string;
 type State = ReturnType<typeof impl.{{initialize}}>;
 const states: Map<StateId, State> = new Map();
 const changedStates: Set<StateId> = new Set();
+const userResults: Map<string, Record<string, Result>> = new Map();
 const subscriptions: Map<StateId, Set<UserData>> = new Map();
 const rng = seedrandom(Math.random().toString());
 
 export default class Store {
-  constructor(onNewUserState: (stateId: StateId, user: UserData, userState: UserState) => void) {
+  constructor(
+    onNewUserState: (stateId: StateId, user: UserData, userState: UserState, results: Record<string, Result>) => void
+  ) {
     setInterval(() => {
       {{#if tick}}
       states.forEach((state) => impl.onTick(state, ctx()));
@@ -31,9 +34,12 @@ export default class Store {
       changedStates.forEach((stateId) => {
         subscriptions
           .get(stateId)!
-          .forEach((user) => onNewUserState(stateId, user, impl.getUserState(states.get(stateId)!, user)));
+          .forEach((user) =>
+            onNewUserState(stateId, user, impl.getUserState(states.get(stateId)!, user), userResults.get(user.id) ?? {})
+          );
       });
       changedStates.clear();
+      userResults.clear();
     }, 50);
   }
   newState(stateId: StateId, user: UserData, req: {{makeRequestName initialize}}) {
@@ -45,17 +51,15 @@ export default class Store {
       })
     );
   }
-  handleUpdate(stateId: StateId, user: UserData, method: string, args: any) {
-    const state = states.get(stateId)!;
-    switch (method) {
-      {{#each methods}}
-      {{#if (ne @key ../initialize)}}
-      case "{{@key}}":
-        return impl.{{@key}}(state, user, ctx(), args);
-      {{/if}}
-      {{/each}}
+  handleUpdate(stateId: StateId, user: UserData, msgId: string, method: string, args: any) {
+    const result = getResult(states.get(stateId)!, user, method, args);
+    if (result !== undefined) {
+      if (!userResults.has(user.id)) {
+        userResults.set(user.id, { [msgId]: result });
+      } else {
+        userResults.get(user.id)![msgId] = result;
+      }
     }
-    throw new Error(`Invalid method ${method}`);
   }
   hasState(stateId: StateId) {
     return states.has(stateId);
@@ -78,6 +82,19 @@ export default class Store {
     } else {
       subscriptions.delete(stateId);
     }
+  }
+}
+
+function getResult(state: State, user: UserData, method: string, args: any) {
+  switch (method) {
+    {{#each methods}}
+    {{#if (ne @key ../initialize)}}
+    case "{{@key}}":
+      return impl.{{@key}}(state, user, ctx(), args);
+    {{/if}}
+    {{/each}}
+    default:
+      return undefined;
   }
 }
 
