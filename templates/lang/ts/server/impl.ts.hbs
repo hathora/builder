@@ -1,4 +1,4 @@
-import { Methods } from "./.rtag/methods";
+import { Context, Methods } from "./.rtag/methods";
 import {
   UserData,
   Result,
@@ -18,12 +18,12 @@ import {
 interface InternalState {}
 
 export class Impl implements Methods<InternalState> {
-  {{initialize}}(user: UserData, request: {{makeRequestName initialize}}): InternalState {
+  {{initialize}}(user: UserData, ctx: Context, request: {{makeRequestName initialize}}): InternalState {
     return {};
   }
   {{#each methods}}
   {{#if (ne @key ../initialize)}}
-  {{@key}}(state: InternalState, user: UserData, request: {{makeRequestName @key}}): Result {
+  {{@key}}(state: InternalState, user: UserData, ctx: Context, request: {{makeRequestName @key}}): Result {
     return Result.success();
   }
   {{/if}}
@@ -38,7 +38,7 @@ export class Impl implements Methods<InternalState> {
     };
   }
   {{#if tick}}
-  onTick(state: InternalState): void {}
+  onTick(state: InternalState, ctx: Context): void {}
   {{/if}}
 }
 {{#*inline "renderArg"}}
