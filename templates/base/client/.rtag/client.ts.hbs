@@ -58,15 +58,14 @@ export class RtagClient {
         reject();
       };
       socket.onmessage = ({ data }) => {
-        const message: any = decode(data as ArrayBuffer);
-        if (message.type === "response") {
-          client.callbacks[message.msgId](message.result);
-          delete client.callbacks[message.msgId];
-        } else if (message.type === "state") {
-          onStateChange(message.state);
-        } else {
-          console.error("Unknown message type: " + message.type);
-        }
+        const { state, results } = decode(data as ArrayBuffer) as { state: UserState; results: Record<string, Result> };
+        onStateChange(state);
+        Object.entries(results).forEach(([msgId, result]) => {
+          if (msgId in client.callbacks) {
+            client.callbacks[msgId](result);
+            delete client.callbacks[msgId];
+          }
+        });
       };
     });
   }
