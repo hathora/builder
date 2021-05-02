@@ -23,6 +23,6 @@ export interface Methods<T> {
   {{/each}}
   getUserState(state: T, user: UserData): UserState;
   {{#if tick}}
-  onTick(state: T, ctx: Context): void;
+  onTick(state: T, ctx: Context, timeDelta: number): void;
   {{/if}}
 }

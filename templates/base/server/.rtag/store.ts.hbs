@@ -28,9 +28,6 @@ export default class Store {
     onNewUserState: (stateId: StateId, user: UserData, userState: UserState, results: Record<string, Result>) => void
   ) {
     setInterval(() => {
-      {{#if tick}}
-      states.forEach((state) => impl.onTick(state, ctx()));
-      {{/if}}
       changedStates.forEach((stateId) => {
         subscriptions
           .get(stateId)!
@@ -40,7 +37,16 @@ export default class Store {
       });
       changedStates.clear();
       userResults.clear();
+    }, 100);
+
+    {{#if tick}}
+    let prevUpdateTime = Date.now();
+    setInterval(() => {
+      const currTime = Date.now();
+      states.forEach((state) => impl.onTick(state, ctx(), (currTime - prevUpdateTime) / 1000));
+      prevUpdateTime = currTime;
     }, 50);
+    {{/if}}
   }
   newState(stateId: StateId, user: UserData, req: {{makeRequestName initialize}}) {
     const state = impl.{{initialize}}(user, ctx(), req);
