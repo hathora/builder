@@ -30,7 +30,7 @@ const vite = await createServer({
 });
 
 const connections: Map<string, Set<Connection>> = new Map();
-const store = new Store(onNewUserState);
+const store = new Store();
 
 app.use(express.json());
 app.post("/new", (req, res) => {
@@ -112,7 +112,12 @@ function deleteConnection(stateId: StateId, user: UserData, socket: Connection) 
   }
 }
 
-function onNewUserState(stateId: StateId, user: UserData, userState: UserState, results: Record<string, Result>) {
+export function onNewUserState(
+  stateId: StateId,
+  user: UserData,
+  userState: UserState,
+  results: Record<string, Result>
+) {
   const client = stateId + user.id;
   connections.get(client)!.forEach((socket) => {
     socket.send(encode({ state: userState, results }, { ignoreUndefined: true }));

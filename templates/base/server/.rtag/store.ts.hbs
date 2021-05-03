@@ -3,6 +3,7 @@ import onChange from "on-change";
 import dependencyTree from "dependency-tree";
 import chokidar from "chokidar";
 import seedrandom from "seedrandom";
+import { onNewUserState } from "./proxy";
 import { UserData, {{userState}} as UserState, Result, {{makeRequestName initialize}} } from "./types";
 
 const deps = dependencyTree.toList({
@@ -24,9 +25,7 @@ const subscriptions: Map<StateId, Set<UserData>> = new Map();
 const rng = seedrandom(Math.random().toString());
 
 export default class Store {
-  constructor(
-    onNewUserState: (stateId: StateId, user: UserData, userState: UserState, results: Record<string, Result>) => void
-  ) {
+  constructor() {
     setInterval(() => {
       changedStates.forEach((stateId) => {
         subscriptions
