@@ -37,23 +37,6 @@ export interface {{capitalize @key}}UserData {
 }
 {{/each}}
 export type UserData = {{#each auth}}{{capitalize @key}}UserData{{#unless @last}} | {{/unless}}{{/each}};
-export interface ModifiedResult {
-  type: "modified";
-}
-export interface UnmodifiedResult {
-  type: "unmodified";
-  error?: {{> renderArg error}};
-}
-export type Result = ModifiedResult | UnmodifiedResult;
-export const Result: { modified: () => ModifiedResult; unmodified: (error?: {{> renderArg error}}) => UnmodifiedResult } = {
-  modified: () => ({
-    type: "modified",
-  }),
-  unmodified: (error?: {{> renderArg error}}) => ({
-    type: "unmodified",
-    error,
-  }),
-};
 {{#*inline "renderArg"}}
 {{#if alias}}
 {{typeString}}

@@ -4,7 +4,7 @@ import dependencyTree from "dependency-tree";
 import chokidar from "chokidar";
 import seedrandom from "seedrandom";
 import { onNewUserState } from "./proxy";
-import { UserData, Result, {{makeRequestName initialize}} } from "./types";
+import { UserData, {{makeRequestName initialize}} } from "./types";
 
 const deps = dependencyTree.toList({
   directory: ".",
