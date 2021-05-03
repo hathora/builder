@@ -4,7 +4,7 @@ import dependencyTree from "dependency-tree";
 import chokidar from "chokidar";
 import seedrandom from "seedrandom";
 import { onNewUserState } from "./proxy";
-import { UserData, {{userState}} as UserState, Result, {{makeRequestName initialize}} } from "./types";
+import { UserData, Result, {{makeRequestName initialize}} } from "./types";
 
 const deps = dependencyTree.toList({
   directory: ".",
@@ -20,7 +20,7 @@ type StateId = string;
 type State = ReturnType<typeof impl.{{initialize}}>;
 const states: Map<StateId, State> = new Map();
 const changedStates: Set<StateId> = new Set();
-const userResults: Map<string, Record<string, Result>> = new Map();
+const userResults: Map<StateId, Map<string, Record<string, Result>>> = new Map();
 const subscriptions: Map<StateId, Set<UserData>> = new Map();
 const rng = seedrandom(Math.random().toString());
 
@@ -28,17 +28,24 @@ export default class Store {
   constructor() {
     setInterval(() => {
       changedStates.forEach((stateId) => {
-        subscriptions
-          .get(stateId)!
-          .forEach((user) =>
-            onNewUserState(stateId, user, impl.getUserState(states.get(stateId)!, user), userResults.get(user.id) ?? {})
-          );
+        const results = userResults.get(stateId) ?? new Map();
+        subscriptions.get(stateId)!.forEach((user) => {
+          onNewUserState(stateId, user, impl.getUserState(states.get(stateId)!, user), results.get(user.id) ?? {});
+        });
+        userResults.delete(stateId);
+      });
+      userResults.forEach((results, stateId) => {
+        subscriptions.get(stateId)!.forEach((user) => {
+          if (results.has(user.id)) {
+            onNewUserState(stateId, user, impl.getUserState(states.get(stateId)!, user), results.get(user.id)!);
+          }
+        });
       });
       changedStates.clear();
       userResults.clear();
     }, 100);
-
     {{#if tick}}
+
     let prevUpdateTime = Date.now();
     setInterval(() => {
       const currTime = Date.now();
@@ -59,10 +66,14 @@ export default class Store {
   handleUpdate(stateId: StateId, user: UserData, msgId: string, method: string, args: any) {
     const result = getResult(states.get(stateId)!, user, method, args);
     if (result !== undefined) {
-      if (!userResults.has(user.id)) {
-        userResults.set(user.id, { [msgId]: result });
+      if (!userResults.has(stateId)) {
+        userResults.set(stateId, new Map([[user.id, { [msgId]: result }]]));
       } else {
-        userResults.get(user.id)![msgId] = result;
+        if (!userResults.get(stateId)!.has(user.id)) {
+          userResults.get(stateId)!.set(user.id, { [msgId]: result });
+        } else {
+          userResults.get(stateId)!.get(user.id)![msgId] = result;
+        }
       }
     }
   }
