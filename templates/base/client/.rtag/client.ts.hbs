@@ -13,7 +13,7 @@ import {
 export type StateId = string;
 
 export class RtagClient {
-  private callbacks: Record<string, (response: {{error.typeString}} | null) => void> = {};
+  private callbacks: Record<string, (response: {{error.typeString}} | undefined) => void> = {};
 
   private constructor(private socket: WebSocket) {}
 
@@ -64,7 +64,7 @@ export class RtagClient {
         onStateChange(state);
         Object.entries(responses).forEach(([msgId, response]) => {
           if (msgId in client.callbacks) {
-            client.callbacks[msgId](response);
+            client.callbacks[msgId](response ?? undefined);
             delete client.callbacks[msgId];
           }
         });
@@ -74,7 +74,7 @@ export class RtagClient {
 
   {{#each methods}}
   {{#if (ne @key ../initialize)}}
-  public {{@key}}(request: {{makeRequestName @key}}): Promise<{{../error.typeString}} | null> {
+  public {{@key}}(request: {{makeRequestName @key}}): Promise<{{../error.typeString}} | undefined> {
     const msgId = Math.random().toString(36).substring(2);
     this.socket.send(encode({ method: "{{@key}}", msgId, args: request }));
     return new Promise((resolve) => {

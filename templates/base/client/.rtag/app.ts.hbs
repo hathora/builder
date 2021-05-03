@@ -61,8 +61,8 @@ Vue.component("method-form", {
         return;
       }
       const client: RtagClient = this.$parent.$data.client;
-      const res: {{error.typeString}} | null = await client[this.method](this.value);
-      if (res !== null) {
+      const res: {{error.typeString}} | undefined = await client[this.method](this.value);
+      if (res !== undefined) {
         this.$toasted.error(JSON.stringify(res));
       } else {
         this.value = {};
