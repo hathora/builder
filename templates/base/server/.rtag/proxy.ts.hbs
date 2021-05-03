@@ -55,7 +55,7 @@ server.on("upgrade", (req: http.IncomingMessage, socket: Socket, head: Buffer) =
   }
   wss.handleUpgrade(req, socket, head, (ws) => {
     ws.once("message", (token) => {
-      const user = getUserFromToken(token);
+      const user = getUserFromToken(token as string);
       ws.send(encode({ state: store.getUserState(stateId, user)!, results: {} }, { ignoreUndefined: true }));
       handleConnection(stateId, user, Object.assign(ws, { isAlive: true }));
     });
