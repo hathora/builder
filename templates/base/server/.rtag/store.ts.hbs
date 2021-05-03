@@ -28,9 +28,9 @@ export default class Store {
   constructor() {
     setInterval(() => {
       changedStates.forEach((stateId) => {
-        const results = userResults.get(stateId) ?? new Map();
+        const results = userResults.get(stateId);
         subscriptions.get(stateId)!.forEach((user) => {
-          onNewUserState(stateId, user, impl.getUserState(states.get(stateId)!, user), results.get(user.id) ?? {});
+          onNewUserState(stateId, user, impl.getUserState(states.get(stateId)!, user), results?.get(user.id) ?? {});
         });
         userResults.delete(stateId);
       });
