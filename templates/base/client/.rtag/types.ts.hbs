@@ -37,20 +37,20 @@ export interface {{capitalize @key}}UserData {
 }
 {{/each}}
 export type UserData = {{#each auth}}{{capitalize @key}}UserData{{#unless @last}} | {{/unless}}{{/each}};
-export interface SuccessResult {
-  type: "success";
+export interface ModifiedResult {
+  type: "modified";
 }
-export interface ErrorResult {
-  type: "error";
-  error: {{> renderArg error}};
+export interface UnmodifiedResult {
+  type: "unmodified";
+  error?: {{> renderArg error}};
 }
-export type Result = SuccessResult | ErrorResult;
-export const Result: { success: () => SuccessResult; error: (error: {{> renderArg error}}) => ErrorResult } = {
-  success: () => ({
-    type: "success",
+export type Result = ModifiedResult | UnmodifiedResult;
+export const Result: { modified: () => ModifiedResult; unmodified: (error?: {{> renderArg error}}) => UnmodifiedResult } = {
+  modified: () => ({
+    type: "modified",
   }),
-  error: (error: {{> renderArg error}}) => ({
-    type: "error",
+  unmodified: (error?: {{> renderArg error}}) => ({
+    type: "unmodified",
     error,
   }),
 };

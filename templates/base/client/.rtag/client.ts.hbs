@@ -4,7 +4,6 @@ import jwtDecode from "jwt-decode";
 import { decode, encode } from "@msgpack/msgpack";
 import {
   UserData,
-  Result,
   {{userState}} as UserState,
   {{#each methods}}
   {{makeRequestName @key}},
@@ -14,7 +13,7 @@ import {
 export type StateId = string;
 
 export class RtagClient {
-  private callbacks: Record<string, (result: Result) => void> = {};
+  private callbacks: Record<string, (response: {{error.typeString}} | null) => void> = {};
 
   private constructor(private socket: WebSocket) {}
 
@@ -58,11 +57,14 @@ export class RtagClient {
         reject();
       };
       socket.onmessage = ({ data }) => {
-        const { state, results } = decode(data as ArrayBuffer) as { state: UserState; results: Record<string, Result> };
+        const { state, responses } = decode(data as ArrayBuffer) as {
+          state: UserState;
+          responses: Record<string, string | null>;
+        };
         onStateChange(state);
-        Object.entries(results).forEach(([msgId, result]) => {
+        Object.entries(responses).forEach(([msgId, response]) => {
           if (msgId in client.callbacks) {
-            client.callbacks[msgId](result);
+            client.callbacks[msgId](response);
             delete client.callbacks[msgId];
           }
         });
@@ -72,7 +74,7 @@ export class RtagClient {
 
   {{#each methods}}
   {{#if (ne @key ../initialize)}}
-  public {{@key}}(request: {{makeRequestName @key}}): Promise<Result> {
+  public {{@key}}(request: {{makeRequestName @key}}): Promise<{{../error.typeString}} | null> {
     const msgId = Math.random().toString(36).substring(2);
     this.socket.send(encode({ method: "{{@key}}", msgId, args: request }));
     return new Promise((resolve) => {

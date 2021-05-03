@@ -20,7 +20,7 @@ type StateId = string;
 type State = ReturnType<typeof impl.{{initialize}}>;
 const states: Map<StateId, State> = new Map();
 const changedStates: Set<StateId> = new Set();
-const userResults: Map<StateId, Map<string, Record<string, Result>>> = new Map();
+const userResponses: Map<StateId, Map<string, Record<string, {{error.typeString}} | null>>> = new Map();
 const subscriptions: Map<StateId, Set<UserData>> = new Map();
 const rng = seedrandom(Math.random().toString());
 
@@ -28,21 +28,21 @@ export default class Store {
   constructor() {
     setInterval(() => {
       changedStates.forEach((stateId) => {
-        const results = userResults.get(stateId);
+        const responses = userResponses.get(stateId);
         subscriptions.get(stateId)!.forEach((user) => {
-          onNewUserState(stateId, user, impl.getUserState(states.get(stateId)!, user), results?.get(user.id) ?? {});
+          onNewUserState(stateId, user, impl.getUserState(states.get(stateId)!, user), responses?.get(user.id) ?? {});
         });
-        userResults.delete(stateId);
+        userResponses.delete(stateId);
       });
-      userResults.forEach((results, stateId) => {
+      userResponses.forEach((responses, stateId) => {
         subscriptions.get(stateId)!.forEach((user) => {
-          if (results.has(user.id)) {
-            onNewUserState(stateId, user, impl.getUserState(states.get(stateId)!, user), results.get(user.id)!);
+          if (responses.has(user.id)) {
+            onNewUserState(stateId, user, impl.getUserState(states.get(stateId)!, user), responses.get(user.id)!);
           }
         });
       });
       changedStates.clear();
-      userResults.clear();
+      userResponses.clear();
     }, 100);
     {{#if tick}}
 
@@ -66,13 +66,14 @@ export default class Store {
   handleUpdate(stateId: StateId, user: UserData, msgId: string, method: string, args: any) {
     const result = getResult(states.get(stateId)!, user, method, args);
     if (result !== undefined) {
-      if (!userResults.has(stateId)) {
-        userResults.set(stateId, new Map([[user.id, { [msgId]: result }]]));
+      const response = result.type === "modified" ? null : result.error ?? null;
+      if (!userResponses.has(stateId)) {
+        userResponses.set(stateId, new Map([[user.id, { [msgId]: response }]]));
       } else {
-        if (!userResults.get(stateId)!.has(user.id)) {
-          userResults.get(stateId)!.set(user.id, { [msgId]: result });
+        if (!userResponses.get(stateId)!.has(user.id)) {
+          userResponses.get(stateId)!.set(user.id, { [msgId]: response });
         } else {
-          userResults.get(stateId)!.get(user.id)![msgId] = result;
+          userResponses.get(stateId)!.get(user.id)![msgId] = response;
         }
       }
     }

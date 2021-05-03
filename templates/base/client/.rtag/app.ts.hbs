@@ -61,9 +61,9 @@ Vue.component("method-form", {
         return;
       }
       const client: RtagClient = this.$parent.$data.client;
-      const res: Types.Result = await client[this.method](this.value);
-      if (res.type === "error") {
-        this.$toasted.error(JSON.stringify(res.error));
+      const res: {{error.typeString}} | null = await client[this.method](this.value);
+      if (res !== null) {
+        this.$toasted.error(JSON.stringify(res));
       } else {
         this.value = {};
         this.hack = false;
