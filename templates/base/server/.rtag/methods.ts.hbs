@@ -1,6 +1,5 @@
 import {
   UserData,
-  Result,
   {{userState}} as UserState,
   {{#each methods}}
   {{makeRequestName @key}},
@@ -12,6 +11,24 @@ export interface Context {
   randInt(limit?: number): number;
   time(): number;
 }
+
+export interface ModifiedResult {
+  type: "modified";
+}
+export interface UnmodifiedResult {
+  type: "unmodified";
+  error?: {{error.typeString}};
+}
+export type Result = ModifiedResult | UnmodifiedResult;
+export const Result: { modified: () => ModifiedResult; unmodified: (error?: {{error.typeString}}) => UnmodifiedResult } = {
+  modified: () => ({
+    type: "modified",
+  }),
+  unmodified: (error?: {{error.typeString}}) => ({
+    type: "unmodified",
+    error,
+  }),
+};
 
 export interface Methods<T> {
   {{#each methods}}

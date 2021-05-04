@@ -8,7 +8,7 @@ import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 import Store from "./store";
 import { authMiddleware, getUserFromToken } from "./auth";
-import { UserData, {{userState}} as UserState, Result } from "./types";
+import { UserData, {{userState}} as UserState } from "./types";
 
 type StateId = string;
 type Connection = WebSocket & { isAlive: boolean };
@@ -56,7 +56,7 @@ server.on("upgrade", (req: http.IncomingMessage, socket: Socket, head: Buffer) =
   wss.handleUpgrade(req, socket, head, (ws) => {
     ws.once("message", (token) => {
       const user = getUserFromToken(token as string);
-      ws.send(encode({ state: store.getUserState(stateId, user)!, results: {} }, { ignoreUndefined: true }));
+      ws.send(encode({ state: store.getUserState(stateId, user)!, responses: {} }, { ignoreUndefined: true }));
       handleConnection(stateId, user, Object.assign(ws, { isAlive: true }));
     });
   });
@@ -116,10 +116,10 @@ export function onNewUserState(
   stateId: StateId,
   user: UserData,
   userState: UserState,
-  results: Record<string, Result>
+  responses: Record<string, {{error.typeString}} | null>
 ) {
   const client = stateId + user.id;
   connections.get(client)!.forEach((socket) => {
-    socket.send(encode({ state: userState, results }, { ignoreUndefined: true }));
+    socket.send(encode({ state: userState, responses }, { ignoreUndefined: true }));
   });
 }
