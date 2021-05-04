@@ -59,7 +59,7 @@ export class RtagClient {
       socket.onmessage = ({ data }) => {
         const { state, responses } = decode(data as ArrayBuffer) as {
           state: UserState;
-          responses: Record<string, string | null>;
+          responses: Record<string, {{error.typeString}} | null>;
         };
         onStateChange(state);
         Object.entries(responses).forEach(([msgId, response]) => {
