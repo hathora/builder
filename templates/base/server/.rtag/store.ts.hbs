@@ -1,5 +1,4 @@
 import module from "module";
-import onChange from "on-change";
 import dependencyTree from "dependency-tree";
 import chokidar from "chokidar";
 import seedrandom from "seedrandom";
@@ -49,23 +48,25 @@ export default class Store {
     let prevUpdateTime = Date.now();
     setInterval(() => {
       const currTime = Date.now();
-      states.forEach((state) => impl.onTick(state, ctx(), (currTime - prevUpdateTime) / 1000));
+      states.forEach((state, stateId) => {
+        const result = impl.onTick(state, ctx(), (currTime - prevUpdateTime) / 1000);
+        if (result.type === "modified") {
+          changedStates.add(stateId);
+        }
+      });
       prevUpdateTime = currTime;
     }, 50);
     {{/if}}
   }
   newState(stateId: StateId, user: UserData, req: {{makeRequestName initialize}}) {
-    const state = impl.{{initialize}}(user, ctx(), req);
-    states.set(
-      stateId,
-      onChange(state, () => {
-        changedStates.add(stateId);
-      })
-    );
+    states.set(stateId, impl.{{initialize}}(user, ctx(), req));
   }
   handleUpdate(stateId: StateId, user: UserData, msgId: string, method: string, args: any) {
     const result = getResult(states.get(stateId)!, user, method, args);
     if (result !== undefined) {
+      if (result.type === "modified") {
+        changedStates.add(stateId);
+      }
       const response = result.type === "modified" ? null : result.error ?? null;
       if (!userResponses.has(stateId)) {
         userResponses.set(stateId, new Map([[user.id, { [msgId]: response }]]));
