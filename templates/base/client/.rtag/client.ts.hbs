@@ -76,7 +76,7 @@ export class RtagClient {
   {{#if (ne @key ../initialize)}}
   public {{@key}}(request: {{makeRequestName @key}}): Promise<{{../error.typeString}} | undefined> {
     const msgId = Math.random().toString(36).substring(2);
-    this.socket.send(encode({ method: "{{@key}}", msgId, args: request }));
+    this.socket.send(encode({ method: "{{@key}}", msgId, args: request }, { ignoreUndefined: true }));
     return new Promise((resolve) => {
       this.callbacks[msgId] = resolve;
     });
