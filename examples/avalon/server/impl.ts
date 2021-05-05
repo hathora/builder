@@ -10,7 +10,6 @@ import {
   IVoteInQuestRequest,
   Username,
   Role,
-  QuestId,
   Vote,
   GameStatus,
   QuestAttempt,
@@ -19,11 +18,9 @@ import {
 import { shuffle } from "./utils";
 
 interface InternalQuestAttempt {
-  id: QuestId;
   roundNumber: number;
   attemptNumber: number;
   numPlayers: number;
-  size: number;
   leader: Username;
   members: Username[];
   votes: Map<Username, Vote>;
@@ -67,6 +64,12 @@ export class Impl implements Methods<InternalState> {
     };
   }
   joinGame(state: InternalState, user: UserData, ctx: Context, request: IJoinGameRequest): Result {
+    if (state.players.find((player) => player === user.name) !== undefined) {
+      return Result.unmodified("Already joined");
+    }
+    if (state.roles.size > 0) {
+      return Result.unmodified("Game already started");
+    }
     state.players.push(user.name);
     return Result.modified();
   }
@@ -74,23 +77,56 @@ export class Impl implements Methods<InternalState> {
     if (!QUEST_CONFIGURATIONS.has(state.players.length)) {
       return Result.unmodified("Invalid number of players");
     }
+    if (request.roleList.length !== state.players.length) {
+      return Result.unmodified("Wrong number of roles");
+    }
+    if (request.leader !== undefined && !state.players.includes(request.leader)) {
+      return Result.unmodified("Invalid leader");
+    }
     if (request.playerOrder !== undefined && request.playerOrder.length > 0) {
+      if (
+        request.playerOrder.length !== state.players.length ||
+        !state.players.every((player) => request.playerOrder!.includes(player))
+      ) {
+        return Result.unmodified("Invalid player order");
+      }
       state.players = request.playerOrder;
     } else {
       state.players = shuffle(ctx.randInt, state.players);
     }
-    const leader = request.leader ?? state.players[ctx.randInt(state.players.length)];
     state.roles = new Map(shuffle(ctx.randInt, request.roleList).map((role, i) => [state.players[i], role]));
+    const leader = request.leader ?? state.players[ctx.randInt(state.players.length)];
     state.quests.push(createQuest(1, 1, state.players.length, leader));
     return Result.modified();
   }
   proposeQuest(state: InternalState, user: UserData, ctx: Context, request: IProposeQuestRequest): Result {
-    const quest = state.quests.find((q) => q.id === request.questId)!;
+    const quest = state.quests.find((q) => questId(q) === request.questId)!;
+    if (quest === undefined) {
+      return Result.unmodified("Invalid questId");
+    }
+    if (quest.members.length > 0) {
+      return Result.unmodified("Quest already in progress");
+    }
+    if (quest.leader !== user.name) {
+      return Result.unmodified("Not quest leader");
+    }
+    if (request.proposedMembers.length !== questSize(quest)) {
+      return Result.unmodified("Wrong quest size");
+    }
+    if (!request.proposedMembers.every((member) => state.players.includes(member))) {
+      return Result.unmodified("Invalid members");
+    }
     quest.members = request.proposedMembers;
     return Result.modified();
   }
   voteForProposal(state: InternalState, user: UserData, ctx: Context, request: IVoteForProposalRequest): Result {
-    const quest = state.quests.find((q) => q.id === request.questId)!;
+    const quest = state.quests.find((q) => questId(q) === request.questId);
+    if (quest === undefined) {
+      return Result.unmodified("Invalid questId");
+    }
+    if (questStatus(quest) !== QuestStatus.VOTING_FOR_PROPOSAL) {
+      return Result.unmodified("Not voting for proposal");
+    }
     quest.votes.set(user.name, request.vote);
     if (questStatus(quest) === QuestStatus.PROPOSAL_REJECTED && quest.attemptNumber < 5) {
       state.quests.push(
@@ -105,10 +141,19 @@ export class Impl implements Methods<InternalState> {
     return Result.modified();
   }
   voteInQuest(state: InternalState, user: UserData, ctx: Context, request: IVoteInQuestRequest): Result {
-    const quest = state.quests.find((q) => q.id === request.questId)!;
+    const quest = state.quests.find((q) => questId(q) === request.questId);
+    if (quest === undefined) {
+      return Result.unmodified("Invalid questId");
+    }
+    if (questStatus(quest) !== QuestStatus.VOTING_IN_QUEST) {
+      return Result.unmodified("Not voting in quest");
+    }
+    if (!quest.members.includes(user.name)) {
+      return Result.unmodified("Not participating in quest");
+    }
     quest.results.set(user.name, request.vote);
     if (
-      quest.results.size === quest.size &&
+      quest.results.size === questSize(quest) &&
       numQuestsForStatus(state.quests, QuestStatus.FAILED) < 3 &&
       numQuestsForStatus(state.quests, QuestStatus.PASSED) < 3
     ) {
@@ -145,13 +190,10 @@ function createQuest(
   numPlayers: number,
   leader: Username
 ): InternalQuestAttempt {
-  const playersPerRound = QUEST_CONFIGURATIONS.get(numPlayers)!;
   return {
-    id: (roundNumber - 1) * playersPerRound.length + (attemptNumber - 1),
     roundNumber,
     attemptNumber,
     numPlayers,
-    size: playersPerRound[roundNumber - 1],
     leader,
     members: [],
     votes: new Map(),
@@ -166,7 +208,7 @@ function getNextLeader(leader: Username, players: Username[]) {
 
 function sanitizeQuest(quest: InternalQuestAttempt, username: Username): QuestAttempt {
   return {
-    id: quest.id,
+    id: questId(quest),
     status: questStatus(quest),
     roundNumber: quest.roundNumber,
     attemptNumber: quest.attemptNumber,
@@ -180,7 +222,7 @@ function sanitizeQuest(quest: InternalQuestAttempt, username: Username): QuestAt
       player,
       vote: player === username ? vote : undefined,
     })),
-    numFailures: quest.results.size === quest.size ? numFails(quest.results) : 0,
+    numFailures: quest.results.size === questSize(quest) ? numFails(quest.results) : 0,
   };
 }
 
@@ -195,6 +237,14 @@ function gameStatus(quests: InternalQuestAttempt[]) {
   return GameStatus.IN_PROGRESS;
 }
 
+function numQuestsForStatus(quests: InternalQuestAttempt[], status: QuestStatus): number {
+  return quests.filter((q) => questStatus(q) === status).length;
+}
+
+function questId(quest: InternalQuestAttempt) {
+  return (quest.roundNumber - 1) * QUEST_CONFIGURATIONS.get(quest.numPlayers)!.length + (quest.attemptNumber - 1);
+}
+
 function questStatus(quest: InternalQuestAttempt) {
   if (quest.members.length === 0) {
     return QuestStatus.PROPOSING_QUEST;
@@ -202,14 +252,14 @@ function questStatus(quest: InternalQuestAttempt) {
     return QuestStatus.VOTING_FOR_PROPOSAL;
   } else if (numFails(quest.votes) * 2 >= quest.numPlayers) {
     return QuestStatus.PROPOSAL_REJECTED;
-  } else if (quest.results.size < quest.size) {
+  } else if (quest.results.size < questSize(quest)) {
     return QuestStatus.VOTING_IN_QUEST;
   }
   return numFails(quest.results) >= maxFails(quest) ? QuestStatus.FAILED : QuestStatus.PASSED;
 }
 
-function numQuestsForStatus(quests: InternalQuestAttempt[], status: QuestStatus): number {
-  return quests.filter((q) => questStatus(q) === status).length;
+function questSize(quest: InternalQuestAttempt) {
+  return QUEST_CONFIGURATIONS.get(quest.numPlayers)![quest.roundNumber - 1];
 }
 
 function numFails(votes: Map<Username, Vote>) {
