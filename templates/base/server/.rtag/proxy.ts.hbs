@@ -1,22 +1,16 @@
 import WebSocket from "ws";
 import { Socket } from "net";
 import express from "express";
-import { decode, encode } from "@msgpack/msgpack";
 import { createServer } from "vite";
 import * as http from "http";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 import Store from "./store";
 import { authMiddleware, getUserFromToken } from "./auth";
-import { UserData, {{userState}} as UserState } from "./types";
+import { UserData } from "./types";
 
 type StateId = string;
 type Connection = WebSocket & { isAlive: boolean };
-interface UpdateRequest {
-  method: string;
-  msgId: string;
-  args: any;
-}
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -56,7 +50,7 @@ server.on("upgrade", (req: http.IncomingMessage, socket: Socket, head: Buffer) =
   wss.handleUpgrade(req, socket, head, (ws) => {
     ws.once("message", (token) => {
       const user = getUserFromToken(token as string);
-      ws.send(encode({ state: store.getUserState(stateId, user)!, responses: {} }, { ignoreUndefined: true }));
+      ws.send(store.getUserState(stateId, user));
       handleConnection(stateId, user, Object.assign(ws, { isAlive: true }));
     });
   });
@@ -88,8 +82,7 @@ function handleConnection(stateId: StateId, user: UserData, socket: Connection) 
     socket.isAlive = true;
   });
   socket.on("message", (data) => {
-    const { method, args, msgId } = decode(data as Buffer) as UpdateRequest;
-    store.handleUpdate(stateId, user, msgId, method, args);
+    store.handleUpdate(stateId, user, data as Buffer);
   });
 }
 
@@ -112,14 +105,9 @@ function deleteConnection(stateId: StateId, user: UserData, socket: Connection) 
   }
 }
 
-export function onNewUserState(
-  stateId: StateId,
-  user: UserData,
-  userState: UserState,
-  responses: Record<string, {{error.typeString}} | null>
-) {
+export function onNewUserState(stateId: StateId, user: UserData, data: Uint8Array) {
   const client = stateId + user.id;
   connections.get(client)!.forEach((socket) => {
-    socket.send(encode({ state: userState, responses }, { ignoreUndefined: true }));
+    socket.send(data);
   });
 }

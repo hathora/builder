@@ -2,6 +2,7 @@ import module from "module";
 import dependencyTree from "dependency-tree";
 import chokidar from "chokidar";
 import seedrandom from "seedrandom";
+import { decode, encode } from "@msgpack/msgpack";
 import { onNewUserState } from "./proxy";
 import { UserData, {{makeRequestName initialize}} } from "./types";
 
@@ -17,6 +18,12 @@ chokidar.watch(deps).on("change", async () => {
 
 type StateId = string;
 type State = ReturnType<typeof impl.{{initialize}}>;
+interface UpdateRequest {
+  method: string;
+  msgId: string;
+  args: any;
+}
+
 const states: Map<StateId, State> = new Map();
 const changedStates: Set<StateId> = new Set();
 const userResponses: Map<StateId, Map<string, Record<string, {{error.typeString}} | null>>> = new Map();
@@ -29,14 +36,14 @@ export default class Store {
       changedStates.forEach((stateId) => {
         const responses = userResponses.get(stateId);
         subscriptions.get(stateId)!.forEach((user) => {
-          onNewUserState(stateId, user, impl.getUserState(states.get(stateId)!, user), responses?.get(user.id) ?? {});
+          onNewUserState(stateId, user, updateMessage(stateId, user, responses?.get(user.id) ?? {}));
         });
         userResponses.delete(stateId);
       });
       userResponses.forEach((responses, stateId) => {
         subscriptions.get(stateId)!.forEach((user) => {
           if (responses.has(user.id)) {
-            onNewUserState(stateId, user, impl.getUserState(states.get(stateId)!, user), responses.get(user.id)!);
+            onNewUserState(stateId, user, updateMessage(stateId, user, responses.get(user.id)!));
           }
         });
       });
@@ -61,7 +68,8 @@ export default class Store {
   newState(stateId: StateId, user: UserData, req: {{makeRequestName initialize}}) {
     states.set(stateId, impl.{{initialize}}(user, ctx(), req));
   }
-  handleUpdate(stateId: StateId, user: UserData, msgId: string, method: string, args: any) {
+  handleUpdate(stateId: StateId, user: UserData, data: Buffer) {
+    const { method, args, msgId } = decode(data) as UpdateRequest;
     const result = getResult(states.get(stateId)!, user, method, args);
     if (result !== undefined) {
       if (result.type === "modified") {
@@ -83,8 +91,7 @@ export default class Store {
     return states.has(stateId);
   }
   getUserState(stateId: StateId, user: UserData) {
-    const state = states.get(stateId);
-    return state !== undefined ? impl.getUserState(state, user) : undefined;
+    return states.has(stateId) ? updateMessage(stateId, user, {}) : undefined;
   }
   subscribeUser(stateId: StateId, user: UserData) {
     if (!subscriptions.has(stateId)) {
@@ -114,6 +121,10 @@ function getResult(state: State, user: UserData, method: string, args: any) {
     default:
       return undefined;
   }
+}
+
+function updateMessage(stateId: StateId, user: UserData, responses: Record<string, {{error.typeString}} | null>) {
+  return encode({ state: impl.getUserState(states.get(stateId)!, user), responses }, { ignoreUndefined: true });
 }
 
 function ctx() {
