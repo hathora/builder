@@ -4,6 +4,7 @@ import chokidar from "chokidar";
 import seedrandom from "seedrandom";
 import { decode, encode } from "@msgpack/msgpack";
 import { onNewUserState } from "./proxy";
+import { Context } from "./methods";
 import { UserData, {{makeRequestName initialize}} } from "./types";
 
 const deps = dependencyTree.toList({
@@ -24,11 +25,10 @@ interface UpdateRequest {
   args: any;
 }
 
-const states: Map<StateId, State> = new Map();
+const states: Map<StateId, State & { _rng: ReturnType<seedrandom> }> = new Map();
 const changedStates: Set<StateId> = new Set();
 const userResponses: Map<StateId, Map<string, Record<string, {{error.typeString}} | null>>> = new Map();
 const subscriptions: Map<StateId, Set<UserData>> = new Map();
-const rng = seedrandom(Math.random().toString());
 
 export default class Store {
   constructor() {
@@ -56,7 +56,7 @@ export default class Store {
     setInterval(() => {
       const currTime = Date.now();
       states.forEach((state, stateId) => {
-        const result = impl.onTick(state, ctx(), (currTime - prevUpdateTime) / 1000);
+        const result = impl.onTick(state, ctx(state._rng, currTime), (currTime - prevUpdateTime) / 1000);
         if (result.type === "modified") {
           changedStates.add(stateId);
         }
@@ -66,11 +66,16 @@ export default class Store {
     {{/if}}
   }
   newState(stateId: StateId, user: UserData, req: {{makeRequestName initialize}}) {
-    states.set(stateId, impl.{{initialize}}(user, ctx(), req));
+    const seed = Math.random().toString();
+    const rng = seedrandom(seed);
+    const time = Date.now();
+    states.set(stateId, Object.assign(impl.{{initialize}}(user, ctx(rng, time), req), { _rng: rng }));
   }
   handleUpdate(stateId: StateId, user: UserData, data: Buffer) {
     const { method, args, msgId } = decode(data) as UpdateRequest;
-    const result = getResult(states.get(stateId)!, user, method, args);
+    const time = Date.now();
+    const state = states.get(stateId)!;
+    const result = getResult(state, user, method, ctx(state._rng, time), args);
     if (result !== undefined) {
       if (result.type === "modified") {
         changedStates.add(stateId);
@@ -108,12 +113,12 @@ export default class Store {
   }
 }
 
-function getResult(state: State, user: UserData, method: string, args: any) {
+function getResult(state: State, user: UserData, method: string, ctx: Context, args: any) {
   switch (method) {
     {{#each methods}}
     {{#if (ne @key ../initialize)}}
     case "{{@key}}":
-      return impl.{{@key}}(state, user, ctx(), args);
+      return impl.{{@key}}(state, user, ctx, args);
     {{/if}}
     {{/each}}
     default:
@@ -126,10 +131,10 @@ function sendUpdate(stateId: StateId, user: UserData, responses: Record<string, 
   return onNewUserState(stateId, user, encode({ state, responses }, { ignoreUndefined: true }));
 }
 
-function ctx() {
+function ctx(rng: ReturnType<seedrandom>, time: number) {
   return {
     rand: () => rng(),
     randInt: (limit?: number) => (limit === undefined ? rng.int32() : Math.floor(rng() * limit)),
-    time: () => Date.now(),
+    time: () => time,
   };
 }
