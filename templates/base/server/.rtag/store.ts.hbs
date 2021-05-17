@@ -70,12 +70,16 @@ export default class Store {
     const seed = Math.random().toString();
     const rng = seedrandom(seed);
     const time = Date.now();
-    states.set(stateId, Object.assign(impl.{{initialize}}(user, ctx(rng, time), args), { _rng: rng }));
+    const state = impl.{{initialize}}(user, ctx(rng, time), args);
+    states.set(stateId, Object.assign(state, { _rng: rng }));
   }
   handleUpdate(stateId: StateId, user: UserData, data: Buffer) {
+    const state = states.get(stateId);
+    if (state === undefined) {
+      return;
+    }
     const { method, args, msgId } = decode(data) as UpdateRequest;
     const time = Date.now();
-    const state = states.get(stateId)!;
     const result = getResult(state, user, method, ctx(state._rng, time), args);
     if (result !== undefined) {
       if (result.type === "modified") {
@@ -93,23 +97,24 @@ export default class Store {
       }
     }
   }
-  hasState(stateId: StateId) {
-    return states.has(stateId);
-  }
   subscribeUser(stateId: StateId, user: UserData) {
-    if (!subscriptions.has(stateId)) {
-      subscriptions.set(stateId, new Set([user]));
-    } else {
-      subscriptions.get(stateId)!.add(user);
+    if (states.has(stateId)) {
+      if (!subscriptions.has(stateId)) {
+        subscriptions.set(stateId, new Set([user]));
+      } else {
+        subscriptions.get(stateId)!.add(user);
+      }
+      sendUpdate(stateId, user, {});
     }
-    sendUpdate(stateId, user, {});
   }
   unsubscribeUser(stateId: StateId, user: UserData) {
-    const users = subscriptions.get(stateId)!;
-    if (users.size > 1) {
-      users.delete(user);
-    } else {
-      subscriptions.delete(stateId);
+    if (states.has(stateId)) {
+      const users = subscriptions.get(stateId)!;
+      if (users.size > 1) {
+        users.delete(user);
+      } else {
+        subscriptions.delete(stateId);
+      }
     }
   }
 }

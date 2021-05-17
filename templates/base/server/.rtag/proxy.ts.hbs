@@ -42,14 +42,9 @@ app.get("/*", (_, res) => {
 });
 
 server.on("upgrade", (req: http.IncomingMessage, socket: Socket, head: Buffer) => {
-  const stateId = req.url!.substring(1);
-  if (!store.hasState(stateId)) {
-    socket.write("HTTP/1.1 404 Not Found\r\n\r\n");
-    socket.destroy();
-    return;
-  }
   wss.handleUpgrade(req, socket, head, (ws) => {
     ws.once("message", (token) => {
+      const stateId = req.url!.substring(1);
       const user = getUserFromToken(token as string);
       handleConnection(stateId, user, Object.assign(ws, { isAlive: true }));
     });
