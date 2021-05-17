@@ -27,6 +27,7 @@ const connections: Map<string, Set<Connection>> = new Map();
 const store = new Store();
 
 app.use(express.json());
+app.use(express.raw());
 app.post("/new", (req, res) => {
   const token = req.headers.authorization!.split(" ")[1];
   const user = getUserFromToken(token);

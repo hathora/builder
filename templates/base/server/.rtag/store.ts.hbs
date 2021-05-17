@@ -2,7 +2,7 @@ import module from "module";
 import dependencyTree from "dependency-tree";
 import chokidar from "chokidar";
 import seedrandom from "seedrandom";
-import { decode, encode } from "@msgpack/msgpack";
+import { decode, decodeMulti, encode } from "@msgpack/msgpack";
 import { onNewUserState } from "./proxy";
 import { Context } from "./methods";
 import { UserData, {{makeRequestName initialize}} } from "./types";
@@ -65,11 +65,12 @@ export default class Store {
     }, 50);
     {{/if}}
   }
-  newState(stateId: StateId, user: UserData, req: {{makeRequestName initialize}}) {
+  newState(stateId: StateId, user: UserData, data: Buffer) {
+    const args = decodeMulti(data).next().value as {{makeRequestName initialize}};
     const seed = Math.random().toString();
     const rng = seedrandom(seed);
     const time = Date.now();
-    states.set(stateId, Object.assign(impl.{{initialize}}(user, ctx(rng, time), req), { _rng: rng }));
+    states.set(stateId, Object.assign(impl.{{initialize}}(user, ctx(rng, time), args), { _rng: rng }));
   }
   handleUpdate(stateId: StateId, user: UserData, data: Buffer) {
     const { method, args, msgId } = decode(data) as UpdateRequest;
