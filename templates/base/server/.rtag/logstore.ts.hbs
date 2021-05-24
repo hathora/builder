@@ -34,14 +34,9 @@ export default class LogStore {
       }
       const time = metadataBuf.readBigUInt64LE();
       const len = metadataBuf.readUInt16LE(8);
-
-      if (len > 0) {
-        const recordBuf = Buffer.alloc(len);
-        fs.readSync(fd, recordBuf, 0, recordBuf.length, null);
-        rows.push({ time: Number(time), record: recordBuf });
-      } else {
-        rows.push({ time: Number(time), record: Buffer.alloc(0) });
-      }
+      const recordBuf = Buffer.alloc(len);
+      fs.readSync(fd, recordBuf, 0, recordBuf.length, null);
+      rows.push({ time: Number(time), record: recordBuf });
     }
     return rows;
   }
