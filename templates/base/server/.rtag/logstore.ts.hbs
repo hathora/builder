@@ -28,10 +28,7 @@ export default class LogStore {
     const metadataBuf = Buffer.alloc(12);
 
     const rows: { time: number; record: Buffer }[] = [];
-    while (true) {
-      if (fs.readSync(fd, metadataBuf, 0, metadataBuf.length, null) === 0) {
-        break;
-      }
+    while (fs.readSync(fd, metadataBuf, 0, metadataBuf.length, null) > 0) {
       const time = metadataBuf.readBigUInt64LE();
       const len = metadataBuf.readUInt16LE(8);
       const recordBuf = Buffer.alloc(len);
