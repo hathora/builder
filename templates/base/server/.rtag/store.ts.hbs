@@ -1,9 +1,13 @@
 import module from "module";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
+import { existsSync, mkdirSync } from "fs";
 import dependencyTree from "dependency-tree";
 import chokidar from "chokidar";
 import seedrandom from "seedrandom";
 import { decode, decodeMulti, encode } from "@msgpack/msgpack";
 import { onNewUserState } from "./proxy";
+import LogStore from "./logstore";
 import { Context } from "./methods";
 import { UserData, {{makeRequestName initialize}} } from "./types";
 
@@ -25,6 +29,11 @@ interface UpdateRequest {
   args: any;
 }
 
+const dataDir = join(dirname(fileURLToPath(import.meta.url)), "data");
+if (!existsSync(dataDir)) {
+  mkdirSync(dataDir);
+}
+const log = new LogStore(dataDir);
 const states: Map<StateId, State & { _rng: ReturnType<seedrandom> }> = new Map();
 const changedStates: Set<StateId> = new Set();
 const userResponses: Map<StateId, Map<string, Record<string, {{error.typeString}} | null>>> = new Map();
@@ -56,9 +65,11 @@ export default class Store {
     setInterval(() => {
       const currTime = Date.now();
       states.forEach((state, stateId) => {
-        const result = impl.onTick(state, ctx(state._rng, currTime), (currTime - prevUpdateTime) / 1000);
+        const timeDelta = currTime - prevUpdateTime;
+        const result = impl.onTick(state, ctx(state._rng, currTime), timeDelta / 1000);
         if (result.type === "modified") {
           changedStates.add(stateId);
+          log.append(stateId, currTime, encode({ timeDelta }));
         }
       });
       prevUpdateTime = currTime;
@@ -72,6 +83,7 @@ export default class Store {
     const time = Date.now();
     const state = impl.{{initialize}}(user, ctx(rng, time), args);
     states.set(stateId, Object.assign(state, { _rng: rng }));
+    log.append(stateId, time, encode({ seed, user, args }));
   }
   handleUpdate(stateId: StateId, user: UserData, data: Buffer) {
     const state = states.get(stateId);
@@ -84,6 +96,7 @@ export default class Store {
     if (result !== undefined) {
       if (result.type === "modified") {
         changedStates.add(stateId);
+        log.append(stateId, time, encode({ method, user, args }));
       }
       const response = result.type === "modified" ? null : result.error ?? null;
       if (!userResponses.has(stateId)) {
@@ -98,23 +111,25 @@ export default class Store {
     }
   }
   subscribeUser(stateId: StateId, user: UserData) {
-    if (states.has(stateId)) {
-      if (!subscriptions.has(stateId)) {
-        subscriptions.set(stateId, new Set([user]));
-      } else {
-        subscriptions.get(stateId)!.add(user);
-      }
-      sendUpdate(stateId, user, {});
+    if (!states.has(stateId)) {
+      states.set(stateId, loadState(stateId));
     }
+    if (!subscriptions.has(stateId)) {
+      subscriptions.set(stateId, new Set([user]));
+    } else {
+      subscriptions.get(stateId)!.add(user);
+    }
+    sendUpdate(stateId, user, {});
   }
   unsubscribeUser(stateId: StateId, user: UserData) {
-    if (states.has(stateId)) {
-      const users = subscriptions.get(stateId)!;
-      if (users.size > 1) {
-        users.delete(user);
-      } else {
-        subscriptions.delete(stateId);
-      }
+    if (!states.has(stateId)) {
+      return;
+    }
+    const users = subscriptions.get(stateId)!;
+    if (users.size > 1) {
+      users.delete(user);
+    } else {
+      subscriptions.delete(stateId);
     }
   }
 }
@@ -130,6 +145,31 @@ function getResult(state: State, user: UserData, method: string, ctx: Context, a
     default:
       return undefined;
   }
+}
+
+function loadState(stateId: StateId) {
+  const rows = log.load(stateId);
+
+  const { time, record } = rows[0];
+  const { seed, user, args } = decode(record) as { seed: string; user: UserData; args: {{makeRequestName initialize}} };
+  const rng = seedrandom(seed);
+  const state = impl.createGame(user, ctx(rng, time), args);
+
+  for (let i = 1; i < rows.length; i++) {
+    const { time, record } = rows[i];
+    const data = decode(record) as object;
+    {{#if tick}}
+    if ("timeDelta" in data) {
+      const { timeDelta } = data as { timeDelta: number };
+      impl.onTick(state, ctx(rng, time), timeDelta / 1000);
+      continue;
+    }
+    {{/if}}
+    const { method, user, args } = data as { method: string; user: UserData; args: any };
+    getResult(state, user, method, ctx(rng, time), args);
+  }
+
+  return Object.assign(state, { _rng: rng });
 }
 
 function sendUpdate(stateId: StateId, user: UserData, responses: Record<string, string | null>) {
