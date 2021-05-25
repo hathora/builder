@@ -16,11 +16,10 @@ export default class LogStore {
     }
     const fd = this.partitionFiles.get(partitionId)!;
 
-    const buf = Buffer.alloc(12);
-    buf.writeBigUInt64LE(BigInt(time));
-    buf.writeUInt16LE(record.byteLength, 8);
-    fs.appendFileSync(fd, buf);
-    fs.appendFileSync(fd, record);
+    const header = Buffer.alloc(12);
+    header.writeBigUInt64LE(BigInt(time));
+    header.writeUInt16LE(record.byteLength, 8);
+    fs.appendFileSync(fd, Buffer.concat([header, record]));
   }
 
   public load(partitionId: string) {
@@ -35,6 +34,8 @@ export default class LogStore {
       fs.readSync(fd, recordBuf, 0, recordBuf.length, null);
       rows.push({ time: Number(time), record: recordBuf });
     }
+
+    fs.closeSync(fd);
     return rows;
   }
 }
