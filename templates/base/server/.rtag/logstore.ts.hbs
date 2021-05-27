@@ -1,0 +1,41 @@
+import fs from "fs";
+import path from "path";
+
+export default class LogStore {
+  private storageDir: string;
+  private partitionFiles: Map<string, number>;
+
+  public constructor(storageDir: string) {
+    this.storageDir = storageDir;
+    this.partitionFiles = new Map();
+  }
+
+  public append(partitionId: string, time: number, record: Uint8Array) {
+    if (!this.partitionFiles.has(partitionId)) {
+      this.partitionFiles.set(partitionId, fs.openSync(path.join(this.storageDir, partitionId), "a"));
+    }
+    const fd = this.partitionFiles.get(partitionId)!;
+
+    const header = Buffer.alloc(12);
+    header.writeBigUInt64LE(BigInt(time));
+    header.writeUInt16LE(record.byteLength, 8);
+    fs.appendFileSync(fd, Buffer.concat([header, record]));
+  }
+
+  public load(partitionId: string) {
+    const fd = fs.openSync(path.join(this.storageDir, partitionId), "r");
+    const metadataBuf = Buffer.alloc(12);
+
+    const rows: { time: number; record: Buffer }[] = [];
+    while (fs.readSync(fd, metadataBuf, 0, metadataBuf.length, null) > 0) {
+      const time = metadataBuf.readBigUInt64LE();
+      const len = metadataBuf.readUInt16LE(8);
+      const recordBuf = Buffer.alloc(len);
+      fs.readSync(fd, recordBuf, 0, recordBuf.length, null);
+      rows.push({ time: Number(time), record: recordBuf });
+    }
+
+    fs.closeSync(fd);
+    return rows;
+  }
+}
