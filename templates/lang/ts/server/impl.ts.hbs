@@ -1,7 +1,6 @@
-import { Context, Methods } from "./.rtag/methods";
+import { Methods, Context, Result } from "./.rtag/methods";
 import {
   UserData,
-  Result,
   {{#with (lookup types userState)}}
   {{#each properties}}
   {{#if (eq type "enum")}}
@@ -24,7 +23,7 @@ export class Impl implements Methods<InternalState> {
   {{#each methods}}
   {{#if (ne @key ../initialize)}}
   {{@key}}(state: InternalState, user: UserData, ctx: Context, request: {{makeRequestName @key}}): Result {
-    return Result.success();
+    return Result.unmodified("Not implemented");
   }
   {{/if}}
   {{/each}}
