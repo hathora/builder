@@ -38,4 +38,12 @@ export default class LogStore {
     fs.closeSync(fd);
     return rows;
   }
+
+  public unload(partitionId: string) {
+    const fd = this.partitionFiles.get(partitionId);
+    if (fd !== undefined) {
+      this.partitionFiles.delete(partitionId);
+      fs.closeSync(fd);
+    }
+  }
 }
