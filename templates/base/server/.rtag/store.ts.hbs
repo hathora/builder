@@ -130,6 +130,8 @@ export default class Store {
       users.delete(user);
     } else {
       subscriptions.delete(stateId);
+      states.delete(stateId);
+      log.unload(stateId);
     }
   }
 }
