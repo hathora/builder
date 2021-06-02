@@ -116,7 +116,11 @@ export default class Store {
   }
   subscribeUser(stateId: StateId, user: UserData) {
     if (!states.has(stateId)) {
-      states.set(stateId, loadState(stateId));
+      const state = loadState(stateId);
+      if (state === undefined) {
+        return;
+      }
+      states.set(stateId, state);
     }
     if (!subscriptions.has(stateId)) {
       subscriptions.set(stateId, new Set([user]));
@@ -154,28 +158,32 @@ function getResult(state: State, user: UserData, method: string, ctx: Context, a
 }
 
 function loadState(stateId: StateId) {
-  const rows = log.load(stateId);
+  try {
+    const rows = log.load(stateId);
 
-  const { time, record } = rows[0];
-  const { seed, user, args } = decode(record) as { seed: string; user: UserData; args: {{makeRequestName initialize}} };
-  const rng = seedrandom(seed);
-  const state = impl.createGame(user, ctx(rng, time), args);
+    const { time, record } = rows[0];
+    const { seed, user, args } = decode(record) as { seed: string; user: UserData; args: {{makeRequestName initialize}} };
+    const rng = seedrandom(seed);
+    const state = impl.createGame(user, ctx(rng, time), args);
 
-  for (let i = 1; i < rows.length; i++) {
-    const { time, record } = rows[i];
-    const data = decode(record) as object;
-    {{#if tick}}
-    if ("timeDelta" in data) {
-      const { timeDelta } = data as { timeDelta: number };
-      impl.onTick(state, ctx(rng, time), timeDelta / 1000);
-      continue;
+    for (let i = 1; i < rows.length; i++) {
+      const { time, record } = rows[i];
+      const data = decode(record) as object;
+      {{#if tick}}
+      if ("timeDelta" in data) {
+        const { timeDelta } = data as { timeDelta: number };
+        impl.onTick(state, ctx(rng, time), timeDelta / 1000);
+        continue;
+      }
+      {{/if}}
+      const { method, user, args } = data as { method: string; user: UserData; args: any };
+      getResult(state, user, method, ctx(rng, time), args);
     }
-    {{/if}}
-    const { method, user, args } = data as { method: string; user: UserData; args: any };
-    getResult(state, user, method, ctx(rng, time), args);
-  }
 
-  return Object.assign(state, { _rng: rng });
+    return Object.assign(state, { _rng: rng });
+  } catch (e) {
+    console.error("Unable to load state:", e);
+  }
 }
 
 function sendUpdate(stateId: StateId, user: UserData, responses: Record<string, string | null>) {
