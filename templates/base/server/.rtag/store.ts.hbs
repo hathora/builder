@@ -18,7 +18,11 @@ const deps = dependencyTree.toList({
 });
 let impl = new (await import("../impl")).Impl();
 chokidar.watch(deps).on("change", async () => {
-  impl = new (await import(`../impl.ts#${Math.random()}`)).Impl();
+  try {
+    impl = new (await import(`../impl.ts#${Math.random()}`)).Impl();
+  } catch (e) {
+    console.error("Failed to reload:", e);
+  }
 });
 
 type StateId = string;
