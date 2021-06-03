@@ -1,5 +1,5 @@
 {
-  "name": "poker2-client",
+  "name": "poker-client",
   "version": "0.0.1",
   "type": "module",
   "dependencies": {
