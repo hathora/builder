@@ -37,7 +37,9 @@ export class Impl implements Methods<InternalState> {
     };
   }
   {{#if tick}}
-  onTick(state: InternalState, ctx: Context): void {}
+  onTick(state: InternalState, ctx: Context, timeDelta: number): Result {
+    return Result.unmodified();
+  }
   {{/if}}
 }
 {{#*inline "renderArg"}}
