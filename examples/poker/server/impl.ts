@@ -86,7 +86,7 @@ export class Impl implements Methods<InternalState> {
     if (player.name !== user.name || player.status !== PlayerStatus.WAITING) {
       return Result.unmodified("Not your turn");
     }
-    const betAmount = getAmountToCall(player, state.players);
+    const betAmount = getAmountToCall(state.players, player);
     if (betAmount > player.chipCount) {
       return Result.unmodified("Not enough chips");
     }
@@ -99,7 +99,7 @@ export class Impl implements Methods<InternalState> {
     if (player.name !== user.name || player.status !== PlayerStatus.WAITING) {
       return Result.unmodified("Not your turn");
     }
-    const betAmount = getAmountToCall(player, state.players) + request.amount;
+    const betAmount = getAmountToCall(state.players, player) + request.amount;
     if (betAmount > player.chipCount) {
       return Result.unmodified("Not enough chips");
     }
@@ -137,7 +137,7 @@ function createPlayer(name: Username): InternalPlayerInfo {
   };
 }
 
-function getAmountToCall(player: InternalPlayerInfo, players: InternalPlayerInfo[]) {
+function getAmountToCall(players: InternalPlayerInfo[], player: InternalPlayerInfo) {
   return Math.max(...players.map((p) => p.chipsInPot)) - player.chipsInPot;
 }
 
@@ -151,7 +151,7 @@ function advanceRound(state: InternalState) {
   const activePlayers = state.players.filter((p) => p.status !== PlayerStatus.FOLDED);
   // if there is only 1 player left, they are the winner
   if (activePlayers.length === 1) {
-    distributeWinnings(state, [activePlayers[0]]);
+    distributeWinnings(state.players, [activePlayers[0]]);
     return;
   }
   // advance to the next waiting player, if any
@@ -168,7 +168,7 @@ function advanceRound(state: InternalState) {
       activePlayers.map((p) => ({ pocketCards: p.cards, communityCards: state.revealedCards }))
     );
     distributeWinnings(
-      state,
+      state.players,
       highestHands.map(({ candidateIndex }) => activePlayers[candidateIndex])
     );
     return;
@@ -182,8 +182,9 @@ function advanceRound(state: InternalState) {
   state.players.filter((p) => p.status === PlayerStatus.PLAYED).forEach((p) => (p.status = PlayerStatus.WAITING));
 }
 
-function distributeWinnings(state: InternalState, winners: InternalPlayerInfo[]) {
-  const pot = state.players.reduce((sum, player) => sum + player.chipsInPot, 0);
+function distributeWinnings(players: InternalPlayerInfo[], winners: InternalPlayerInfo[]) {
+  // TODO: handle case where pot isn't evenly divisible by the number of winners
+  const pot = players.reduce((sum, player) => sum + player.chipsInPot, 0);
   winners.forEach((winner) => (winner.chipCount += Math.floor(pot / winners.length)));
-  state.players.forEach((p) => (p.chipsInPot = 0));
+  players.forEach((p) => (p.chipsInPot = 0));
 }
