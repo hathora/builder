@@ -14,10 +14,6 @@ import {
 import { shuffle } from "./utils";
 import { Cards, createDeck, drawCardsFromDeck, findHighestHands } from "@pairjacks/poker-cards";
 
-const INITIAL_CHIP_COUNT = 100;
-const SMALL_BLIND_AMOUNT = 1;
-const BIG_BLIND_AMOUNT = 2;
-
 interface InternalPlayerInfo {
   name: Username;
   chipCount: number;
@@ -31,16 +27,20 @@ interface InternalState {
   dealerIdx: number;
   activePlayerIdx: number;
   revealedCards: Cards;
+  startingChips: number;
+  smallBlindAmt: number;
   deck: Cards;
 }
 
 export class Impl implements Methods<InternalState> {
   createGame(user: UserData, ctx: Context, request: ICreateGameRequest): InternalState {
     return {
-      players: [createPlayer(user.name)],
+      players: [createPlayer(user.name, request.startingChips)],
       dealerIdx: 0,
       activePlayerIdx: 0,
       revealedCards: [],
+      startingChips: request.startingChips,
+      smallBlindAmt: request.startingBlind,
       deck: [],
     };
   }
@@ -48,7 +48,7 @@ export class Impl implements Methods<InternalState> {
     if (state.players.find((p) => p.name === user.name) !== undefined) {
       return Result.unmodified("Already joined");
     }
-    state.players.push(createPlayer(user.name));
+    state.players.push(createPlayer(user.name, state.startingChips));
     return Result.modified();
   }
   startRound(state: InternalState, user: UserData, ctx: Context, request: IStartRoundRequest): Result {
@@ -61,8 +61,8 @@ export class Impl implements Methods<InternalState> {
     state.dealerIdx = (state.dealerIdx + 1) % state.players.length;
     state.revealedCards = [];
     state.deck = shuffle(ctx.randInt, createDeck());
-    makeBet(state.players[(state.dealerIdx + 1) % state.players.length], SMALL_BLIND_AMOUNT);
-    makeBet(state.players[(state.dealerIdx + 2) % state.players.length], BIG_BLIND_AMOUNT);
+    makeBet(state.players[(state.dealerIdx + 1) % state.players.length], state.smallBlindAmt);
+    makeBet(state.players[(state.dealerIdx + 2) % state.players.length], state.smallBlindAmt * 2);
     state.activePlayerIdx = (state.dealerIdx + 3) % state.players.length;
     state.players.forEach((player) => {
       player.status = PlayerStatus.WAITING;
@@ -127,10 +127,10 @@ export class Impl implements Methods<InternalState> {
   }
 }
 
-function createPlayer(name: Username): InternalPlayerInfo {
+function createPlayer(name: Username, chipCount: number): InternalPlayerInfo {
   return {
     name,
-    chipCount: INITIAL_CHIP_COUNT,
+    chipCount,
     chipsInPot: 0,
     cards: [],
     status: PlayerStatus.WAITING,

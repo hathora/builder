@@ -21,6 +21,8 @@ types:
 
 methods:
   createGame:
+    startingChips: number
+    startingBlind: number
   joinGame:
   startRound:
   fold:
