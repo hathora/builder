@@ -178,7 +178,13 @@ function advanceRound(state: InternalState) {
   const { cards, deck } = drawCardsFromDeck(state.deck, amountToReveal);
   state.revealedCards = state.revealedCards.concat(cards);
   state.deck = deck;
-  state.activePlayerIdx = (state.dealerIdx + 1) % state.players.length;
+  for (let i = 1; i < state.players.length; i++) {
+    const idx = (state.dealerIdx + i) % state.players.length;
+    if (state.players[idx].status !== PlayerStatus.FOLDED) {
+      state.activePlayerIdx = idx;
+      break;
+    }
+  }
   state.players.filter((p) => p.status === PlayerStatus.PLAYED).forEach((p) => (p.status = PlayerStatus.WAITING));
 }
 
