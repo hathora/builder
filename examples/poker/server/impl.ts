@@ -45,7 +45,7 @@ export class Impl implements Methods<InternalState> {
     };
   }
   joinGame(state: InternalState, user: UserData, ctx: Context, request: IJoinGameRequest): Result {
-    if (state.players.find((player) => player.name === user.name) !== undefined) {
+    if (state.players.find((p) => p.name === user.name) !== undefined) {
       return Result.unmodified("Already joined");
     }
     state.players.push(createPlayer(user.name));
@@ -55,7 +55,7 @@ export class Impl implements Methods<InternalState> {
     if (state.players.length < 2) {
       return Result.unmodified("At least 2 players required");
     }
-    if (state.players.some((player) => player.chipsInPot > 0)) {
+    if (state.players.some((p) => p.chipsInPot > 0)) {
       return Result.unmodified("Round in progress");
     }
     state.dealerIdx = (state.dealerIdx + 1) % state.players.length;
@@ -103,17 +103,15 @@ export class Impl implements Methods<InternalState> {
     if (betAmount > player.chipCount) {
       return Result.unmodified("Not enough chips");
     }
-    state.players
-      .filter((player) => player.status === PlayerStatus.PLAYED)
-      .forEach((player) => (player.status = PlayerStatus.WAITING));
+    state.players.filter((p) => p.status === PlayerStatus.PLAYED).forEach((p) => (p.status = PlayerStatus.WAITING));
     makeBet(player, betAmount);
     advanceRound(state);
     return Result.modified();
   }
   getUserState(state: InternalState, user: UserData): PlayerState {
     const showdown =
-      state.players.filter((player) => player.status === PlayerStatus.WAITING).length === 0 &&
-      state.players.filter((player) => player.status === PlayerStatus.PLAYED).length > 1;
+      state.players.filter((p) => p.status === PlayerStatus.WAITING).length === 0 &&
+      state.players.filter((p) => p.status === PlayerStatus.PLAYED).length > 1;
     return {
       players: state.players.map((player) => {
         const shouldReveal = player.name === user.name || (showdown && player.status === PlayerStatus.PLAYED);
@@ -140,7 +138,7 @@ function createPlayer(name: Username): InternalPlayerInfo {
 }
 
 function getAmountToCall(player: InternalPlayerInfo, players: InternalPlayerInfo[]) {
-  return Math.max(...players.map((player) => player.chipsInPot)) - player.chipsInPot;
+  return Math.max(...players.map((p) => p.chipsInPot)) - player.chipsInPot;
 }
 
 function makeBet(player: InternalPlayerInfo, amount: number) {
@@ -150,7 +148,7 @@ function makeBet(player: InternalPlayerInfo, amount: number) {
 }
 
 function advanceRound(state: InternalState) {
-  const activePlayers = state.players.filter((player) => player.status !== PlayerStatus.FOLDED);
+  const activePlayers = state.players.filter((p) => p.status !== PlayerStatus.FOLDED);
   if (activePlayers.length === 1) {
     distributeWinnings(state, [activePlayers[0]]);
     return;
@@ -164,7 +162,7 @@ function advanceRound(state: InternalState) {
   }
   if (state.revealedCards.length === 5) {
     const highestHands = findHighestHands(
-      activePlayers.map(({ cards }) => ({ pocketCards: cards, communityCards: state.revealedCards }))
+      activePlayers.map((p) => ({ pocketCards: p.cards, communityCards: state.revealedCards }))
     );
     distributeWinnings(
       state,
@@ -177,13 +175,11 @@ function advanceRound(state: InternalState) {
   state.revealedCards = state.revealedCards.concat(cards);
   state.deck = deck;
   state.activePlayerIdx = (state.dealerIdx + 1) % state.players.length;
-  state.players
-    .filter((player) => player.status === PlayerStatus.PLAYED)
-    .forEach((player) => (player.status = PlayerStatus.WAITING));
+  state.players.filter((p) => p.status === PlayerStatus.PLAYED).forEach((p) => (p.status = PlayerStatus.WAITING));
 }
 
 function distributeWinnings(state: InternalState, winners: InternalPlayerInfo[]) {
   const pot = state.players.reduce((sum, player) => sum + player.chipsInPot, 0);
   winners.forEach((winner) => (winner.chipCount += Math.floor(pot / winners.length)));
-  state.players.forEach((player) => (player.chipsInPot = 0));
+  state.players.forEach((p) => (p.chipsInPot = 0));
 }
