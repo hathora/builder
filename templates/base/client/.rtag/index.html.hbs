@@ -10,6 +10,9 @@
     </div>
     <script type="text/x-template" id="home-template">
       <div>
+        {{#with (lookup methods initialize)}}
+        {{> renderForm this arg=../initialize required=true}}
+        {{/with}}
         <button type="button" class="button" @click="createState">
           <span class="button-text">Create new</span>
         </button>

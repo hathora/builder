@@ -352,12 +352,20 @@ const Login = Vue.component("login", {
 });
 
 const Home = Vue.component("home", {
-  data: () => ({ stateId: "" }),
+  data: () => ({ stateId: "", value: {}, valid: true }),
   template: "#home-template",
   methods: {
+    update(arg: string, value: any, valid: boolean) {
+      patch(this.value, value);
+      this.valid = valid;
+    },
     createState() {
+      if (!this.valid) {
+        this.$toasted.error("Required fields missing");
+        return;
+      }
       const token = sessionStorage.getItem("user")!;
-      RtagClient.createState(token, {}).then((stateId) => {
+      RtagClient.createState(token, this.value).then((stateId) => {
         this.$router.push("/state/" + stateId);
       });
     },
