@@ -149,10 +149,12 @@ function makeBet(player: InternalPlayerInfo, amount: number) {
 
 function advanceRound(state: InternalState) {
   const activePlayers = state.players.filter((p) => p.status !== PlayerStatus.FOLDED);
+  // if there is only 1 player left, they are the winner
   if (activePlayers.length === 1) {
     distributeWinnings(state, [activePlayers[0]]);
     return;
   }
+  // advance to the next waiting player, if any
   for (let i = 1; i < state.players.length; i++) {
     const idx = (state.activePlayerIdx + i) % state.players.length;
     if (state.players[idx].status === PlayerStatus.WAITING) {
@@ -160,6 +162,7 @@ function advanceRound(state: InternalState) {
       return;
     }
   }
+  // if there are no waiting players and we've revaled 5 cards, determine the winners
   if (state.revealedCards.length === 5) {
     const highestHands = findHighestHands(
       activePlayers.map((p) => ({ pocketCards: p.cards, communityCards: state.revealedCards }))
@@ -170,6 +173,7 @@ function advanceRound(state: InternalState) {
     );
     return;
   }
+  // if round is still in progress, reveal the next cards and reset the active player
   const amountToReveal = state.revealedCards.length === 0 ? 3 : 1;
   const { cards, deck } = drawCardsFromDeck(state.deck, amountToReveal);
   state.revealedCards = state.revealedCards.concat(cards);
