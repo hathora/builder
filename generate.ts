@@ -218,7 +218,7 @@ if (command === "init") {
   }
 } else if (command === "generate") {
   if (!existsSync(join(serverDir, "impl.ts"))) {
-    console.error("Missing impl.ts, did you run rtag init?");
+    console.error("Missing impl.ts, make sure to run rtag init first");
   } else {
     generate("templates/base");
   }
