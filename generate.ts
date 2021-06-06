@@ -112,7 +112,7 @@ function npmInstall(dir: string) {
   }
 }
 
-function generate() {
+function generate(templatesDir: string) {
   const doc = RtagConfig.parse(load(readFileSync(join(rootDir, "rtag.yml"), "utf8")));
   const plugins = existsSync(join(clientDir, "plugins"))
     ? readdirSync(join(clientDir, "plugins")).map((p) => p.replace(/\..*$/, ""))
@@ -201,11 +201,7 @@ function generate() {
       }
     });
   }
-  const rootDirFiles = readdirSync(rootDir).filter((file) => !file.startsWith("."));
-  if (rootDirFiles.length === 1 && rootDirFiles[0] === "rtag.yml") {
-    codegen(join(__dirname, "templates/lang/ts"), rootDir);
-  }
-  codegen(join(__dirname, "templates/base"), rootDir);
+  codegen(join(__dirname, templatesDir), rootDir);
 }
 
 const rootDir = getProjectRoot(process.cwd());
@@ -214,8 +210,18 @@ const serverDir = join(rootDir, "server");
 
 console.log(`Project root: ${rootDir}`);
 const command = getCommand(process.argv);
-if (command === "generate") {
-  generate();
+if (command === "init") {
+  if (existsSync(join(serverDir, "impl.ts"))) {
+    console.error("Cannot init inside existing project, delete impl.ts to regenerate");
+  } else {
+    generate("templates/lang/ts");
+  }
+} else if (command === "generate") {
+  if (!existsSync(join(serverDir, "impl.ts"))) {
+    console.error("Missing impl.ts, make sure to run rtag init first");
+  } else {
+    generate("templates/base");
+  }
 } else if (command === "install") {
   npmInstall(clientDir);
   npmInstall(join(clientDir, ".rtag"));

@@ -26,10 +26,11 @@ npm install -g rtag
 
 ## Quickstart
 
-1. Inside a new directory, create a `rtag.yml` file, fill it out as per your project specifications (see below), and run `rtag` to generate your rtag project
-2. Run `rtag install` to install dependencies
-3. Start the server using `rtag start`
-4. View debug app at http://localhost:3000/
+1. Inside a new directory, create a `rtag.yml` file and fill it out as per your project specifications (see below)
+2. Run `rtag init` to generate your initial rtag project. For subsequent changes made to `rtag.yml`, run `rtag` instead
+3. Run `rtag install` to install dependencies
+4. Start the server using `rtag start`
+5. View debug app at http://localhost:3000/
 
 ## App configuration (rtag.yml)
 
