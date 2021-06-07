@@ -3,9 +3,9 @@
   "version": "0.0.1",
   "type": "module",
   "dependencies": {
-    "lit-element": "^2.5.0"
+    "lit-element": "^2.5.1"
   },
   "devDependencies": {
-    "typescript": "^4.2.4"
+    "typescript": "^4.3.2"
   }
 }
