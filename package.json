@@ -2,18 +2,26 @@
   "name": "rtag",
   "version": "0.0.81",
   "description": "Real-time app generator",
-  "bin": "./generate.ts",
+  "bin": "./cli.js",
+  "files": [
+    "cli.js",
+    "templates",
+    "READEME.md",
+    "LICENSE"
+  ],
   "dependencies": {
-    "@types/fs-extra": "9.0.11",
-    "@types/js-yaml": "4.0.1",
-    "@types/node": "15.0.1",
-    "@types/shelljs": "0.8.8",
     "fs-extra": "9.1.0",
     "handlebars": "4.7.7",
     "js-yaml": "4.1.0",
     "shelljs": "0.8.4",
-    "typescript": "4.2.4",
     "zod": "3.0.0-beta.1"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "9.0.11",
+    "@types/js-yaml": "4.0.1",
+    "@types/node": "15.0.1",
+    "@types/shelljs": "0.8.8",
+    "typescript": "4.2.4"
   },
   "repository": {
     "type": "git",
@@ -21,7 +29,7 @@
   },
   "keywords": [],
   "author": "Harsh Pandey",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/hpx7/rtag/issues"
   },

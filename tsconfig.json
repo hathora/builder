@@ -4,5 +4,6 @@
     "module": "commonjs",
     "strict": true,
     "target": "esnext"
-  }
+  },
+  "exclude": ["examples"]
 }
