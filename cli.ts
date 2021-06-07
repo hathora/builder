@@ -1,4 +1,4 @@
-#!/usr/bin/env ts-node-script
+#!/usr/bin/env node
 
 import { load } from "js-yaml";
 import { readdirSync, readFileSync, outputFileSync, existsSync, statSync } from "fs-extra";

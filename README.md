@@ -16,7 +16,6 @@ Rtag also comes with a powerful development server with features like hot code r
 #### Requirements
 
 - node v15+
-- ts-node on classpath (`npm install -g ts-node`)
 
 Install rtag from the npm registry:
 
