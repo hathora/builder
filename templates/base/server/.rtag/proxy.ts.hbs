@@ -18,7 +18,7 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ noServer: true });
 const vite = await createServer({
   server: { middlewareMode: true },
-  root: "../client",
+  root: "../../client",
   clearScreen: false,
   alias: { vue: "vue/dist/vue.esm.js" },
 });

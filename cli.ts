@@ -228,8 +228,8 @@ if (command === "init") {
   npmInstall(serverDir);
   npmInstall(join(serverDir, ".rtag"));
 } else if (command === "start") {
-  shelljs.cd(serverDir);
-  shelljs.exec("node --loader ts-node/esm --experimental-specifier-resolution=node .rtag/proxy.ts");
+  shelljs.cd(join(serverDir, ".rtag"));
+  shelljs.exec("node --loader ts-node/esm --experimental-specifier-resolution=node proxy.ts");
 } else {
   console.error(`Unknown command: ${command}`);
 }
