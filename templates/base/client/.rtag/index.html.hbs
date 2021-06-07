@@ -8,6 +8,10 @@
 
   <body>
     <div id="app">
+      <div class="topnav">
+        <router-link to="/" style="text-decoration: none; color: inherit;">{{appName}}</router-link>
+        <span style="float: right;" id="username">\{{username()}}</span>
+      </div>
       <router-view></router-view>
     </div>
     <script type="text/x-template" id="home-template">
