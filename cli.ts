@@ -112,83 +112,97 @@ function npmInstall(dir: string) {
   }
 }
 
-function generate(templatesDir: string) {
-  const doc = RtagConfig.parse(load(readFileSync(join(rootDir, "rtag.yml"), "utf8")));
-  const plugins = existsSync(join(clientDir, "plugins"))
-    ? readdirSync(join(clientDir, "plugins")).map((p) => p.replace(/\..*$/, ""))
-    : [];
-
-  function getArgsInfo(args: z.infer<typeof TypeArgs>, required: boolean, alias: boolean, typeString?: string): Arg {
-    if (Array.isArray(args)) {
+function getArgsInfo(
+  doc: z.infer<typeof RtagConfig>,
+  plugins: string[],
+  args: z.infer<typeof TypeArgs>,
+  required: boolean,
+  alias: boolean,
+  typeString?: string
+): Arg {
+  if (Array.isArray(args)) {
+    return {
+      type: "enum",
+      typeString,
+      alias,
+      options: args.map((label, value) => ({ label, value })),
+    };
+  } else if (typeof args === "object") {
+    return {
+      type: "object",
+      typeString,
+      alias,
+      properties: Object.fromEntries(
+        Object.entries(args).map(([name, type]) => [
+          name.replace(/[\W]+/g, ""),
+          getArgsInfo(doc, plugins, type, !name.endsWith("?"), false),
+        ])
+      ),
+    };
+  } else {
+    if (!required) {
       return {
-        type: "enum",
-        typeString,
+        type: "optional",
+        typeString: args + "?",
         alias,
-        options: args.map((label, value) => ({ label, value })),
+        item: getArgsInfo(doc, plugins, args, true, false),
       };
-    } else if (typeof args === "object") {
+    } else if (args.endsWith("[]")) {
       return {
-        type: "object",
-        typeString,
+        type: "array",
+        typeString: typeString ?? args,
         alias,
-        properties: Object.fromEntries(
-          Object.entries(args).map(([name, type]) => [
-            name.replace(/[\W]+/g, ""),
-            getArgsInfo(type, !name.endsWith("?"), false),
-          ])
-        ),
+        items: getArgsInfo(doc, plugins, args.substring(0, args.length - 2), true, false),
       };
+    } else if (args in doc.types) {
+      const argsInfo = getArgsInfo(doc, plugins, doc.types[args], required, true, args);
+      return plugins.includes(args) ? { type: "plugin", typeString: args, alias, item: argsInfo } : argsInfo;
+    } else if (args === "string" || args === "number" || args === "boolean") {
+      const argsInfo: Arg = { type: args, typeString: typeString ?? args, alias };
+      return plugins.includes(args) ? { type: "plugin", typeString: args, alias, item: argsInfo } : argsInfo;
     } else {
-      if (!required) {
-        return {
-          type: "optional",
-          typeString: args + "?",
-          alias,
-          item: getArgsInfo(args, true, false),
-        };
-      } else if (args.endsWith("[]")) {
-        return {
-          type: "array",
-          typeString: typeString ?? args,
-          alias,
-          items: getArgsInfo(args.substring(0, args.length - 2), true, false),
-        };
-      } else if (args in doc.types) {
-        const argsInfo = getArgsInfo(doc.types[args], required, true, args);
-        return plugins.includes(args) ? { type: "plugin", typeString: args, alias, item: argsInfo } : argsInfo;
-      } else if (args === "string" || args === "number" || args === "boolean") {
-        const argsInfo: Arg = { type: args, typeString: typeString ?? args, alias };
-        return plugins.includes(args) ? { type: "plugin", typeString: args, alias, item: argsInfo } : argsInfo;
-      } else {
-        throw new Error("Invalid args: " + args);
-      }
+      throw new Error("Invalid args: " + args);
     }
   }
+}
 
+function enrichDoc(doc: z.infer<typeof RtagConfig>, plugins: string[], appEntryPath: string, appName: string) {
+  return {
+    ...doc,
+    types: Object.fromEntries(
+      Object.entries(doc.types).map(([key, val]) => {
+        return [key, getArgsInfo(doc, plugins, val, true, false)];
+      })
+    ),
+    methods: Object.fromEntries(
+      Object.entries(doc.methods).map(([key, val]) => {
+        return [key, getArgsInfo(doc, plugins, val === null ? {} : val, true, false)];
+      })
+    ),
+    error: getArgsInfo(doc, plugins, doc.error, true, false),
+    plugins,
+    appEntryPath,
+    appName,
+  };
+}
+
+function generate(templatesDir: string) {
+  const doc = RtagConfig.parse(load(readFileSync(join(rootDir, "rtag.yml"), "utf8")));
   if (!Object.keys(doc.types).includes(doc.userState)) {
     throw new Error("Invalid userState");
   }
   if (!Object.keys(doc.methods).includes(doc.initialize)) {
     throw new Error("Invalid initialize");
   }
-  const enrichedDoc = {
-    ...doc,
-    types: Object.fromEntries(
-      Object.entries(doc.types).map(([key, val]) => {
-        return [key, getArgsInfo(val, true, false)];
-      })
-    ),
-    methods: Object.fromEntries(
-      Object.entries(doc.methods).map(([key, val]) => {
-        return [key, getArgsInfo(val === null ? {} : val, true, false)];
-      })
-    ),
-    error: getArgsInfo(doc.error, true, false),
-  };
+
+  const plugins = existsSync(join(clientDir, "plugins"))
+    ? readdirSync(join(clientDir, "plugins")).map((p) => p.replace(/\..*$/, ""))
+    : [];
   const appEntryPath = existsSync(join(clientDir, "index.html"))
     ? "../../client/index.html"
     : "../../client/.rtag/index.html";
   const appName = basename(rootDir);
+  const enrichedDoc = enrichDoc(doc, plugins, appEntryPath, appName);
 
   function codegen(inDir: string, outDir: string) {
     readdirSync(inDir).forEach((f) => {
@@ -197,7 +211,7 @@ function generate(templatesDir: string) {
         codegen(file, join(outDir, f));
       } else {
         const template = compile(readFileSync(file, "utf8"));
-        outputFileSync(join(outDir, f.split(".hbs")[0]), template({ ...enrichedDoc, plugins, appEntryPath, appName }));
+        outputFileSync(join(outDir, f.split(".hbs")[0]), template(enrichedDoc));
       }
     });
   }
