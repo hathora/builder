@@ -130,7 +130,7 @@ Plugins go inside the `client/plugins` directory. To create a plugin for type `F
 Your plugin must export a webcomponent (a class that extends `HTMLElement`). While you are free to write a native webcomponent without any dependencies, most popular frontend libraries have ways to create webcomponents. Some examples include:
 - React (via https://github.com/bitovi/react-to-webcomponent)
 - Vue (via https://github.com/vuejs/vue-web-component-wrapper)
-- Lit-element (no wrapper required)
+- Lit (no wrapper required)
 
 Plugins receive the following props as input:
 - val -- this is the value you are rendering, it has the type of your filename
