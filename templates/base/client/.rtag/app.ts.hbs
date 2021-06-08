@@ -317,28 +317,28 @@ Vue.component("plugin-display", {
 
 const Login = Vue.component("login", {
   template: `<div>
-    {{#each auth}}
-    {{#if (eq @key "anonymous")}}
+{{#each auth}}
+{{#if (eq @key "anonymous")}}
       <button type="submit" class="button submit" @click="handleLoginAnonymous">
         <span class="button-text">Login Anonymously</span>
       </button>
-    {{else if (eq @key "google")}}
+{{else if (eq @key "google")}}
       <button type="submit" class="button submit" @click="handleLoginGoogle">
         <span class="button-text">Login with Google</span>
       </button>
-    {{/if}}
-    {{/each~}}
+{{/if}}
+{{/each}}
     </div>`,
   methods: {
-  {{#each auth}}
-  {{#if (eq @key "anonymous")}}
+{{#each auth}}
+{{#if (eq @key "anonymous")}}
     async handleLoginAnonymous() {
       const token = await RtagClient.loginAnonymous();
       sessionStorage.setItem("user", token);
       const url = this.$route.query.url;
       this.$router.push((Array.isArray(url) ? url[0] : url) || "/");
     },
-  {{else if (eq @key "google")}}
+{{else if (eq @key "google")}}
     async handleLoginGoogle() {
       const googleUser = await (this as any).$gAuth.signIn();
       let token = await RtagClient.loginGoogle(googleUser.getAuthResponse().id_token);
@@ -346,8 +346,8 @@ const Login = Vue.component("login", {
       const url = this.$route.query.url;
       this.$router.push((Array.isArray(url) ? url[0] : url) || "/");
     },
-  {{/if}}
-  {{/each~}}
+{{/if}}
+{{/each}}
   },
 });
 
