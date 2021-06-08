@@ -390,6 +390,9 @@ const State = Vue.component("state", {
         this.$toasted.error("Error during connection");
       });
   },
+  destroyed() {
+    this.client.disconnect();
+  },
 });
 
 const router = new VueRouter({
