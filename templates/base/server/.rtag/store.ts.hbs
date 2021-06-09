@@ -25,7 +25,7 @@ chokidar.watch(deps).on("change", async () => {
   }
 });
 
-type StateId = string;
+type StateId = bigint;
 type State = ReturnType<typeof impl.{{initialize}}>;
 interface UpdateRequest {
   method: string;
