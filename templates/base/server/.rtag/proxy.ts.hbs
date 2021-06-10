@@ -18,10 +18,11 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ noServer: true });
 const vite = await createServer({
-  server: { middlewareMode: true },
-  root: "../../client",
-  clearScreen: false,
-  alias: { vue: "vue/dist/vue.esm.js" },
+  server: { middlewareMode: "html" },
+  root: "{{appEntryPath}}",
+  resolve: {
+    alias: { vue: "vue/dist/vue.esm.js" },
+  },
 });
 
 const connections: Map<string, Set<Connection>> = new Map();
@@ -38,9 +39,6 @@ app.post("/new", (req, res) => {
 });
 app.use(authMiddleware());
 app.use(vite.middlewares);
-app.get("/*", (_, res) => {
-  res.sendFile(join(__dirname, "{{appEntryPath}}"));
-});
 
 server.on("upgrade", (req: http.IncomingMessage, socket: Socket, head: Buffer) => {
   const stateId = [...req.url!.substring(1)].reduce((r, v) => r * BigInt(36) + BigInt(parseInt(v, 36)), 0n);

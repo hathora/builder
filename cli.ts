@@ -198,9 +198,7 @@ function generate(templatesDir: string) {
   const plugins = existsSync(join(clientDir, "plugins"))
     ? readdirSync(join(clientDir, "plugins")).map((p) => p.replace(/\..*$/, ""))
     : [];
-  const appEntryPath = existsSync(join(clientDir, "index.html"))
-    ? "../../client/index.html"
-    : "../../client/.rtag/index.html";
+  const appEntryPath = existsSync(join(clientDir, "index.html")) ? "../../client" : "../../client/.rtag";
   const appName = basename(rootDir);
   const enrichedDoc = enrichDoc(doc, plugins, appEntryPath, appName);
 
