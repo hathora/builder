@@ -5,7 +5,7 @@ import { existsSync, mkdirSync } from "fs";
 import dependencyTree from "dependency-tree";
 import chokidar from "chokidar";
 import seedrandom from "seedrandom";
-import { decode, decodeMulti, encode } from "@msgpack/msgpack";
+import { decode, encode } from "@msgpack/msgpack";
 import { onNewUserState } from "./proxy";
 import LogStore from "./logstore";
 import { Context } from "./methods";
@@ -81,7 +81,7 @@ export default class Store {
     {{/if}}
   }
   newState(stateId: StateId, user: UserData, data: Buffer) {
-    const args = decodeMulti(data).next().value as {{makeRequestName initialize}};
+    const args = decode(data) as {{makeRequestName initialize}};
     const seed = Math.random().toString();
     const rng = seedrandom(seed);
     const time = Date.now();

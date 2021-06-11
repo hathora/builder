@@ -35,7 +35,8 @@ export class RtagClient {
 {{/if}}
 {{/each}}
   public static async createState(token: string, request: {{makeRequestName initialize}}, origin: string = ""): Promise<StateId> {
-    const res = await axios.post(`${origin}/new`, encode(request, { ignoreUndefined: true }), {
+    const data = encode(request, { ignoreUndefined: true });
+    const res = await axios.post(`${origin}/new`, data.buffer.slice(0, data.byteLength), {
       headers: { Authorization: "Bearer " + token, "Content-Type": "application/octet-stream" },
     });
     return res.data.stateId;
