@@ -89,13 +89,14 @@ export default class Store {
     states.set(stateId, Object.assign(state, { _rng: rng }));
     log.append(stateId, time, encode({ seed, user, args }));
   }
-  handleUpdate(stateId: StateId, user: UserData, data: Buffer) {
+  handleUpdate(stateId: StateId, userId: string, data: Buffer) {
     const state = states.get(stateId);
     if (state === undefined) {
       return;
     }
     const { method, args, msgId } = decode(data) as UpdateRequest;
     const time = Date.now();
+    const user = [...subscriptions.get(stateId)!.values()].find((user) => user.id === userId)!;
     const result = getResult(state, user, method, ctx(state._rng, time), args);
     if (result !== undefined) {
       if (result.type === "modified") {
@@ -129,13 +130,17 @@ export default class Store {
     }
     sendUpdate(stateId, user, {});
   }
-  unsubscribeUser(stateId: StateId, user: UserData) {
+  unsubscribeUser(stateId: StateId, userId: string) {
     if (!states.has(stateId)) {
       return;
     }
     const users = subscriptions.get(stateId)!;
     if (users.size > 1) {
-      users.delete(user);
+      users.forEach((user) => {
+        if (user.id === userId) {
+          users.delete(user);
+        }
+      });
     } else {
       subscriptions.delete(stateId);
       states.delete(stateId);
@@ -188,7 +193,7 @@ function loadState(stateId: StateId) {
 
 function sendUpdate(stateId: StateId, user: UserData, responses: Record<string, string | null>) {
   const state = impl.getUserState(states.get(stateId)!, user);
-  return onNewUserState(stateId, user, encode({ state, responses }, { ignoreUndefined: true }));
+  return onNewUserState(stateId, user.id, encode({ state, responses }, { ignoreUndefined: true }));
 }
 
 function ctx(rng: ReturnType<seedrandom>, time: number) {

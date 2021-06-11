@@ -68,13 +68,13 @@ setInterval(() => {
 function handleConnection(stateId: StateId, user: UserData, socket: Connection) {
   addConnection(stateId, user, socket);
   socket.on("close", () => {
-    deleteConnection(stateId, user, socket);
+    deleteConnection(stateId, user.id, socket);
   });
   socket.on("pong", () => {
     socket.isAlive = true;
   });
   socket.on("message", (data) => {
-    store.handleUpdate(stateId, user, data as Buffer);
+    store.handleUpdate(stateId, user.id, data as Buffer);
   });
 }
 
@@ -88,17 +88,17 @@ function addConnection(stateId: StateId, user: UserData, socket: Connection) {
   }
 }
 
-function deleteConnection(stateId: StateId, user: UserData, socket: Connection) {
-  const client = stateId + user.id;
+function deleteConnection(stateId: StateId, userId: string, socket: Connection) {
+  const client = stateId + userId;
   connections.get(client)!.delete(socket);
   if (connections.get(client)!.size === 0) {
     connections.delete(client);
-    store.unsubscribeUser(stateId, user);
+    store.unsubscribeUser(stateId, userId);
   }
 }
 
-export function onNewUserState(stateId: StateId, user: UserData, data: Uint8Array) {
-  const client = stateId + user.id;
+export function onNewUserState(stateId: StateId, userId: string, data: Uint8Array) {
+  const client = stateId + userId;
   connections.get(client)!.forEach((socket) => {
     socket.send(data);
   });
