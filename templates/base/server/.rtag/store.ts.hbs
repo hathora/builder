@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import { existsSync, mkdirSync } from "fs";
 import dependencyTree from "dependency-tree";
 import chokidar from "chokidar";
+import { randomBytes } from "crypto";
 import seedrandom from "seedrandom";
 import { decode, encode } from "@msgpack/msgpack";
 import { onNewUserState } from "./proxy";
@@ -83,7 +84,7 @@ export default class Store {
   newState(stateId: StateId, userBuffer: Buffer, argsBuffer: Buffer) {
     const user = decode(userBuffer) as UserData;
     const args = decode(argsBuffer) as {{makeRequestName initialize}};
-    const seed = Math.random().toString();
+    const seed = randomBytes(8).readBigUInt64LE().toString(36);
     const rng = seedrandom(seed);
     const time = Date.now();
     const state = impl.{{initialize}}(user, ctx(rng, time), args);
