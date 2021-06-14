@@ -41,7 +41,7 @@ const log = new LogStore(dataDir);
 const states: Map<StateId, State & { _rng: ReturnType<seedrandom> }> = new Map();
 const changedStates: Set<StateId> = new Set();
 const userResponses: Map<StateId, Map<string, Record<string, {{error.typeString}} | null>>> = new Map();
-const subscriptions: Map<StateId, Set<UserData>> = new Map();
+const subscriptions: Map<StateId, Map<string, UserData>> = new Map();
 
 export default class Store {
   constructor() {
@@ -96,7 +96,7 @@ export default class Store {
     }
     const { method, args, msgId } = decode(data) as UpdateRequest;
     const time = Date.now();
-    const user = [...subscriptions.get(stateId)!.values()].find((user) => user.id === userId)!;
+    const user = subscriptions.get(stateId)!.get(userId)!;
     const result = getResult(state, user, method, ctx(state._rng, time), args);
     if (result !== undefined) {
       if (result.type === "modified") {
@@ -124,9 +124,9 @@ export default class Store {
       states.set(stateId, state);
     }
     if (!subscriptions.has(stateId)) {
-      subscriptions.set(stateId, new Set([user]));
+      subscriptions.set(stateId, new Map([[user.id, user]]));
     } else {
-      subscriptions.get(stateId)!.add(user);
+      subscriptions.get(stateId)!.set(user.id, user);
     }
     sendUpdate(stateId, user, {});
   }
@@ -136,11 +136,7 @@ export default class Store {
     }
     const users = subscriptions.get(stateId)!;
     if (users.size > 1) {
-      users.forEach((user) => {
-        if (user.id === userId) {
-          users.delete(user);
-        }
-      });
+      users.delete(userId);
     } else {
       subscriptions.delete(stateId);
       states.delete(stateId);
