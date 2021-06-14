@@ -80,8 +80,9 @@ export default class Store {
     }, 50);
     {{/if}}
   }
-  newState(stateId: StateId, user: UserData, data: Buffer) {
-    const args = decode(data) as {{makeRequestName initialize}};
+  newState(stateId: StateId, userBuffer: Buffer, argsBuffer: Buffer) {
+    const user = decode(userBuffer) as UserData;
+    const args = decode(argsBuffer) as {{makeRequestName initialize}};
     const seed = Math.random().toString();
     const rng = seedrandom(seed);
     const time = Date.now();
@@ -89,33 +90,8 @@ export default class Store {
     states.set(stateId, Object.assign(state, { _rng: rng }));
     log.append(stateId, time, encode({ seed, user, args }));
   }
-  handleUpdate(stateId: StateId, userId: string, data: Buffer) {
-    const state = states.get(stateId);
-    if (state === undefined) {
-      return;
-    }
-    const { method, args, msgId } = decode(data) as UpdateRequest;
-    const time = Date.now();
-    const user = subscriptions.get(stateId)!.get(userId)!;
-    const result = getResult(state, user, method, ctx(state._rng, time), args);
-    if (result !== undefined) {
-      if (result.type === "modified") {
-        changedStates.add(stateId);
-        log.append(stateId, time, encode({ method, user, args }));
-      }
-      const response = result.type === "modified" ? null : result.error ?? null;
-      if (!userResponses.has(stateId)) {
-        userResponses.set(stateId, new Map([[user.id, { [msgId]: response }]]));
-      } else {
-        if (!userResponses.get(stateId)!.has(user.id)) {
-          userResponses.get(stateId)!.set(user.id, { [msgId]: response });
-        } else {
-          userResponses.get(stateId)!.get(user.id)![msgId] = response;
-        }
-      }
-    }
-  }
-  subscribeUser(stateId: StateId, user: UserData) {
+  subscribeUser(stateId: StateId, userBuffer: Buffer) {
+    const user = decode(userBuffer) as UserData;
     if (!states.has(stateId)) {
       const state = loadState(stateId);
       if (state === undefined) {
@@ -141,6 +117,32 @@ export default class Store {
       subscriptions.delete(stateId);
       states.delete(stateId);
       log.unload(stateId);
+    }
+  }
+  handleUpdate(stateId: StateId, userId: string, data: Buffer) {
+    const state = states.get(stateId);
+    if (state === undefined) {
+      return;
+    }
+    const { method, args, msgId } = decode(data) as UpdateRequest;
+    const time = Date.now();
+    const user = subscriptions.get(stateId)!.get(userId)!;
+    const result = getResult(state, user, method, ctx(state._rng, time), args);
+    if (result !== undefined) {
+      if (result.type === "modified") {
+        changedStates.add(stateId);
+        log.append(stateId, time, encode({ method, user, args }));
+      }
+      const response = result.type === "modified" ? null : result.error ?? null;
+      if (!userResponses.has(stateId)) {
+        userResponses.set(stateId, new Map([[user.id, { [msgId]: response }]]));
+      } else {
+        if (!userResponses.get(stateId)!.has(user.id)) {
+          userResponses.get(stateId)!.set(user.id, { [msgId]: response });
+        } else {
+          userResponses.get(stateId)!.get(user.id)![msgId] = response;
+        }
+      }
     }
   }
 }

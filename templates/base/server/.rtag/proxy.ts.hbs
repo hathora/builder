@@ -4,6 +4,7 @@ import express from "express";
 import { createServer } from "vite";
 import * as http from "http";
 import { randomBytes } from "crypto";
+import { encode } from "@msgpack/msgpack";
 import Store from "./store";
 import { authMiddleware, getUserFromToken } from "./auth";
 import { UserData } from "./types";
@@ -31,7 +32,7 @@ app.post("/new", (req, res) => {
   const token = req.headers.authorization!.split(" ")[1];
   const user = getUserFromToken(token);
   const stateId = randomBytes(8).readBigUInt64LE();
-  store.newState(stateId, user, req.body);
+  store.newState(stateId, Buffer.from(encode(user)), req.body);
   res.json({ stateId: stateId.toString(36) });
 });
 app.use(authMiddleware());
@@ -82,7 +83,7 @@ function addConnection(stateId: StateId, user: UserData, socket: Connection) {
   const client = stateId + user.id;
   if (!connections.has(client)) {
     connections.set(client, new Set([socket]));
-    store.subscribeUser(stateId, user);
+    store.subscribeUser(stateId, Buffer.from(encode(user)));
   } else {
     connections.get(client)!.add(socket);
   }
