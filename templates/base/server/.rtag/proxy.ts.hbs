@@ -5,7 +5,7 @@ import { createServer } from "vite";
 import * as http from "http";
 import { randomBytes } from "crypto";
 import { encode } from "@msgpack/msgpack";
-import Store from "./store";
+import { getStore } from "./protocol";
 import { authMiddleware, getUserFromToken } from "./auth";
 import { UserData } from "./types";
 
@@ -24,7 +24,7 @@ const vite = await createServer({
 });
 
 const connections: Map<string, Set<Connection>> = new Map();
-const store = new Store();
+const store = await getStore(onNewUserState);
 
 app.use(express.json());
 app.use(express.raw());
@@ -98,7 +98,7 @@ function deleteConnection(stateId: StateId, userId: string, socket: Connection) 
   }
 }
 
-export function onNewUserState(stateId: StateId, userId: string, data: Uint8Array) {
+function onNewUserState(stateId: StateId, userId: string, data: Buffer) {
   const client = stateId + userId;
   connections.get(client)!.forEach((socket) => {
     socket.send(data);
