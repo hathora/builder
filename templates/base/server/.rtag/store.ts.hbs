@@ -27,6 +27,7 @@ chokidar.watch(deps).on("change", async () => {
 });
 
 type StateId = bigint;
+type UserId = string;
 type State = ReturnType<typeof impl.{{initialize}}>;
 interface UpdateRequest {
   method: string;
@@ -41,8 +42,8 @@ if (!existsSync(dataDir)) {
 const log = new LogStore(dataDir);
 const states: Map<StateId, State & { _rng: ReturnType<seedrandom> }> = new Map();
 const changedStates: Set<StateId> = new Set();
-const userResponses: Map<StateId, Map<string, Record<string, {{error.typeString}} | null>>> = new Map();
-const subscriptions: Map<StateId, Map<string, UserData>> = new Map();
+const userResponses: Map<StateId, Map<UserId, Record<string, {{error.typeString}} | null>>> = new Map();
+const subscriptions: Map<StateId, Map<UserId, UserData>> = new Map();
 
 class Store {
   constructor() {
@@ -107,7 +108,7 @@ class Store {
     }
     sendUpdate(stateId, user, {});
   }
-  unsubscribeUser(stateId: StateId, userId: string) {
+  unsubscribeUser(stateId: StateId, userId: UserId) {
     if (!states.has(stateId)) {
       return;
     }
@@ -120,7 +121,7 @@ class Store {
       log.unload(stateId);
     }
   }
-  handleUpdate(stateId: StateId, userId: string, data: Buffer) {
+  handleUpdate(stateId: StateId, userId: UserId, data: Buffer) {
     const state = states.get(stateId);
     if (state === undefined) {
       return;
