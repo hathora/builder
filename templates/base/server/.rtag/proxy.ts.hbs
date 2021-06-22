@@ -34,15 +34,14 @@ server.on("upgrade", (req: http.IncomingMessage, socket: Socket, head: Buffer) =
   wss.handleUpgrade(req, socket, head, (ws) => {
     ws.once("message", (token) => {
       const user = getUserFromToken(token as string);
-      const connection = Object.assign(ws, { isAlive: true });
       ws.once("message", (data) => {
         if (typeof data === "string") {
           const stateId = [...data].reduce((r, v) => r * BigInt(36) + BigInt(parseInt(v, 36)), 0n);
-          handleConnection(stateId, user, Buffer.alloc(0), connection);
+          handleConnection(stateId, user, Buffer.alloc(0), Object.assign(ws, { isAlive: true }));
         } else {
           const stateId = randomBytes(8).readBigUInt64LE();
-          connection.send(stateId.toString(36));
-          handleConnection(stateId, user, data as Buffer, connection);
+          ws.send(stateId.toString(36));
+          handleConnection(stateId, user, data as Buffer, Object.assign(ws, { isAlive: true }));
         }
       });
     });
