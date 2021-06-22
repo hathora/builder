@@ -82,25 +82,27 @@ class Store {
     }, 50);
     {{/if}}
   }
-  subscribeUser(stateId: StateId, userBuffer: Buffer, argsBuffer: Buffer) {
+  newState(stateId: StateId, userBuffer: Buffer, argsBuffer: Buffer) {
     const user = decode(userBuffer) as UserData;
-    if (argsBuffer.length > 0) {
-      const args = decode(argsBuffer) as {{makeRequestName initialize}};
-      const seed = randomBytes(8).readBigUInt64LE().toString(36);
-      const rng = seedrandom(seed);
-      const time = Date.now();
-      const state = impl.{{initialize}}(user, ctx(rng, time), args);
-      states.set(stateId, Object.assign(state, { _rng: rng }));
-      log.append(stateId, time, encode({ seed, user, args }));
-    } else {
-      if (!states.has(stateId)) {
-        const state = loadState(stateId);
-        if (state === undefined) {
-          return;
-        }
-        states.set(stateId, state);
+    const args = decode(argsBuffer) as {{makeRequestName initialize}};
+    const seed = randomBytes(8).readBigUInt64LE().toString(36);
+    const rng = seedrandom(seed);
+    const time = Date.now();
+    const state = impl.{{initialize}}(user, ctx(rng, time), args);
+    states.set(stateId, Object.assign(state, { _rng: rng }));
+    subscriptions.set(stateId, new Map([[user.id, user]]));
+    sendUpdate(stateId, user, {});
+    log.append(stateId, time, encode({ seed, user, args }));
+  }
+  subscribeUser(stateId: StateId, userBuffer: Buffer) {
+    if (!states.has(stateId)) {
+      const state = loadState(stateId);
+      if (state === undefined) {
+        return;
       }
+      states.set(stateId, state);
     }
+    const user = decode(userBuffer) as UserData;
     if (!subscriptions.has(stateId)) {
       subscriptions.set(stateId, new Map([[user.id, user]]));
     } else {

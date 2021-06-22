@@ -35,14 +35,12 @@ server.on("upgrade", (req: http.IncomingMessage, socket: Socket, head: Buffer) =
     ws.once("message", (token) => {
       const user = getUserFromToken(token as string);
       ws.once("message", (data) => {
-        if (typeof data === "string") {
-          const stateId = [...data].reduce((r, v) => r * BigInt(36) + BigInt(parseInt(v, 36)), 0n);
-          handleConnection(stateId, user, Buffer.alloc(0), Object.assign(ws, { isAlive: true }));
-        } else {
-          const stateId = randomBytes(8).readBigUInt64LE();
-          ws.send(stateId.toString(36));
-          handleConnection(stateId, user, data as Buffer, Object.assign(ws, { isAlive: true }));
-        }
+        const connection = Object.assign(ws, { isAlive: true });
+        const stateId =
+          typeof data === "string"
+            ? updateExistingState(user, connection, data as string)
+            : createNewState(user, connection, data as Buffer);
+        handleConnection(stateId, user.id, connection);
       });
     });
   });
@@ -66,27 +64,36 @@ setInterval(() => {
   });
 }, 30000);
 
-function handleConnection(stateId: StateId, user: UserData, argsBuffer: Buffer, socket: Connection) {
-  addConnection(stateId, user, argsBuffer, socket);
+function createNewState(user: UserData, connection: Connection, data: Buffer) {
+  const stateId = randomBytes(8).readBigUInt64LE();
+  connection.send(stateId.toString(36));
+  connections.set(stateId + user.id, new Set([connection]));
+  store.newState(stateId, Buffer.from(encode(user)), data);
+  return stateId;
+}
+
+function updateExistingState(user: UserData, connection: Connection, data: string) {
+  const stateId = [...data].reduce((r, v) => r * BigInt(36) + BigInt(parseInt(v, 36)), 0n);
+  const client = stateId + user.id;
+  if (!connections.has(client)) {
+    connections.set(client, new Set([connection]));
+    store.subscribeUser(stateId, Buffer.from(encode(user)));
+  } else {
+    connections.get(client)!.add(connection);
+  }
+  return stateId;
+}
+
+function handleConnection(stateId: StateId, userId: string, socket: Connection) {
   socket.on("close", () => {
-    deleteConnection(stateId, user.id, socket);
+    deleteConnection(stateId, userId, socket);
   });
   socket.on("pong", () => {
     socket.isAlive = true;
   });
   socket.on("message", (data) => {
-    store.handleUpdate(stateId, user.id, data as Buffer);
+    store.handleUpdate(stateId, userId, data as Buffer);
   });
-}
-
-function addConnection(stateId: StateId, user: UserData, argsBuffer: Buffer, socket: Connection) {
-  const client = stateId + user.id;
-  if (!connections.has(client)) {
-    connections.set(client, new Set([socket]));
-    store.subscribeUser(stateId, Buffer.from(encode(user)), argsBuffer);
-  } else {
-    connections.get(client)!.add(socket);
-  }
 }
 
 function deleteConnection(stateId: StateId, userId: string, socket: Connection) {
