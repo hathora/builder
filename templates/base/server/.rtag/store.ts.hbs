@@ -95,6 +95,7 @@ class Store {
     log.append(stateId, time, encode({ seed, user, args }));
   }
   subscribeUser(stateId: StateId, userBuffer: Buffer) {
+    const user = decode(userBuffer) as UserData;
     if (!states.has(stateId)) {
       const state = loadState(stateId);
       if (state === undefined) {
@@ -102,7 +103,6 @@ class Store {
       }
       states.set(stateId, state);
     }
-    const user = decode(userBuffer) as UserData;
     if (!subscriptions.has(stateId)) {
       subscriptions.set(stateId, new Map([[user.id, user]]));
     } else {
