@@ -27,23 +27,24 @@ const connections: Map<string, Set<Connection>> = new Map();
 const store = await getStore(onNewUserState);
 
 app.use(express.json());
-app.use(express.raw());
-app.post("/new", (req, res) => {
-  const token = req.headers.authorization!.split(" ")[1];
-  const user = getUserFromToken(token);
-  const stateId = randomBytes(8).readBigUInt64LE();
-  store.newState(stateId, Buffer.from(encode(user)), req.body);
-  res.json({ stateId: stateId.toString(36) });
-});
 app.use(authMiddleware());
 app.use(vite.middlewares);
 
 server.on("upgrade", (req: http.IncomingMessage, socket: Socket, head: Buffer) => {
-  const stateId = [...req.url!.substring(1)].reduce((r, v) => r * BigInt(36) + BigInt(parseInt(v, 36)), 0n);
   wss.handleUpgrade(req, socket, head, (ws) => {
     ws.once("message", (token) => {
       const user = getUserFromToken(token as string);
-      handleConnection(stateId, user, Object.assign(ws, { isAlive: true }));
+      const connection = Object.assign(ws, { isAlive: true });
+      ws.once("message", (data) => {
+        if (typeof data === "string") {
+          const stateId = [...data].reduce((r, v) => r * BigInt(36) + BigInt(parseInt(v, 36)), 0n);
+          handleConnection(stateId, user, Buffer.alloc(0), connection);
+        } else {
+          const stateId = randomBytes(8).readBigUInt64LE();
+          connection.send(stateId.toString(36));
+          handleConnection(stateId, user, data as Buffer, connection);
+        }
+      });
     });
   });
 });
@@ -66,8 +67,8 @@ setInterval(() => {
   });
 }, 30000);
 
-function handleConnection(stateId: StateId, user: UserData, socket: Connection) {
-  addConnection(stateId, user, socket);
+function handleConnection(stateId: StateId, user: UserData, argsBuffer: Buffer, socket: Connection) {
+  addConnection(stateId, user, argsBuffer, socket);
   socket.on("close", () => {
     deleteConnection(stateId, user.id, socket);
   });
@@ -79,11 +80,11 @@ function handleConnection(stateId: StateId, user: UserData, socket: Connection) 
   });
 }
 
-function addConnection(stateId: StateId, user: UserData, socket: Connection) {
+function addConnection(stateId: StateId, user: UserData, argsBuffer: Buffer, socket: Connection) {
   const client = stateId + user.id;
   if (!connections.has(client)) {
     connections.set(client, new Set([socket]));
-    store.subscribeUser(stateId, Buffer.from(encode(user)));
+    store.subscribeUser(stateId, Buffer.from(encode(user)), argsBuffer);
   } else {
     connections.get(client)!.add(socket);
   }
