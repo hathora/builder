@@ -34,43 +34,51 @@ export class RtagClient {
 
 {{/if}}
 {{/each}}
-  public static async createState(token: string, request: {{makeRequestName initialize}}, origin: string = ""): Promise<StateId> {
-    const data = encode(request, { ignoreUndefined: true });
-    const res = await axios.post(`${origin}/new`, data.buffer.slice(0, data.byteLength), {
-      headers: { Authorization: "Bearer " + token, "Content-Type": "application/octet-stream" },
+  public static connectNew(
+    host: string,
+    token: string,
+    request: {{makeRequestName initialize}},
+    onStateChange: (state: UserState) => void
+  ): Promise<{ stateId: string; client: RtagClient }> {
+    return new Promise((resolve, reject) => {
+      const socket = new WebSocket(`ws://${host}`);
+      socket.binaryType = "arraybuffer";
+      const client = new RtagClient(socket);
+      socket.onopen = () => {
+        socket.send(token);
+        socket.send(encode(request, { ignoreUndefined: true }));
+      };
+      socket.onerror = reject;
+      let first = true;
+      socket.onmessage = ({ data }) => {
+        if (first) {
+          resolve({ stateId: data as string, client });
+          first = false;
+          return;
+        }
+        this.handleStateChange(data as ArrayBuffer, client, onStateChange);
+      };
     });
-    return res.data.stateId;
   }
 
-  public static connect(
+  public static connectExisting(
     host: string,
     token: string,
     stateId: StateId,
     onStateChange: (state: UserState) => void
   ): Promise<RtagClient> {
     return new Promise((resolve, reject) => {
-      const socket = new WebSocket(`ws://${host}/${stateId}`);
+      const socket = new WebSocket(`ws://${host}`);
       socket.binaryType = "arraybuffer";
       const client = new RtagClient(socket);
       socket.onopen = () => {
         socket.send(token);
+        socket.send(stateId);
         resolve(client);
       };
-      socket.onerror = () => {
-        reject();
-      };
+      socket.onerror = reject;
       socket.onmessage = ({ data }) => {
-        const { state, responses } = decode(data as ArrayBuffer) as {
-          state: UserState;
-          responses: Record<string, {{error.typeString}} | null>;
-        };
-        onStateChange(state);
-        Object.entries(responses).forEach(([msgId, response]) => {
-          if (msgId in client.callbacks) {
-            client.callbacks[msgId](response ?? undefined);
-            delete client.callbacks[msgId];
-          }
-        });
+        this.handleStateChange(data as ArrayBuffer, client, onStateChange);
       };
     });
   }
@@ -89,5 +97,16 @@ export class RtagClient {
   {{/each}}
   public disconnect(): void {
     this.socket.close();
+  }
+
+  private static handleStateChange(data: ArrayBuffer, client: RtagClient, onStateChange: (state: UserState) => void) {
+    const { state, responses } = decode(data) as { state: UserState; responses: Record<string, {{error.typeString}} | null> };
+    onStateChange(state);
+    Object.entries(responses).forEach(([msgId, response]) => {
+      if (msgId in client.callbacks) {
+        client.callbacks[msgId](response ?? undefined);
+        delete client.callbacks[msgId];
+      }
+    });
   }
 }

@@ -90,6 +90,8 @@ class Store {
     const time = Date.now();
     const state = impl.{{initialize}}(user, ctx(rng, time), args);
     states.set(stateId, Object.assign(state, { _rng: rng }));
+    subscriptions.set(stateId, new Map([[user.id, user]]));
+    sendUpdate(stateId, user, {});
     log.append(stateId, time, encode({ seed, user, args }));
   }
   subscribeUser(stateId: StateId, userBuffer: Buffer) {

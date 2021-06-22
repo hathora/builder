@@ -14,7 +14,9 @@ export function getStore(
     const server = net.createServer((socket) => {
       socket.on("data", (data) => {
         const reader = SmartBuffer.fromBuffer(data);
-        onNewUserState(reader.readBigUInt64LE(), reader.readStringNT(), reader.readBuffer());
+        while (reader.remaining() > 0) {
+          onNewUserState(reader.readBigUInt64LE(), reader.readStringNT(), reader.readBuffer(reader.readUInt32LE()));
+        }
       });
       resolve(new StoreClient(socket));
     });
@@ -40,20 +42,24 @@ export function register(store: Store): Promise<ProxyClient> {
       const reader = SmartBuffer.fromBuffer(data);
       const type = reader.readInt8();
       if (type === NEW_STATE) {
-        store.newState(reader.readBigUInt64LE(), reader.readBuffer(reader.readUInt16LE()), reader.readBuffer());
+        store.newState(
+          reader.readBigUInt64LE(),
+          reader.readBuffer(reader.readUInt32LE()),
+          reader.readBuffer(reader.readUInt32LE())
+        );
       } else if (type === SUBSCRIBE_USER) {
-        store.subscribeUser(reader.readBigUInt64LE(), reader.readBuffer());
+        store.subscribeUser(reader.readBigUInt64LE(), reader.readBuffer(reader.readUInt32LE()));
       } else if (type === UNSUBSCRIBE_USER) {
-        store.unsubscribeUser(reader.readBigUInt64LE(), reader.readString());
+        store.unsubscribeUser(reader.readBigUInt64LE(), reader.readStringNT());
       } else if (type === HANDLE_UPDATE) {
-        store.handleUpdate(reader.readBigUInt64LE(), reader.readStringNT(), reader.readBuffer());
+        store.handleUpdate(reader.readBigUInt64LE(), reader.readStringNT(), reader.readBuffer(reader.readUInt32LE()));
       }
     });
   });
 }
 
 interface Store {
-  newState(stateId: bigint, userBuffer: Buffer, argsBuffer: Buffer): void;
+  newState(stateId: bigint, userBuffer: Buffer, args: Buffer): void;
   subscribeUser(stateId: bigint, userBuffer: Buffer): void;
   unsubscribeUser(stateId: bigint, userId: string): void;
   handleUpdate(stateId: bigint, userId: string, data: Buffer): void;
@@ -66,19 +72,24 @@ class StoreClient implements Store {
     const buf = new SmartBuffer()
       .writeInt8(NEW_STATE)
       .writeBigUInt64LE(stateId)
-      .writeUInt16LE(user.byteLength)
+      .writeUInt32LE(user.byteLength)
       .writeBuffer(user)
+      .writeUInt32LE(args.length)
       .writeBuffer(args);
     this.socket.write(buf.toBuffer());
   }
 
   public subscribeUser(stateId: bigint, user: Buffer) {
-    const buf = new SmartBuffer().writeInt8(SUBSCRIBE_USER).writeBigUInt64LE(stateId).writeBuffer(user);
+    const buf = new SmartBuffer()
+      .writeInt8(SUBSCRIBE_USER)
+      .writeBigUInt64LE(stateId)
+      .writeUInt32LE(user.byteLength)
+      .writeBuffer(user);
     this.socket.write(buf.toBuffer());
   }
 
   public unsubscribeUser(stateId: bigint, userId: string) {
-    const buf = new SmartBuffer().writeInt8(UNSUBSCRIBE_USER).writeBigUInt64LE(stateId).writeString(userId);
+    const buf = new SmartBuffer().writeInt8(UNSUBSCRIBE_USER).writeBigUInt64LE(stateId).writeStringNT(userId);
     this.socket.write(buf.toBuffer());
   }
 
@@ -87,6 +98,7 @@ class StoreClient implements Store {
       .writeInt8(HANDLE_UPDATE)
       .writeBigUInt64LE(stateId)
       .writeStringNT(userId)
+      .writeUInt32LE(data.length)
       .writeBuffer(data);
     this.socket.write(buf.toBuffer());
   }
@@ -96,7 +108,11 @@ class ProxyClient {
   constructor(private socket: net.Socket) {}
 
   public onNewUserState(stateId: bigint, userId: string, data: Buffer) {
-    const buf = new SmartBuffer().writeBigUInt64LE(stateId).writeStringNT(userId).writeBuffer(data);
+    const buf = new SmartBuffer()
+      .writeBigUInt64LE(stateId)
+      .writeStringNT(userId)
+      .writeUInt32LE(data.length)
+      .writeBuffer(data);
     this.socket.write(buf.toBuffer());
   }
 }
