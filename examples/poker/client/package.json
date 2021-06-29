@@ -7,6 +7,6 @@
     "playing-card": "^1.1.0"
   },
   "devDependencies": {
-    "typescript": "^4.2.4"
+    "typescript": "^4.3.4"
   }
 }
