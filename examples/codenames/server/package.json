@@ -3,6 +3,6 @@
   "version": "0.0.1",
   "type": "module",
   "devDependencies": {
-    "typescript": "^4.3.2"
+    "typescript": "^4.3.4"
   }
 }
