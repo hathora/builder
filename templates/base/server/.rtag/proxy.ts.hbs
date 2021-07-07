@@ -1,15 +1,16 @@
-import WebSocket from "ws";
-import { Socket } from "net";
-import express from "express";
-import { createServer } from "vite";
-import * as http from "http";
+import http from "http";
+import net from "net";
 import { randomBytes } from "crypto";
+import express from "express";
+import WebSocket from "ws";
+import { createServer } from "vite";
 import { encode } from "@msgpack/msgpack";
 import { getStore } from "./protocol";
 import { authMiddleware, getUserFromToken } from "./auth";
 import { UserData } from "./types";
 
 type StateId = bigint;
+type UserId = string;
 type Connection = WebSocket & { isAlive: boolean };
 
 const app = express();
@@ -23,33 +24,73 @@ const vite = await createServer({
   },
 });
 
-const connections: Map<string, Set<Connection>> = new Map();
-const store = await getStore(onNewUserState);
-
 app.use(express.json());
 app.use(authMiddleware());
 app.use(vite.middlewares);
 
-server.on("upgrade", (req: http.IncomingMessage, socket: Socket, head: Buffer) => {
+const connections: Map<string, Set<Connection>> = new Map();
+const store = await getStore(onNewUserState);
+
+const port = process.env.PORT || 3000;
+server.listen(port, () => {
+  console.log(`listening on http://localhost:${port}`);
+});
+
+server.on("upgrade", (req: http.IncomingMessage, socket: net.Socket, head: Buffer) => {
   wss.handleUpgrade(req, socket, head, (ws) => {
     ws.once("message", (token) => {
       const user = getUserFromToken(token as string);
       ws.once("message", (data) => {
         const connection = Object.assign(ws, { isAlive: true });
-        const stateId =
-          typeof data === "string"
-            ? updateExistingState(user, connection, data as string)
-            : createNewState(user, connection, data as Buffer);
+        const stateId = createOrUpdateState(data, user, connection);
         handleConnection(stateId, user.id, connection);
       });
     });
   });
 });
 
-const port = process.env.PORT || 3000;
-server.listen(port, () => {
-  console.log(`listening on http://localhost:${port}`);
-});
+function createOrUpdateState(data: WebSocket.Data, user: UserData, connection: Connection) {
+  if (typeof data === "string") {
+    const stateId = [...data].reduce((r, v) => r * BigInt(36) + BigInt(parseInt(v, 36)), 0n);
+    const client = stateId + user.id;
+    if (!connections.has(client)) {
+      connections.set(client, new Set([connection]));
+      store.subscribeUser(stateId, Buffer.from(encode(user)));
+    } else {
+      connections.get(client)!.add(connection);
+    }
+    return stateId;
+  } else {
+    const stateId = randomBytes(8).readBigUInt64LE();
+    connection.send(stateId.toString(36));
+    connections.set(stateId + user.id, new Set([connection]));
+    store.newState(stateId, Buffer.from(encode(user)), data as Buffer);
+    return stateId;
+  }
+}
+
+function handleConnection(stateId: StateId, userId: UserId, connection: Connection) {
+  connection.on("close", () => {
+    const client = stateId + userId;
+    connections.get(client)!.delete(connection);
+    if (connections.get(client)!.size === 0) {
+      connections.delete(client);
+      store.unsubscribeUser(stateId, userId);
+    }
+  });
+  connection.on("pong", () => {
+    connection.isAlive = true;
+  });
+  connection.on("message", (data) => {
+    store.handleUpdate(stateId, userId, data as Buffer);
+  });
+}
+
+function onNewUserState(stateId: StateId, userId: UserId, data: Buffer) {
+  connections.get(stateId + userId)!.forEach((socket) => {
+    socket.send(data);
+  });
+}
 
 setInterval(() => {
   connections.forEach((sockets) => {
@@ -63,51 +104,3 @@ setInterval(() => {
     });
   });
 }, 30000);
-
-function createNewState(user: UserData, connection: Connection, data: Buffer) {
-  const stateId = randomBytes(8).readBigUInt64LE();
-  connection.send(stateId.toString(36));
-  connections.set(stateId + user.id, new Set([connection]));
-  store.newState(stateId, Buffer.from(encode(user)), data);
-  return stateId;
-}
-
-function updateExistingState(user: UserData, connection: Connection, data: string) {
-  const stateId = [...data].reduce((r, v) => r * BigInt(36) + BigInt(parseInt(v, 36)), 0n);
-  const client = stateId + user.id;
-  if (!connections.has(client)) {
-    connections.set(client, new Set([connection]));
-    store.subscribeUser(stateId, Buffer.from(encode(user)));
-  } else {
-    connections.get(client)!.add(connection);
-  }
-  return stateId;
-}
-
-function handleConnection(stateId: StateId, userId: string, socket: Connection) {
-  socket.on("close", () => {
-    deleteConnection(stateId, userId, socket);
-  });
-  socket.on("pong", () => {
-    socket.isAlive = true;
-  });
-  socket.on("message", (data) => {
-    store.handleUpdate(stateId, userId, data as Buffer);
-  });
-}
-
-function deleteConnection(stateId: StateId, userId: string, socket: Connection) {
-  const client = stateId + userId;
-  connections.get(client)!.delete(socket);
-  if (connections.get(client)!.size === 0) {
-    connections.delete(client);
-    store.unsubscribeUser(stateId, userId);
-  }
-}
-
-function onNewUserState(stateId: StateId, userId: string, data: Buffer) {
-  const client = stateId + userId;
-  connections.get(client)!.forEach((socket) => {
-    socket.send(data);
-  });
-}
