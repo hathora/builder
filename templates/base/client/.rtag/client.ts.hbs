@@ -10,6 +10,8 @@ import {
   {{/each}}
 } from "./types";
 
+const PROXY_HOST = "rtag.dev";
+
 export type StateId = string;
 
 export class RtagClient {
@@ -23,25 +25,24 @@ export class RtagClient {
 
 {{#each auth}}
 {{#if (eq @key "anonymous")}}
-  public static async loginAnonymous(origin: string = ""): Promise<string> {
-    return (await axios.post(`${origin}/login/anonymous`)).data.token;
+  public static async loginAnonymous(): Promise<string> {
+    return (await axios.post(`https://${PROXY_HOST}/login/anonymous`)).data.token;
   }
 
 {{else if (eq @key "google")}}
-  public static async loginGoogle(idToken: string, origin: string = ""): Promise<string> {
-    return (await axios.post(`${origin}/login/google`, { idToken })).data.token;
+  public static async loginGoogle(idToken: string): Promise<string> {
+    return (await axios.post(`https://${PROXY_HOST}/login/google`, { idToken })).data.token;
   }
 
 {{/if}}
 {{/each}}
   public static connectNew(
-    host: string,
     token: string,
     request: {{makeRequestName initialize}},
     onStateChange: (state: UserState) => void
   ): Promise<{ stateId: string; client: RtagClient }> {
     return new Promise((resolve, reject) => {
-      const socket = new WebSocket(`ws://${host}`);
+      const socket = new WebSocket(`wss://${PROXY_HOST}`);
       socket.binaryType = "arraybuffer";
       const client = new RtagClient(socket);
       socket.onopen = () => {
@@ -62,13 +63,12 @@ export class RtagClient {
   }
 
   public static connectExisting(
-    host: string,
     token: string,
     stateId: StateId,
     onStateChange: (state: UserState) => void
   ): Promise<RtagClient> {
     return new Promise((resolve, reject) => {
-      const socket = new WebSocket(`ws://${host}`);
+      const socket = new WebSocket(`wss://${PROXY_HOST}`);
       socket.binaryType = "arraybuffer";
       const client = new RtagClient(socket);
       socket.onopen = () => {

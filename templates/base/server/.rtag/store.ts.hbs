@@ -152,6 +152,7 @@ class Store {
 }
 
 const proxy = await register(new Store());
+console.log("Connected to proxy");
 
 function getResult(state: State, user: UserData, method: string, ctx: Context, args: any) {
   switch (method) {
