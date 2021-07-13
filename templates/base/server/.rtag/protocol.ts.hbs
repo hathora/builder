@@ -1,11 +1,14 @@
 import net from "net";
 import retry from "retry";
 import { SmartBuffer } from "smart-buffer";
+import dotenv from "dotenv";
 
 const NEW_STATE = 0;
 const SUBSCRIBE_USER = 1;
 const UNSUBSCRIBE_USER = 2;
 const HANDLE_UPDATE = 3;
+
+dotenv.config({ path: "../../.env" });
 
 export function register(store: Store): Promise<ProxyClient> {
   return new Promise((resolve, reject) => {
@@ -13,6 +16,7 @@ export function register(store: Store): Promise<ProxyClient> {
     const operation = retry.operation();
     operation.attempt(() => {
       socket.connect(7147, "rtag.dev", () => {
+        socket.write(process.env.APP_SECRET!);
         resolve(new ProxyClient(socket));
       });
     });

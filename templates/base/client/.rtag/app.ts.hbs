@@ -364,7 +364,7 @@ const Home = Vue.component("home", {
         return;
       }
       const token = sessionStorage.getItem("user")!;
-      RtagClient.connectNew(token, this.value, (state) => {
+      RtagClient.connectNew(import.meta.env.VITE_APP_ID, token, this.value, (state) => {
         Vue.set(this.$root.$data, "value", state);
       }).then(({ stateId, client }) => {
         Vue.set(this.$root.$data, "client", client);
@@ -382,7 +382,7 @@ const State = Vue.component("state", {
   created() {
     if (this.$root.$data.client === undefined) {
       const token = sessionStorage.getItem("user")!;
-      RtagClient.connectExisting(token, this.$route.params.stateId, (state) => {
+      RtagClient.connectExisting(import.meta.env.VITE_APP_ID, token, this.$route.params.stateId, (state) => {
         Vue.set(this.$root.$data, "value", state);
       }).then((client) => {
         Vue.set(this.$root.$data, "client", client);
