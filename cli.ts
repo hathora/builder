@@ -6,6 +6,7 @@ import { compile, registerHelper } from "handlebars";
 import { join, basename } from "path";
 import shelljs from "shelljs";
 import { z } from "zod";
+import dotenv from "dotenv";
 
 const TypeArgs = z.union([z.string(), z.array(z.string()), z.record(z.string())]);
 const RtagConfig = z
@@ -80,6 +81,7 @@ registerHelper("isObject", (x) => typeof x === "object");
 registerHelper("capitalize", capitalize);
 registerHelper("makeRequestName", (x) => "I" + capitalize(x) + "Request");
 registerHelper("makePluginName", (x) => x.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase() + "-plugin");
+registerHelper("env", (key) => process.env[key]);
 
 function capitalize(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -166,7 +168,7 @@ function getArgsInfo(
   }
 }
 
-function enrichDoc(doc: z.infer<typeof RtagConfig>, plugins: string[], appEntryPath: string, appName: string) {
+function enrichDoc(doc: z.infer<typeof RtagConfig>, plugins: string[], appName: string) {
   return {
     ...doc,
     types: Object.fromEntries(
@@ -198,9 +200,8 @@ function generate(templatesDir: string) {
   const plugins = existsSync(join(clientDir, "plugins"))
     ? readdirSync(join(clientDir, "plugins")).map((p) => p.replace(/\..*$/, ""))
     : [];
-  const appEntryPath = existsSync(join(clientDir, "index.html")) ? "../../client" : "../../client/.rtag";
   const appName = basename(rootDir);
-  const enrichedDoc = enrichDoc(doc, plugins, appEntryPath, appName);
+  const enrichedDoc = enrichDoc(doc, plugins, appName);
 
   function codegen(inDir: string, outDir: string) {
     readdirSync(inDir).forEach((f) => {
@@ -219,6 +220,9 @@ function generate(templatesDir: string) {
 const rootDir = getProjectRoot(process.cwd());
 const clientDir = join(rootDir, "client");
 const serverDir = join(rootDir, "server");
+const appEntryPath = existsSync(join(clientDir, "index.html")) ? "../../client" : "../../client/.rtag";
+
+dotenv.config({ path: join(rootDir, ".env") });
 
 console.log(`Project root: ${rootDir}`);
 const command = getCommand(process.argv);
@@ -241,7 +245,7 @@ if (command === "init") {
   npmInstall(join(serverDir, ".rtag"));
 } else if (command === "start") {
   shelljs.cd(join(serverDir, ".rtag"));
-  shelljs.exec("node --loader ts-node/esm --experimental-specifier-resolution=node proxy.ts", { async: true });
+  shelljs.exec(`vite serve ${appEntryPath}`, { async: true });
   shelljs.exec("node --loader ts-node/esm --experimental-specifier-resolution=node store.ts", { async: true });
 } else {
   console.error(`Unknown command: ${command}`);

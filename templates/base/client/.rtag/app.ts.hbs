@@ -301,12 +301,11 @@ Vue.component("key-display", {
 Vue.component("plugin-display", {
   props: ["value", "component"],
   render(createElement) {
-    const rootData = this.$root.$children[0].$data;
     return createElement(this.component, {
       domProps: {
         val: this.value,
-        state: rootData.value,
-        client: rootData.client,
+        state: this.$root.$data.value,
+        client: this.$root.$data.client,
       },
       on: {
         error: (e: CustomEvent) => this.$toasted.error(e.detail),
@@ -365,7 +364,7 @@ const Home = Vue.component("home", {
         return;
       }
       const token = sessionStorage.getItem("user")!;
-      RtagClient.connectNew(location.host, token, this.value, (state) => {
+      RtagClient.connectNew(import.meta.env.VITE_APP_ID, token, this.value, (state) => {
         Vue.set(this.$root.$data, "value", state);
       }).then(({ stateId, client }) => {
         Vue.set(this.$root.$data, "client", client);
@@ -383,7 +382,7 @@ const State = Vue.component("state", {
   created() {
     if (this.$root.$data.client === undefined) {
       const token = sessionStorage.getItem("user")!;
-      RtagClient.connectExisting(location.host, token, this.$route.params.stateId, (state) => {
+      RtagClient.connectExisting(import.meta.env.VITE_APP_ID, token, this.$route.params.stateId, (state) => {
         Vue.set(this.$root.$data, "value", state);
       }).then((client) => {
         Vue.set(this.$root.$data, "client", client);
