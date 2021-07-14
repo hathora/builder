@@ -16,7 +16,9 @@ export function register(store: Store): Promise<ProxyClient> {
     const operation = retry.operation();
     operation.attempt(() => {
       socket.connect(7147, "rtag.dev", () => {
+        socket.setKeepAlive(true, 30000);
         socket.write(process.env.APP_SECRET!);
+        console.log("Connected to proxy");
         resolve(new ProxyClient(socket));
       });
     });
