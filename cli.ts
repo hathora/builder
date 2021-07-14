@@ -6,6 +6,7 @@ import { compile, registerHelper } from "handlebars";
 import { join, basename } from "path";
 import shelljs from "shelljs";
 import { z } from "zod";
+import dotenv from "dotenv";
 
 const TypeArgs = z.union([z.string(), z.array(z.string()), z.record(z.string())]);
 const RtagConfig = z
@@ -80,6 +81,7 @@ registerHelper("isObject", (x) => typeof x === "object");
 registerHelper("capitalize", capitalize);
 registerHelper("makeRequestName", (x) => "I" + capitalize(x) + "Request");
 registerHelper("makePluginName", (x) => x.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase() + "-plugin");
+registerHelper("env", (key) => process.env[key]);
 
 function capitalize(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -219,6 +221,8 @@ const rootDir = getProjectRoot(process.cwd());
 const clientDir = join(rootDir, "client");
 const serverDir = join(rootDir, "server");
 const appEntryPath = existsSync(join(clientDir, "index.html")) ? "../../client" : "../../client/.rtag";
+
+dotenv.config({ path: join(rootDir, ".env") });
 
 console.log(`Project root: ${rootDir}`);
 const command = getCommand(process.argv);
