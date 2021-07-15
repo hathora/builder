@@ -183,7 +183,6 @@ function enrichDoc(doc: z.infer<typeof RtagConfig>, plugins: string[], appName: 
     ),
     error: getArgsInfo(doc, plugins, doc.error, true, false),
     plugins,
-    appEntryPath,
     appName,
   };
 }
@@ -220,7 +219,6 @@ function generate(templatesDir: string) {
 const rootDir = getProjectRoot(process.cwd());
 const clientDir = join(rootDir, "client");
 const serverDir = join(rootDir, "server");
-const appEntryPath = existsSync(join(clientDir, "index.html")) ? "../../client" : "../../client/.rtag";
 
 dotenv.config({ path: join(rootDir, ".env") });
 
@@ -244,6 +242,7 @@ if (command === "init") {
   npmInstall(serverDir);
   npmInstall(join(serverDir, ".rtag"));
 } else if (command === "start") {
+  const appEntryPath = existsSync(join(clientDir, "index.html")) ? clientDir : join(clientDir, "rtag");
   shelljs.cd(join(serverDir, ".rtag"));
   shelljs.exec(`vite serve ${appEntryPath}`, { async: true });
   shelljs.exec("node --loader ts-node/esm --experimental-specifier-resolution=node store.ts", { async: true });

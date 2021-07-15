@@ -1,10 +1,12 @@
+import { randomBytes } from "crypto";
+{{#unless (env "PROD_BUILD")}}
 import module from "module";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
-import { existsSync, mkdirSync } from "fs";
 import dependencyTree from "dependency-tree";
 import chokidar from "chokidar";
-import { randomBytes } from "crypto";
+{{/unless}}
+import { existsSync, mkdirSync } from "fs";
 import seedrandom from "seedrandom";
 import { decode, encode } from "@msgpack/msgpack";
 import { register } from "./protocol";
@@ -12,12 +14,13 @@ import LogStore from "./logstore";
 import { Context } from "./methods";
 import { UserData, {{makeRequestName initialize}} } from "./types";
 
+let impl = new (await import("../impl")).Impl();
+{{#unless (env "PROD_BUILD")}}
 const deps = dependencyTree.toList({
   directory: ".",
   filename: module.createRequire(import.meta.url).resolve("../impl"),
   filter: (path) => !path.includes(".rtag") && !path.includes("node_modules"),
 });
-let impl = new (await import("../impl")).Impl();
 chokidar.watch(deps).on("change", async () => {
   try {
     impl = new (await import(`../impl.ts#${Math.random()}`)).Impl();
@@ -25,6 +28,7 @@ chokidar.watch(deps).on("change", async () => {
     console.error("Failed to reload:", e);
   }
 });
+{{/unless}}
 
 type StateId = bigint;
 type UserId = string;
@@ -35,7 +39,11 @@ interface UpdateRequest {
   args: any;
 }
 
+{{#if (env "PROD_BUILD")}}
+const dataDir = process.env.DATA_DIR!;
+{{else}}
 const dataDir = join(dirname(fileURLToPath(import.meta.url)), "data");
+{{/if}}
 if (!existsSync(dataDir)) {
   mkdirSync(dataDir);
 }

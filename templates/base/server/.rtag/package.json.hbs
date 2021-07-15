@@ -2,8 +2,10 @@
   "type": "module",
   "dependencies": {
     "@msgpack/msgpack": "2.7.0",
+{{#unless (env "PROD_BUILD")}}
     "chokidar": "3.5.2",
     "dependency-tree": "8.1.1",
+{{/unless}}
     "retry": "0.13.1",
     "seedrandom": "3.0.5",
     "smart-buffer": "4.1.0"
