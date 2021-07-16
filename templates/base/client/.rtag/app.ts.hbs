@@ -418,6 +418,12 @@ const router = new VueRouter({
     { path: "/login", component: Login },
     { path: "/", component: Home },
     { path: "/state/:stateId", component: State },
+    {
+      path: "*",
+      component: Vue.component("notFound", {
+        template: `<h1>Not found</h1>`,
+      }),
+    },
   ],
 });
 
