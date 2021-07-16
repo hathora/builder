@@ -128,6 +128,7 @@ class Store {
     } else {
       subscriptions.delete(stateId);
       states.delete(stateId);
+      changedStates.delete(stateId);
       log.unload(stateId);
     }
   }
