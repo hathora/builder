@@ -242,7 +242,7 @@ if (command === "init") {
   npmInstall(serverDir);
   npmInstall(join(serverDir, ".rtag"));
 } else if (command === "start") {
-  const appEntryPath = existsSync(join(clientDir, "index.html")) ? clientDir : join(clientDir, "rtag");
+  const appEntryPath = existsSync(join(clientDir, "index.html")) ? clientDir : join(clientDir, ".rtag");
   shelljs.cd(join(serverDir, ".rtag"));
   shelljs.exec(`vite serve ${appEntryPath}`, { async: true });
   shelljs.exec("node --loader ts-node/esm --experimental-specifier-resolution=node store.ts", { async: true });
