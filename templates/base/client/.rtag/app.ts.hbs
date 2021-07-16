@@ -61,15 +61,19 @@ Vue.component("method-form", {
         return;
       }
       const client: RtagClient = this.$root.$data.client;
-      const res: {{error.typeString}} | undefined = await client[this.method](this.value);
-      if (res !== undefined) {
-        this.$toasted.error(JSON.stringify(res));
-      } else {
-        this.value = {};
-        this.hack = false;
-        this.$nextTick(() => {
-          this.hack = true;
-        });
+      try {
+        const res: {{error.typeString}} | undefined = await client[this.method](this.value);
+        if (res !== undefined) {
+          this.$toasted.error(JSON.stringify(res));
+        } else {
+          this.value = {};
+          this.hack = false;
+          this.$nextTick(() => {
+            this.hack = true;
+          });
+        }
+      } catch (e) {
+        this.$toasted.error(e);
       }
     },
   },
@@ -366,10 +370,14 @@ const Home = Vue.component("home", {
       const token = sessionStorage.getItem("user")!;
       RtagClient.connectNew(import.meta.env.VITE_APP_ID, token, this.value, (state) => {
         Vue.set(this.$root.$data, "value", state);
-      }).then(({ stateId, client }) => {
-        Vue.set(this.$root.$data, "client", client);
-        this.$router.push("/state/" + stateId);
-      });
+      })
+        .then(({ stateId, client }) => {
+          Vue.set(this.$root.$data, "client", client);
+          this.$router.push("/state/" + stateId);
+        })
+        .catch(() => {
+          this.$toasted.error("Error creating new state");
+        });
     },
     joinState() {
       this.$router.push("/state/" + this.stateId);
@@ -384,9 +392,13 @@ const State = Vue.component("state", {
       const token = sessionStorage.getItem("user")!;
       RtagClient.connectExisting(import.meta.env.VITE_APP_ID, token, this.$route.params.stateId, (state) => {
         Vue.set(this.$root.$data, "value", state);
-      }).then((client) => {
-        Vue.set(this.$root.$data, "client", client);
-      });
+      })
+        .then((client) => {
+          Vue.set(this.$root.$data, "client", client);
+        })
+        .catch(() => {
+          this.$toasted.error("Error connecting to state");
+        });
     }
   },
   computed: {
@@ -395,7 +407,7 @@ const State = Vue.component("state", {
     },
   },
   destroyed() {
-    this.$root.$data.client.disconnect();
+    this.$root.$data.client?.disconnect();
   },
 });
 

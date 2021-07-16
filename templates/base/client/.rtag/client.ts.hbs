@@ -88,10 +88,14 @@ export class RtagClient {
   {{#each methods}}
   {{#if (ne @key ../initialize)}}
   public {{@key}}(request: {{makeRequestName @key}}): Promise<{{../error.typeString}} | undefined> {
-    const msgId = Math.random().toString(36).substring(2);
-    this.socket.send(encode({ method: "{{@key}}", msgId, args: request }, { ignoreUndefined: true }));
-    return new Promise((resolve) => {
-      this.callbacks[msgId] = resolve;
+    return new Promise((resolve, reject) => {
+      if (this.socket.readyState === this.socket.CLOSED) {
+        reject("Connection is closed");
+      } else {
+        const msgId = Math.random().toString(36).substring(2);
+        this.socket.send(encode({ method: "{{@key}}", msgId, args: request }, { ignoreUndefined: true }));
+        this.callbacks[msgId] = resolve;
+      }
     });
   }
 
