@@ -160,7 +160,7 @@ class Store {
   }
 }
 
-const proxy = await register(new Store());
+const coordinator = await register(new Store());
 
 function getResult(state: State, user: UserData, method: string, ctx: Context, args: any) {
   switch (method) {
@@ -206,7 +206,8 @@ function loadState(stateId: StateId) {
 
 function sendUpdate(stateId: StateId, user: UserData, responses: Record<string, string | null>) {
   const state = impl.getUserState(states.get(stateId)!, user);
-  return proxy.onNewUserState(stateId, user.id, Buffer.from(encode({ state, responses }, { ignoreUndefined: true })));
+  const data = Buffer.from(encode({ state, responses }, { ignoreUndefined: true }));
+  return coordinator.onNewUserState(stateId, user.id, data);
 }
 
 function ctx(rng: ReturnType<seedrandom>, time: number) {

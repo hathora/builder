@@ -7,7 +7,7 @@ const SUBSCRIBE_USER = 1;
 const UNSUBSCRIBE_USER = 2;
 const HANDLE_UPDATE = 3;
 
-export function register(store: Store): Promise<ProxyClient> {
+export function register(store: Store): Promise<CoordinatorClient> {
   return new Promise((resolve, reject) => {
     const socket = new net.Socket();
     const operation = retry.operation();
@@ -15,8 +15,8 @@ export function register(store: Store): Promise<ProxyClient> {
       socket.connect(7147, "rtag.dev", () => {
         socket.setKeepAlive(true, 30000);
         socket.write("{{env "APP_SECRET"}}");
-        console.log("Connected to proxy");
-        resolve(new ProxyClient(socket));
+        console.log("Connected to coordinator");
+        resolve(new CoordinatorClient(socket));
       });
     });
     socket.on("error", (err) => {
@@ -51,7 +51,7 @@ interface Store {
   handleUpdate(stateId: bigint, userId: string, data: Buffer): void;
 }
 
-class ProxyClient {
+class CoordinatorClient {
   constructor(private socket: net.Socket) {}
 
   public onNewUserState(stateId: bigint, userId: string, data: Buffer) {
