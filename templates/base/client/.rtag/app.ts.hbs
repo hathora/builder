@@ -408,6 +408,7 @@ const State = Vue.component("state", {
   },
   destroyed() {
     this.$root.$data.client?.disconnect();
+    this.$root.$data.client = undefined;
   },
 });
 
