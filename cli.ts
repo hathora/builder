@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { createHash } from "crypto";
 import { load } from "js-yaml";
 import { readdirSync, readFileSync, outputFileSync, existsSync, statSync } from "fs-extra";
 import { compile, registerHelper } from "handlebars";
@@ -7,6 +8,7 @@ import { join, basename } from "path";
 import shelljs from "shelljs";
 import { z } from "zod";
 import dotenv from "dotenv";
+import { v4 as uuidv4 } from "uuid";
 
 const TypeArgs = z.union([z.string(), z.array(z.string()), z.record(z.string())]);
 const RtagConfig = z
@@ -82,6 +84,8 @@ registerHelper("capitalize", capitalize);
 registerHelper("makeRequestName", (x) => "I" + capitalize(x) + "Request");
 registerHelper("makePluginName", (x) => x.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase() + "-plugin");
 registerHelper("env", (key) => process.env[key]);
+registerHelper("uuid", () => uuidv4());
+registerHelper("sha256", (x) => createHash("sha256").update(x).digest("hex"));
 
 function capitalize(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
