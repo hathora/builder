@@ -83,7 +83,6 @@ registerHelper("isObject", (x) => typeof x === "object");
 registerHelper("capitalize", capitalize);
 registerHelper("makeRequestName", (x) => "I" + capitalize(x) + "Request");
 registerHelper("makePluginName", (x) => x.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase() + "-plugin");
-registerHelper("env", (key) => process.env[key]);
 registerHelper("uuid", () => uuidv4());
 registerHelper("sha256", (x) => createHash("sha256").update(x).digest("hex"));
 
@@ -225,6 +224,12 @@ const clientDir = join(rootDir, "client");
 const serverDir = join(rootDir, "server");
 
 dotenv.config({ path: join(rootDir, ".env") });
+if (process.env.APP_SECRET === undefined) {
+  process.env.APP_SECRET = uuidv4();
+}
+if (process.env.VITE_APP_ID === undefined) {
+  process.env.VITE_APP_ID = createHash("sha256").update(process.env.APP_SECRET).digest("hex");
+}
 
 console.log(`Project root: ${rootDir}`);
 const command = getCommand(process.argv);
