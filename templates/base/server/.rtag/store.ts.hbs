@@ -33,11 +33,6 @@ chokidar.watch(deps).on("change", async () => {
 type StateId = bigint;
 type UserId = string;
 type State = ReturnType<typeof impl.{{initialize}}>;
-interface UpdateRequest {
-  method: string;
-  msgId: string;
-  args: any;
-}
 
 {{#if (env "PROD_BUILD")}}
 const dataDir = process.env.DATA_DIR!;
@@ -137,7 +132,7 @@ class Store {
     if (state === undefined) {
       return;
     }
-    const { method, args, msgId } = decode(data) as UpdateRequest;
+    const { method, args, msgId } = decode(data) as { method: string; msgId: string; args: any };
     const time = Date.now();
     const user = subscriptions.get(stateId)!.get(userId)!;
     const result = getResult(state, user, method, ctx(state._rng, time), args);
