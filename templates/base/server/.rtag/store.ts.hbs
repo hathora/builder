@@ -112,6 +112,7 @@ class Store {
       subscriptions.get(stateId)!.set(user.id, user);
     }
     sendUpdate(stateId, user, {});
+    log.append(stateId, Date.now(), userBuffer);
   }
   unsubscribeUser(stateId: StateId, userId: UserId) {
     if (!states.has(stateId)) {
@@ -139,7 +140,7 @@ class Store {
     if (result !== undefined) {
       if (result.type === "modified") {
         changedStates.add(stateId);
-        log.append(stateId, time, encode({ method, user, args }));
+        log.append(stateId, time, encode({ method, userId, args }));
       }
       const response = result.type === "modified" ? null : result.error ?? null;
       if (!userResponses.has(stateId)) {
@@ -173,9 +174,11 @@ function getResult(state: State, user: UserData, method: string, ctx: Context, a
 function loadState(stateId: StateId) {
   try {
     const rows = log.load(stateId);
+    const users: Map<UserId, UserData> = new Map();
 
     const { time, record } = rows[0];
     const { seed, user, args } = decode(record) as { seed: string; user: UserData; args: {{makeRequestName initialize}} };
+    users.set(user.id, user);
     const rng = seedrandom(seed);
     const state = impl.createGame(user, ctx(rng, time), args);
 
@@ -189,8 +192,13 @@ function loadState(stateId: StateId) {
         continue;
       }
       {{/if}}
-      const { method, user, args } = data as { method: string; user: UserData; args: any };
-      getResult(state, user, method, ctx(rng, time), args);
+      if ("id" in data) {
+        const user = data as UserData;
+        users.set(user.id, user);
+        continue;
+      }
+      const { method, userId, args } = data as { method: string; userId: UserId; args: any };
+      getResult(state, users.get(userId)!, method, ctx(rng, time), args);
     }
 
     return Object.assign(state, { _rng: rng });
