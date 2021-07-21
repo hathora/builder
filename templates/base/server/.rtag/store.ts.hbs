@@ -45,7 +45,7 @@ if (!existsSync(dataDir)) {
 const log = new LogStore(dataDir);
 const states: Map<StateId, State & { _rng: ReturnType<seedrandom> }> = new Map();
 const changedStates: Set<StateId> = new Set();
-const userResponses: Map<StateId, Map<UserId, Record<string, {{error.typeString}} | null>>> = new Map();
+const userResponses: Map<StateId, Map<UserId, Record<number, {{error.typeString}} | null>>> = new Map();
 const subscriptions: Map<StateId, Map<UserId, UserData>> = new Map();
 
 class Store {
@@ -133,7 +133,7 @@ class Store {
     if (state === undefined) {
       return;
     }
-    const { method, args, msgId } = decode(data) as { method: string; msgId: string; args: any };
+    const { method, args, msgId } = decode(data) as { method: string; msgId: number; args: any };
     const time = Date.now();
     const user = subscriptions.get(stateId)!.get(userId)!;
     const result = getResult(state, user, method, ctx(state._rng, time), args);
