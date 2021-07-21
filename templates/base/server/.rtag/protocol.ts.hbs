@@ -36,9 +36,13 @@ export function register(store: Store): Promise<CoordinatorClient> {
       } else if (type === SUBSCRIBE_USER) {
         store.subscribeUser(reader.readBigUInt64LE(), reader.readBuffer(reader.readUInt32LE()));
       } else if (type === UNSUBSCRIBE_USER) {
-        store.unsubscribeUser(reader.readBigUInt64LE(), reader.readStringNT());
+        store.unsubscribeUser(reader.readBigUInt64LE(), reader.readString(reader.readUInt32LE()));
       } else if (type === HANDLE_UPDATE) {
-        store.handleUpdate(reader.readBigUInt64LE(), reader.readStringNT(), reader.readBuffer(reader.readUInt32LE()));
+        store.handleUpdate(
+          reader.readBigUInt64LE(),
+          reader.readString(reader.readUInt32LE()),
+          reader.readBuffer(reader.readUInt32LE())
+        );
       }
     });
   });
@@ -55,11 +59,12 @@ class CoordinatorClient {
   constructor(private socket: net.Socket) {}
 
   public onNewUserState(stateId: bigint, userId: string, data: Buffer) {
-    const buf = new SmartBuffer()
-      .writeBigUInt64LE(stateId)
-      .writeStringNT(userId)
-      .writeUInt32LE(data.length)
-      .writeBuffer(data);
+    const buf = new SmartBuffer();
+    buf.writeBigUInt64LE(stateId);
+    buf.writeUInt32LE(userId.length);
+    buf.writeString(userId);
+    buf.writeBuffer(data);
+    buf.insertUInt32LE(buf.length, 0);
     this.socket.write(buf.toBuffer());
   }
 }
