@@ -53,15 +53,15 @@ class Store {
     setInterval(() => {
       changedStates.forEach((stateId) => {
         const responses = userResponses.get(stateId);
-        subscriptions.get(stateId)!.forEach((user) => {
-          sendUpdate(stateId, user, responses?.get(user.id) ?? {});
+        subscriptions.get(stateId)!.forEach((user, userId) => {
+          sendUpdate(stateId, user, responses?.get(userId) ?? {});
         });
         userResponses.delete(stateId);
       });
       userResponses.forEach((responses, stateId) => {
-        subscriptions.get(stateId)!.forEach((user) => {
+        subscriptions.get(stateId)!.forEach((user, userId) => {
           if (responses.has(user.id)) {
-            sendUpdate(stateId, user, responses.get(user.id)!);
+            sendUpdate(stateId, user, responses.get(userId)!);
           }
         });
       });
@@ -85,7 +85,8 @@ class Store {
     }, 50);
     {{/if}}
   }
-  newState(stateId: StateId, userBuffer: Buffer, argsBuffer: Buffer) {
+  async newState(stateId: StateId, userId: string, argsBuffer: Buffer) {
+    const userBuffer = await coordinator.lookupUser(userId);
     const user = decode(userBuffer) as UserData;
     const args = decode(argsBuffer) as {{makeRequestName initialize}};
     const seed = randomBytes(8).readBigUInt64LE().toString(36);
@@ -93,11 +94,12 @@ class Store {
     const time = Date.now();
     const state = impl.{{initialize}}(user, ctx(rng, time), args);
     states.set(stateId, Object.assign(state, { _rng: rng }));
-    subscriptions.set(stateId, new Map([[user.id, user]]));
+    subscriptions.set(stateId, new Map([[userId, user]]));
     sendUpdate(stateId, user, {});
     log.append(stateId, time, encode({ seed, user, args }));
   }
-  subscribeUser(stateId: StateId, userBuffer: Buffer) {
+  async subscribeUser(stateId: StateId, userId: string) {
+    const userBuffer = await coordinator.lookupUser(userId);
     const user = decode(userBuffer) as UserData;
     if (!states.has(stateId)) {
       const state = loadState(stateId);
@@ -107,9 +109,9 @@ class Store {
       states.set(stateId, state);
     }
     if (!subscriptions.has(stateId)) {
-      subscriptions.set(stateId, new Map([[user.id, user]]));
+      subscriptions.set(stateId, new Map([[userId, user]]));
     } else {
-      subscriptions.get(stateId)!.set(user.id, user);
+      subscriptions.get(stateId)!.set(userId, user);
     }
     sendUpdate(stateId, user, {});
     log.append(stateId, Date.now(), userBuffer);
@@ -144,12 +146,12 @@ class Store {
       }
       const response = result.type === "modified" ? null : result.error ?? null;
       if (!userResponses.has(stateId)) {
-        userResponses.set(stateId, new Map([[user.id, { [msgId]: response }]]));
+        userResponses.set(stateId, new Map([[userId, { [msgId]: response }]]));
       } else {
-        if (!userResponses.get(stateId)!.has(user.id)) {
-          userResponses.get(stateId)!.set(user.id, { [msgId]: response });
+        if (!userResponses.get(stateId)!.has(userId)) {
+          userResponses.get(stateId)!.set(userId, { [msgId]: response });
         } else {
-          userResponses.get(stateId)!.get(user.id)![msgId] = response;
+          userResponses.get(stateId)!.get(userId)![msgId] = response;
         }
       }
     }
