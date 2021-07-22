@@ -79,7 +79,7 @@ class Store {
         const result = impl.onTick(state, ctx(state._rng, currTime), timeDelta / 1000);
         if (result.type === "modified") {
           changedStates.add(stateId);
-          log.append(stateId, currTime, encode({ timeDelta }));
+          log.append(stateId, currTime, new SmartBuffer().writeUInt8(0xfe).writeUInt32LE(timeDelta).toBuffer());
         }
       });
       prevUpdateTime = currTime;
@@ -90,14 +90,24 @@ class Store {
     const userBuffer = await coordinator.lookupUser(userId);
     const user = decode(userBuffer) as UserData;
     const args = decode(argsBuffer) as {{makeRequestName initialize}};
-    const seed = randomBytes(8).readBigUInt64LE().toString(36);
-    const rng = seedrandom(seed);
+    const seed = randomBytes(8).readBigUInt64LE();
+    const rng = seedrandom(seed.toString(36));
     const time = Date.now();
     const state = impl.{{initialize}}(user, ctx(rng, time), args);
     states.set(stateId, Object.assign(state, { _rng: rng }));
     subscriptions.set(stateId, new Map([[userId, user]]));
     sendUpdate(stateId, user, {});
-    log.append(stateId, time, encode({ seed, user, args }));
+    log.append(
+      stateId,
+      time,
+      new SmartBuffer()
+        .writeBigUInt64LE(seed)
+        .writeUInt32LE(userBuffer.length)
+        .writeBuffer(userBuffer)
+        .writeUInt32LE(argsBuffer.length)
+        .writeBuffer(argsBuffer)
+        .toBuffer()
+    );
   }
   async subscribeUser(stateId: StateId, userId: string) {
     const userBuffer = await coordinator.lookupUser(userId);
@@ -115,7 +125,11 @@ class Store {
       subscriptions.get(stateId)!.set(userId, user);
     }
     sendUpdate(stateId, user, {});
-    log.append(stateId, Date.now(), userBuffer);
+    log.append(
+      stateId,
+      Date.now(),
+      new SmartBuffer().writeUInt8(0xff).writeUInt32LE(userBuffer.length).writeBuffer(userBuffer).toBuffer()
+    );
   }
   unsubscribeUser(stateId: StateId, userId: UserId) {
     if (!states.has(stateId)) {
@@ -145,7 +159,17 @@ class Store {
     if (result !== undefined) {
       if (result.type === "modified") {
         changedStates.add(stateId);
-        log.append(stateId, time, encode({ method, userId, args }));
+        log.append(
+          stateId,
+          time,
+          new SmartBuffer()
+            .writeUInt8(method)
+            .writeUInt32LE(userId.length)
+            .writeString(userId)
+            .writeUInt32LE(argsBuffer.length)
+            .writeBuffer(argsBuffer)
+            .toBuffer()
+        );
       }
       const response = result.type === "modified" ? null : result.error ?? null;
       if (!userResponses.has(stateId)) {
@@ -182,28 +206,35 @@ function loadState(stateId: StateId) {
     const users: Map<UserId, UserData> = new Map();
 
     const { time, record } = rows[0];
-    const { seed, user, args } = decode(record) as { seed: string; user: UserData; args: {{makeRequestName initialize}} };
+    const reader = SmartBuffer.fromBuffer(record);
+    const seed = reader.readBigUInt64LE();
+    const userBuffer = reader.readBuffer(reader.readUInt32LE());
+    const argsBuffer = reader.readBuffer(reader.readUInt32LE());
+    const user = decode(userBuffer) as UserData;
     users.set(user.id, user);
-    const rng = seedrandom(seed);
-    const state = impl.createGame(user, ctx(rng, time), args);
+    const rng = seedrandom(seed.toString(36));
+    const state = impl.createGame(user, ctx(rng, time), decode(argsBuffer) as {{makeRequestName initialize}});
 
     for (let i = 1; i < rows.length; i++) {
       const { time, record } = rows[i];
-      const data = decode(record) as object;
+      const reader = SmartBuffer.fromBuffer(record);
+      const method = reader.readUInt8();
+      if (method === 0xff) {
+        const userBuffer = reader.readBuffer(reader.readUInt32LE());
+        const user = decode(userBuffer) as UserData;
+        users.set(user.id, user);
+        continue;
+      }
       {{#if tick}}
-      if ("timeDelta" in data) {
-        const { timeDelta } = data as { timeDelta: number };
+      if (method === 0xfe) {
+        const timeDelta = reader.readUInt32LE();
         impl.onTick(state, ctx(rng, time), timeDelta / 1000);
         continue;
       }
       {{/if}}
-      if ("id" in data) {
-        const user = data as UserData;
-        users.set(user.id, user);
-        continue;
-      }
-      const { method, userId, args } = data as { method: Method; userId: UserId; args: any };
-      getResult(state, users.get(userId)!, method, ctx(rng, time), args);
+      const userId = reader.readString(reader.readUInt32LE());
+      const argsBuffer = reader.readBuffer(reader.readUInt32LE());
+      getResult(state, users.get(userId)!, method, ctx(rng, time), decode(argsBuffer));
     }
 
     return Object.assign(state, { _rng: rng });
