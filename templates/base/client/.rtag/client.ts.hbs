@@ -89,23 +89,26 @@ export class RtagClient {
   {{#each methods}}
   {{#if (ne @key ../initialize)}}
   public {{@key}}(request: {{makeRequestName @key}}): Promise<{{../error.typeString}} | undefined> {
-    return new Promise((resolve, reject) => {
-      if (this.socket.readyState === this.socket.CLOSED) {
-        reject("Connection is closed");
-      } else {
-        const method = Method.{{uppercase @key}};
-        const msgId = crypto.getRandomValues(new Uint32Array(1));
-        const args = encode(request, { ignoreUndefined: true });
-        this.socket.send(new Uint8Array([...new Uint8Array([method]), ...new Uint8Array(msgId.buffer), ...args]));
-        this.callbacks[msgId[0]] = resolve;
-      }
-    });
+    return this.callMethod(Method.{{uppercase @key}}, request);
   }
 
   {{/if}}
   {{/each}}
   public disconnect(): void {
     this.socket.close();
+  }
+
+  private callMethod(method: Method, request: unknown): Promise<string | undefined> {
+    return new Promise((resolve, reject) => {
+      if (this.socket.readyState === this.socket.CLOSED) {
+        reject("Connection is closed");
+      } else {
+        const msgId = crypto.getRandomValues(new Uint32Array(1));
+        const args = encode(request, { ignoreUndefined: true });
+        this.socket.send(new Uint8Array([...new Uint8Array([method]), ...new Uint8Array(msgId.buffer), ...args]));
+        this.callbacks[msgId[0]] = resolve;
+      }
+    });
   }
 
   private static handleStateChange(data: ArrayBuffer, client: RtagClient, onStateChange: (state: UserState) => void) {
