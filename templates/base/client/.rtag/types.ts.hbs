@@ -22,6 +22,13 @@ export interface {{makeRequestName @key}} {
 {{/each}}
 }
 {{/each}}
+export enum Method {
+  {{#each methods}}
+  {{#if (ne @key ../initialize)}}
+  {{uppercase @key}},
+  {{/if}}
+  {{/each}}
+}
 {{#each auth}}
 export interface {{capitalize @key}}UserData {
   type: "{{@key}}";

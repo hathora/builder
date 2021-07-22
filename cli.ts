@@ -81,6 +81,12 @@ registerHelper("stringify", JSON.stringify);
 registerHelper("isArray", Array.isArray);
 registerHelper("isObject", (x) => typeof x === "object");
 registerHelper("capitalize", capitalize);
+registerHelper("uppercase", (x) =>
+  x
+    .split(/(?=[A-Z])/)
+    .join("_")
+    .toUpperCase()
+);
 registerHelper("makeRequestName", (x) => "I" + capitalize(x) + "Request");
 registerHelper("makePluginName", (x) => x.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase() + "-plugin");
 registerHelper("env", (key) => process.env[key]);

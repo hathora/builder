@@ -5,6 +5,7 @@ import { decode, encode } from "@msgpack/msgpack";
 import {
   UserData,
   {{userState}} as UserState,
+  Method,
   {{#each methods}}
   {{makeRequestName @key}},
   {{/each}}
@@ -93,7 +94,7 @@ export class RtagClient {
         reject("Connection is closed");
       } else {
         const msgId = crypto.getRandomValues(new Uint32Array(1))[0];
-        this.socket.send(encode({ method: "{{@key}}", msgId, args: request }, { ignoreUndefined: true }));
+        this.socket.send(encode({ method: Method.{{uppercase @key}}, msgId, args: request }, { ignoreUndefined: true }));
         this.callbacks[msgId] = resolve;
       }
     });

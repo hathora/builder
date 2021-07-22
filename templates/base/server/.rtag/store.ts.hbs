@@ -12,7 +12,7 @@ import { decode, encode } from "@msgpack/msgpack";
 import { register } from "./protocol";
 import LogStore from "./logstore";
 import { Context } from "./methods";
-import { UserData, {{makeRequestName initialize}} } from "./types";
+import { UserData, Method, {{makeRequestName initialize}} } from "./types";
 
 let impl = new (await import("../impl")).Impl();
 {{#unless (env "PROD_BUILD")}}
@@ -133,7 +133,7 @@ class Store {
     if (state === undefined) {
       return;
     }
-    const { method, args, msgId } = decode(data) as { method: string; msgId: number; args: any };
+    const { method, args, msgId } = decode(data) as { method: Method; msgId: number; args: any };
     const time = Date.now();
     const user = subscriptions.get(stateId)!.get(userId)!;
     const result = getResult(state, user, method, ctx(state._rng, time), args);
@@ -158,11 +158,11 @@ class Store {
 
 const coordinator = await register(new Store());
 
-function getResult(state: State, user: UserData, method: string, ctx: Context, args: any) {
+function getResult(state: State, user: UserData, method: Method, ctx: Context, args: any) {
   switch (method) {
     {{#each methods}}
     {{#if (ne @key ../initialize)}}
-    case "{{@key}}":
+    case Method.{{uppercase @key}}:
       return impl.{{@key}}(state, user, ctx, args);
     {{/if}}
     {{/each}}
@@ -197,7 +197,7 @@ function loadState(stateId: StateId) {
         users.set(user.id, user);
         continue;
       }
-      const { method, userId, args } = data as { method: string; userId: UserId; args: any };
+      const { method, userId, args } = data as { method: Method; userId: UserId; args: any };
       getResult(state, users.get(userId)!, method, ctx(rng, time), args);
     }
 
