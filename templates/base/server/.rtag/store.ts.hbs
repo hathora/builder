@@ -9,6 +9,7 @@ import chokidar from "chokidar";
 import { existsSync, mkdirSync } from "fs";
 import seedrandom from "seedrandom";
 import { decode, encode } from "@msgpack/msgpack";
+import { SmartBuffer } from "smart-buffer";
 import { register } from "./protocol";
 import LogStore from "./logstore";
 import { Context } from "./methods";
@@ -135,9 +136,11 @@ class Store {
     if (state === undefined) {
       return;
     }
-    const { method, args, msgId } = decode(data) as { method: Method; msgId: number; args: any };
-    const time = Date.now();
+    const reader = SmartBuffer.fromBuffer(data);
+    const [method, msgId, argsBuffer] = [reader.readUInt8(), reader.readUInt32LE(), reader.readBuffer()];
+    const args = decode(argsBuffer);
     const user = subscriptions.get(stateId)!.get(userId)!;
+    const time = Date.now();
     const result = getResult(state, user, method, ctx(state._rng, time), args);
     if (result !== undefined) {
       if (result.type === "modified") {

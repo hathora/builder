@@ -93,9 +93,11 @@ export class RtagClient {
       if (this.socket.readyState === this.socket.CLOSED) {
         reject("Connection is closed");
       } else {
-        const msgId = crypto.getRandomValues(new Uint32Array(1))[0];
-        this.socket.send(encode({ method: Method.{{uppercase @key}}, msgId, args: request }, { ignoreUndefined: true }));
-        this.callbacks[msgId] = resolve;
+        const method = Method.{{uppercase @key}};
+        const msgId = crypto.getRandomValues(new Uint32Array(1));
+        const args = encode(request, { ignoreUndefined: true });
+        this.socket.send(new Uint8Array([...new Uint8Array([method]), ...new Uint8Array(msgId.buffer), ...args]));
+        this.callbacks[msgId[0]] = resolve;
       }
     });
   }

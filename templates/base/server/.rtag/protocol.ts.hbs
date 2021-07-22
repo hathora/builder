@@ -50,7 +50,7 @@ export function register(store: Store): Promise<CoordinatorClient> {
 }
 
 interface Store {
-  newState(stateId: bigint, userId: string, args: Buffer): void;
+  newState(stateId: bigint, userId: string, argsBuffer: Buffer): void;
   subscribeUser(stateId: bigint, userId: string): void;
   unsubscribeUser(stateId: bigint, userId: string): void;
   handleUpdate(stateId: bigint, userId: string, data: Buffer): void;
