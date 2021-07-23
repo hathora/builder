@@ -66,9 +66,10 @@ class Store {
         userResponses.delete(stateId);
       });
       userResponses.forEach((responses, stateId) => {
-        subscriptions.get(stateId)!.forEach((user, userId) => {
-          if (responses.has(user.id)) {
-            sendUpdate(stateId, user, responses.get(userId)!);
+        responses.forEach((response, userId) => {
+          const user = subscriptions.get(stateId)?.get(userId);
+          if (user !== undefined) {
+            sendUpdate(stateId, user, response);
           }
         });
       });
@@ -239,7 +240,7 @@ function loadState(stateId: StateId) {
       {{/if}}
       const userId = reader.readString(reader.readUInt32LE());
       const argsBuffer = reader.readBuffer(reader.readUInt32LE());
-      getResult(state, users.get(userId)!, method, ctx(rng, time), decode(argsBuffer));
+      getResult(state, users.get(userId)!, method, ctx(rng, time), argsBuffer);
     }
 
     return Object.assign(state, { _rng: rng });
