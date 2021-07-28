@@ -375,8 +375,8 @@ const Home = Vue.component("home", {
           Vue.set(this.$root.$data, "client", client);
           this.$router.push("/state/" + stateId);
         })
-        .catch(() => {
-          this.$toasted.error("Error creating new state");
+        .catch((e) => {
+          this.$toasted.error("Error creating new state: " + e.reason);
         });
     },
     joinState() {
@@ -396,8 +396,8 @@ const State = Vue.component("state", {
         .then((client) => {
           Vue.set(this.$root.$data, "client", client);
         })
-        .catch(() => {
-          this.$toasted.error("Error connecting to state");
+        .catch((e) => {
+          this.$toasted.error("Error connecting to state: " + e.reason);
         });
     }
   },

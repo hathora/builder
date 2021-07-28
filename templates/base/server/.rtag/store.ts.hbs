@@ -117,15 +117,16 @@ class Store {
     );
   }
   async subscribeUser(stateId: StateId, userId: string) {
-    const userBuffer = await coordinator.lookupUser(userId);
-    const user = decode(userBuffer) as UserData;
     if (!states.has(stateId)) {
       const state = loadState(stateId);
       if (state === undefined) {
+        coordinator.onNewUserState(stateId, userId, Buffer.alloc(0));
         return;
       }
       states.set(stateId, state);
     }
+    const userBuffer = await coordinator.lookupUser(userId);
+    const user = decode(userBuffer) as UserData;
     if (!subscriptions.has(stateId)) {
       subscriptions.set(stateId, new Map([[userId, user]]));
     } else {
@@ -245,7 +246,7 @@ function loadState(stateId: StateId) {
 
     return Object.assign(state, { _rng: rng });
   } catch (e) {
-    console.error("Unable to load state:", e);
+    console.error("Unable to load state", stateId.toString(36), e.message);
   }
 }
 

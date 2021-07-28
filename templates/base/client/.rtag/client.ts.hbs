@@ -52,6 +52,7 @@ export class RtagClient {
         socket.send(encode(request, { ignoreUndefined: true }));
       };
       socket.onerror = reject;
+      socket.onclose = reject;
       let first = true;
       socket.onmessage = ({ data }) => {
         if (first) {
@@ -77,10 +78,11 @@ export class RtagClient {
       socket.onopen = () => {
         socket.send(token);
         socket.send(stateId);
-        resolve(client);
       };
       socket.onerror = reject;
+      socket.onclose = reject;
       socket.onmessage = ({ data }) => {
+        resolve(client);
         this.handleStateChange(data as ArrayBuffer, client, onStateChange);
       };
     });
