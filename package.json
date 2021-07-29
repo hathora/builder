@@ -10,12 +10,13 @@
     "LICENSE"
   ],
   "dependencies": {
-    "dotenv": "10.0.0",
+    "@vercel/ncc": "0.29.0",
     "fs-extra": "10.0.0",
     "handlebars": "4.7.7",
     "js-yaml": "4.1.0",
     "shelljs": "0.8.4",
     "uuid": "8.3.2",
+    "vite": "2.4.4",
     "zod": "3.5.1"
   },
   "devDependencies": {

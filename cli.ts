@@ -7,8 +7,10 @@ import { compile, registerHelper } from "handlebars";
 import { join, basename } from "path";
 import shelljs from "shelljs";
 import { z } from "zod";
-import dotenv from "dotenv";
 import { v4 as uuidv4 } from "uuid";
+import { createServer, build } from "vite";
+// @ts-ignore
+import ncc from "@vercel/ncc";
 
 const TypeArgs = z.union([z.string(), z.array(z.string()), z.record(z.string())]);
 const RtagConfig = z
@@ -229,13 +231,12 @@ function generate(templatesDir: string) {
 const rootDir = getProjectRoot(process.cwd());
 const clientDir = join(rootDir, "client");
 const serverDir = join(rootDir, "server");
+const appEntryPath = existsSync(join(clientDir, "index.html")) ? clientDir : join(clientDir, ".rtag");
 
-dotenv.config({ path: join(rootDir, ".env") });
-if (process.env.APP_SECRET === undefined) {
-  process.env.APP_SECRET = uuidv4();
-}
-if (process.env.VITE_APP_ID === undefined) {
-  process.env.VITE_APP_ID = createHash("sha256").update(process.env.APP_SECRET).digest("hex");
+const appSecret = process.env.APP_SECRET ?? uuidv4();
+const appId = createHash("sha256").update(appSecret).digest("hex");
+if (!existsSync(join(rootDir, ".env"))) {
+  outputFileSync(join(rootDir, ".env"), `APP_SECRET=${appSecret}\nVITE_APP_ID=${appId}\n`);
 }
 
 console.log(`Project root: ${rootDir}`);
@@ -258,10 +259,37 @@ if (command === "init") {
   npmInstall(serverDir);
   npmInstall(join(serverDir, ".rtag"));
 } else if (command === "start") {
-  const appEntryPath = existsSync(join(clientDir, "index.html")) ? clientDir : join(clientDir, ".rtag");
+  createServer({
+    root: appEntryPath,
+    envDir: rootDir,
+    clearScreen: false,
+    resolve: {
+      alias: { vue: "vue/dist/vue.esm.js" },
+    },
+  }).then((server) => server.listen());
   shelljs.cd(join(serverDir, ".rtag"));
-  shelljs.exec(`vite serve ${appEntryPath}`, { async: true });
   shelljs.exec("node --loader ts-node/esm --experimental-specifier-resolution=node store.ts", { async: true });
+} else if (command === "build") {
+  build({
+    root: appEntryPath,
+    envDir: rootDir,
+    build: {
+      outDir: join(rootDir, "dist/client"),
+    },
+    resolve: {
+      alias: { vue: "vue/dist/vue.esm.js" },
+    },
+  });
+  ncc(join(serverDir, ".rtag/store.ts")).then(
+    ({ code, assets }: { code: string; assets: Record<string, { source: string | Buffer }> }) => {
+      const outDir = join(rootDir, "dist/server");
+      outputFileSync(join(outDir, "index.js"), code);
+      Object.entries(assets).forEach(([filename, { source }]) => {
+        outputFileSync(join(outDir, filename), source);
+      });
+      outputFileSync(join(outDir, ".env"), `APP_SECRET=${appSecret}\n`);
+    }
+  );
 } else {
   console.error(`Unknown command: ${command}`);
 }
