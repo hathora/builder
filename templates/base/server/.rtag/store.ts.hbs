@@ -10,6 +10,7 @@ import { existsSync, mkdirSync } from "fs";
 import seedrandom from "seedrandom";
 import { decode, encode } from "@msgpack/msgpack";
 import { SmartBuffer } from "smart-buffer";
+import dotenv from "dotenv";
 import { register } from "./protocol";
 import LogStore from "./logstore";
 import { Context } from "./methods";
@@ -20,6 +21,12 @@ import {
   {{makeRequestName @key}},
   {{/each}}
 } from "./types";
+
+{{#if (env "PROD_BUILD")}}
+dotenv.config();
+{{else}}
+dotenv.config({ path: "../../.env" });
+{{/if}}
 
 let impl = new (await import("../impl")).Impl();
 {{#unless (env "PROD_BUILD")}}

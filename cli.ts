@@ -7,7 +7,6 @@ import { compile, registerHelper } from "handlebars";
 import { join, basename } from "path";
 import shelljs from "shelljs";
 import { z } from "zod";
-import dotenv from "dotenv";
 import { v4 as uuidv4 } from "uuid";
 import { createServer, build } from "vite";
 // @ts-ignore
@@ -234,12 +233,10 @@ const clientDir = join(rootDir, "client");
 const serverDir = join(rootDir, "server");
 const appEntryPath = existsSync(join(clientDir, "index.html")) ? clientDir : join(clientDir, ".rtag");
 
-dotenv.config({ path: join(rootDir, ".env") });
-if (process.env.APP_SECRET === undefined) {
-  process.env.APP_SECRET = uuidv4();
-}
-if (process.env.VITE_APP_ID === undefined) {
-  process.env.VITE_APP_ID = createHash("sha256").update(process.env.APP_SECRET).digest("hex");
+const appSecret = process.env.APP_SECRET ?? uuidv4();
+const appId = createHash("sha256").update(appSecret).digest("hex");
+if (!existsSync(join(rootDir, ".env"))) {
+  outputFileSync(join(rootDir, ".env"), `APP_SECRET=${appSecret}\nVITE_APP_ID=${appId}\n`);
 }
 
 console.log(`Project root: ${rootDir}`);
@@ -264,6 +261,7 @@ if (command === "init") {
 } else if (command === "start") {
   createServer({
     root: appEntryPath,
+    envDir: rootDir,
     clearScreen: false,
     resolve: {
       alias: { vue: "vue/dist/vue.esm.js" },
@@ -274,6 +272,7 @@ if (command === "init") {
 } else if (command === "build") {
   build({
     root: appEntryPath,
+    envDir: rootDir,
     build: {
       outDir: join(rootDir, "dist/client"),
     },
@@ -288,6 +287,7 @@ if (command === "init") {
       Object.entries(assets).forEach(([filename, { source }]) => {
         outputFileSync(join(outDir, filename), source);
       });
+      outputFileSync(join(outDir, ".env"), `APP_SECRET=${appSecret}\n`);
     }
   );
 } else {
