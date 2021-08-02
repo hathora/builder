@@ -270,9 +270,9 @@ if (command === "init") {
   shelljs.cd(join(serverDir, ".rtag"));
   shelljs.exec("node --loader ts-node/esm --experimental-specifier-resolution=node store.ts", { async: true });
 } else if (command === "build") {
+  process.env.VITE_APP_ID = appId;
   build({
     root: appEntryPath,
-    envDir: rootDir,
     build: {
       outDir: join(rootDir, "dist/client"),
     },
