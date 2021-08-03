@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "type": "module",
   "dependencies": {
-    "lit-element": "^2.5.1"
+    "lit": "^2.0.0-rc.2"
   },
   "devDependencies": {
     "typescript": "^4.3.5"
