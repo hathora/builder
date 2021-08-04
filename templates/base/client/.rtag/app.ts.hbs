@@ -336,7 +336,7 @@ const Login = Vue.component("login", {
 {{#each auth}}
 {{#if (eq @key "anonymous")}}
     async handleLoginAnonymous() {
-      const token = await RtagClient.loginAnonymous();
+      const token = await RtagClient.loginAnonymous(import.meta.env.VITE_APP_ID);
       sessionStorage.setItem("user", token);
       const url = this.$route.query.url;
       this.$router.push((Array.isArray(url) ? url[0] : url) || "/");
@@ -344,7 +344,7 @@ const Login = Vue.component("login", {
 {{else if (eq @key "google")}}
     async handleLoginGoogle() {
       const googleUser = await (this as any).$gAuth.signIn();
-      let token = await RtagClient.loginGoogle(googleUser.getAuthResponse().id_token);
+      const token = await RtagClient.loginGoogle(import.meta.env.VITE_APP_ID, googleUser.getAuthResponse().id_token);
       sessionStorage.setItem("user", token);
       const url = this.$route.query.url;
       this.$router.push((Array.isArray(url) ? url[0] : url) || "/");

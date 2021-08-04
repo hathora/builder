@@ -26,13 +26,13 @@ export class RtagClient {
 
 {{#each auth}}
 {{#if (eq @key "anonymous")}}
-  public static async loginAnonymous(): Promise<string> {
-    return (await axios.post(`https://${COORDINATOR_HOST}/login/anonymous`)).data.token;
+  public static async loginAnonymous(appId: string): Promise<string> {
+    return (await axios.post(`https://${COORDINATOR_HOST}/${appId}/login/anonymous`)).data.token;
   }
 
 {{else if (eq @key "google")}}
-  public static async loginGoogle(idToken: string): Promise<string> {
-    return (await axios.post(`https://${COORDINATOR_HOST}/login/google`, { idToken })).data.token;
+  public static async loginGoogle(appId: string, idToken: string): Promise<string> {
+    return (await axios.post(`https://${COORDINATOR_HOST}/${appId}/login/google`, { idToken })).data.token;
   }
 
 {{/if}}

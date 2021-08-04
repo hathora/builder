@@ -1,5 +1,6 @@
 import net from "net";
 import retry from "retry";
+import { encode } from "@msgpack/msgpack";
 import { SmartBuffer } from "smart-buffer";
 import axios from "axios";
 
@@ -15,7 +16,20 @@ export function register(store: Store): Promise<CoordinatorClient> {
     operation.attempt(() => {
       socket.connect(7147, "rtag.dev", () => {
         socket.setKeepAlive(true, 30000);
-        socket.write(process.env.APP_SECRET!);
+        socket.write(
+          encode({
+            appSecret: process.env.APP_SECRET!,
+            authInfo: {
+{{#each auth}}
+{{#if (eq @key "anonymous")}}
+              anonymous: { separator: "{{separator}}" },
+{{else if (eq @key "google")}}
+              google: { clientId: "{{clientId}}" },
+{{/if}}
+{{/each}}
+            },
+          })
+        );
         console.log("Connected to coordinator");
         resolve(new CoordinatorClient(socket));
       });
