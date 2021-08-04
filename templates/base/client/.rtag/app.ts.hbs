@@ -62,7 +62,7 @@ Vue.component("method-form", {
         return;
       }
       try {
-        const res: {{error.typeString}} | undefined = await client[this.method](this.value);
+        const res: {{error.typeString}} | undefined = await this.$root.$data.connection[this.method](this.value);
         if (res !== undefined) {
           this.$toasted.error(JSON.stringify(res));
         } else {
@@ -372,9 +372,9 @@ const Home = Vue.component("home", {
         .connectNew(token, this.value, (state) => {
           Vue.set(this.$root.$data, "value", state);
         })
-        .then(({ stateId }) => {
-          this.$root.$data.isConnected = true;
-          this.$router.push("/state/" + stateId);
+        .then((connection) => {
+          Vue.set(this.$root.$data, "connection", connection);
+          this.$router.push("/state/" + connection.stateId);
         })
         .catch((e) => {
           this.$toasted.error("Error creating new state: " + e.reason);
@@ -389,14 +389,14 @@ const Home = Vue.component("home", {
 const State = Vue.component("state", {
   template: "#state-template",
   created() {
-    if (!this.$root.$data.isConnected) {
+    if (this.$root.$data.connection === undefined) {
       const token = sessionStorage.getItem("user")!;
       client
         .connectExisting(token, this.$route.params.stateId, (state) => {
           Vue.set(this.$root.$data, "value", state);
         })
-        .then(() => {
-          this.$root.$data.isConnected = true;
+        .then((connection) => {
+          Vue.set(this.$root.$data, "connection", connection);
         })
         .catch((e) => {
           this.$toasted.error("Error connecting to state: " + e.reason);
@@ -409,8 +409,8 @@ const State = Vue.component("state", {
     },
   },
   destroyed() {
-    client.disconnect();
-    this.$root.$data.isConnected = false;
+    this.$root.$data.connection?.disconnect();
+    this.$root.$data.connection = undefined;
   },
 });
 
@@ -440,7 +440,7 @@ router.beforeEach((to, from, next) => {
 new Vue({
   el: "#app",
   router,
-  data: { isConnected: false, value: {} },
+  data: { connection: undefined, value: {} },
   methods: {
     username() {
       const token = sessionStorage.getItem("user");

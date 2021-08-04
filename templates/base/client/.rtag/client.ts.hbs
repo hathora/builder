@@ -16,9 +16,6 @@ const COORDINATOR_HOST = "rtag.dev";
 export type StateId = string;
 
 export class RtagClient {
-  private socket: WebSocket | undefined;
-  private callbacks: Record<string, (response: {{error.typeString}} | undefined) => void> = {};
-
   public constructor(private appId: string) {}
 
   public static getUserFromToken(token: string): UserData {
@@ -42,41 +39,66 @@ export class RtagClient {
     token: string,
     request: {{makeRequestName initialize}},
     onStateChange: (state: UserState) => void
-  ): Promise<{ stateId: string }> {
+  ): Promise<RtagConnection> {
     return new Promise((resolve, reject) => {
-      this.socket = this.initClient(reject);
-      this.socket.onopen = () => {
-        this.socket.send(token);
-        this.socket.send(encode(request, { ignoreUndefined: true }));
+      const socket = this.initSocket(reject);
+      socket.onopen = () => {
+        socket.send(token);
+        socket.send(encode(request, { ignoreUndefined: true }));
       };
-      let first = true;
-      this.socket.onmessage = ({ data }) => {
-        if (first) {
-          resolve({ stateId: data as string });
-          first = false;
-          return;
-        }
-        this.handleStateChange(data as ArrayBuffer, onStateChange);
+      socket.onmessage = ({ data }) => {
+        new RtagConnection(data as string, socket, resolve, onStateChange);
       };
     });
   }
 
-  public connectExisting(token: string, stateId: StateId, onStateChange: (state: UserState) => void): Promise<void> {
+  public connectExisting(
+    token: string,
+    stateId: StateId,
+    onStateChange: (state: UserState) => void
+  ): Promise<RtagConnection> {
     return new Promise((resolve, reject) => {
-      this.socket = this.initClient(reject);
-      this.socket.onopen = () => {
-        this.socket.send(token);
-        this.socket.send(stateId);
-      };
-      let first = true;
-      this.socket.onmessage = ({ data }) => {
-        if (first) {
-          resolve();
-          first = false;
-        }
-        this.handleStateChange(data as ArrayBuffer, onStateChange);
+      const socket = this.initSocket(reject);
+      new RtagConnection(stateId, socket, resolve, onStateChange);
+      socket.onopen = () => {
+        socket.send(token);
+        socket.send(stateId);
       };
     });
+  }
+
+  private initSocket(reject: (reason?: any) => void) {
+    const socket = new WebSocket(`wss://${COORDINATOR_HOST}/${this.appId}`);
+    socket.binaryType = "arraybuffer";
+    socket.onerror = reject;
+    socket.onclose = reject;
+    return socket;
+  }
+}
+
+export class RtagConnection {
+  private callbacks: Record<string, (response: string | undefined) => void> = {};
+
+  public constructor(
+    public stateId: StateId,
+    private socket: WebSocket,
+    resolve: (connection: RtagConnection) => void,
+    onStateChange: (state: UserState) => void
+  ) {
+    socket.onmessage = ({ data }) => {
+      resolve(this);
+      const { state, responses } = decode(data as ArrayBuffer) as {
+        state: UserState;
+        responses: Record<string, string | null>;
+      };
+      onStateChange(state);
+      Object.entries(responses).forEach(([msgId, response]) => {
+        if (msgId in this.callbacks) {
+          this.callbacks[msgId](response ?? undefined);
+          delete this.callbacks[msgId];
+        }
+      });
+    };
   }
 
   {{#each methods}}
@@ -89,32 +111,12 @@ export class RtagClient {
   {{/each}}
   public disconnect(): void {
     this.socket?.close();
-  }
-
-  private initClient(reject: (reason?: any) => void) {
-    const socket = new WebSocket(`wss://${COORDINATOR_HOST}/${this.appId}`);
-    socket.binaryType = "arraybuffer";
-    socket.onerror = reject;
-    socket.onclose = reject;
-    return socket;
-  }
-
-  private handleStateChange(data: ArrayBuffer, onStateChange: (state: UserState) => void) {
-    const { state, responses } = decode(data) as { state: UserState; responses: Record<string, string | null> };
-    onStateChange(state);
-    Object.entries(responses).forEach(([msgId, response]) => {
-      if (msgId in this.callbacks) {
-        this.callbacks[msgId](response ?? undefined);
-        delete this.callbacks[msgId];
-      }
-    });
+    this.socket = undefined;
   }
 
   private callMethod(method: Method, request: unknown): Promise<string | undefined> {
     return new Promise((resolve, reject) => {
-      if (this.socket === undefined) {
-        reject("Connection not established");
-      } else if (this.socket.readyState === this.socket.CLOSED) {
+      if (this.socket.readyState === this.socket.CLOSED) {
         reject("Connection is closed");
       } else {
         const msgId = crypto.getRandomValues(new Uint32Array(1));
