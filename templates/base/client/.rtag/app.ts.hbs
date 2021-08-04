@@ -25,6 +25,7 @@ window.customElements.define("{{makePluginName this}}", {{this}});
 {{/if}}
 {{/each}}
 const DELETED = Symbol();
+const client = new RtagClient(import.meta.env.VITE_APP_ID);
 
 function patch(obj: any, val: any) {
   Object.entries(val).forEach(([k, v]) => {
@@ -60,7 +61,6 @@ Vue.component("method-form", {
         this.$toasted.error("Required fields missing");
         return;
       }
-      const client: RtagClient = this.$root.$data.client;
       try {
         const res: {{error.typeString}} | undefined = await client[this.method](this.value);
         if (res !== undefined) {
@@ -336,7 +336,7 @@ const Login = Vue.component("login", {
 {{#each auth}}
 {{#if (eq @key "anonymous")}}
     async handleLoginAnonymous() {
-      const token = await RtagClient.loginAnonymous(import.meta.env.VITE_APP_ID);
+      const token = await client.loginAnonymous();
       sessionStorage.setItem("user", token);
       const url = this.$route.query.url;
       this.$router.push((Array.isArray(url) ? url[0] : url) || "/");
@@ -344,7 +344,7 @@ const Login = Vue.component("login", {
 {{else if (eq @key "google")}}
     async handleLoginGoogle() {
       const googleUser = await (this as any).$gAuth.signIn();
-      const token = await RtagClient.loginGoogle(import.meta.env.VITE_APP_ID, googleUser.getAuthResponse().id_token);
+      const token = await client.loginGoogle(googleUser.getAuthResponse().id_token);
       sessionStorage.setItem("user", token);
       const url = this.$route.query.url;
       this.$router.push((Array.isArray(url) ? url[0] : url) || "/");
@@ -368,11 +368,12 @@ const Home = Vue.component("home", {
         return;
       }
       const token = sessionStorage.getItem("user")!;
-      RtagClient.connectNew(import.meta.env.VITE_APP_ID, token, this.value, (state) => {
-        Vue.set(this.$root.$data, "value", state);
-      })
-        .then(({ stateId, client }) => {
-          Vue.set(this.$root.$data, "client", client);
+      client
+        .connectNew(token, this.value, (state) => {
+          Vue.set(this.$root.$data, "value", state);
+        })
+        .then(({ stateId }) => {
+          this.$root.$data.isConnected = true;
           this.$router.push("/state/" + stateId);
         })
         .catch((e) => {
@@ -388,13 +389,14 @@ const Home = Vue.component("home", {
 const State = Vue.component("state", {
   template: "#state-template",
   created() {
-    if (this.$root.$data.client === undefined) {
+    if (!this.$root.$data.isConnected) {
       const token = sessionStorage.getItem("user")!;
-      RtagClient.connectExisting(import.meta.env.VITE_APP_ID, token, this.$route.params.stateId, (state) => {
-        Vue.set(this.$root.$data, "value", state);
-      })
-        .then((client) => {
-          Vue.set(this.$root.$data, "client", client);
+      client
+        .connectExisting(token, this.$route.params.stateId, (state) => {
+          Vue.set(this.$root.$data, "value", state);
+        })
+        .then(() => {
+          this.$root.$data.isConnected = true;
         })
         .catch((e) => {
           this.$toasted.error("Error connecting to state: " + e.reason);
@@ -407,8 +409,8 @@ const State = Vue.component("state", {
     },
   },
   destroyed() {
-    this.$root.$data.client?.disconnect();
-    this.$root.$data.client = undefined;
+    client.disconnect();
+    this.$root.$data.isConnected = false;
   },
 });
 
@@ -438,7 +440,7 @@ router.beforeEach((to, from, next) => {
 new Vue({
   el: "#app",
   router,
-  data: { client: undefined, value: {} },
+  data: { isConnected: false, value: {} },
   methods: {
     username() {
       const token = sessionStorage.getItem("user");
