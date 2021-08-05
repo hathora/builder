@@ -67,7 +67,7 @@ class Store {
     setInterval(() => {
       changedStates.forEach((stateId) => {
         const responses = userResponses.get(stateId);
-        subscriptions.get(stateId)!.forEach((user, userId) => {
+        subscriptions.get(stateId)?.forEach((user, userId) => {
           sendUpdate(stateId, user, responses?.get(userId) ?? {});
         });
         userResponses.delete(stateId);
