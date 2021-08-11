@@ -1,4 +1,4 @@
-import { Methods, Context, Result } from "./.rtag/methods";
+import { Methods, Context, Response } from "./.rtag/methods";
 import {
   UserData,
   {{#with (lookup types userState)}}
@@ -14,7 +14,7 @@ import {
   {{/each}}
 } from "./.rtag/types";
 
-interface InternalState {}
+type InternalState = {};
 
 export class Impl implements Methods<InternalState> {
   {{initialize}}(user: UserData, ctx: Context, request: {{makeRequestName initialize}}): InternalState {
@@ -22,8 +22,8 @@ export class Impl implements Methods<InternalState> {
   }
   {{#each methods}}
   {{#if (ne @key ../initialize)}}
-  {{@key}}(state: InternalState, user: UserData, ctx: Context, request: {{makeRequestName @key}}): Result {
-    return Result.unmodified("Not implemented");
+  {{@key}}(state: InternalState, user: UserData, ctx: Context, request: {{makeRequestName @key}}): Response {
+    return Response.error("Not implemented");
   }
   {{/if}}
   {{/each}}
@@ -37,9 +37,7 @@ export class Impl implements Methods<InternalState> {
     };
   }
   {{#if tick}}
-  onTick(state: InternalState, ctx: Context, timeDelta: number): Result {
-    return Result.unmodified();
-  }
+  onTick(state: InternalState, ctx: Context, timeDelta: number): void {}
   {{/if}}
 }
 {{#*inline "renderArg"}}
