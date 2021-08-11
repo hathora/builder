@@ -1,10 +1,7 @@
 import { randomBytes } from "crypto";
 {{#unless (env "PROD_BUILD")}}
-import module from "module";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
-import dependencyTree from "dependency-tree";
-import chokidar from "chokidar";
 {{/unless}}
 import { existsSync, mkdirSync } from "fs";
 import seedrandom from "seedrandom";
@@ -13,14 +10,8 @@ import { SmartBuffer } from "smart-buffer";
 import dotenv from "dotenv";
 import { register } from "./protocol";
 import LogStore from "./logstore";
-import { Context } from "./methods";
-import {
-  UserData,
-  Method,
-  {{#each methods}}
-  {{makeRequestName @key}},
-  {{/each}}
-} from "./types";
+import { ImplWrapper as impl } from "./wrapper";
+import { UserData } from "./types";
 
 {{#if (env "PROD_BUILD")}}
 dotenv.config();
@@ -28,25 +19,9 @@ dotenv.config();
 dotenv.config({ path: "../../.env" });
 {{/if}}
 
-let impl = new (await import("../impl")).Impl();
-{{#unless (env "PROD_BUILD")}}
-const deps = dependencyTree.toList({
-  directory: ".",
-  filename: module.createRequire(import.meta.url).resolve("../impl"),
-  filter: (path) => !path.includes(".rtag") && !path.includes("node_modules"),
-});
-chokidar.watch(deps).on("change", async () => {
-  try {
-    impl = new (await import(`../impl.ts#${Math.random()}`)).Impl();
-  } catch (e) {
-    console.error("Failed to reload:", e);
-  }
-});
-{{/unless}}
-
 type StateId = bigint;
 type UserId = string;
-type State = ReturnType<typeof impl.{{initialize}}>;
+type State = ReturnType<typeof impl.initialize>;
 
 {{#if (env "PROD_BUILD")}}
 const dataDir = process.env.DATA_DIR!;
@@ -90,8 +65,8 @@ class Store {
       const currTime = Date.now();
       states.forEach((state, stateId) => {
         const timeDelta = currTime - prevUpdateTime;
-        const result = impl.onTick(state, ctx(state._rng, currTime), timeDelta / 1000);
-        if (result.type === "modified") {
+        impl.onTick(state, ctx(state._rng, currTime), timeDelta / 1000);
+        if (impl.changed()) {
           changedStates.add(stateId);
           log.append(stateId, currTime, new SmartBuffer().writeUInt8(0xfe).writeUInt32LE(timeDelta).toBuffer());
         }
@@ -103,11 +78,10 @@ class Store {
   async newState(stateId: StateId, userId: string, argsBuffer: Buffer) {
     const userBuffer = await coordinator.lookupUser(userId);
     const user = decode(userBuffer) as UserData;
-    const args = decode(argsBuffer) as {{makeRequestName initialize}};
     const seed = randomBytes(8).readBigUInt64LE();
     const rng = seedrandom(seed.toString(36));
     const time = Date.now();
-    const state = impl.{{initialize}}(user, ctx(rng, time), args);
+    const state = impl.initialize(user, ctx(rng, time), argsBuffer);
     states.set(stateId, Object.assign(state, { _rng: rng }));
     subscriptions.set(stateId, new Map([[userId, user]]));
     sendUpdate(stateId, user, {});
@@ -169,9 +143,9 @@ class Store {
     const [method, msgId, argsBuffer] = [reader.readUInt8(), reader.readUInt32LE(), reader.readBuffer()];
     const user = subscriptions.get(stateId)!.get(userId)!;
     const time = Date.now();
-    const result = getResult(state, user, method, ctx(state._rng, time), argsBuffer);
-    if (result !== undefined) {
-      if (result.type === "modified") {
+    const response = impl.getResult(state, user, method, ctx(state._rng, time), argsBuffer);
+    if (response !== undefined) {
+      if (impl.changed()) {
         changedStates.add(stateId);
         log.append(
           stateId,
@@ -185,14 +159,14 @@ class Store {
             .toBuffer()
         );
       }
-      const response = result.type === "modified" ? null : result.error ?? null;
+      const userResponse = response.type === "ok" ? null : response.error ?? null;
       if (!userResponses.has(stateId)) {
-        userResponses.set(stateId, new Map([[userId, { [msgId]: response }]]));
+        userResponses.set(stateId, new Map([[userId, { [msgId]: userResponse }]]));
       } else {
         if (!userResponses.get(stateId)!.has(userId)) {
-          userResponses.get(stateId)!.set(userId, { [msgId]: response });
+          userResponses.get(stateId)!.set(userId, { [msgId]: userResponse });
         } else {
-          userResponses.get(stateId)!.get(userId)![msgId] = response;
+          userResponses.get(stateId)!.get(userId)![msgId] = userResponse;
         }
       }
     }
@@ -200,19 +174,6 @@ class Store {
 }
 
 const coordinator = await register(new Store());
-
-function getResult(state: State, user: UserData, method: Method, ctx: Context, argsBuffer: Buffer) {
-  switch (method) {
-    {{#each methods}}
-    {{#if (ne @key ../initialize)}}
-    case Method.{{uppercase @key}}:
-      return impl.{{@key}}(state, user, ctx, decode(argsBuffer) as {{makeRequestName @key}});
-    {{/if}}
-    {{/each}}
-    default:
-      return undefined;
-  }
-}
 
 function loadState(stateId: StateId) {
   try {
@@ -227,7 +188,7 @@ function loadState(stateId: StateId) {
     const user = decode(userBuffer) as UserData;
     users.set(user.id, user);
     const rng = seedrandom(seed.toString(36));
-    const state = impl.createGame(user, ctx(rng, time), decode(argsBuffer) as {{makeRequestName initialize}});
+    const state = impl.initialize(user, ctx(rng, time), argsBuffer);
 
     for (let i = 1; i < rows.length; i++) {
       const { time, record } = rows[i];
@@ -248,7 +209,7 @@ function loadState(stateId: StateId) {
       {{/if}}
       const userId = reader.readString(reader.readUInt32LE());
       const argsBuffer = reader.readBuffer(reader.readUInt32LE());
-      getResult(state, users.get(userId)!, method, ctx(rng, time), argsBuffer);
+      impl.getResult(state, users.get(userId)!, method, ctx(rng, time), argsBuffer);
     }
 
     return Object.assign(state, { _rng: rng });

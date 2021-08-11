@@ -6,7 +6,7 @@ export enum {{@key}} {
   {{/each}}
 }
 {{else if (eq type "object")}}
-export interface {{@key}} {
+export type {{@key}} = {
   {{#each properties}}
   {{@key}}: {{> renderArg}};
   {{/each}}

@@ -1,4 +1,4 @@
-import { Methods, Context, Result } from "./.rtag/methods";
+import { Methods, Context, Response } from "./.rtag/methods";
 import {
   UserData,
   ICreateGameRequest,
@@ -18,12 +18,12 @@ import {
 import { wordList } from "./words";
 import { shuffle } from "./utils";
 
-interface InternalState {
+type InternalState = {
   players: PlayerInfo[];
   currentTurn: Color;
   cards: Card[];
   turnInfo?: TurnInfo;
-}
+};
 
 export class Impl implements Methods<InternalState> {
   createGame(userData: UserData, ctx: Context, request: ICreateGameRequest): InternalState {
@@ -33,22 +33,22 @@ export class Impl implements Methods<InternalState> {
       cards: [],
     };
   }
-  joinGame(state: InternalState, userData: UserData, ctx: Context, request: IJoinGameRequest): Result {
+  joinGame(state: InternalState, userData: UserData, ctx: Context, request: IJoinGameRequest): Response {
     if (getGameStatus(state.cards) !== GameStatus.NOT_STARTED) {
-      return Result.unmodified("Game already started");
+      return Response.error("Game already started");
     }
     if (state.players.find((player) => player.name === userData.name)) {
-      return Result.unmodified("Already joined");
+      return Response.error("Already joined");
     }
     state.players.push(createPlayer(userData.name));
-    return Result.modified();
+    return Response.ok();
   }
-  startGame(state: InternalState, userData: UserData, ctx: Context, request: IStartGameRequest): Result {
+  startGame(state: InternalState, userData: UserData, ctx: Context, request: IStartGameRequest): Response {
     if (getGameStatus(state.cards) === GameStatus.IN_PROGRESS) {
-      return Result.unmodified("Game is in progress");
+      return Response.error("Game is in progress");
     }
     if (state.players.length < 4) {
-      return Result.unmodified("Not enough players joined");
+      return Response.error("Not enough players joined");
     }
 
     // set up cards
@@ -69,48 +69,48 @@ export class Impl implements Methods<InternalState> {
     state.players[0].isSpymaster = true;
     state.players[state.players.length - 1].isSpymaster = true;
     state.currentTurn = Color.RED;
-    return Result.modified();
+    return Response.ok();
   }
-  giveClue(state: InternalState, userData: UserData, ctx: Context, request: IGiveClueRequest): Result {
+  giveClue(state: InternalState, userData: UserData, ctx: Context, request: IGiveClueRequest): Response {
     if (getGameStatus(state.cards) !== GameStatus.IN_PROGRESS) {
-      return Result.unmodified("Game is over");
+      return Response.error("Game is over");
     }
     const player = state.players.find((p) => p.name === userData.name);
     if (player === undefined) {
-      return Result.unmodified("Invalid player");
+      return Response.error("Invalid player");
     }
     if (!player.isSpymaster) {
-      return Result.unmodified("Only spymaster can give clue");
+      return Response.error("Only spymaster can give clue");
     }
     if (player.team !== state.currentTurn) {
-      return Result.unmodified("Not your turn");
+      return Response.error("Not your turn");
     }
     state.turnInfo = { hint: request.hint, amount: request.amount, guessed: 0 };
-    return Result.modified();
+    return Response.ok();
   }
-  selectCard(state: InternalState, userData: UserData, ctx: Context, request: ISelectCardRequest): Result {
+  selectCard(state: InternalState, userData: UserData, ctx: Context, request: ISelectCardRequest): Response {
     if (getGameStatus(state.cards) !== GameStatus.IN_PROGRESS) {
-      return Result.unmodified("Game is over");
+      return Response.error("Game is over");
     }
     const player = state.players.find((p) => p.name === userData.name);
     if (player === undefined) {
-      return Result.unmodified("Invalid player");
+      return Response.error("Invalid player");
     }
     if (player.isSpymaster) {
-      return Result.unmodified("Spymaster cannot select card");
+      return Response.error("Spymaster cannot select card");
     }
     if (player.team !== state.currentTurn) {
-      return Result.unmodified("Not your turn");
+      return Response.error("Not your turn");
     }
     if (state.turnInfo === undefined) {
-      return Result.unmodified("Spymaster has not yet given clue");
+      return Response.error("Spymaster has not yet given clue");
     }
     const selectedCard = state.cards.find((card) => card.word === request.word);
     if (selectedCard === undefined) {
-      return Result.unmodified("Invalid card selection");
+      return Response.error("Invalid card selection");
     }
     if (selectedCard.selectedBy !== undefined) {
-      return Result.unmodified("Card already selected");
+      return Response.error("Card already selected");
     }
     selectedCard.selectedBy = player.team;
     state.turnInfo.guessed += 1;
@@ -118,28 +118,28 @@ export class Impl implements Methods<InternalState> {
       state.currentTurn = nextTurn(state.currentTurn);
       state.turnInfo = undefined;
     }
-    return Result.modified();
+    return Response.ok();
   }
-  endTurn(state: InternalState, userData: UserData, ctx: Context, request: IEndTurnRequest): Result {
+  endTurn(state: InternalState, userData: UserData, ctx: Context, request: IEndTurnRequest): Response {
     if (getGameStatus(state.cards) !== GameStatus.IN_PROGRESS) {
-      return Result.unmodified("Game is over");
+      return Response.error("Game is over");
     }
     const player = state.players.find((p) => p.name === userData.name);
     if (player === undefined) {
-      return Result.unmodified("Invalid player");
+      return Response.error("Invalid player");
     }
     if (player.isSpymaster) {
-      return Result.unmodified("Spymaster cannot end turn");
+      return Response.error("Spymaster cannot end turn");
     }
     if (player.team !== state.currentTurn) {
-      return Result.unmodified("Not your turn");
+      return Response.error("Not your turn");
     }
     if (state.turnInfo === undefined) {
-      return Result.unmodified("Spymaster has not yet given clue");
+      return Response.error("Spymaster has not yet given clue");
     }
     state.currentTurn = nextTurn(state.currentTurn);
     state.turnInfo = undefined;
-    return Result.modified();
+    return Response.ok();
   }
   getUserState(state: InternalState, userData: UserData): PlayerState {
     const player = state.players.find((p) => p.name === userData.name);

@@ -1,4 +1,4 @@
-import { Methods, Context, Result } from "./.rtag/methods";
+import { Methods, Context, Response } from "./.rtag/methods";
 import {
   UserData,
   PlayerState,
@@ -17,7 +17,7 @@ import {
 } from "./.rtag/types";
 import { shuffle } from "./utils";
 
-interface InternalQuestAttempt {
+type InternalQuestAttempt = {
   roundNumber: number;
   attemptNumber: number;
   numPlayers: number;
@@ -25,14 +25,14 @@ interface InternalQuestAttempt {
   members: Username[];
   votes: Map<Username, Vote>;
   results: Map<Username, Vote>;
-}
+};
 
-interface InternalState {
+type InternalState = {
   creator: Username;
   players: Username[];
   roles: Map<Username, Role>;
   quests: InternalQuestAttempt[];
-}
+};
 
 const ROLES_INFO: Map<Role, { isEvil: boolean; knownRoles: Set<Role> }> = new Map([
   [Role.MERLIN, { isEvil: false, knownRoles: new Set([Role.MORGANA, Role.ASSASSIN, Role.MINION, Role.OBERON]) }],
@@ -63,32 +63,32 @@ export class Impl implements Methods<InternalState> {
       quests: [],
     };
   }
-  joinGame(state: InternalState, user: UserData, ctx: Context, request: IJoinGameRequest): Result {
+  joinGame(state: InternalState, user: UserData, ctx: Context, request: IJoinGameRequest): Response {
     if (state.players.find((player) => player === user.name) !== undefined) {
-      return Result.unmodified("Already joined");
+      return Response.error("Already joined");
     }
     if (state.roles.size > 0) {
-      return Result.unmodified("Game already started");
+      return Response.error("Game already started");
     }
     state.players.push(user.name);
-    return Result.modified();
+    return Response.ok();
   }
-  startGame(state: InternalState, user: UserData, ctx: Context, request: IStartGameRequest): Result {
+  startGame(state: InternalState, user: UserData, ctx: Context, request: IStartGameRequest): Response {
     if (!QUEST_CONFIGURATIONS.has(state.players.length)) {
-      return Result.unmodified("Invalid number of players");
+      return Response.error("Invalid number of players");
     }
     if (request.roleList.length !== state.players.length) {
-      return Result.unmodified("Wrong number of roles");
+      return Response.error("Wrong number of roles");
     }
     if (request.leader !== undefined && !state.players.includes(request.leader)) {
-      return Result.unmodified("Invalid leader");
+      return Response.error("Invalid leader");
     }
     if (request.playerOrder !== undefined && request.playerOrder.length > 0) {
       if (
         request.playerOrder.length !== state.players.length ||
         !state.players.every((player) => request.playerOrder!.includes(player))
       ) {
-        return Result.unmodified("Invalid player order");
+        return Response.error("Invalid player order");
       }
       state.players = request.playerOrder;
     } else {
@@ -97,35 +97,35 @@ export class Impl implements Methods<InternalState> {
     state.roles = new Map(shuffle(ctx.randInt, request.roleList).map((role, i) => [state.players[i], role]));
     const leader = request.leader ?? state.players[ctx.randInt(state.players.length)];
     state.quests.push(createQuest(1, 1, state.players.length, leader));
-    return Result.modified();
+    return Response.ok();
   }
-  proposeQuest(state: InternalState, user: UserData, ctx: Context, request: IProposeQuestRequest): Result {
+  proposeQuest(state: InternalState, user: UserData, ctx: Context, request: IProposeQuestRequest): Response {
     const quest = state.quests.find((q) => questId(q) === request.questId)!;
     if (quest === undefined) {
-      return Result.unmodified("Invalid questId");
+      return Response.error("Invalid questId");
     }
     if (quest.members.length > 0) {
-      return Result.unmodified("Quest already in progress");
+      return Response.error("Quest already in progress");
     }
     if (quest.leader !== user.name) {
-      return Result.unmodified("Not quest leader");
+      return Response.error("Not quest leader");
     }
     if (request.proposedMembers.length !== questSize(quest)) {
-      return Result.unmodified("Wrong quest size");
+      return Response.error("Wrong quest size");
     }
     if (!request.proposedMembers.every((member) => state.players.includes(member))) {
-      return Result.unmodified("Invalid members");
+      return Response.error("Invalid members");
     }
     quest.members = request.proposedMembers;
-    return Result.modified();
+    return Response.ok();
   }
-  voteForProposal(state: InternalState, user: UserData, ctx: Context, request: IVoteForProposalRequest): Result {
+  voteForProposal(state: InternalState, user: UserData, ctx: Context, request: IVoteForProposalRequest): Response {
     const quest = state.quests.find((q) => questId(q) === request.questId);
     if (quest === undefined) {
-      return Result.unmodified("Invalid questId");
+      return Response.error("Invalid questId");
     }
     if (questStatus(quest) !== QuestStatus.VOTING_FOR_PROPOSAL) {
-      return Result.unmodified("Not voting for proposal");
+      return Response.error("Not voting for proposal");
     }
     quest.votes.set(user.name, request.vote);
     if (questStatus(quest) === QuestStatus.PROPOSAL_REJECTED && quest.attemptNumber < 5) {
@@ -138,18 +138,18 @@ export class Impl implements Methods<InternalState> {
         )
       );
     }
-    return Result.modified();
+    return Response.ok();
   }
-  voteInQuest(state: InternalState, user: UserData, ctx: Context, request: IVoteInQuestRequest): Result {
+  voteInQuest(state: InternalState, user: UserData, ctx: Context, request: IVoteInQuestRequest): Response {
     const quest = state.quests.find((q) => questId(q) === request.questId);
     if (quest === undefined) {
-      return Result.unmodified("Invalid questId");
+      return Response.error("Invalid questId");
     }
     if (questStatus(quest) !== QuestStatus.VOTING_IN_QUEST) {
-      return Result.unmodified("Not voting in quest");
+      return Response.error("Not voting in quest");
     }
     if (!quest.members.includes(user.name)) {
-      return Result.unmodified("Not participating in quest");
+      return Response.error("Not participating in quest");
     }
     quest.results.set(user.name, request.vote);
     if (
@@ -161,7 +161,7 @@ export class Impl implements Methods<InternalState> {
         createQuest(quest.roundNumber + 1, 1, quest.numPlayers, getNextLeader(quest.leader, state.players))
       );
     }
-    return Result.modified();
+    return Response.ok();
   }
   getUserState(state: InternalState, user: UserData): PlayerState {
     const role = state.roles.get(user.name);

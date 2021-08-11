@@ -1,4 +1,4 @@
-import { Methods, Context, Result } from "./.rtag/methods";
+import { Methods, Context, Response } from "./.rtag/methods";
 import {
   UserData,
   PlayerState,
@@ -14,15 +14,15 @@ import {
 import { shuffle } from "./utils";
 import { Cards, createDeck, drawCardsFromDeck, findHighestHands } from "@pairjacks/poker-cards";
 
-interface InternalPlayerInfo {
+type InternalPlayerInfo = {
   name: Username;
   chipCount: number;
   chipsInPot: number;
   cards: Cards;
   status: PlayerStatus;
-}
+};
 
-interface InternalState {
+type InternalState = {
   players: InternalPlayerInfo[];
   dealerIdx: number;
   activePlayerIdx: number;
@@ -30,7 +30,7 @@ interface InternalState {
   startingChips: number;
   smallBlindAmt: number;
   deck: Cards;
-}
+};
 
 export class Impl implements Methods<InternalState> {
   createGame(user: UserData, ctx: Context, request: ICreateGameRequest): InternalState {
@@ -44,19 +44,19 @@ export class Impl implements Methods<InternalState> {
       deck: [],
     };
   }
-  joinGame(state: InternalState, user: UserData, ctx: Context, request: IJoinGameRequest): Result {
+  joinGame(state: InternalState, user: UserData, ctx: Context, request: IJoinGameRequest): Response {
     if (state.players.find((p) => p.name === user.name) !== undefined) {
-      return Result.unmodified("Already joined");
+      return Response.error("Already joined");
     }
     state.players.push(createPlayer(user.name, state.startingChips));
-    return Result.modified();
+    return Response.ok();
   }
-  startRound(state: InternalState, user: UserData, ctx: Context, request: IStartRoundRequest): Result {
+  startRound(state: InternalState, user: UserData, ctx: Context, request: IStartRoundRequest): Response {
     if (state.players.length < 2) {
-      return Result.unmodified("At least 2 players required");
+      return Response.error("At least 2 players required");
     }
     if (state.players.some((p) => p.chipsInPot > 0)) {
-      return Result.unmodified("Round in progress");
+      return Response.error("Round in progress");
     }
     state.dealerIdx = (state.dealerIdx + 1) % state.players.length;
     state.revealedCards = [];
@@ -70,43 +70,43 @@ export class Impl implements Methods<InternalState> {
       player.cards = cards;
       state.deck = deck;
     });
-    return Result.modified();
+    return Response.ok();
   }
-  fold(state: InternalState, user: UserData, ctx: Context, request: IFoldRequest): Result {
+  fold(state: InternalState, user: UserData, ctx: Context, request: IFoldRequest): Response {
     const player = state.players[state.activePlayerIdx];
     if (player.name !== user.name || player.status !== PlayerStatus.WAITING) {
-      return Result.unmodified("Not your turn");
+      return Response.error("Not your turn");
     }
     player.status = PlayerStatus.FOLDED;
     advanceRound(state);
-    return Result.modified();
+    return Response.ok();
   }
-  call(state: InternalState, user: UserData, ctx: Context, request: ICallRequest): Result {
+  call(state: InternalState, user: UserData, ctx: Context, request: ICallRequest): Response {
     const player = state.players[state.activePlayerIdx];
     if (player.name !== user.name || player.status !== PlayerStatus.WAITING) {
-      return Result.unmodified("Not your turn");
+      return Response.error("Not your turn");
     }
     const betAmount = getAmountToCall(state.players, player);
     if (betAmount > player.chipCount) {
-      return Result.unmodified("Not enough chips");
+      return Response.error("Not enough chips");
     }
     makeBet(player, betAmount);
     advanceRound(state);
-    return Result.modified();
+    return Response.ok();
   }
-  raise(state: InternalState, user: UserData, ctx: Context, request: IRaiseRequest): Result {
+  raise(state: InternalState, user: UserData, ctx: Context, request: IRaiseRequest): Response {
     const player = state.players[state.activePlayerIdx];
     if (player.name !== user.name || player.status !== PlayerStatus.WAITING) {
-      return Result.unmodified("Not your turn");
+      return Response.error("Not your turn");
     }
     const betAmount = getAmountToCall(state.players, player) + request.amount;
     if (betAmount > player.chipCount) {
-      return Result.unmodified("Not enough chips");
+      return Response.error("Not enough chips");
     }
     state.players.filter((p) => p.status === PlayerStatus.PLAYED).forEach((p) => (p.status = PlayerStatus.WAITING));
     makeBet(player, betAmount);
     advanceRound(state);
-    return Result.modified();
+    return Response.ok();
   }
   getUserState(state: InternalState, user: UserData): PlayerState {
     const showdown =
