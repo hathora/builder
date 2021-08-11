@@ -1,0 +1,64 @@
+import module from "module";
+import dependencyTree from "dependency-tree";
+import chokidar from "chokidar";
+import onChange from "on-change";
+import { decode } from "@msgpack/msgpack";
+import { Context, Response } from "./methods";
+import {
+  UserData,
+  Method,
+  {{#each methods}}
+  {{makeRequestName @key}},
+  {{/each}}
+} from "./types";
+
+let impl = new (await import("../impl")).Impl();
+const deps = dependencyTree.toList({
+  directory: ".",
+  filename: module.createRequire(import.meta.url).resolve("../impl"),
+  filter: (path) => !path.includes(".rtag") && !path.includes("node_modules"),
+});
+chokidar.watch(deps).on("change", async () => {
+  try {
+    impl = new (await import(`../impl.ts#${Math.random()}`)).Impl();
+  } catch (e) {
+    console.error("Failed to reload:", e);
+  }
+});
+let changed = false;
+
+type State = ReturnType<typeof impl.createGame>;
+
+export const ImplWrapper = {
+  initialize(user: UserData, ctx: Context, argsBuffer: Buffer): State {
+    const state = impl.createGame(user, ctx, decode(argsBuffer) as ICreateGameRequest);
+    return onChange(state, () => {
+      changed = true;
+    });
+  },
+  getResult(state: State, user: UserData, method: Method, ctx: Context, argsBuffer: Buffer): Response | undefined {
+    changed = false;
+    switch (method) {
+      {{#each methods}}
+      {{#if (ne @key ../initialize)}}
+      case Method.{{uppercase @key}}:
+        return impl.{{@key}}(state, user, ctx, decode(argsBuffer) as {{makeRequestName @key}});
+      {{/if}}
+      {{/each}}
+      default:
+        return undefined;
+    }
+  },
+  {{#if tick}}
+  onTick(state: State, ctx: Context, timeDelta: number): void {
+    changed = false;
+    impl.onTick(state, ctx, timeDelta);
+  },
+  {{/if}}
+  getUserState(state: State, user: UserData) {
+    return impl.getUserState(state, user);
+  },
+  changed(): boolean {
+    return changed;
+  },
+};

@@ -12,34 +12,44 @@ export interface Context {
   time(): number;
 }
 
-export interface ModifiedResult {
-  type: "modified";
+export interface OkResponse {
+  type: "ok";
 }
-export interface UnmodifiedResult {
-  type: "unmodified";
+export interface ErrorResponse {
+  type: "error";
   error?: {{error.typeString}};
 }
-export type Result = ModifiedResult | UnmodifiedResult;
-export const Result: { modified: () => ModifiedResult; unmodified: (error?: {{error.typeString}}) => UnmodifiedResult } = {
-  modified: () => ({
-    type: "modified",
+export type Response = OkResponse | ErrorResponse;
+export const Response: { ok: () => OkResponse; error: (error?: {{error.typeString}}) => ErrorResponse } = {
+  ok: () => ({
+    type: "ok",
   }),
-  unmodified: (error?: {{error.typeString}}) => ({
-    type: "unmodified",
+  error: (error?: {{error.typeString}}) => ({
+    type: "error",
     error,
   }),
 };
 
-export interface Methods<T> {
+type State =
+  | undefined
+  | string
+  | number
+  | boolean
+  | readonly State[]
+  | { [k: string]: State }
+  | Set<State>
+  | Map<State, State>
+  | (object & { _modCnt: number });
+export interface Methods<T extends State> {
   {{#each methods}}
   {{#if (eq @key ../initialize)}}
   {{../initialize}}(user: UserData, ctx: Context, request: {{makeRequestName @key}}): T;
   {{else}}
-  {{@key}}(state: T, user: UserData, ctx: Context, request: {{makeRequestName @key}}): Result;
+  {{@key}}(state: T, user: UserData, ctx: Context, request: {{makeRequestName @key}}): Response;
   {{/if}}
   {{/each}}
   getUserState(state: T, user: UserData): UserState;
   {{#if tick}}
-  onTick(state: T, ctx: Context, timeDelta: number): Result;
+  onTick(state: T, ctx: Context, timeDelta: number): void;
   {{/if}}
 }
