@@ -3,9 +3,10 @@ import dependencyTree from "dependency-tree";
 import chokidar from "chokidar";
 import onChange from "on-change";
 import { decode } from "@msgpack/msgpack";
-import { Context, Response } from "./methods";
+import { Context } from "./methods";
 import {
   UserData,
+  Response,
   Method,
   {{#each methods}}
   {{makeRequestName @key}},

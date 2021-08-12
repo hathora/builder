@@ -29,6 +29,23 @@ export enum Method {
   {{/if}}
   {{/each}}
 }
+export interface OkResponse {
+  type: "ok";
+}
+export interface ErrorResponse {
+  type: "error";
+  error: {{error.typeString}};
+}
+export type Response = OkResponse | ErrorResponse;
+export const Response: { ok: () => OkResponse; error: (error: {{error.typeString}}) => ErrorResponse } = {
+  ok: () => ({
+    type: "ok",
+  }),
+  error: (error: {{error.typeString}}) => ({
+    type: "error",
+    error,
+  }),
+};
 {{#each auth}}
 export interface {{capitalize @key}}UserData {
   type: "{{@key}}";

@@ -2,11 +2,11 @@ import { LitElement, html, css } from "lit";
 import { property } from "lit/decorators.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { Card, Cards, Color } from "../.rtag/types";
-import { RtagClient } from "../.rtag/client";
+import { RtagConnection } from "../.rtag/client";
 
 export default class CardsComponent extends LitElement {
   @property() val!: Cards;
-  @property() client!: RtagClient;
+  @property() client!: RtagConnection;
 
   render() {
     return html`<div class="grid-container">${this.val.map((card) => this.renderCard(card))}</div>`;
@@ -23,8 +23,8 @@ export default class CardsComponent extends LitElement {
       })}
       @click="${async () => {
         const res = await this.client.selectCard({ word: card.word });
-        if (res !== undefined) {
-          this.dispatchEvent(new CustomEvent("error", { detail: res }));
+        if (res.type === "error") {
+          this.dispatchEvent(new CustomEvent("error", { detail: res.error }));
         }
       }}"
     >

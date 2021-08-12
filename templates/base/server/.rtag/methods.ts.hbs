@@ -1,5 +1,6 @@
 import {
   UserData,
+  Response,
   {{userState}} as UserState,
   {{#each methods}}
   {{makeRequestName @key}},
@@ -11,24 +12,6 @@ export interface Context {
   randInt(limit?: number): number;
   time(): number;
 }
-
-export interface OkResponse {
-  type: "ok";
-}
-export interface ErrorResponse {
-  type: "error";
-  error?: {{error.typeString}};
-}
-export type Response = OkResponse | ErrorResponse;
-export const Response: { ok: () => OkResponse; error: (error?: {{error.typeString}}) => ErrorResponse } = {
-  ok: () => ({
-    type: "ok",
-  }),
-  error: (error?: {{error.typeString}}) => ({
-    type: "error",
-    error,
-  }),
-};
 
 type State =
   | undefined
