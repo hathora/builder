@@ -1,6 +1,8 @@
+{{#unless (env "PROD_BUILD")}}
 import module from "module";
 import dependencyTree from "dependency-tree";
 import chokidar from "chokidar";
+{{/unless}}
 import onChange from "on-change";
 import { decode } from "@msgpack/msgpack";
 import { Context } from "./methods";
@@ -14,6 +16,7 @@ import {
 } from "./types";
 
 let impl = new (await import("../impl")).Impl();
+{{#unless (env "PROD_BUILD")}}
 const deps = dependencyTree.toList({
   directory: ".",
   filename: module.createRequire(import.meta.url).resolve("../impl"),
@@ -26,13 +29,14 @@ chokidar.watch(deps).on("change", async () => {
     console.error("Failed to reload:", e);
   }
 });
+{{/unless}}
 let changed = false;
 
-type State = ReturnType<typeof impl.createGame>;
+type State = ReturnType<typeof impl.{{initialize}}>;
 
 export const ImplWrapper = {
   initialize(user: UserData, ctx: Context, argsBuffer: Buffer): State {
-    const state = impl.createGame(user, ctx, decode(argsBuffer) as ICreateGameRequest);
+    const state = impl.createGame(user, ctx, decode(argsBuffer) as {{makeRequestName initialize}});
     return onChange(state, () => {
       changed = true;
     });
