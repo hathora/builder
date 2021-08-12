@@ -11,7 +11,7 @@ import dotenv from "dotenv";
 import { register } from "./protocol";
 import LogStore from "./logstore";
 import { ImplWrapper as impl } from "./wrapper";
-import { Response, UserData } from "./types";
+import { UserData, Response } from "./types";
 
 {{#if (env "PROD_BUILD")}}
 dotenv.config();
