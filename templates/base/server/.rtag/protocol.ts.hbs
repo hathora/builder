@@ -73,7 +73,7 @@ interface Store {
 class CoordinatorClient {
   constructor(private socket: net.Socket) {}
 
-  public onNewUserState(stateId: bigint, userId: string, data: Buffer) {
+  public onStateUpdate(stateId: bigint, userId: string, data: Buffer) {
     const buf = new SmartBuffer();
     buf.writeBigUInt64LE(stateId);
     buf.writeUInt32LE(userId.length);

@@ -43,7 +43,7 @@ class Store {
       changedStates.forEach((stateId) => {
         const responses = userResponses.get(stateId);
         subscriptions.get(stateId)?.forEach((user, userId) => {
-          sendUpdate(stateId, user, responses?.get(userId) ?? {});
+          sendUpdate(stateId, states.get(stateId)!, user, responses?.get(userId) ?? {});
         });
         userResponses.delete(stateId);
       });
@@ -51,7 +51,7 @@ class Store {
         responses.forEach((response, userId) => {
           const user = subscriptions.get(stateId)?.get(userId);
           if (user !== undefined) {
-            sendUpdate(stateId, user, response);
+            sendUpdate(stateId, null, user, response);
           }
         });
       });
@@ -84,7 +84,7 @@ class Store {
     const state = impl.initialize(user, ctx(rng, time), argsBuffer);
     states.set(stateId, Object.assign(state, { _rng: rng }));
     subscriptions.set(stateId, new Map([[userId, user]]));
-    sendUpdate(stateId, user, {});
+    sendUpdate(stateId, state, user, {});
     log.append(
       stateId,
       time,
@@ -101,7 +101,7 @@ class Store {
     if (!states.has(stateId)) {
       const state = loadState(stateId);
       if (state === undefined) {
-        coordinator.onNewUserState(stateId, userId, Buffer.alloc(0));
+        coordinator.onStateUpdate(stateId, userId, Buffer.alloc(0));
         return;
       }
       states.set(stateId, state);
@@ -113,7 +113,7 @@ class Store {
     } else {
       subscriptions.get(stateId)!.set(userId, user);
     }
-    sendUpdate(stateId, user, {});
+    sendUpdate(stateId, states.get(stateId)!, user, {});
     log.append(
       stateId,
       Date.now(),
@@ -218,10 +218,10 @@ function loadState(stateId: StateId) {
   }
 }
 
-function sendUpdate(stateId: StateId, user: UserData, responses: Record<string, string | null>) {
-  const state = impl.getUserState(states.get(stateId)!, user);
-  const data = Buffer.from(encode({ state, responses }, { ignoreUndefined: true }));
-  return coordinator.onNewUserState(stateId, user.id, data);
+function sendUpdate(stateId: StateId, state: State | null, user: UserData, responses: Record<number, {{error.typeString}} | null>) {
+  const userState = state === null ? null : impl.getUserState(state, user);
+  const data = Buffer.from(encode({ state: userState, responses }, { ignoreUndefined: true }));
+  return coordinator.onStateUpdate(stateId, user.id, data);
 }
 
 function ctx(rng: ReturnType<seedrandom>, time: number) {

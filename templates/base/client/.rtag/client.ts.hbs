@@ -88,10 +88,12 @@ export class RtagConnection {
     socket.onmessage = ({ data }) => {
       resolve(this);
       const { state, responses } = decode(data as ArrayBuffer) as {
-        state: UserState;
+        state: UserState | null;
         responses: Record<string, string | null>;
       };
-      onStateChange(state);
+      if (state !== null) {
+        onStateChange(state);
+      }
       Object.entries(responses).forEach(([msgId, response]) => {
         if (msgId in this.callbacks) {
           this.callbacks[msgId](response ?? undefined);
