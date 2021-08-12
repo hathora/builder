@@ -4,6 +4,7 @@ import jwtDecode from "jwt-decode";
 import { decode, encode } from "@msgpack/msgpack";
 import {
   UserData,
+  Response,
   {{userState}} as UserState,
   Method,
   {{#each methods}}
@@ -77,7 +78,7 @@ export class RtagClient {
 }
 
 export class RtagConnection {
-  private callbacks: Record<string, (response: string | undefined) => void> = {};
+  private callbacks: Record<string, (response: Response) => void> = {};
 
   public constructor(
     public stateId: StateId,
@@ -89,14 +90,14 @@ export class RtagConnection {
       resolve(this);
       const { state, responses } = decode(data as ArrayBuffer) as {
         state: UserState | null;
-        responses: Record<string, string | null>;
+        responses: Record<string, Response>;
       };
       if (state !== null) {
         onStateChange(state);
       }
       Object.entries(responses).forEach(([msgId, response]) => {
         if (msgId in this.callbacks) {
-          this.callbacks[msgId](response ?? undefined);
+          this.callbacks[msgId](response);
           delete this.callbacks[msgId];
         }
       });
@@ -105,7 +106,7 @@ export class RtagConnection {
 
   {{#each methods}}
   {{#if (ne @key ../initialize)}}
-  public {{@key}}(request: {{makeRequestName @key}}): Promise<{{../error.typeString}} | undefined> {
+  public {{@key}}(request: {{makeRequestName @key}}): Promise<Response> {
     return this.callMethod(Method.{{uppercase @key}}, request);
   }
 
@@ -115,7 +116,7 @@ export class RtagConnection {
     this.socket.close();
   }
 
-  private callMethod(method: Method, request: unknown): Promise<string | undefined> {
+  private callMethod(method: Method, request: unknown): Promise<Response> {
     return new Promise((resolve, reject) => {
       if (this.socket.readyState === this.socket.CLOSED) {
         reject("Connection is closed");

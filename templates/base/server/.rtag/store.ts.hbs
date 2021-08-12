@@ -11,7 +11,7 @@ import dotenv from "dotenv";
 import { register } from "./protocol";
 import LogStore from "./logstore";
 import { ImplWrapper as impl } from "./wrapper";
-import { UserData } from "./types";
+import { UserData, Response } from "./types";
 
 {{#if (env "PROD_BUILD")}}
 dotenv.config();
@@ -35,7 +35,7 @@ if (!existsSync(dataDir)) {
 const log = new LogStore(dataDir);
 const stateInfo: Map<StateId, StateInfo> = new Map();
 const changedStates: Set<StateId> = new Set();
-const userResponses: Map<StateId, Map<UserId, Record<number, {{error.typeString}} | null>>> = new Map();
+const userResponses: Map<StateId, Map<UserId, Record<number, Response>>> = new Map();
 
 class Store {
   constructor() {
@@ -154,14 +154,13 @@ class Store {
             .toBuffer()
         );
       }
-      const userResponse = response.type === "ok" ? null : response.error ?? null;
       if (!userResponses.has(stateId)) {
-        userResponses.set(stateId, new Map([[userId, { [msgId]: userResponse }]]));
+        userResponses.set(stateId, new Map([[userId, { [msgId]: response }]]));
       } else {
         if (!userResponses.get(stateId)!.has(userId)) {
-          userResponses.get(stateId)!.set(userId, { [msgId]: userResponse });
+          userResponses.get(stateId)!.set(userId, { [msgId]: response });
         } else {
-          userResponses.get(stateId)!.get(userId)![msgId] = userResponse;
+          userResponses.get(stateId)!.get(userId)![msgId] = response;
         }
       }
     }
@@ -213,7 +212,7 @@ function loadState(stateId: StateId) {
   }
 }
 
-function sendUpdate(stateId: StateId, state: State | null, user: UserData, responses: Record<number, {{error.typeString}} | null>) {
+function sendUpdate(stateId: StateId, state: State | null, user: UserData, responses: Record<number, Response>) {
   const userState = state === null ? null : impl.getUserState(state, user);
   const data = Buffer.from(encode({ state: userState, responses }, { ignoreUndefined: true }));
   return coordinator.onStateUpdate(stateId, user.id, data);

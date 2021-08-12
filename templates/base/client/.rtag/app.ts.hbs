@@ -62,9 +62,9 @@ Vue.component("method-form", {
         return;
       }
       try {
-        const res: {{error.typeString}} | undefined = await this.$root.$data.connection[this.method](this.value);
-        if (res !== undefined) {
-          this.$toasted.error(JSON.stringify(res));
+        const res: Types.Response = await this.$root.$data.connection[this.method](this.value);
+        if (res.type === "error") {
+          this.$toasted.error(JSON.stringify(res.error));
         } else {
           this.value = {};
           this.hack = false;
@@ -309,7 +309,7 @@ Vue.component("plugin-display", {
       domProps: {
         val: this.value,
         state: this.$root.$data.value,
-        client: this.$root.$data.client,
+        client: this.$root.$data.connection,
       },
       on: {
         error: (e: CustomEvent) => this.$toasted.error(e.detail),
