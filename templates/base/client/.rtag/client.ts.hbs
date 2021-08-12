@@ -110,8 +110,7 @@ export class RtagConnection {
   {{/if}}
   {{/each}}
   public disconnect(): void {
-    this.socket?.close();
-    this.socket = undefined;
+    this.socket.close();
   }
 
   private callMethod(method: Method, request: unknown): Promise<string | undefined> {
