@@ -10,16 +10,16 @@ export type {{@key}} = {
   {{#each properties}}
   {{@key}}: {{> renderArg}};
   {{/each}}
-}
+};
 {{else}}
 export type {{@key}} = {{> renderArg}};
 {{/if}}
 {{/each}}
 {{#each methods}}
 export interface {{makeRequestName @key}} {
-{{#each properties}}
+  {{#each properties}}
   {{@key}}: {{> renderArg}};
-{{/each}}
+  {{/each}}
 }
 {{/each}}
 {{#*inline "renderArg"}}
