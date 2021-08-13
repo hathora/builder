@@ -1,7 +1,6 @@
 import { Methods, Context } from "./.rtag/methods";
+import { UserData, Response } from "./.rtag/base";
 import {
-  UserData,
-  Response,
   PlayerState,
   ICreateGameRequest,
   IJoinGameRequest,

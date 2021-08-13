@@ -2,11 +2,9 @@ import WebSocket from "isomorphic-ws";
 import axios from "axios";
 import jwtDecode from "jwt-decode";
 import { decode, encode } from "@msgpack/msgpack";
+import { UserData, Response, Method } from "./base";
 import {
-  UserData,
-  Response,
   {{userState}} as UserState,
-  Method,
   {{#each methods}}
   {{makeRequestName @key}},
   {{/each}}

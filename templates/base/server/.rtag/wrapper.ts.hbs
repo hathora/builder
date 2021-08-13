@@ -6,10 +6,8 @@ import chokidar from "chokidar";
 import onChange from "on-change";
 import { decode } from "@msgpack/msgpack";
 import { Context } from "./methods";
+import { UserData, Response, Method } from "./base";
 import {
-  UserData,
-  Response,
-  Method,
   {{#each methods}}
   {{makeRequestName @key}},
   {{/each}}
