@@ -84,7 +84,7 @@ export class Impl implements Methods<InternalState> {
   }
   getUserState(state: InternalState, user: UserData): PlayerState {
     return {
-      hand: state.hands.get(user.name)!,
+      hand: state.hands.get(user.name) ?? [],
       players: state.players,
       turn: state.turn,
       pile: state.pile,

@@ -102,14 +102,16 @@
 [
 <array-display class="array-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} v-slot="{ value }">
   {{#with items}}
-    {{> renderState}}
+  {{> renderState}}
   {{/with}}
 </array-display>
 ],
 {{else if (eq type "optional")}}
-{{#with item}}
-{{> renderState arg=../arg}}
-{{/with}}
+<optional-display class="optional-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} v-slot="{ value }">
+  {{#with item}}
+  {{> renderState arg=../arg}}
+  {{/with}}
+</optional-display>
 {{else if (eq type "enum")}}
 <enum-display class="enum-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} enum="{{typeString}}"></enum-display>,
 {{else if (eq type "string")}}
