@@ -1,7 +1,7 @@
 import WebSocket from "isomorphic-ws";
 import axios from "axios";
 import jwtDecode from "jwt-decode";
-import { decode, encode } from "@msgpack/msgpack";
+import { decode, encode } from "msgpackr";
 import { UserData, Response, Method } from "./base";
 import {
   {{userState}} as UserState,
@@ -43,7 +43,7 @@ export class RtagClient {
       const socket = this.initSocket(reject);
       socket.onopen = () => {
         socket.send(token);
-        socket.send(encode(request, { ignoreUndefined: true }));
+        socket.send(encode(request));
       };
       socket.onmessage = ({ data }) => {
         new RtagConnection(data as string, socket, resolve, onStateChange);
@@ -86,7 +86,7 @@ export class RtagConnection {
   ) {
     socket.onmessage = ({ data }) => {
       resolve(this);
-      const { state, responses } = decode(data as ArrayBuffer) as {
+      const { state, responses } = decode(new Uint8Array(data as ArrayBuffer)) as {
         state: UserState | null;
         responses: Record<string, Response>;
       };
@@ -120,7 +120,7 @@ export class RtagConnection {
         reject("Connection is closed");
       } else {
         const msgId = crypto.getRandomValues(new Uint32Array(1));
-        const args = encode(request, { ignoreUndefined: true });
+        const args = encode(request);
         this.socket.send(new Uint8Array([...new Uint8Array([method]), ...new Uint8Array(msgId.buffer), ...args]));
         this.callbacks[msgId[0]] = resolve;
       }

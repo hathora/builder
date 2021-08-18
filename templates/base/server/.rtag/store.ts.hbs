@@ -5,7 +5,7 @@ import { fileURLToPath } from "url";
 {{/unless}}
 import { existsSync, mkdirSync } from "fs";
 import seedrandom from "seedrandom";
-import { decode, encode } from "@msgpack/msgpack";
+import { decode, encode } from "msgpackr";
 import { SmartBuffer } from "smart-buffer";
 import dotenv from "dotenv";
 import { register } from "./protocol";
@@ -214,8 +214,7 @@ function loadState(stateId: StateId) {
 
 function sendUpdate(stateId: StateId, state: State | null, user: UserData, responses: Record<number, Response>) {
   const userState = state === null ? null : impl.getUserState(state, user);
-  const data = Buffer.from(encode({ state: userState, responses }, { ignoreUndefined: true }));
-  return coordinator.onStateUpdate(stateId, user.id, data);
+  return coordinator.onStateUpdate(stateId, user.id, encode({ state: userState, responses }));
 }
 
 function ctx(rng: ReturnType<seedrandom>, time: number) {
