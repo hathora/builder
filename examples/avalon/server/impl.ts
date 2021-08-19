@@ -165,6 +165,7 @@ export class Impl implements Methods<InternalState> {
   }
   getUserState(state: InternalState, user: UserData): PlayerState {
     const role = state.roles.get(user.name);
+    const roles = [...state.roles];
     const knownRoles = role !== undefined ? ROLES_INFO.get(role)!.knownRoles : new Set();
     return {
       status: gameStatus(state.quests),
@@ -172,12 +173,12 @@ export class Impl implements Methods<InternalState> {
         role: rl,
         isEvil: info.isEvil,
         knownRoles: [...info.knownRoles],
-        quantity: [...state.roles.values()].filter((r) => r === rl).length,
+        quantity: roles.filter(([_, r]) => r === rl).length,
       })),
       creator: state.creator,
       players: state.players,
       role,
-      knownPlayers: [...state.roles].filter(([_, r]) => knownRoles.has(r)).map(([p, _]) => p),
+      knownPlayers: roles.filter(([_, r]) => knownRoles.has(r)).map(([p, _]) => p),
       playersPerQuest: QUEST_CONFIGURATIONS.get(state.players.length) || [],
       quests: state.quests.map((q) => sanitizeQuest(q, user.name)),
     };
@@ -214,11 +215,11 @@ function sanitizeQuest(quest: InternalQuestAttempt, username: Username): QuestAt
     attemptNumber: quest.attemptNumber,
     leader: quest.leader,
     members: quest.members,
-    proposalVotes: [...quest.votes.entries()].map(([player, vote]) => ({
+    proposalVotes: [...quest.votes].map(([player, vote]) => ({
       player,
       vote: player === username || quest.votes.size === quest.numPlayers ? vote : undefined,
     })),
-    results: [...quest.results.entries()].map(([player, vote]) => ({
+    results: [...quest.results].map(([player, vote]) => ({
       player,
       vote: player === username ? vote : undefined,
     })),
@@ -263,7 +264,7 @@ function questSize(quest: InternalQuestAttempt) {
 }
 
 function numFails(votes: Map<Username, Vote>) {
-  return [...votes.values()].filter((vote) => vote === Vote.FAIL).length;
+  return [...votes].filter(([_, vote]) => vote === Vote.FAIL).length;
 }
 
 function maxFails(quest: InternalQuestAttempt): number {

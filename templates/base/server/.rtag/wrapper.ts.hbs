@@ -3,7 +3,6 @@ import module from "module";
 import dependencyTree from "dependency-tree";
 import chokidar from "chokidar";
 {{/unless}}
-import onChange from "on-change";
 import { decode } from "msgpackr";
 import { Context } from "./methods";
 import { UserData, Response, Method } from "./base";
@@ -32,15 +31,49 @@ let changed = false;
 
 type State = ReturnType<typeof impl.{{initialize}}>;
 
+const PROXY_TARGET = Symbol("proxy-target");
+const handler: ProxyHandler<any> = {
+  get(target: any, property: string | symbol) {
+    if (property === PROXY_TARGET) {
+      return target;
+    }
+    const res = Reflect.get(target, property);
+    if (typeof res === "object" || typeof res === "function") {
+      return new Proxy(res, handler);
+    } else {
+      return res;
+    }
+  },
+  set(target: any, property: string | symbol, value: any) {
+    const prevValue = (target[PROXY_TARGET] ?? target)[property];
+    if (!Object.is(prevValue, value)) {
+      changed = true;
+    }
+    return Reflect.set(target, property, value);
+  },
+  apply(target: Function, thisArg: any, args: any) {
+    if (
+      Array.isArray(thisArg) &&
+      ["push", "pop", "shift", "unshift", "copyWithin", "reverse", "sort", "splice", "flat", "fill"].includes(
+        target.name
+      )
+    ) {
+      changed = true;
+    } else if (thisArg instanceof Set && ["add", "delete", "clear"].includes(target.name)) {
+      changed = true;
+    } else if (thisArg instanceof Map && ["set", "delete", "clear"].includes(target.name)) {
+      changed = true;
+    }
+    return Reflect.apply(target, thisArg[PROXY_TARGET], args);
+  },
+};
+
 export const ImplWrapper = {
   initialize(user: UserData, ctx: Context, argsBuffer: Buffer): State {
     const state = impl.createGame(user, ctx, decode(argsBuffer) as {{makeRequestName initialize}});
-    return onChange(state, () => {
-      changed = true;
-    });
+    return new Proxy(state, handler);
   },
   getResult(state: State, user: UserData, method: Method, ctx: Context, argsBuffer: Buffer): Response | undefined {
-    changed = false;
     switch (method) {
       {{#each methods}}
       {{#if (ne @key ../initialize)}}
@@ -54,14 +87,15 @@ export const ImplWrapper = {
   },
   {{#if tick}}
   onTick(state: State, ctx: Context, timeDelta: number): void {
-    changed = false;
     impl.onTick(state, ctx, timeDelta);
   },
   {{/if}}
   getUserState(state: State, user: UserData) {
-    return impl.getUserState(state, user);
+    return impl.getUserState((state as any)[PROXY_TARGET], user);
   },
   changed(): boolean {
-    return changed;
+    const res = changed;
+    changed = false;
+    return res;
   },
 };
