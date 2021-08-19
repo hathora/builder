@@ -266,7 +266,7 @@ Vue.component("array-display", {
 
 Vue.component("optional-display", {
   props: ["value"],
-  template: `<div><slot v-if="value !== undefined" :value="value"></slot></div>`,
+  template: `<span><slot v-if="value !== undefined" :value="value"></slot></span>`,
 });
 
 Vue.component("enum-display", {

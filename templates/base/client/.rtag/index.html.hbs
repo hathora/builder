@@ -109,7 +109,7 @@
 {{else if (eq type "optional")}}
 <optional-display class="optional-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} v-slot="{ value }">
   {{#with item}}
-  {{> renderState arg=../arg}}
+  {{> renderState}}
   {{/with}}
 </optional-display>
 {{else if (eq type "enum")}}
