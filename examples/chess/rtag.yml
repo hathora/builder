@@ -1,0 +1,47 @@
+types:
+  PlayerName: string
+  Square: string
+  Board: Piece[]
+
+  Color:
+    - WHITE
+    - BLACK
+  PieceType:
+    - PAWN
+    - KNIGHT
+    - BISHOP
+    - ROOK
+    - QUEEN
+    - KING
+  GameStatus:
+    - WAITING
+    - WHITE_TURN
+    - BLACK_TURN
+    - WHITE_WON
+    - BLACK_WON
+    - DRAW
+
+  Piece:
+    color: Color
+    type: PieceType
+    square: Square
+  PlayerState:
+    board: Board
+    status: GameStatus
+    color: Color
+    opponent?: PlayerName
+
+methods:
+  createGame:
+  startGame:
+  movePiece:
+    from: Square
+    to: Square
+
+auth:
+  anonymous:
+    separator: "-"
+
+userState: PlayerState
+initialize: createGame
+error: string
