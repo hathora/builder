@@ -38,7 +38,16 @@ const handler: ProxyHandler<any> = {
       return target;
     }
     const res = Reflect.get(target, property);
-    if (typeof res === "object" || typeof res === "function") {
+    if (res.hasOwnProperty("_modCnt")) {
+      return new Proxy(res, {
+        set(target: any, property: string | symbol, value: any) {
+          if (property === "_modCnt") {
+            changed = true;
+          }
+          return Reflect.set(target, property, value);
+        },
+      });
+    } else if (typeof res === "object" || typeof res === "function") {
       return new Proxy(res, handler);
     } else {
       return res;
