@@ -113,7 +113,10 @@ export class Impl implements Methods<InternalState> {
     if (request.proposedMembers.length !== questSize(quest)) {
       return Response.error("Wrong quest size");
     }
-    if (!request.proposedMembers.every((member) => state.players.includes(member))) {
+    if (
+      !request.proposedMembers.every((member) => state.players.includes(member)) ||
+      new Set(request.proposedMembers).size < request.proposedMembers.length
+    ) {
       return Response.error("Invalid members");
     }
     quest.members = request.proposedMembers;
