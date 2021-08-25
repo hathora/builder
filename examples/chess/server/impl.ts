@@ -60,7 +60,7 @@ export class Impl implements Methods<InternalState> {
       }),
       status: gameStatus(state),
       color: internalUser?.color ?? Color.WHITE,
-      opponent: internalUser?.name,
+      opponent: internalUser !== undefined ? state.users.find((u) => u.name !== user.name)?.name : undefined,
     };
   }
 }
