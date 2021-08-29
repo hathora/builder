@@ -88,39 +88,37 @@ export class Impl implements Methods<InternalState> {
     state.turnInfo = { hint: request.hint, amount: request.amount, guessed: 0 };
     return Response.ok();
   }
-  selectCard(state: InternalState, userData: UserData): undefined | ((ctx: Context, request: ISelectCardRequest) => Response) {
+  selectCard(state: InternalState, userData: UserData, ctx: Context, request: ISelectCardRequest): Response {
     if (getGameStatus(state.cards) !== GameStatus.IN_PROGRESS) {
-      return;
+      return Response.error("Game is over");
     }
     const player = state.players.find((p) => p.name === userData.name);
     if (player === undefined) {
-      return;
+      return Response.error("Invalid player");
     }
     if (player.isSpymaster) {
-      return;
+      return Response.error("Spymaster cannot select card");
     }
     if (player.team !== state.currentTurn) {
-      return;
+      return Response.error("Not your turn");
     }
     if (state.turnInfo === undefined) {
-      return;
+      return Response.error("Spymaster has not yet given clue");
     }
-    return (ctx, request) => {
-      const selectedCard = state.cards.find((card) => card.word === request.word);
-      if (selectedCard === undefined) {
-        return Response.error("Invalid card selection");
-      }
-      if (selectedCard.selectedBy !== undefined) {
-        return Response.error("Card already selected");
-      }
-      selectedCard.selectedBy = player.team;
-      state.turnInfo.guessed += 1;
-      if (selectedCard.color !== state.currentTurn || state.turnInfo.guessed > state.turnInfo.amount) {
-        state.currentTurn = nextTurn(state.currentTurn);
-        state.turnInfo = undefined;
-      }
-      return Response.ok();
-    };
+    const selectedCard = state.cards.find((card) => card.word === request.word);
+    if (selectedCard === undefined) {
+      return Response.error("Invalid card selection");
+    }
+    if (selectedCard.selectedBy !== undefined) {
+      return Response.error("Card already selected");
+    }
+    selectedCard.selectedBy = player.team;
+    state.turnInfo.guessed += 1;
+    if (selectedCard.color !== state.currentTurn || state.turnInfo.guessed > state.turnInfo.amount) {
+      state.currentTurn = nextTurn(state.currentTurn);
+      state.turnInfo = undefined;
+    }
+    return Response.ok();
   }
   endTurn(state: InternalState, userData: UserData, ctx: Context, request: IEndTurnRequest): Response {
     if (getGameStatus(state.cards) !== GameStatus.IN_PROGRESS) {
