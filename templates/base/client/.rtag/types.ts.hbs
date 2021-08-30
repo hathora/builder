@@ -124,9 +124,9 @@ parseBoolean(sb)
 {{~/if}}
 {{/inline}}
 
-export function encodeState(state: PlayerState | undefined, responses: Record<number, Response>) {
+export function encodeState(state: {{userState}} | undefined, responses: Record<number, Response>) {
   const buf = new SmartBuffer();
-  writeOptional(buf, state, (buf, x) => PlayerState.encode(x, buf));
+  writeOptional(buf, state, (buf, x) => {{userState}}.encode(x, buf));
   Object.entries(responses).forEach(([msgId, response]) => {
     buf.writeUInt32LE(Number(msgId));
     const maybeError = response.type === "error" ? response.error : undefined;
@@ -134,9 +134,9 @@ export function encodeState(state: PlayerState | undefined, responses: Record<nu
   });
   return buf.toBuffer();
 }
-export function decodeState(buf: Buffer | SmartBuffer): { state?: PlayerState; responses: Record<number, Response> } {
+export function decodeState(buf: Buffer | SmartBuffer): { state?: {{userState}}; responses: Record<number, Response> } {
   const sb = buf instanceof Buffer ? SmartBuffer.fromBuffer(buf) : buf;
-  const state = parseOptional(sb, () => PlayerState.decode(sb));
+  const state = parseOptional(sb, () => {{userState}}.decode(sb));
   const responses: Record<number, Response> = {};
   while (sb.remaining() > 0) {
     const msgId = sb.readUInt32LE();
