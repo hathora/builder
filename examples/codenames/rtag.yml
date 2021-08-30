@@ -1,0 +1,54 @@
+types:
+  PlayerName: string
+  Cards: Card[]
+  Color:
+    - RED
+    - BLUE
+    - BLACK
+    - YELLOW
+  PlayerInfo:
+    name: PlayerName
+    team: Color
+    isSpymaster: boolean
+  Card:
+    word: string
+    color?: Color
+    selectedBy?: Color
+  GameStatus:
+    - NOT_STARTED
+    - IN_PROGRESS
+    - RED_WON
+    - BLUE_WON
+  TurnInfo:
+    hint: string
+    amount: number
+    guessed: number
+  PlayerState:
+    players: PlayerInfo[]
+    gameStatus: GameStatus
+    currentTurn: Color
+    turnInfo?: TurnInfo
+    redRemaining: number
+    blueRemaining: number
+    cards: Cards
+
+methods:
+  createGame:
+  joinGame:
+  startGame:
+  giveClue:
+    hint: string
+    amount: number
+  selectCard:
+    word: string
+  endTurn:
+
+auth:
+  anonymous:
+    separator: "-"
+  google:
+    clientId: 848412826788-m4msrb6q44dm2ue3kgvui0fq7kda55ls.apps.googleusercontent.com
+
+userState: PlayerState
+initialize: createGame
+error: string

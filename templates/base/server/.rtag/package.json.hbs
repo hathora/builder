@@ -1,27 +1,24 @@
 {
   "type": "module",
   "dependencies": {
-    "@msgpack/msgpack": "2.5.1",
-    "chokidar": "3.5.1",
-    "dependency-tree": "8.0.0",
-    "express": "4.17.1",
-    {{#if auth.google}}
-    "google-auth-library": "6.1.6",
-    {{/if}}
-    "jsonwebtoken": "8.5.1",
-    "on-change": "2.1.4",
-    {{#if auth.anonymous}}
-    "unique-names-generator": "4.4.0",
-    {{/if}}
-    "ws": "7.4.4"
+    "axios": "0.21.1",
+    {{#unless (env "PROD_BUILD")}}
+    "chokidar": "3.5.2",
+    "dependency-tree": "8.1.1",
+    {{/unless}}
+    "dotenv": "10.0.0",
+    "msgpackr": "1.4.2",
+    "retry": "0.13.1",
+    "seedrandom": "3.0.5",
+    "smart-buffer": "4.1.0",
+    "varint": "6.0.0"
   },
   "devDependencies": {
-    "@types/dependency-tree": "8.0.0",
-    "@types/express": "4.17.11",
-    "@types/jsonwebtoken": "8.5.1",
-    "@types/node": "14.14.37",
-    "@types/ws": "7.4.1",
-    "typescript": "4.2.3",
-    "vite": "2.0.0-beta.58"
+    "@types/node": "16.4.10",
+    "@types/retry": "0.12.1",
+    "@types/seedrandom": "3.0.1",
+    "@types/varint": "6.0.0",
+    "ts-node": "10.1.0",
+    "typescript": "4.3.5"
   }
 }

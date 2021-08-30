@@ -1,0 +1,127 @@
+{{#unless (env "PROD_BUILD")}}
+import module from "module";
+import dependencyTree from "dependency-tree";
+import chokidar from "chokidar";
+{{/unless}}
+import { Context } from "./methods";
+import { UserData, Response, Method } from "./base";
+import {
+  {{#each methods}}
+  {{makeRequestName @key}},
+  {{/each}}
+} from "./types";
+
+let impl = new (await import("../impl")).Impl();
+{{#unless (env "PROD_BUILD")}}
+const deps = dependencyTree.toList({
+  directory: ".",
+  filename: module.createRequire(import.meta.url).resolve("../impl"),
+  filter: (path) => !path.includes(".rtag") && !path.includes("node_modules"),
+});
+chokidar.watch(deps).on("change", async () => {
+  try {
+    impl = new (await import(`../impl.ts#${Math.random()}`)).Impl();
+  } catch (e) {
+    console.error("Failed to reload:", e);
+  }
+});
+{{/unless}}
+
+type State = ReturnType<typeof impl.{{initialize}}>;
+
+let changed = false;
+const PROXY_TARGET = Symbol("proxy-target");
+const handler: ProxyHandler<any> = {
+  get(target: any, property: string | symbol) {
+    if (property === PROXY_TARGET) {
+      return target;
+    }
+    const res = Reflect.get(target, property);
+    if (res === undefined || res === null) {
+      return res;
+    } else if (res.hasOwnProperty("_modCnt")) {
+      return new Proxy(res, {
+        set(target: any, property: string | symbol, value: any): boolean {
+          if (property === "_modCnt") {
+            changed = true;
+          }
+          return Reflect.set(target, property, value);
+        },
+      });
+    } else if ((typeof res === "object" || typeof res === "function") && property !== "constructor") {
+      return new Proxy(res, handler);
+    } else {
+      return res;
+    }
+  },
+  set(target: any, property: string | symbol, value: any): boolean {
+    const prevValue = (target[PROXY_TARGET] ?? target)[property];
+    if (!Object.is(prevValue, value)) {
+      changed = true;
+    }
+    return Reflect.set(target, property, value);
+  },
+  apply(target: Function, thisArg: any, args: any) {
+    if (
+      Array.isArray(thisArg) &&
+      ["push", "pop", "shift", "unshift", "copyWithin", "reverse", "sort", "splice", "flat", "fill"].includes(
+        target.name
+      )
+    ) {
+      changed = true;
+    } else if (thisArg instanceof Set && ["add", "delete", "clear"].includes(target.name)) {
+      changed = true;
+    } else if (thisArg instanceof Map && ["set", "delete", "clear"].includes(target.name)) {
+      changed = true;
+    }
+    const origThis = thisArg[PROXY_TARGET];
+    const res = Reflect.apply(
+      target,
+      Array.isArray(thisArg) || thisArg instanceof Set || thisArg instanceof Map ? origThis : thisArg,
+      args
+    );
+    if (
+      res !== undefined &&
+      res !== null &&
+      (Object.getPrototypeOf(res) === Object.prototype ||
+        Array.isArray(res) ||
+        res instanceof Set ||
+        res instanceof Map)
+    ) {
+      return new Proxy(res, handler);
+    }
+    return res;
+  },
+};
+
+export const ImplWrapper = {
+  initialize(user: UserData, ctx: Context, argsBuffer: Buffer): State {
+    const state = impl.createGame(user, ctx, {{makeRequestName initialize}}.decode(argsBuffer));
+    return new Proxy(state, handler);
+  },
+  getResult(state: State, user: UserData, method: Method, ctx: Context, argsBuffer: Buffer): Response | undefined {
+    switch (method) {
+      {{#each methods}}
+      {{#if (ne @key ../initialize)}}
+      case Method.{{uppercase @key}}:
+        return impl.{{@key}}(state, user, ctx, {{makeRequestName @key}}.decode(argsBuffer));
+      {{/if}}
+      {{/each}}
+      default:
+        return undefined;
+    }
+  },
+  {{#if tick}}
+  onTick(state: State, ctx: Context, timeDelta: number): void {
+    impl.onTick(state, ctx, timeDelta);
+  },
+  {{/if}}
+  getUserState(state: State, user: UserData) {
+    return impl.getUserState(state, user);
+  },
+  changed(): boolean {
+    const res = changed;
+    changed = false;
+    return res;
+  },
+};

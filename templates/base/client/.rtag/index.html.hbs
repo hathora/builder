@@ -1,15 +1,24 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
-    <link rel="stylesheet" href="/.rtag/styles.css" />
-    <link rel="stylesheet" href="/.rtag/node_modules/vue-select/dist/vue-select.css" />
+    <title>{{appName}}</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/node_modules/vue-select/dist/vue-select.css" />
   </head>
 
   <body>
     <div id="app">
+      <div class="topnav">
+        <router-link to="/" style="text-decoration: none; color: inherit;">{{appName}}</router-link>
+        <span style="float: right;" id="username">\{{username()}}</span>
+      </div>
       <router-view></router-view>
     </div>
     <script type="text/x-template" id="home-template">
       <div>
+        {{#with (lookup methods initialize)}}
+        {{> renderForm this arg=../initialize required=true}}
+        {{/with}}
         <button type="button" class="button" @click="createState">
           <span class="button-text">Create new</span>
         </button>
@@ -40,8 +49,7 @@
         </div>
       </div>
     </script>
-    <script type="module" src="/@vite/client"></script>
-    <script type="module" src="/.rtag/app.ts"></script>
+    <script type="module" src="/app.ts"></script>
   </body>
 </html>
 {{#*inline "renderForm"}}
@@ -102,14 +110,16 @@
 [
 <array-display class="array-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} v-slot="{ value }">
   {{#with items}}
-    {{> renderState}}
+  {{> renderState}}
   {{/with}}
 </array-display>
 ],
 {{else if (eq type "optional")}}
-{{#with item}}
-{{> renderState arg=../arg}}
-{{/with}}
+<optional-display class="optional-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} v-slot="{ value }">
+  {{#with item}}
+  {{> renderState}}
+  {{/with}}
+</optional-display>
 {{else if (eq type "enum")}}
 <enum-display class="enum-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} enum="{{typeString}}"></enum-display>,
 {{else if (eq type "string")}}

@@ -16,7 +16,6 @@ Rtag also comes with a powerful development server with features like hot code r
 #### Requirements
 
 - node v15+
-- ts-node on classpath (`npm install -g ts-node`)
 
 Install rtag from the npm registry:
 
@@ -26,10 +25,11 @@ npm install -g rtag
 
 ## Quickstart
 
-1. Inside a new directory, create a `rtag.yml` file, fill it out as per your project specifications (see below), and run `rtag` to generate your rtag project
-2. Run `rtag install` to install dependencies
-3. Start the server using `rtag start`
-4. View debug app at http://localhost:3000/
+1. Inside a new directory, create a `rtag.yml` file and fill it out as per your project specifications (see below)
+2. Run `rtag init` to generate your initial rtag project. For subsequent changes made to `rtag.yml`, run `rtag` instead
+3. Run `rtag install` to install dependencies
+4. Start the server using `rtag start`
+5. View debug app at http://localhost:3000/
 
 ## App configuration (rtag.yml)
 
@@ -130,7 +130,7 @@ Plugins go inside the `client/plugins` directory. To create a plugin for type `F
 Your plugin must export a webcomponent (a class that extends `HTMLElement`). While you are free to write a native webcomponent without any dependencies, most popular frontend libraries have ways to create webcomponents. Some examples include:
 - React (via https://github.com/bitovi/react-to-webcomponent)
 - Vue (via https://github.com/vuejs/vue-web-component-wrapper)
-- Lit-element (no wrapper required)
+- Lit (no wrapper required)
 
 Plugins receive the following props as input:
 - val -- this is the value you are rendering, it has the type of your filename

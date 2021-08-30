@@ -1,0 +1,32 @@
+types:
+  PlayerName: string
+  Color:
+    - RED
+    - BLUE
+    - GREEN
+    - YELLOW
+  Card:
+    value: number
+    color: Color
+  PlayerState:
+    hand: Card[]
+    players: PlayerName[]
+    turn: PlayerName
+    pile?: Card
+    winner?: PlayerName
+
+methods:
+  createGame:
+  joinGame:
+  startGame:
+  playCard:
+    card: Card
+  drawCard:
+
+auth:
+  anonymous:
+    separator: "-"
+
+userState: PlayerState
+initialize: createGame
+error: string

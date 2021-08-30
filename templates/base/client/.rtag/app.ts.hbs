@@ -25,6 +25,7 @@ window.customElements.define("{{makePluginName this}}", {{this}});
 {{/if}}
 {{/each}}
 const DELETED = Symbol();
+const client = new RtagClient(import.meta.env.VITE_APP_ID);
 
 function patch(obj: any, val: any) {
   Object.entries(val).forEach(([k, v]) => {
@@ -60,16 +61,19 @@ Vue.component("method-form", {
         this.$toasted.error("Required fields missing");
         return;
       }
-      const client: RtagClient = this.$parent.$data.client;
-      const res: Types.Result = await client[this.method](this.value);
-      if (res.type === "error") {
-        this.$toasted.error(JSON.stringify(res.error));
-      } else {
-        this.value = {};
-        this.hack = false;
-        this.$nextTick(() => {
-          this.hack = true;
-        });
+      try {
+        const res: Types.Response = await this.$root.$data.connection[this.method](this.value);
+        if (res.type === "error") {
+          this.$toasted.error(JSON.stringify(res.error));
+        } else {
+          this.value = {};
+          this.hack = false;
+          this.$nextTick(() => {
+            this.hack = true;
+          });
+        }
+      } catch (e) {
+        this.$toasted.error(e);
       }
     },
   },
@@ -274,13 +278,13 @@ Vue.component("boolean-input", {
 
 Vue.component("object-display", {
   props: { value: Object },
-  template: `<div><slot v-if="value !== null && value !== undefined" :value="value"></slot></div>`,
+  template: `<div><slot :value="value"></slot></div>`,
 });
 
 Vue.component("array-display", {
   props: { value: Array },
   data: () => ({ isOpen: true }),
-  template: `<span v-if="value !== null && value !== undefined && value.length > 0">
+  template: `<span v-if="value.length > 0">
       <button class="button small" type="button" v-on:click="isOpen=!isOpen">
         <span class="button-text" v-if="isOpen">-</span>
         <span class="button-text" v-else>+</span>
@@ -292,9 +296,14 @@ Vue.component("array-display", {
     </span>`,
 });
 
+Vue.component("optional-display", {
+  props: ["value"],
+  template: `<span><slot v-if="value !== undefined" :value="value"></slot></span>`,
+});
+
 Vue.component("enum-display", {
   props: { value: Number, enum: String },
-  template: `<span v-if="value !== null && value !== undefined">\{{options[value].label}}</span>`,
+  template: `<span>\{{options[value].label}}</span>`,
   computed: {
     options() {
       return Object.entries(Types[this.enum as keyof typeof Types])
@@ -333,12 +342,11 @@ Vue.component("key-display", {
 Vue.component("plugin-display", {
   props: ["value", "component"],
   render(createElement) {
-    const rootData = this.$root.$children[0].$data;
     return createElement(this.component, {
       domProps: {
         val: this.value,
-        state: rootData.value,
-        client: rootData.client,
+        state: this.$root.$data.value,
+        client: this.$root.$data.connection,
       },
       on: {
         error: (e: CustomEvent) => this.$toasted.error(e.detail),
@@ -349,49 +357,65 @@ Vue.component("plugin-display", {
 
 const Login = Vue.component("login", {
   template: `<div>
-    {{#each auth}}
-    {{#if (eq @key "anonymous")}}
+{{#each auth}}
+{{#if (eq @key "anonymous")}}
       <button type="submit" class="button submit" @click="handleLoginAnonymous">
         <span class="button-text">Login Anonymously</span>
       </button>
-    {{else if (eq @key "google")}}
+{{else if (eq @key "google")}}
       <button type="submit" class="button submit" @click="handleLoginGoogle">
         <span class="button-text">Login with Google</span>
       </button>
-    {{/if}}
-    {{/each~}}
+{{/if}}
+{{/each}}
     </div>`,
   methods: {
-  {{#each auth}}
-  {{#if (eq @key "anonymous")}}
+{{#each auth}}
+{{#if (eq @key "anonymous")}}
     async handleLoginAnonymous() {
-      const token = await RtagClient.loginAnonymous();
+      const token = await client.loginAnonymous();
       sessionStorage.setItem("user", token);
       const url = this.$route.query.url;
       this.$router.push((Array.isArray(url) ? url[0] : url) || "/");
     },
-  {{else if (eq @key "google")}}
+{{else if (eq @key "google")}}
     async handleLoginGoogle() {
       const googleUser = await (this as any).$gAuth.signIn();
-      let token = await RtagClient.loginGoogle(googleUser.getAuthResponse().id_token);
+      const token = await client.loginGoogle(googleUser.getAuthResponse().id_token);
       sessionStorage.setItem("user", token);
       const url = this.$route.query.url;
       this.$router.push((Array.isArray(url) ? url[0] : url) || "/");
     },
-  {{/if}}
-  {{/each~}}
+{{/if}}
+{{/each}}
   },
 });
 
 const Home = Vue.component("home", {
-  data: () => ({ stateId: "" }),
+  data: () => ({ stateId: "", value: {}, valid: true }),
   template: "#home-template",
   methods: {
+    update(arg: string, value: any, valid: boolean) {
+      patch(this.value, value);
+      this.valid = valid;
+    },
     createState() {
+      if (!this.valid) {
+        this.$toasted.error("Required fields missing");
+        return;
+      }
       const token = sessionStorage.getItem("user")!;
-      RtagClient.createState(token, {}).then((stateId) => {
-        this.$router.push("/state/" + stateId);
-      });
+      client
+        .connectNew(token, this.value, (state) => {
+          Vue.set(this.$root.$data, "value", state);
+        })
+        .then((connection) => {
+          Vue.set(this.$root.$data, "connection", connection);
+          this.$router.push("/state/" + connection.stateId);
+        })
+        .catch((e) => {
+          this.$toasted.error("Error creating new state: " + e.reason);
+        });
     },
     joinState() {
       this.$router.push("/state/" + this.stateId);
@@ -400,19 +424,30 @@ const Home = Vue.component("home", {
 });
 
 const State = Vue.component("state", {
-  data: () => ({ value: {}, client: {} }),
   template: "#state-template",
   created() {
-    const token = sessionStorage.getItem("user")!;
-    RtagClient.connect(location.host, token, this.$route.params.stateId, (state) => {
-      this.value = state;
-    })
-      .then((client) => {
-        this.client = client;
-      })
-      .catch(() => {
-        this.$toasted.error("Error during connection");
-      });
+    if (this.$root.$data.connection === undefined) {
+      const token = sessionStorage.getItem("user")!;
+      client
+        .connectExisting(token, this.$route.params.stateId, (state) => {
+          Vue.set(this.$root.$data, "value", state);
+        })
+        .then((connection) => {
+          Vue.set(this.$root.$data, "connection", connection);
+        })
+        .catch((e) => {
+          this.$toasted.error("Error connecting to state: " + e.reason);
+        });
+    }
+  },
+  computed: {
+    value() {
+      return this.$root.$data.value;
+    },
+  },
+  destroyed() {
+    this.$root.$data.connection?.disconnect();
+    this.$root.$data.connection = undefined;
   },
 });
 
@@ -422,6 +457,12 @@ const router = new VueRouter({
     { path: "/login", component: Login },
     { path: "/", component: Home },
     { path: "/state/:stateId", component: State },
+    {
+      path: "*",
+      component: Vue.component("notFound", {
+        template: `<h1>Not found</h1>`,
+      }),
+    },
   ],
 });
 
@@ -436,4 +477,11 @@ router.beforeEach((to, from, next) => {
 new Vue({
   el: "#app",
   router,
+  data: { connection: undefined, value: {} },
+  methods: {
+    username() {
+      const token = sessionStorage.getItem("user");
+      return token !== null ? RtagClient.getUserFromToken(token).name : "";
+    },
+  },
 });

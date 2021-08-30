@@ -1,0 +1,89 @@
+import net from "net";
+import retry from "retry";
+import { encode } from "msgpackr";
+import { SmartBuffer } from "smart-buffer";
+import axios from "axios";
+
+const NEW_STATE = 0;
+const SUBSCRIBE_USER = 1;
+const UNSUBSCRIBE_USER = 2;
+const HANDLE_UPDATE = 3;
+
+export function register(store: Store): Promise<CoordinatorClient> {
+  return new Promise((resolve, reject) => {
+    const socket = new net.Socket();
+    const operation = retry.operation();
+    operation.attempt(() => {
+      socket.connect(7147, "rtag.dev", () => {
+        socket.setKeepAlive(true, 30000);
+        socket.write(
+          encode({
+            appSecret: process.env.APP_SECRET!,
+            authInfo: {
+{{#each auth}}
+{{#if (eq @key "anonymous")}}
+              anonymous: { separator: "{{separator}}" },
+{{else if (eq @key "google")}}
+              google: { clientId: "{{clientId}}" },
+{{/if}}
+{{/each}}
+            },
+          })
+        );
+        console.log("Connected to coordinator");
+        resolve(new CoordinatorClient(socket));
+      });
+    });
+    socket.on("error", (err) => {
+      if (!operation.retry(err)) {
+        reject(operation.mainError);
+      }
+    });
+    socket.on("data", (data) => {
+      const reader = SmartBuffer.fromBuffer(data);
+      const type = reader.readInt8();
+      if (type === NEW_STATE) {
+        store.newState(
+          reader.readBigUInt64LE(),
+          reader.readString(reader.readUInt32LE()),
+          reader.readBuffer(reader.readUInt32LE())
+        );
+      } else if (type === SUBSCRIBE_USER) {
+        store.subscribeUser(reader.readBigUInt64LE(), reader.readString(reader.readUInt32LE()));
+      } else if (type === UNSUBSCRIBE_USER) {
+        store.unsubscribeUser(reader.readBigUInt64LE(), reader.readString(reader.readUInt32LE()));
+      } else if (type === HANDLE_UPDATE) {
+        store.handleUpdate(
+          reader.readBigUInt64LE(),
+          reader.readString(reader.readUInt32LE()),
+          reader.readBuffer(reader.readUInt32LE())
+        );
+      }
+    });
+  });
+}
+
+interface Store {
+  newState(stateId: bigint, userId: string, argsBuffer: Buffer): void;
+  subscribeUser(stateId: bigint, userId: string): void;
+  unsubscribeUser(stateId: bigint, userId: string): void;
+  handleUpdate(stateId: bigint, userId: string, data: Buffer): void;
+}
+
+class CoordinatorClient {
+  constructor(private socket: net.Socket) {}
+
+  public onStateUpdate(stateId: bigint, userId: string, data: Buffer) {
+    const buf = new SmartBuffer();
+    buf.writeBigUInt64LE(stateId);
+    buf.writeUInt32LE(userId.length);
+    buf.writeString(userId);
+    buf.writeBuffer(data);
+    buf.insertUInt32LE(buf.length, 0);
+    this.socket.write(buf.toBuffer());
+  }
+
+  public async lookupUser(userId: string) {
+    return (await axios.get(`https://rtag.dev/users/${userId}`, { responseType: "arraybuffer" })).data;
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "uno-client",
+  "version": "0.0.1",
+  "type": "module",
+  "dependencies": {
+    "lit": "^2.0.0-rc.2"
+  },
+  "devDependencies": {
+    "typescript": "^4.3.5"
+  }
+}

@@ -1,7 +1,6 @@
-import { Methods } from "./.rtag/methods";
+import { Methods, Context, Response } from "./.rtag/methods";
 import {
   UserData,
-  Result,
   {{#with (lookup types userState)}}
   {{#each properties}}
   {{#if (eq type "enum")}}
@@ -15,16 +14,16 @@ import {
   {{/each}}
 } from "./.rtag/types";
 
-interface InternalState {}
+type InternalState = {};
 
 export class Impl implements Methods<InternalState> {
-  {{initialize}}(user: UserData, request: {{makeRequestName initialize}}): InternalState {
+  {{initialize}}(user: UserData, ctx: Context, request: {{makeRequestName initialize}}): InternalState {
     return {};
   }
   {{#each methods}}
   {{#if (ne @key ../initialize)}}
-  {{@key}}(state: InternalState, user: UserData, request: {{makeRequestName @key}}): Result {
-    return Result.success();
+  {{@key}}(state: InternalState, user: UserData, ctx: Context, request: {{makeRequestName @key}}): Response {
+    return Response.error("Not implemented");
   }
   {{/if}}
   {{/each}}
@@ -38,7 +37,7 @@ export class Impl implements Methods<InternalState> {
     };
   }
   {{#if tick}}
-  onTick(state: InternalState): void {}
+  onTick(state: InternalState, ctx: Context, timeDelta: number): void {}
   {{/if}}
 }
 {{#*inline "renderArg"}}

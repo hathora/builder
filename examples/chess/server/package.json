@@ -1,0 +1,12 @@
+{
+  "name": "chess-server",
+  "version": "0.0.1",
+  "type": "module",
+  "dependencies": {
+    "chess.js": "^0.11.0"
+  },
+  "devDependencies": {
+    "@types/chess.js": "^0.10.1",
+    "typescript": "^4.3.5"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "poker-server",
+  "version": "0.0.1",
+  "type": "module",
+  "dependencies": {
+    "@pairjacks/poker-cards": "^0.2.1"
+  },
+  "devDependencies": {
+    "typescript": "^4.3.5"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "codenames-server",
+  "version": "0.0.1",
+  "type": "module",
+  "devDependencies": {
+    "typescript": "^4.3.5"
+  }
+}
