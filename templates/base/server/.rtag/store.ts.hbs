@@ -5,13 +5,14 @@ import { fileURLToPath } from "url";
 {{/unless}}
 import { existsSync, mkdirSync } from "fs";
 import seedrandom from "seedrandom";
-import { decode, encode } from "msgpackr";
+import { decode } from "msgpackr";
 import { SmartBuffer } from "smart-buffer";
 import dotenv from "dotenv";
 import { register } from "./protocol";
 import LogStore from "./logstore";
 import { ImplWrapper as impl } from "./wrapper";
 import { UserData, Response } from "./base";
+import { encodeState } from "./types";
 
 {{#if (env "PROD_BUILD")}}
 dotenv.config();
@@ -51,7 +52,7 @@ class Store {
         responses.forEach((response, userId) => {
           const user = stateInfo.get(stateId)?.subscriptions?.get(userId);
           if (user !== undefined) {
-            sendUpdate(stateId, null, user, response);
+            sendUpdate(stateId, undefined, user, response);
           }
         });
       });
@@ -212,9 +213,9 @@ function loadState(stateId: StateId) {
   }
 }
 
-function sendUpdate(stateId: StateId, state: State | null, user: UserData, responses: Record<number, Response>) {
-  const userState = state === null ? null : impl.getUserState(state, user);
-  return coordinator.onStateUpdate(stateId, user.id, encode({ state: userState, responses }));
+function sendUpdate(stateId: StateId, state: State | undefined, user: UserData, responses: Record<number, Response>) {
+  const userState = state === undefined ? undefined : impl.getUserState(state, user);
+  return coordinator.onStateUpdate(stateId, user.id, encodeState(userState, responses));
 }
 
 function ctx(rng: ReturnType<seedrandom>, time: number) {
