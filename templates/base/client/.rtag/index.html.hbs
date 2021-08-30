@@ -77,8 +77,8 @@
 {{else if (eq type "union")}}
 <union-input {{#if arg}}arg="{{arg}}" :value="value.{{arg}}"{{else}}:arg="arg" :value="value"{{/if}} :required="{{required}}" @update="update" union="{{typeString}}">
   {{#each options}}
-  <template #{{@key}}="{ arg, value, update }">
-    {{> renderForm required=true}}
+  <template #{{@key}}="{ value, update }">
+    {{> renderForm arg=../arg required=true}}
   </template>
   {{/each}}
 </union-input>

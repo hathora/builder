@@ -12,12 +12,12 @@ export enum {{@key}} {
 {{else if (eq type "union")}}
 export type {{@key}} =
 {{#each options}}
-  | ({type: "{{> renderTypeArg}}"} & {{> renderTypeArg}})
+  | ({_type: "{{> renderTypeArg}}"} & {{> renderTypeArg}})
 {{/each}}
 export const {{@key}} = {
 {{#each options}}
-  is{{> renderTypeArg}}: ({{@../key}}: {{@../key}}): {{@../key}} is ({type: "{{> renderTypeArg}}"} & {{> renderTypeArg}}) => {{@../key}}.type === "{{> renderTypeArg}}",
-  {{> renderTypeArg}}: (val: {{> renderTypeArg}}): {{@../key}} => ({...val, type: "{{> renderTypeArg}}"}),
+  is{{> renderTypeArg}}: (val: {{@../key}}): val is ({_type: "{{> renderTypeArg}}"} & {{> renderTypeArg}}) => val._type === "{{> renderTypeArg}}",
+  {{> renderTypeArg}}: (val: {{> renderTypeArg}}): {{@../key}} => ({...val, _type: "{{> renderTypeArg}}"}),
 {{/each}}
 }
 {{else if (eq type "object")}}

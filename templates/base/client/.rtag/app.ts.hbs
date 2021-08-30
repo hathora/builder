@@ -177,9 +177,9 @@ Vue.component("union-input", {
   },
   template: `<div class="union-input">
       <div class="vue-select">
-        <v-select :value="value.type" :options="options" @input="updateType"></v-select>
+        <v-select :value="value._type" :options="options" @input="updateType"></v-select>
       </div>
-      <slot :name="value.type" :value="value" :update="update" :arg="value.type"></slot>
+      <slot :name="value._type" :value="value" :update="update"></slot>
     </div>`,
   created() {
     this.$emit("update", this.arg, this.value, !this.required);
@@ -189,8 +189,10 @@ Vue.component("union-input", {
       this.$emit("update", this.arg, value, valid);
     },
     updateType(value: string | null) {
-      const val = value === null ? undefined : { type: value };
-      this.$emit("update", this.arg, val, !this.required || val !== undefined);
+      this.$emit("update", this.arg, { _type: undefined }, !this.required);
+      this.$nextTick(() => {
+        this.$emit("update", this.arg, { _type: value }, !this.required);
+      });
     },
   },
   computed: {
