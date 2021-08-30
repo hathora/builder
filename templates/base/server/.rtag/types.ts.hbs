@@ -1,4 +1,5 @@
 import { SmartBuffer } from "smart-buffer";
+import varint from "varint";
 import { Response } from "./base";
 
 {{#each types}}
@@ -156,7 +157,7 @@ function writeNumber(buf: SmartBuffer, x: number) {
   buf.writeDoubleLE(x);
 }
 function writeString(buf: SmartBuffer, x: string) {
-  buf.writeUInt32LE(x.length);
+  buf.writeBuffer(Buffer.from(varint.encode(x.length)));
   buf.writeString(x);
 }
 function writeOptional<T>(buf: SmartBuffer, x: T | undefined, innerWrite: (buf: SmartBuffer, x: T) => void) {
@@ -166,7 +167,7 @@ function writeOptional<T>(buf: SmartBuffer, x: T | undefined, innerWrite: (buf: 
   }
 }
 function writeArray<T>(buf: SmartBuffer, x: T[], innerWrite: (buf: SmartBuffer, x: T) => void) {
-  buf.writeUInt32LE(x.length);
+  buf.writeBuffer(Buffer.from(varint.encode(x.length)));
   for (let i = 0; i < x.length; i++) {
     innerWrite(buf, x[i]);
   }
@@ -182,13 +183,16 @@ function parseNumber(buf: SmartBuffer): number {
   return buf.readDoubleLE();
 }
 function parseString(buf: SmartBuffer): string {
-  return buf.readString(buf.readUInt32LE());
+  const len = varint.decode(buf.internalBuffer, buf.readOffset);
+  buf.readOffset += varint.decode.bytes;
+  return buf.readString(len);
 }
 function parseOptional<T>(buf: SmartBuffer, innerParse: (buf: SmartBuffer) => T): T | undefined {
   return parseBoolean(buf) ? innerParse(buf) : undefined;
 }
 function parseArray<T>(buf: SmartBuffer, innerParse: (buf: SmartBuffer) => T): T[] {
-  const len = buf.readUInt32LE();
+  const len = varint.decode(buf.internalBuffer, buf.readOffset);
+  buf.readOffset += varint.decode.bytes;
   const arr = [];
   for (let i = 0; i < len; i++) {
     arr.push(innerParse(buf));
