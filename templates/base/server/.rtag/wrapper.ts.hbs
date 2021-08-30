@@ -3,7 +3,6 @@ import module from "module";
 import dependencyTree from "dependency-tree";
 import chokidar from "chokidar";
 {{/unless}}
-import { decode } from "msgpackr";
 import { Context } from "./methods";
 import { UserData, Response, Method } from "./base";
 import {
@@ -97,7 +96,7 @@ const handler: ProxyHandler<any> = {
 
 export const ImplWrapper = {
   initialize(user: UserData, ctx: Context, argsBuffer: Buffer): State {
-    const state = impl.createGame(user, ctx, decode(argsBuffer) as {{makeRequestName initialize}});
+    const state = impl.createGame(user, ctx, {{makeRequestName initialize}}.decode(argsBuffer));
     return new Proxy(state, handler);
   },
   getResult(state: State, user: UserData, method: Method, ctx: Context, argsBuffer: Buffer): Response | undefined {
@@ -105,7 +104,7 @@ export const ImplWrapper = {
       {{#each methods}}
       {{#if (ne @key ../initialize)}}
       case Method.{{uppercase @key}}:
-        return impl.{{@key}}(state, user, ctx, decode(argsBuffer) as {{makeRequestName @key}});
+        return impl.{{@key}}(state, user, ctx, {{makeRequestName @key}}.decode(argsBuffer));
       {{/if}}
       {{/each}}
       default:

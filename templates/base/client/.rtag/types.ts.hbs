@@ -1,3 +1,6 @@
+import { SmartBuffer } from "smart-buffer";
+import { Response } from "./base";
+
 {{#each types}}
 {{#if (eq type "enum")}}
 export enum {{@key}} {
@@ -8,27 +11,70 @@ export enum {{@key}} {
 {{else if (eq type "object")}}
 export type {{@key}} = {
   {{#each properties}}
-  {{@key}}: {{> renderArg}};
+  {{@key}}: {{> renderTypeArg}};
   {{/each}}
 };
 {{else}}
-export type {{@key}} = {{> renderArg}};
+export type {{@key}} = {{> renderTypeArg}};
 {{/if}}
 {{/each}}
 {{#each methods}}
 export interface {{makeRequestName @key}} {
   {{#each properties}}
-  {{@key}}: {{> renderArg}};
+  {{@key}}: {{> renderTypeArg}};
   {{/each}}
 }
 {{/each}}
-{{#*inline "renderArg"}}
+
+{{#each types}}
+{{#if (eq type "object")}}
+export const {{@key}} = {
+  encode(obj: {{@key}}, buf?: SmartBuffer) {
+    buf ??= new SmartBuffer();
+    {{#each properties}}
+    {{> renderEncodeArg arg=@key}};
+    {{/each}}
+    return buf.toBuffer();
+  },
+  decode(buf: Buffer | SmartBuffer): {{@key}} {
+    const sb = buf instanceof Buffer ? SmartBuffer.fromBuffer(buf) : buf;
+    return {
+      {{#each properties}}
+      {{@key}}: {{> renderDecodeArg}},
+      {{/each}}
+    };
+  }
+}
+{{/if}}
+{{/each}}
+{{#each methods}}
+{{#if (eq type "object")}}
+export const {{makeRequestName @key}} = {
+  encode(obj: {{makeRequestName @key}}, buf?: SmartBuffer) {
+    buf ??= new SmartBuffer();
+    {{#each properties}}
+    {{> renderEncodeArg arg=@key}};
+    {{/each}}
+    return buf.toBuffer();
+  },
+  decode(buf: Buffer | SmartBuffer): {{makeRequestName @key}} {
+    const sb = buf instanceof Buffer ? SmartBuffer.fromBuffer(buf) : buf;
+    return {
+      {{#each properties}}
+      {{@key}}: {{> renderDecodeArg}},
+      {{/each}}
+    };
+  }
+}
+{{/if}}
+{{/each}}
+{{#*inline "renderTypeArg"}}
 {{#if alias}}
 {{typeString}}
 {{~else if (eq type "optional")}}
-{{> renderArg item}} | undefined
+{{> renderTypeArg item}} | undefined
 {{~else if (eq type "array")}}
-{{> renderArg items}}[]
+{{> renderTypeArg items}}[]
 {{~else if (eq type "number")}}
 number
 {{~else if (eq type "string")}}
@@ -36,6 +82,116 @@ string
 {{~else if (eq type "boolean")}}
 boolean
 {{~else if (eq type "plugin")}}
-{{> renderArg item}}
+{{> renderTypeArg item}}
 {{~/if}}
 {{~/inline}}
+{{#*inline "renderEncodeArg"}}
+{{#if (eq type "optional")}}
+writeOptional(buf, obj.{{arg}}, (buf, x) => {{> renderEncodeArg item}})
+{{~else if (eq type "array")}}
+writeArray(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}}, (buf, x) => {{> renderEncodeArg items}})
+{{~else if (eq type "enum")}}
+writeUInt(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}})
+{{~else if (eq type "number")}}
+writeNumber(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}})
+{{~else if (eq type "string")}}
+writeString(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}})
+{{~else if (eq type "boolean")}}
+writeBoolean(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}})
+{{~else if (eq type "plugin")}}
+{{> renderEncodeArg item arg=@key}}
+{{~else}}
+{{typeString}}.encode({{#if arg}}obj.{{arg}}{{else}}x{{/if}}, buf)
+{{~/if}}
+{{/inline}}
+{{#*inline "renderDecodeArg"}}
+{{#if (eq type "optional")}}
+parseOptional(sb, () => {{> renderDecodeArg item}})
+{{~else if (eq type "array")}}
+parseArray(sb, () => {{> renderDecodeArg items}})
+{{~else if (eq type "enum")}}
+parseUInt(sb)
+{{~else if (eq type "number")}}
+parseNumber(sb)
+{{~else if (eq type "string")}}
+parseString(sb)
+{{~else if (eq type "boolean")}}
+parseBoolean(sb)
+{{~else if (eq type "plugin")}}
+{{> renderDecodeArg item}}
+{{~else}}
+{{typeString}}.decode(sb)
+{{~/if}}
+{{/inline}}
+
+export function encodeState(state: PlayerState | undefined, responses: Record<number, Response>) {
+  const buf = new SmartBuffer();
+  writeOptional(buf, state, (buf, x) => PlayerState.encode(x, buf));
+  Object.entries(responses).forEach(([msgId, response]) => {
+    buf.writeUInt32LE(Number(msgId));
+    const maybeError = response.type === "error" ? response.error : undefined;
+    writeOptional(buf, maybeError, writeString);
+  });
+  return buf.toBuffer();
+}
+export function decodeState(buf: Buffer | SmartBuffer): { state?: PlayerState; responses: Record<number, Response> } {
+  const sb = buf instanceof Buffer ? SmartBuffer.fromBuffer(buf) : buf;
+  const state = parseOptional(sb, () => PlayerState.decode(sb));
+  const responses: Record<number, Response> = {};
+  while (sb.remaining() > 0) {
+    const msgId = sb.readUInt32LE();
+    const maybeError = parseOptional(sb, () => parseString(sb));
+    responses[msgId] = maybeError === undefined ? Response.ok() : Response.error(maybeError);
+  }
+  return { state, responses };
+}
+
+function writeUInt(buf: SmartBuffer, x: number) {
+  buf.writeUInt8(x);
+}
+function writeBoolean(buf: SmartBuffer, x: boolean) {
+  buf.writeUInt8(x ? 1 : 0);
+}
+function writeNumber(buf: SmartBuffer, x: number) {
+  buf.writeDoubleLE(x);
+}
+function writeString(buf: SmartBuffer, x: string) {
+  buf.writeUInt32LE(x.length);
+  buf.writeString(x);
+}
+function writeOptional<T>(buf: SmartBuffer, x: T | undefined, innerWrite: (buf: SmartBuffer, x: T) => void) {
+  writeBoolean(buf, x !== undefined);
+  if (x !== undefined) {
+    innerWrite(buf, x);
+  }
+}
+function writeArray<T>(buf: SmartBuffer, x: T[], innerWrite: (buf: SmartBuffer, x: T) => void) {
+  buf.writeUInt32LE(x.length);
+  for (let i = 0; i < x.length; i++) {
+    innerWrite(buf, x[i]);
+  }
+}
+
+function parseUInt(buf: SmartBuffer): number {
+  return buf.readUInt8();
+}
+function parseBoolean(buf: SmartBuffer): boolean {
+  return buf.readUInt8() > 0;
+}
+function parseNumber(buf: SmartBuffer): number {
+  return buf.readDoubleLE();
+}
+function parseString(buf: SmartBuffer): string {
+  return buf.readString(buf.readUInt32LE());
+}
+function parseOptional<T>(buf: SmartBuffer, innerParse: (buf: SmartBuffer) => T): T | undefined {
+  return parseBoolean(buf) ? innerParse(buf) : undefined;
+}
+function parseArray<T>(buf: SmartBuffer, innerParse: (buf: SmartBuffer) => T): T[] {
+  const len = buf.readUInt32LE();
+  const arr = [];
+  for (let i = 0; i < len; i++) {
+    arr.push(innerParse(buf));
+  }
+  return arr;
+}
