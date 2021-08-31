@@ -1,4 +1,5 @@
 import { RtagClient } from "./client";
+import { Response } from "./base";
 import * as Types from "./types";
 import Vue from "vue";
 import VueRouter from "vue-router";
@@ -66,7 +67,7 @@ Vue.component("method-form", {
         return;
       }
       try {
-        const res: Types.Response = await this.$root.$data.connection[this.method](this.value);
+        const res: Response = await this.$root.$data.connection[this.method](this.value);
         if (res.type === "error") {
           this.$toasted.error(JSON.stringify(res.error));
         } else {
