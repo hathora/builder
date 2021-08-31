@@ -32,7 +32,11 @@ function patch(obj: any, val: any) {
     if (typeof v === "object" && k in obj && obj[k] !== undefined) {
       patch(obj[k], v);
     } else if (v === DELETED) {
-      obj.splice(Number(k), 1);
+      if (Array.isArray(obj)) {
+        obj.splice(Number(k), 1);
+      } else {
+        delete obj[k];
+      }
     } else {
       Vue.set(obj, k, v);
     }
@@ -190,6 +194,7 @@ Vue.component("union-input", {
     },
     updateType(value: string | null) {
       this.$emit("update", this.arg, { _type: undefined }, !this.required);
+      this.$emit("update", this.arg, DELETED, !this.required);
       this.$nextTick(() => {
         this.$emit("update", this.arg, { _type: value }, !this.required);
       });
@@ -197,7 +202,7 @@ Vue.component("union-input", {
   },
   computed: {
     options() {
-      return Object.keys(Types[this.union as keyof typeof Types]).filter((x) => !x.startsWith("is"));
+      return Types[this.union].values();
     },
   },
 });
@@ -223,7 +228,7 @@ Vue.component("enum-input", {
   },
   computed: {
     options() {
-      return Object.entries(Types[this.enum as keyof typeof Types])
+      return Object.entries(Types[this.enum])
         .filter(([_, value]) => typeof value === "number")
         .map(([label, value]) => ({ label, value }));
     },
