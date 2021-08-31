@@ -32,7 +32,11 @@ function patch(obj: any, val: any) {
     if (typeof v === "object" && k in obj && obj[k] !== undefined) {
       patch(obj[k], v);
     } else if (v === DELETED) {
-      obj.splice(Number(k), 1);
+      if (Array.isArray(obj)) {
+        obj.splice(Number(k), 1);
+      } else {
+        delete obj[k];
+      }
     } else {
       Vue.set(obj, k, v);
     }
@@ -168,6 +172,41 @@ Vue.component("array-input", {
   },
 });
 
+Vue.component("union-input", {
+  props: {
+    arg: String,
+    required: Boolean,
+    value: { type: Object, default: () => ({}) },
+    union: String,
+  },
+  template: `<div class="union-input">
+      <div class="vue-select">
+        <v-select :value="value._type" :options="options" @input="updateType"></v-select>
+      </div>
+      <slot :name="value._type" :value="value" :update="update"></slot>
+    </div>`,
+  created() {
+    this.$emit("update", this.arg, this.value, !this.required);
+  },
+  methods: {
+    update(arg: string, value: any, valid: boolean) {
+      this.$emit("update", this.arg, value, valid);
+    },
+    updateType(value: string | null) {
+      this.$emit("update", this.arg, { _type: undefined }, !this.required);
+      this.$emit("update", this.arg, DELETED, !this.required);
+      this.$nextTick(() => {
+        this.$emit("update", this.arg, { _type: value }, !this.required);
+      });
+    },
+  },
+  computed: {
+    options() {
+      return Types[this.union].values();
+    },
+  },
+});
+
 Vue.component("enum-input", {
   props: {
     arg: String,
@@ -189,7 +228,7 @@ Vue.component("enum-input", {
   },
   computed: {
     options() {
-      return Object.entries(Types[this.enum as keyof typeof Types])
+      return Object.entries(Types[this.enum])
         .filter(([_, value]) => typeof value === "number")
         .map(([label, value]) => ({ label, value }));
     },
@@ -262,6 +301,11 @@ Vue.component("array-display", {
         <slot :value="v"></slot>
       </div>
     </span>`,
+});
+
+Vue.component("union-display", {
+  props: { value: Object },
+  template: `<div><slot :name="value._type" :value="value"></slot></div>`,
 });
 
 Vue.component("optional-display", {

@@ -9,6 +9,11 @@ export enum {{@key}} {
   {{label}},
   {{/each}}
 }
+{{else if (eq type "union")}}
+export type {{@key}} =
+{{#each options}}
+  | ({_type: "{{> renderTypeArg}}"} & {{> renderTypeArg}})
+{{/each}}
 {{else if (eq type "object")}}
 export type {{@key}} = {
   {{#each properties}}
@@ -44,7 +49,29 @@ export const {{@key}} = {
       {{@key}}: {{> renderDecodeArg}},
       {{/each}}
     };
-  }
+  },
+}
+{{else if (eq type "union")}}
+export const {{@key}} = {
+  values() {
+    return [{{#each options}}"{{@key}}"{{#unless @last}}, {{/unless}}{{/each}}];
+  },
+  encode(obj: Uni, buf?: SmartBuffer) {
+    buf ??= new SmartBuffer();
+    writeUInt(buf, this.values().indexOf(obj._type));
+    {{#each options}}
+    {{#unless @first}}else {{/unless}}if (obj._type === "{{@key}}") {{@key}}.encode(obj, buf);
+    {{/each}}
+    return buf.toBuffer();
+  },
+  decode(buf: Buffer | SmartBuffer): Uni {
+    const sb = buf instanceof Buffer ? SmartBuffer.fromBuffer(buf) : buf;
+    const type = parseUInt(sb);
+    {{#each options}}
+    {{#unless @first}}else {{/unless}}if (type === {{@index}}) return Object.assign({{@key}}.decode(sb), { _type: "{{@key}}" as const });
+    {{/each}}
+    throw new Error("Invalid union");
+  },
 }
 {{/if}}
 {{/each}}
