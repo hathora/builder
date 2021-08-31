@@ -17,7 +17,7 @@ export type {{@key}} =
 {{else if (eq type "object")}}
 export type {{@key}} = {
   {{#each properties}}
-  {{@key}}: {{> renderTypeArg}};
+  {{@key}}{{#if (eq type "optional")}}?{{/if}}: {{> renderTypeArg}};
   {{/each}}
 };
 {{else}}
@@ -25,11 +25,11 @@ export type {{@key}} = {{> renderTypeArg}};
 {{/if}}
 {{/each}}
 {{#each methods}}
-export interface {{makeRequestName @key}} {
+export type {{makeRequestName @key}} = {
   {{#each properties}}
-  {{@key}}: {{> renderTypeArg}};
+  {{@key}}{{#if (eq type "optional")}}?{{/if}}: {{> renderTypeArg}};
   {{/each}}
-}
+};
 {{/each}}
 
 {{#each types}}
@@ -100,7 +100,7 @@ export const {{makeRequestName @key}} = {
 {{#if alias}}
 {{typeString}}
 {{~else if (eq type "optional")}}
-{{> renderTypeArg item}} | undefined
+{{> renderTypeArg item}}
 {{~else if (eq type "array")}}
 {{> renderTypeArg items}}[]
 {{~else if (eq type "number")}}
