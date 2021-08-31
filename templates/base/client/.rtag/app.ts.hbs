@@ -303,6 +303,11 @@ Vue.component("array-display", {
     </span>`,
 });
 
+Vue.component("union-display", {
+  props: { value: Object },
+  template: `<div><slot :name="value._type" :value="value"></slot></div>`,
+});
+
 Vue.component("optional-display", {
   props: ["value"],
   template: `<span><slot v-if="value !== undefined" :value="value"></slot></span>`,

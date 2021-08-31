@@ -114,6 +114,14 @@
   {{/with}}
 </array-display>
 ],
+{{else if (eq type "union")}}
+<union-display class="union-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}}>
+  {{#each options}}
+  <template #{{@key}}="{ value }">
+    {{> renderState}}
+  </template>
+  {{/each}}
+</union-display>
 {{else if (eq type "optional")}}
 <optional-display class="optional-display" {{#if arg}}:value="value.{{arg}}"{{else}}:value="value"{{/if}} v-slot="{ value }">
   {{#with item}}
