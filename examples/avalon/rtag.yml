@@ -59,6 +59,7 @@ types:
 methods:
   createGame:
   joinGame:
+    test: QuestAttempt[]
   startGame:
     roleList: Role[]
     playerOrder?: Username[]

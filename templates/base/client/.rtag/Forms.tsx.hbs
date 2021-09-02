@@ -1,0 +1,244 @@
+import React, { useState } from "react";
+import ReactDOM from "react-dom";
+import {
+  {{#each methods}}
+  {{#if (ne @key ../initialize)}}
+  {{makeRequestName @key}},
+  {{/if}}
+  {{/each}}
+  {{#each types}}
+  {{@key}},
+  {{/each}}
+} from "./types";
+
+type InputUpdate<T> = (arg: string | number | undefined, value: T) => void;
+type MethodProps<T> = {
+  method: string;
+  initialize: () => T;
+  children: (value: T, update: InputUpdate<T>) => JSX.Element;
+};
+type BaseProps<T> = {
+  arg?: string | number;
+  value: T;
+  update: InputUpdate<T>;
+};
+type ObjectProps<T> = BaseProps<T> & {
+  children: (value: T, update: InputUpdate<any>) => JSX.Element;
+};
+type ArrayProps<T> = BaseProps<T[]> & {
+  initialVal: T;
+  children: (arg: number, value: T, update: InputUpdate<T>) => JSX.Element;
+};
+type OptionalProps<T> = BaseProps<T | undefined> & {
+  initialVal: T;
+  children: (value: T, update: InputUpdate<T>) => JSX.Element;
+};
+type EnumProps = BaseProps<number> & { enum: object };
+
+function MethodForm<T>(props: MethodProps<T>) {
+  const [value, setValue] = useState<T>(props.initialize());
+  console.log("MethodForm", value);
+  return (
+    <div className="method-form">
+      <h3>{props.method}</h3>
+      {props.children(value, (arg, val) => {
+        setValue({ ...val });
+      })}
+      <button onClick={() => setValue(props.initialize())}>Submit</button>
+    </div>
+  );
+}
+
+function ObjectInput<T>(props: ObjectProps<T>) {
+  return (
+    <div className="object-input">
+      {typeof props.arg === "string" ? <span>{props.arg}</span> : ""}
+      {props.children(props.value, (arg, val) => {
+        props.update(props.arg, Object.assign(props.value, { [arg!]: val }));
+      })}
+    </div>
+  );
+}
+
+function ArrayInput<T>(props: ArrayProps<T>) {
+  function swapArgs(i1: number, i2: number) {
+    [props.value[i1], props.value[i2]] = [props.value[i2], props.value[i1]];
+    props.update(props.arg, props.value);
+  }
+  function deleteArg(i: number) {
+    props.value.splice(i, 1);
+    props.update(props.arg, props.value);
+  }
+  return (
+    <div className="array-input">
+      {typeof props.arg === "string" ? <span>{props.arg}</span> : ""}
+      {props.value.map((item, i) => (
+        <div key={i} className="array-item">
+          {props.children(i, item, (arg, val) => {
+            props.update(props.arg, Object.assign(props.value, { [arg!]: val }));
+          })}
+          <button disabled={i === 0} onClick={() => swapArgs(i, i - 1)}>
+            &#8593;
+          </button>
+          <button disabled={i === props.value.length - 1} onClick={() => swapArgs(i, i + 1)}>
+            &#8595;
+          </button>
+          <button onClick={() => deleteArg(i)}>x</button>
+        </div>
+      ))}
+      <button onClick={() => props.update(props.arg, props.value.concat(props.initialVal))}>Add</button>
+    </div>
+  );
+}
+
+function OptionalInput<T>(props: OptionalProps<T>) {
+  return (
+    <div className="optional-input">
+      {typeof props.arg === "string" ? <span>{props.arg}</span> : ""}
+      {props.value !== undefined
+        ? props.children(props.value, (arg, val) => {
+            props.update(props.arg, val);
+          })
+        : ""}
+      <button
+        onClick={() =>
+          props.value === undefined ? props.update(props.arg, props.initialVal) : props.update(props.arg, undefined)
+        }
+      >
+        Toggle
+      </button>
+    </div>
+  );
+}
+
+function EnumInput(props: EnumProps) {
+  return (
+    <div className="enum-input">
+      {typeof props.arg === "string" ? <span>{props.arg}</span> : ""}
+      <select value={props.value} onChange={(e) => props.update(props.arg, Number(e.target.value))}>
+        {Object.entries(props.enum)
+          .filter(([_, value]) => typeof value === "number")
+          .map(([label, value]) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
+      </select>
+    </div>
+  );
+}
+
+function StringInput(props: BaseProps<string>) {
+  return (
+    <div className="string-input">
+      {typeof props.arg === "string" ? <span>{props.arg}</span> : ""}
+      <input type="text" value={props.value} onChange={(e) => props.update(props.arg, e.target.value)}></input>
+    </div>
+  );
+}
+
+function NumberInput(props: BaseProps<number>) {
+  return (
+    <div className="number-input">
+      {typeof props.arg === "string" ? <span>{props.arg}</span> : ""}
+      <input
+        type="number"
+        value={props.value}
+        onChange={(e) => props.update(props.arg, Number(e.target.value))}
+      ></input>
+    </div>
+  );
+}
+
+function Forms() {
+  return (
+    <>
+      {{#each methods}}
+      {{#if (ne @key ../initialize)}}
+      <MethodForm<{{makeRequestName @key}}> method="{{@key}}" initialize={ {{makeRequestName @key}}.default }>
+        {(value, update) => (
+          <>
+            {{> renderForm}}
+          </>
+        )}
+      </MethodForm>
+      {{/if}}
+      {{/each}}
+    </>
+  );
+}
+
+ReactDOM.render(<Forms />, document.getElementById("root"));
+{{#*inline "renderForm"}}
+{{#if (eq type "plugin")}}
+{{#with item}}
+{{> renderForm arg=../arg}}
+{{/with}}
+{{else if (eq type "object")}}
+<ObjectInput<{{> renderTypeArg}}> {{#if (eq arg "_arr")}}arg={arg} value={value}{{else if arg}}arg="{{arg}}" value={value.{{arg}} }{{else}}value={value}{{/if}} update={update}>
+  {(value, update) => (
+    <>
+      {{#each properties}}
+      {{> renderForm arg=@key}}
+      {{/each}}
+    </>
+  )}
+</ObjectInput>
+{{else if (eq type "array")}}
+<ArrayInput<{{> renderTypeArg items}}> {{#if (eq arg "_arr")}}arg={arg} value={value}{{else if arg}}arg="{{arg}}" value={value.{{arg}} }{{else}}value={value}{{/if}} update={update} initialVal={ {{> renderDefault items}} }>
+  {(arg, value, update) => (
+    {{> renderForm items arg="_arr"}}
+  )}
+</ArrayInput>
+{{else if (eq type "optional")}}
+<OptionalInput<{{> renderTypeArg}}> {{#if (eq arg "_arr")}}arg={arg} value={value}{{else if arg}}arg="{{arg}}" value={value.{{arg}} }{{else}}value={value}{{/if}} update={update} initialVal={ {{> renderDefault item}} }>
+  {(value, update) => (
+    {{> renderForm item}}
+  )}
+</OptionalInput>
+{{else if (eq type "union")}}
+NOT IMPLEMENTED
+{{else if (eq type "enum")}}
+<EnumInput {{#if (eq arg "_arr")}}arg={arg} value={value}{{else if arg}}arg="{{arg}}" value={value.{{arg}} }{{else}}value={value}{{/if}} update={update} enum={ {{typeString}} } />
+{{else if (eq type "string")}}
+<StringInput {{#if (eq arg "_arr")}}arg={arg} value={value}{{else if arg}}arg="{{arg}}" value={value.{{arg}} }{{else}}value={value}{{/if}} update={update} />
+{{else if (eq type "number")}}
+<NumberInput {{#if (eq arg "_arr")}}arg={arg} value={value}{{else if arg}}arg="{{arg}}" value={value.{{arg}} }{{else}}value={value}{{/if}} update={update} />
+{{else if (eq type "boolean")}}
+<BooleanInput {{#if (eq arg "_arr")}}arg={arg} value={value}{{else if arg}}arg="{{arg}}" value={value.{{arg}} }{{else}}value={value}{{/if}} update={update} />
+{{/if}}
+{{/inline}}
+{{#*inline "renderTypeArg"}}
+{{#if alias}}
+{{typeString}}
+{{~else if (eq type "optional")}}
+{{> renderTypeArg item}}
+{{~else if (eq type "array")}}
+{{> renderTypeArg items}}[]
+{{~else if (eq type "number")}}
+number
+{{~else if (eq type "string")}}
+string
+{{~else if (eq type "boolean")}}
+boolean
+{{~else if (eq type "plugin")}}
+{{> renderTypeArg item}}
+{{~else}}
+{{makeRequestName @key}}
+{{~/if}}
+{{/inline}}
+{{#*inline "renderDefault"}}
+{{#if (eq type "array")}}
+[]
+{{~else if (eq type "number")}}
+0
+{{~else if (eq type "string")}}
+""
+{{~else if (eq type "enum")}}
+0
+{{~else if (eq type "boolean")}}
+false
+{{~else if (eq type "optional")}}
+undefined
+{{~else if (eq type "object")}}
+{{typeString}}.default()
+{{/if}}
+{{/inline}}
