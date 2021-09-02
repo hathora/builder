@@ -31,7 +31,7 @@ export class Impl implements Methods<InternalState> {
     return {
       {{#with (lookup types userState)}}
       {{#each properties}}
-      {{> renderArg}}
+      {{@key}}: {{> renderDefault}},
       {{/each}}
       {{/with}}
     };
@@ -40,22 +40,20 @@ export class Impl implements Methods<InternalState> {
   onTick(state: InternalState, ctx: Context, timeDelta: number): void {}
   {{/if}}
 }
-{{#*inline "renderArg"}}
+{{#*inline "renderDefault"}}
 {{#if (eq type "array")}}
-{{@key}}: [],
-{{else if (eq type "number")}}
-{{@key}}: 0,
-{{else if (eq type "string")}}
-{{@key}}: "",
-{{else if (eq type "enum")}}
-{{@key}}: {{typeString}}.{{options.[0].label}},
-{{else if (eq type "optional")}}
-{{@key}}: undefined,
-{{else if (eq type "object")}}
-{{@key}}: {
-{{#each properties}}
-  {{> renderArg}}
-{{/each}}
-},
+[]
+{{~else if (eq type "number")}}
+0
+{{~else if (eq type "string")}}
+""
+{{~else if (eq type "enum")}}
+0
+{{~else if (eq type "boolean")}}
+false
+{{~else if (eq type "optional")}}
+undefined
+{{~else if (eq type "object")}}
+{{typeString}}.default()
 {{/if}}
 {{/inline}}

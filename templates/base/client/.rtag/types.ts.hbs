@@ -35,6 +35,13 @@ export type {{makeRequestName @key}} = {
 {{#each types}}
 {{#if (eq type "object")}}
 export const {{@key}} = {
+  default(): {{@key}} {
+    return {
+      {{#each properties}}
+      {{@key}}: {{> renderDefault}},
+      {{/each}}
+    };
+  },
   encode(obj: {{@key}}, buf?: SmartBuffer) {
     buf ??= new SmartBuffer();
     {{#each properties}}
@@ -76,8 +83,14 @@ export const {{@key}} = {
 {{/if}}
 {{/each}}
 {{#each methods}}
-{{#if (eq type "object")}}
 export const {{makeRequestName @key}} = {
+  default(): {{makeRequestName @key}} {
+    return {
+      {{#each properties}}
+      {{@key}}: {{> renderDefault}},
+      {{/each}}
+    };
+  },
   encode(obj: {{makeRequestName @key}}, buf?: SmartBuffer) {
     buf ??= new SmartBuffer();
     {{#each properties}}
@@ -94,7 +107,6 @@ export const {{makeRequestName @key}} = {
     };
   }
 }
-{{/if}}
 {{/each}}
 {{#*inline "renderTypeArg"}}
 {{#if alias}}
@@ -113,6 +125,23 @@ boolean
 {{> renderTypeArg item}}
 {{~/if}}
 {{~/inline}}
+{{#*inline "renderDefault"}}
+{{#if (eq type "array")}}
+[]
+{{~else if (eq type "number")}}
+0
+{{~else if (eq type "string")}}
+""
+{{~else if (eq type "enum")}}
+0
+{{~else if (eq type "boolean")}}
+false
+{{~else if (eq type "optional")}}
+undefined
+{{~else if (eq type "object")}}
+{{typeString}}.default()
+{{/if}}
+{{/inline}}
 {{#*inline "renderEncodeArg"}}
 {{#if (eq type "optional")}}
 writeOptional(buf, obj.{{arg}}, (buf, x) => {{> renderEncodeArg item}})
