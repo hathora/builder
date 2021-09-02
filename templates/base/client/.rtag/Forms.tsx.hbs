@@ -11,27 +11,25 @@ import {
   {{/each}}
 } from "./types";
 
-type InputUpdate<T> = (arg: string | number | undefined, value: T) => void;
 type MethodProps<T> = {
   method: string;
   initialize: () => T;
-  children: (value: T, update: InputUpdate<T>) => JSX.Element;
+  children: (value: T, update: (value: T) => void) => JSX.Element;
 };
 type BaseProps<T> = {
-  arg?: string | number;
   value: T;
-  update: InputUpdate<T>;
+  update: (value: T) => void;
 };
 type ObjectProps<T> = BaseProps<T> & {
-  children: (value: T, update: InputUpdate<any>) => JSX.Element;
+  children: (value: T, update: (value: any, key: string) => void) => JSX.Element;
 };
 type ArrayProps<T> = BaseProps<T[]> & {
   initialVal: T;
-  children: (arg: number, value: T, update: InputUpdate<T>) => JSX.Element;
+  children: (i: number, value: T, update: (value: T, idx: number) => void) => JSX.Element;
 };
 type OptionalProps<T> = BaseProps<T | undefined> & {
   initialVal: T;
-  children: (value: T, update: InputUpdate<T>) => JSX.Element;
+  children: (value: T, update: (value: T) => void) => JSX.Element;
 };
 type EnumProps = BaseProps<number> & { enum: object };
 
@@ -41,7 +39,7 @@ function MethodForm<T>(props: MethodProps<T>) {
   return (
     <div className="method-form">
       <h3>{props.method}</h3>
-      {props.children(value, (arg, val) => {
+      {props.children(value, (val) => {
         setValue({ ...val });
       })}
       <button onClick={() => setValue(props.initialize())}>Submit</button>
@@ -52,9 +50,8 @@ function MethodForm<T>(props: MethodProps<T>) {
 function ObjectInput<T>(props: ObjectProps<T>) {
   return (
     <div className="object-input">
-      {typeof props.arg === "string" ? <span>{props.arg}</span> : ""}
-      {props.children(props.value, (arg, val) => {
-        props.update(props.arg, Object.assign(props.value, { [arg!]: val }));
+      {props.children(props.value, (val, key) => {
+        props.update(Object.assign(props.value, { [key!]: val }));
       })}
     </div>
   );
@@ -63,19 +60,18 @@ function ObjectInput<T>(props: ObjectProps<T>) {
 function ArrayInput<T>(props: ArrayProps<T>) {
   function swapArgs(i1: number, i2: number) {
     [props.value[i1], props.value[i2]] = [props.value[i2], props.value[i1]];
-    props.update(props.arg, props.value);
+    props.update(props.value);
   }
   function deleteArg(i: number) {
     props.value.splice(i, 1);
-    props.update(props.arg, props.value);
+    props.update(props.value);
   }
   return (
     <div className="array-input">
-      {typeof props.arg === "string" ? <span>{props.arg}</span> : ""}
       {props.value.map((item, i) => (
         <div key={i} className="array-item">
-          {props.children(i, item, (arg, val) => {
-            props.update(props.arg, Object.assign(props.value, { [arg!]: val }));
+          {props.children(i, item, (val, idx) => {
+            props.update(Object.assign(props.value, { [idx!]: val }));
           })}
           <button disabled={i === 0} onClick={() => swapArgs(i, i - 1)}>
             &#8593;
@@ -86,7 +82,7 @@ function ArrayInput<T>(props: ArrayProps<T>) {
           <button onClick={() => deleteArg(i)}>x</button>
         </div>
       ))}
-      <button onClick={() => props.update(props.arg, props.value.concat(props.initialVal))}>Add</button>
+      <button onClick={() => props.update(props.value.concat(props.initialVal))}>Add</button>
     </div>
   );
 }
@@ -94,17 +90,12 @@ function ArrayInput<T>(props: ArrayProps<T>) {
 function OptionalInput<T>(props: OptionalProps<T>) {
   return (
     <div className="optional-input">
-      {typeof props.arg === "string" ? <span>{props.arg}</span> : ""}
       {props.value !== undefined
-        ? props.children(props.value, (arg, val) => {
-            props.update(props.arg, val);
+        ? props.children(props.value, (val) => {
+            props.update(val);
           })
         : ""}
-      <button
-        onClick={() =>
-          props.value === undefined ? props.update(props.arg, props.initialVal) : props.update(props.arg, undefined)
-        }
-      >
+      <button onClick={() => (props.value === undefined ? props.update(props.initialVal) : props.update(undefined))}>
         Toggle
       </button>
     </div>
@@ -114,12 +105,13 @@ function OptionalInput<T>(props: OptionalProps<T>) {
 function EnumInput(props: EnumProps) {
   return (
     <div className="enum-input">
-      {typeof props.arg === "string" ? <span>{props.arg}</span> : ""}
-      <select value={props.value} onChange={(e) => props.update(props.arg, Number(e.target.value))}>
+      <select value={props.value} onChange={(e) => props.update(Number(e.target.value))}>
         {Object.entries(props.enum)
           .filter(([_, value]) => typeof value === "number")
           .map(([label, value]) => (
-            <option key={value} value={value}>{label}</option>
+            <option key={value} value={value}>
+              {label}
+            </option>
           ))}
       </select>
     </div>
@@ -129,8 +121,7 @@ function EnumInput(props: EnumProps) {
 function StringInput(props: BaseProps<string>) {
   return (
     <div className="string-input">
-      {typeof props.arg === "string" ? <span>{props.arg}</span> : ""}
-      <input type="text" value={props.value} onChange={(e) => props.update(props.arg, e.target.value)}></input>
+      <input type="text" value={props.value} onChange={(e) => props.update(e.target.value)}></input>
     </div>
   );
 }
@@ -138,12 +129,7 @@ function StringInput(props: BaseProps<string>) {
 function NumberInput(props: BaseProps<number>) {
   return (
     <div className="number-input">
-      {typeof props.arg === "string" ? <span>{props.arg}</span> : ""}
-      <input
-        type="number"
-        value={props.value}
-        onChange={(e) => props.update(props.arg, Number(e.target.value))}
-      ></input>
+      <input type="number" value={props.value} onChange={(e) => props.update(Number(e.target.value))}></input>
     </div>
   );
 }
@@ -173,7 +159,7 @@ ReactDOM.render(<Forms />, document.getElementById("root"));
 {{> renderForm arg=../arg}}
 {{/with}}
 {{else if (eq type "object")}}
-<ObjectInput<{{> renderTypeArg}}> {{#if (eq arg "_arr")}}arg={arg} value={value}{{else if arg}}arg="{{arg}}" value={value.{{arg}} }{{else}}value={value}{{/if}} update={update}>
+<ObjectInput<{{> renderTypeArg}}> {{#if (eq arg "_arr")}}value={value} update={(v) => update(v, idx)}{{else if arg}}value={value.{{arg}} } update={(v) => update(v, "{{arg}}")}{{else}}value={value} update={(v) => update(v)}{{/if}}>
   {(value, update) => (
     <>
       {{#each properties}}
@@ -183,13 +169,13 @@ ReactDOM.render(<Forms />, document.getElementById("root"));
   )}
 </ObjectInput>
 {{else if (eq type "array")}}
-<ArrayInput<{{> renderTypeArg items}}> {{#if (eq arg "_arr")}}arg={arg} value={value}{{else if arg}}arg="{{arg}}" value={value.{{arg}} }{{else}}value={value}{{/if}} update={update} initialVal={ {{> renderDefault items}} }>
-  {(arg, value, update) => (
+<ArrayInput<{{> renderTypeArg items}}> {{#if (eq arg "_arr")}}value={value} update={(v) => update(v, idx)}{{else if arg}}value={value.{{arg}} } update={(v) => update(v, "{{arg}}")}{{else}}value={value} update={(v) => update(v)}{{/if}} initialVal={ {{> renderDefault items}} }>
+  {(idx, value, update) => (
     {{> renderForm items arg="_arr"}}
   )}
 </ArrayInput>
 {{else if (eq type "optional")}}
-<OptionalInput<{{> renderTypeArg}}> {{#if (eq arg "_arr")}}arg={arg} value={value}{{else if arg}}arg="{{arg}}" value={value.{{arg}} }{{else}}value={value}{{/if}} update={update} initialVal={ {{> renderDefault item}} }>
+<OptionalInput<{{> renderTypeArg}}> {{#if (eq arg "_arr")}}value={value} update={(v) => update(v, idx)}{{else if arg}}value={value.{{arg}} } update={(v) => update(v, "{{arg}}")}{{else}}value={value} update={(v) => update(v)}{{/if}} initialVal={ {{> renderDefault item}} }>
   {(value, update) => (
     {{> renderForm item}}
   )}
@@ -197,13 +183,13 @@ ReactDOM.render(<Forms />, document.getElementById("root"));
 {{else if (eq type "union")}}
 NOT IMPLEMENTED
 {{else if (eq type "enum")}}
-<EnumInput {{#if (eq arg "_arr")}}arg={arg} value={value}{{else if arg}}arg="{{arg}}" value={value.{{arg}} }{{else}}value={value}{{/if}} update={update} enum={ {{typeString}} } />
+<EnumInput {{#if (eq arg "_arr")}}value={value} update={(v) => update(v, idx)}{{else if arg}}value={value.{{arg}} } update={(v) => update(v, "{{arg}}")}{{else}}value={value} update={(v) => update(v)}{{/if}} enum={ {{typeString}} } />
 {{else if (eq type "string")}}
-<StringInput {{#if (eq arg "_arr")}}arg={arg} value={value}{{else if arg}}arg="{{arg}}" value={value.{{arg}} }{{else}}value={value}{{/if}} update={update} />
+<StringInput {{#if (eq arg "_arr")}}value={value} update={(v) => update(v, idx)}{{else if arg}}value={value.{{arg}} } update={(v) => update(v, "{{arg}}")}{{else}}value={value} update={(v) => update(v)}{{/if}} />
 {{else if (eq type "number")}}
-<NumberInput {{#if (eq arg "_arr")}}arg={arg} value={value}{{else if arg}}arg="{{arg}}" value={value.{{arg}} }{{else}}value={value}{{/if}} update={update} />
+<NumberInput {{#if (eq arg "_arr")}}value={value} update={(v) => update(v, idx)}{{else if arg}}value={value.{{arg}} } update={(v) => update(v, "{{arg}}")}{{else}}value={value} update={(v) => update(v)}{{/if}} />
 {{else if (eq type "boolean")}}
-<BooleanInput {{#if (eq arg "_arr")}}arg={arg} value={value}{{else if arg}}arg="{{arg}}" value={value.{{arg}} }{{else}}value={value}{{/if}} update={update} />
+<BooleanInput {{#if (eq arg "_arr")}}value={value} update={(v) => update(v, idx)}{{else if arg}}value={value.{{arg}} } update={(v) => update(v, "{{arg}}")}{{else}}value={value} update={(v) => update(v)}{{/if}} />
 {{/if}}
 {{/inline}}
 {{#*inline "renderTypeArg"}}
