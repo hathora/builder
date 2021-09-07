@@ -119,6 +119,17 @@ function NumberInput(props: BaseProps<number>) {
   );
 }
 
+function BooleanInput(props: BaseProps<boolean>) {
+  return (
+    <div className="boolean-input">
+      <select value={props.value.toString()} onChange={(e) => props.update(e.target.value === "true" ? true : false)}>
+        <option>false</option>
+        <option>true</option>
+      </select>
+    </div>
+  );
+}
+
 {{#each types}}
 {{#if (eq type "object")}}
 function {{@key}}Input({ value, update }: BaseProps<{{@key}}>) {
