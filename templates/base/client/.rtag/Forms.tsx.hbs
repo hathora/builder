@@ -20,14 +20,12 @@ type BaseProps<T> = {
   value: T;
   update: (value: T) => void;
 };
-type ArrayProps<T> = BaseProps<T[]> & {
+type ContainerProps<T> = {
   initialVal: T;
   children: (value: T, update: (value: T) => void) => JSX.Element;
 };
-type OptionalProps<T> = BaseProps<T | undefined> & {
-  initialVal: T;
-  children: (value: T, update: (value: T) => void) => JSX.Element;
-};
+type ArrayProps<T> = BaseProps<T[]> & ContainerProps<T>;
+type OptionalProps<T> = BaseProps<T | undefined> & ContainerProps<T>;
 type EnumProps = BaseProps<number> & { enum: object };
 
 function MethodForm<T>(props: MethodProps<T>) {
