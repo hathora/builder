@@ -140,6 +140,12 @@ false
 undefined
 {{~else if (eq type "object")}}
 {{typeString}}.default()
+{{~else if (eq type "union")}}
+{{#each options}}
+{{#if @first}}
+{ _type: "{{@key}}", ...{{@key}}.default() }
+{{~/if}}
+{{/each}}
 {{/if}}
 {{/inline}}
 {{#*inline "renderEncodeArg"}}
