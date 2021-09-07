@@ -132,6 +132,35 @@ function {{@key}}Input({ value, update }: BaseProps<{{@key}}>) {
   );
 }
 
+{{else if (eq type "union")}}
+function {{@key}}Input({ value, update }: BaseProps<{{@key}}>) {
+  return (
+    <div className="union-input">
+      <select
+        value={value._type}
+        onChange={(e) => {
+          {{#each options}}
+          {{#unless @first}}else {{/unless}}if (e.target.value === "{{@key}}") {
+            update({ _type: "{{@key}}", ...{{@key}}.default() });
+          }
+          {{/each}}
+        }}
+      >
+        {Uni.values().map((val, i) => (
+          <option key={i}>{val}</option>
+        ))}
+      </select>
+      {(() => {
+        {{#each options}}
+        {{#unless @first}}else {{/unless}}if (value._type === "{{@key}}") {
+          return <{{@key}}Input value={value} update={(v) => update({ ...v, _type: "{{@key}}" })} />;
+        }
+        {{/each}}
+      })()}
+    </div>
+  );
+}
+
 {{/if}}
 {{/each}}
 function Forms() {
@@ -162,7 +191,9 @@ ReactDOM.render(<Forms />, document.getElementById("root"));
 {{> renderForm}}
 {{/with}}
 {{else if (eq type "object")}}
-<{{typeString}}Input value={value} update={update}/>
+<{{typeString}}Input {{#if arg}}value={ value.{{arg}} } update={(v) => update({ ...value, {{arg}}: v })}{{else}}value={value} update={update}{{/if}} />
+{{else if (eq type "union")}}
+<{{typeString}}Input {{#if arg}}value={ value.{{arg}} } update={(v) => update({ ...value, {{arg}}: v })}{{else}}value={value} update={update}{{/if}} />
 {{else if (eq type "array")}}
 <ArrayInput<{{> renderTypeArg items}}> {{#if arg}}value={ value.{{arg}} } update={(v) => update({ ...value, {{arg}}: v })}{{else}}value={value} update={update}{{/if}} initialVal={ {{> renderDefault items}} }>
   {(value, update) =>
@@ -175,8 +206,6 @@ ReactDOM.render(<Forms />, document.getElementById("root"));
     {{> renderForm item}}
   }
 </OptionalInput>
-{{else if (eq type "union")}}
-NOT IMPLEMENTED
 {{else if (eq type "enum")}}
 <EnumInput {{#if arg}}value={ value.{{arg}} } update={(v) => update({ ...value, {{arg}}: v })}{{else}}value={value} update={update}{{/if}} enum={ {{typeString}} } />
 {{else if (eq type "string")}}
