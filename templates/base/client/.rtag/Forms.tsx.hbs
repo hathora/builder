@@ -20,9 +20,6 @@ type BaseProps<T> = {
   value: T;
   update: (value: T) => void;
 };
-type ObjectProps<T> = BaseProps<T> & {
-  children: (value: T, update: (value: any, key: string) => void) => JSX.Element;
-};
 type ArrayProps<T> = BaseProps<T[]> & {
   initialVal: T;
   children: (value: T, update: (value: T) => void) => JSX.Element;
@@ -43,16 +40,6 @@ function MethodForm<T>(props: MethodProps<T>) {
         setValue({ ...val });
       })}
       <button onClick={() => setValue(props.initialize())}>Submit</button>
-    </div>
-  );
-}
-
-function ObjectInput<T>(props: ObjectProps<T>) {
-  return (
-    <div className="object-input">
-      {props.children(props.value, (val, key) => {
-        props.update(Object.assign(props.value, { [key]: val }));
-      })}
     </div>
   );
 }
@@ -134,6 +121,21 @@ function NumberInput(props: BaseProps<number>) {
   );
 }
 
+{{#each types}}
+{{#if (eq type "object")}}
+function {{@key}}Input({ value, update }: BaseProps<{{@key}}>) {
+  return (
+    <div className="object-input">
+      {{#each properties}}
+      <span>{{@key}}</span>
+      {{> renderForm arg=@key}}
+      {{/each}}
+    </div>
+  );
+}
+
+{{/if}}
+{{/each}}
 function Forms() {
   return (
     <>
@@ -142,7 +144,10 @@ function Forms() {
       <MethodForm<{{makeRequestName @key}}> method="{{@key}}" initialize={ {{makeRequestName @key}}.default }>
         {(value, update) => (
           <>
-            {{> renderForm}}
+            {{#each properties}}
+            <span>{{@key}}</span>
+            {{> renderForm arg=@key}}
+            {{/each}}
           </>
         )}
       </MethodForm>
@@ -156,40 +161,32 @@ ReactDOM.render(<Forms />, document.getElementById("root"));
 {{#*inline "renderForm"}}
 {{#if (eq type "plugin")}}
 {{#with item}}
-{{> renderForm arg=../arg}}
+{{> renderForm}}
 {{/with}}
 {{else if (eq type "object")}}
-<ObjectInput<{{> renderTypeArg}}> {{#if arg}}value={ value.{{arg}} } update={(v) => update(v, "{{arg}}")}{{else}}value={value} update={update}{{/if}}>
-  {(value, update) => (
-    <>
-      {{#each properties}}
-      {{> renderForm arg=@key}}
-      {{/each}}
-    </>
-  )}
-</ObjectInput>
+<{{typeString}}Input value={value} update={update}/>
 {{else if (eq type "array")}}
-<ArrayInput<{{> renderTypeArg items}}> {{#if arg}}value={ value.{{arg}} } update={(v) => update(v, "{{arg}}")}{{else}}value={value} update={update}{{/if}} initialVal={ {{> renderDefault items}} }>
-  {(value, update) => (
+<ArrayInput<{{> renderTypeArg items}}> {{#if arg}}value={ value.{{arg}} } update={(v) => update({ ...value, {{arg}}: v })}{{else}}value={value} update={update}{{/if}} initialVal={ {{> renderDefault items}} }>
+  {(value, update) =>
     {{> renderForm items}}
-  )}
+  }
 </ArrayInput>
 {{else if (eq type "optional")}}
-<OptionalInput<{{> renderTypeArg}}> {{#if arg}}value={ value.{{arg}} } update={(v) => update(v, "{{arg}}")}{{else}}value={value} update={update}{{/if}} initialVal={ {{> renderDefault item}} }>
-  {(value, update) => (
+<OptionalInput<{{> renderTypeArg}}> {{#if arg}}value={ value.{{arg}} } update={(v) => update({ ...value, {{arg}}: v })}{{else}}value={value} update={update}{{/if}} initialVal={ {{> renderDefault item}} }>
+  {(value, update) =>
     {{> renderForm item}}
-  )}
+  }
 </OptionalInput>
 {{else if (eq type "union")}}
 NOT IMPLEMENTED
 {{else if (eq type "enum")}}
-<EnumInput {{#if arg}}value={ value.{{arg}} } update={(v) => update(v, "{{arg}}")}{{else}}value={value} update={update}{{/if}} enum={ {{typeString}} } />
+<EnumInput {{#if arg}}value={ value.{{arg}} } update={(v) => update({ ...value, {{arg}}: v })}{{else}}value={value} update={update}{{/if}} enum={ {{typeString}} } />
 {{else if (eq type "string")}}
-<StringInput {{#if arg}}value={ value.{{arg}} } update={(v) => update(v, "{{arg}}")}{{else}}value={value} update={update}{{/if}} />
+<StringInput {{#if arg}}value={ value.{{arg}} } update={(v) => update({ ...value, {{arg}}: v })}{{else}}value={value} update={update}{{/if}} />
 {{else if (eq type "number")}}
-<NumberInput {{#if arg}}value={ value.{{arg}} } update={(v) => update(v, "{{arg}}")}{{else}}value={value} update={update}{{/if}} />
+<NumberInput {{#if arg}}value={ value.{{arg}} } update={(v) => update({ ...value, {{arg}}: v })}{{else}}value={value} update={update}{{/if}} />
 {{else if (eq type "boolean")}}
-<BooleanInput {{#if arg}}value={ value.{{arg}} } update={(v) => update(v, "{{arg}}")}{{else}}value={value} update={update}{{/if}} />
+<BooleanInput {{#if arg}}value={ value.{{arg}} } update={(v) => update({ ...value, {{arg}}: v })}{{else}}value={value} update={update}{{/if}} />
 {{/if}}
 {{/inline}}
 {{#*inline "renderTypeArg"}}
