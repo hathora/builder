@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import ReactDOM from "react-dom";
+import { RtagConnection } from "./client";
+import { Response } from "./base";
 import {
   {{#each methods}}
   {{#if (ne @key ../initialize)}}
@@ -13,6 +14,7 @@ import {
 
 type MethodProps<T> = {
   method: string;
+  submit: (value: T) => Promise<Response>;
   initialize: () => T;
   children: (value: T, update: (value: T) => void) => JSX.Element;
 };
@@ -34,10 +36,15 @@ function MethodForm<T>(props: MethodProps<T>) {
   return (
     <div className="method-form">
       <h3>{props.method}</h3>
-      {props.children(value, (val) => {
-        setValue({ ...val });
-      })}
-      <button onClick={() => setValue(props.initialize())}>Submit</button>
+      {props.children(value, setValue)}
+      <button
+        onClick={async () => {
+          console.log(await props.submit(value));
+          setValue(props.initialize());
+        }}
+      >
+        Submit
+      </button>
     </div>
   );
 }
@@ -174,12 +181,16 @@ function {{@key}}Input({ value, update }: BaseProps<{{@key}}>) {
 
 {{/if}}
 {{/each}}
-function Forms() {
+export function Forms(client: RtagConnection) {
   return (
     <>
       {{#each methods}}
       {{#if (ne @key ../initialize)}}
-      <MethodForm<{{makeRequestName @key}}> method="{{@key}}" initialize={ {{makeRequestName @key}}.default }>
+      <MethodForm<{{makeRequestName @key}}>
+        method="{{@key}}"
+        submit={client.{{@key}}.bind(client)}
+        initialize={ {{makeRequestName @key}}.default }
+      >
         {(value, update) => (
           <div className="object-input">
             {{#each properties}}
@@ -194,8 +205,6 @@ function Forms() {
     </>
   );
 }
-
-ReactDOM.render(<Forms />, document.getElementById("root"));
 {{#*inline "renderForm"}}
 {{#if (eq type "plugin")}}
 {{#with item}}
