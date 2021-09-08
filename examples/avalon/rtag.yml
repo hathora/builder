@@ -1,7 +1,6 @@
 types:
   Username: string
   QuestId: number
-  RoleInfos: RoleInfo[]
 
   Role:
     - MERLIN
@@ -48,7 +47,7 @@ types:
     numFailures: number
   PlayerState:
     status: GameStatus
-    rolesInfo: RoleInfos
+    rolesInfo: RoleInfo[]
     creator: Username
     players: Username[]
     role?: Role
@@ -58,6 +57,7 @@ types:
   Uni:
     - RoleInfo
     - PlayerAndVote
+    - Username
 
 methods:
   createGame:

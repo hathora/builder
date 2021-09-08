@@ -152,7 +152,7 @@ function {{@key}}Input({ value, update }: BaseProps<{{@key}}>) {
         onChange={(e) => {
           {{#each options}}
           {{#unless @first}}else {{/unless}}if (e.target.value === "{{@key}}") {
-            update({ _type: "{{@key}}", ...{{@key}}.default() });
+            update({ type: "{{@key}}", val: {{> renderDefault}} });
           }
           {{/each}}
         }}
@@ -163,8 +163,8 @@ function {{@key}}Input({ value, update }: BaseProps<{{@key}}>) {
       </select>
       {(() => {
         {{#each options}}
-        {{#unless @first}}else {{/unless}}if (value._type === "{{@key}}") {
-          return <{{@key}}Input value={value} update={(v) => update({ _type: "{{@key}}", ...v })} />;
+        {{#unless @first}}else {{/unless}}if (value.type === "{{@key}}") {
+          return {{> renderForm arg="val"}}
         }
         {{/each}}
       })()}

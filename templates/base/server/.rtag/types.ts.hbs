@@ -10,10 +10,7 @@ export enum {{@key}} {
   {{/each}}
 }
 {{else if (eq type "union")}}
-export type {{@key}} =
-{{#each options}}
-  | ({_type: "{{> renderTypeArg}}"} & {{> renderTypeArg}})
-{{/each}}
+export type {{@key}} = {{#each options}}{{#unless @first}} | {{/unless}}{ type: "{{> renderTypeArg}}"; val: {{> renderTypeArg}} }{{/each}};
 {{else if (eq type "object")}}
 export type {{@key}} = {
   {{#each properties}}
@@ -35,6 +32,13 @@ export type {{makeRequestName @key}} = {
 {{#each types}}
 {{#if (eq type "object")}}
 export const {{@key}} = {
+  default(): {{@key}} {
+    return {
+      {{#each properties}}
+      {{@key}}: {{> renderDefault}},
+      {{/each}}
+    };
+  },
   encode(obj: {{@key}}, buf?: SmartBuffer) {
     buf ??= new SmartBuffer();
     {{#each properties}}
@@ -58,9 +62,12 @@ export const {{@key}} = {
   },
   encode(obj: Uni, buf?: SmartBuffer) {
     buf ??= new SmartBuffer();
-    writeUInt(buf, this.values().indexOf(obj._type));
+    writeUInt(buf, this.values().indexOf(obj.type));
     {{#each options}}
-    {{#unless @first}}else {{/unless}}if (obj._type === "{{@key}}") {{@key}}.encode(obj, buf);
+    {{#unless @first}}else {{/unless}}if (obj.type === "{{@key}}") {
+      const x = obj.val;
+      {{> renderEncodeArg}};
+    }
     {{/each}}
     return buf.toBuffer();
   },
@@ -68,7 +75,9 @@ export const {{@key}} = {
     const sb = buf instanceof Buffer ? SmartBuffer.fromBuffer(buf) : buf;
     const type = parseUInt(sb);
     {{#each options}}
-    {{#unless @first}}else {{/unless}}if (type === {{@index}}) return Object.assign({{@key}}.decode(sb), { _type: "{{@key}}" as const });
+    {{#unless @first}}else {{/unless}}if (type === {{@index}}) {
+      return { type: "{{@key}}", val: {{> renderDecodeArg}} };
+    }
     {{/each}}
     throw new Error("Invalid union");
   },
@@ -76,8 +85,14 @@ export const {{@key}} = {
 {{/if}}
 {{/each}}
 {{#each methods}}
-{{#if (eq type "object")}}
 export const {{makeRequestName @key}} = {
+  default(): {{makeRequestName @key}} {
+    return {
+      {{#each properties}}
+      {{@key}}: {{> renderDefault}},
+      {{/each}}
+    };
+  },
   encode(obj: {{makeRequestName @key}}, buf?: SmartBuffer) {
     buf ??= new SmartBuffer();
     {{#each properties}}
@@ -94,7 +109,6 @@ export const {{makeRequestName @key}} = {
     };
   }
 }
-{{/if}}
 {{/each}}
 {{#*inline "renderTypeArg"}}
 {{#if alias}}
@@ -113,6 +127,29 @@ boolean
 {{> renderTypeArg item}}
 {{~/if}}
 {{~/inline}}
+{{#*inline "renderDefault"}}
+{{#if (eq type "array")}}
+[]
+{{~else if (eq type "number")}}
+0
+{{~else if (eq type "string")}}
+""
+{{~else if (eq type "enum")}}
+0
+{{~else if (eq type "boolean")}}
+false
+{{~else if (eq type "optional")}}
+undefined
+{{~else if (eq type "object")}}
+{{typeString}}.default()
+{{~else if (eq type "union")}}
+{{#each options}}
+{{#if @first}}
+{ type: "{{@key}}", val: {{@key}}.default() }
+{{~/if}}
+{{/each}}
+{{/if}}
+{{/inline}}
 {{#*inline "renderEncodeArg"}}
 {{#if (eq type "optional")}}
 writeOptional(buf, obj.{{arg}}, (buf, x) => {{> renderEncodeArg item}})
