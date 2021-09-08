@@ -181,12 +181,12 @@ function Forms() {
       {{#if (ne @key ../initialize)}}
       <MethodForm<{{makeRequestName @key}}> method="{{@key}}" initialize={ {{makeRequestName @key}}.default }>
         {(value, update) => (
-          <>
+          <div className="object-input">
             {{#each properties}}
             <span>{{@key}}</span>
             {{> renderForm arg=@key}}
             {{/each}}
-          </>
+          </div>
         )}
       </MethodForm>
       {{/if}}
