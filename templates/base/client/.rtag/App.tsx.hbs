@@ -1,5 +1,6 @@
 import ReactDOM from "react-dom";
 import { Forms } from "./Forms";
+import { State } from "./State";
 import { RtagClient } from "./client";
 import { {{userState}} as UserState } from "./types";
 
@@ -8,8 +9,8 @@ if (sessionStorage.getItem("token") === null) {
   sessionStorage.setItem("token", await client.loginAnonymous());
 }
 const token = sessionStorage.getItem("token")!;
-const connection = await getClient(token, () => {});
-ReactDOM.render(Forms(connection), document.getElementById("root"));
+const connection = await getClient(token, (state) => ReactDOM.render(State(state), document.getElementById("state")));
+ReactDOM.render(Forms(connection), document.getElementById("forms"));
 
 async function getClient(token: string, onStateChange: (state: UserState) => void) {
   if (location.pathname.length > 1) {

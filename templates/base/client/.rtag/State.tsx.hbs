@@ -1,0 +1,6 @@
+import React from "react";
+import { {{userState}} as UserState } from "./types";
+
+export function State(state: UserState) {
+  return <pre>{JSON.stringify(state, null, 2)}</pre>;
+}
