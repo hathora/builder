@@ -148,7 +148,7 @@ function {{@key}}Input({ value, update }: BaseProps<{{@key}}>) {
   return (
     <div className="union-input">
       <select
-        value={value._type}
+        value={value.type}
         onChange={(e) => {
           {{#each options}}
           {{#unless @first}}else {{/unless}}if (e.target.value === "{{@key}}") {
