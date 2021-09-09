@@ -72,11 +72,13 @@ function PluginDisplay<T>({ value, component }: { value: T; component: string })
 function {{@key}}Display({ value }: { value: {{@key}} }) {
   return (
     <div className="object-display">
+      &#123;
       {{#each properties}}
       <KVDisplay label="{{@key}}">
         {{> renderDisplay arg=@key}}
       </KVDisplay>
       {{/each}}
+      &#125;
     </div>
   );
 }
