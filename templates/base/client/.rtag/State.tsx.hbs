@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useLayoutEffect } from "react";
 import {
   {{userState}} as UserState,
   {{#each types}}
@@ -61,7 +61,7 @@ function BooleanDisplay({ value }: { value: boolean }) {
 
 function PluginDisplay<T>({ value, component }: { value: T; component: string }) {
   const ref = useRef<{ val: T }>();
-  useEffect(() => {
+  useLayoutEffect(() => {
     ref.current.val = value;
   });
   return React.createElement(component, { ref });
