@@ -270,5 +270,7 @@ false
 undefined
 {{~else if (eq type "object")}}
 {{typeString}}.default()
+{{~else if (eq type "plugin")}}
+{{> renderDefault item}}
 {{/if}}
 {{/inline}}

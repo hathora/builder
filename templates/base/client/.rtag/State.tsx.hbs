@@ -1,10 +1,17 @@
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import {
   {{userState}} as UserState,
   {{#each types}}
   {{@key}},
   {{/each}}
 } from "./types";
+{{#each plugins}}
+import {{this}}Plugin from "../plugins/{{this}}";
+{{/each}}
+
+{{#each plugins}}
+window.customElements.define("{{makePluginName this}}", {{this}}Plugin);
+{{/each}}
 
 function KVDisplay(props: { label: string; children: JSX.Element }) {
   return (
@@ -52,13 +59,21 @@ function BooleanDisplay({ value }: { value: boolean }) {
   return <span className="boolean-display">{value ? "true" : "false"}</span>;
 }
 
+function PluginDisplay<T>({ value, component }: { value: T; component: string }) {
+  const ref = useRef<{ val: T }>();
+  useEffect(() => {
+    ref.current.val = value;
+  });
+  return React.createElement(component, { ref });
+}
+
 {{#each types}}
 {{#if (eq type "object")}}
 function {{@key}}Display({ value }: { value: {{@key}} }) {
   return (
     <div className="object-display">
       {{#each properties}}
-      <KVDisplay label={"{{@key}}"}>
+      <KVDisplay label="{{@key}}">
         {{> renderDisplay arg=@key}}
       </KVDisplay>
       {{/each}}
@@ -73,9 +88,7 @@ export function State(state: UserState) {
 }
 {{#*inline "renderDisplay"}}
 {{#if (eq type "plugin")}}
-{{#with item}}
-{{> renderDisplay}}
-{{/with}}
+<PluginDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} component="{{makePluginName typeString}}" />
 {{else if (eq type "object")}}
 <{{typeString}}Display {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} />
 {{else if (eq type "union")}}

@@ -164,7 +164,7 @@ writeString(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}})
 {{~else if (eq type "boolean")}}
 writeBoolean(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}})
 {{~else if (eq type "plugin")}}
-{{> renderEncodeArg item arg=@key}}
+{{> renderEncodeArg item arg=arg}}
 {{~else}}
 {{typeString}}.encode({{#if arg}}obj.{{arg}}{{else}}x{{/if}}, buf)
 {{~/if}}
