@@ -148,6 +148,8 @@ undefined
 { type: "{{@key}}", val: {{@key}}.default() }
 {{~/if}}
 {{/each}}
+{{~else if (eq type "plugin")}}
+{{> renderDefault item}}
 {{/if}}
 {{/inline}}
 {{#*inline "renderEncodeArg"}}

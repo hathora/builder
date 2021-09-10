@@ -1,5 +1,6 @@
 import React, { useRef, useLayoutEffect, useContext } from "react";
 import { RtagContext } from "./context";
+import { RtagConnection } from "./client";
 import {
   {{userState}} as UserState,
   {{#each types}}
@@ -63,9 +64,12 @@ function BooleanDisplay({ value }: BaseProps<boolean>) {
 }
 
 function PluginDisplay<T>({ value, component }: { value: T; component: string }) {
-  const ref = useRef<{ val: T }>();
+  const { state, connection } = useContext(RtagContext)!;
+  const ref = useRef<{ val: T; state: UserState; client: RtagConnection }>();
   useLayoutEffect(() => {
     ref.current!.val = value;
+    ref.current!.state = state;
+    ref.current!.client = connection;
   });
   return React.createElement(component, { ref });
 }
