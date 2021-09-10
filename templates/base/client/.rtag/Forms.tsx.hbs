@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import { RtagContext } from "./context";
 import { Response } from "./base";
-import { RtagConnection } from "./client";
 import {
   {{#each methods}}
   {{makeRequestName @key}},
@@ -108,26 +108,26 @@ function EnumInput(props: EnumProps) {
   );
 }
 
-function StringInput(props: BaseProps<string>) {
+function StringInput({ value, update }: BaseProps<string>) {
   return (
     <div className="string-input">
-      <input type="text" value={props.value} onChange={(e) => props.update(e.target.value)}></input>
+      <input type="text" value={value} onChange={(e) => update(e.target.value)}></input>
     </div>
   );
 }
 
-function NumberInput(props: BaseProps<number>) {
+function NumberInput({ value, update }: BaseProps<number>) {
   return (
     <div className="number-input">
-      <input type="number" value={props.value} onChange={(e) => props.update(Number(e.target.value))}></input>
+      <input type="number" value={value} onChange={(e) => update(Number(e.target.value))}></input>
     </div>
   );
 }
 
-function BooleanInput(props: BaseProps<boolean>) {
+function BooleanInput({ value, update }: BaseProps<boolean>) {
   return (
     <div className="boolean-input">
-      <select value={props.value.toString()} onChange={(e) => props.update(e.target.value === "true" ? true : false)}>
+      <select value={value.toString()} onChange={(e) => update(e.target.value === "true" ? true : false)}>
         <option>false</option>
         <option>true</option>
       </select>
@@ -196,7 +196,8 @@ export function InitializeForm({ submit }: { submit: (value: {{makeRequestName i
   );
 }
 
-export function Forms({ connection }: { connection: RtagConnection }) {
+export function Forms() {
+  const { connection } = useContext(RtagContext)!;
   return (
     <div className="forms">
       {{#each methods}}

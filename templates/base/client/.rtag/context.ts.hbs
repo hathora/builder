@@ -1,0 +1,6 @@
+import React from "react";
+import { RtagConnection } from "./client";
+import { {{userState}} as UserState } from "./types";
+
+type RtagContext = { connection: RtagConnection; state: UserState } | undefined;
+export const RtagContext = React.createContext<RtagContext>(undefined);

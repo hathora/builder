@@ -1,10 +1,11 @@
-import { RtagClient, RtagConnection } from "./client";
-import { {{userState}} as UserState } from "./types";
-import { Forms, InitializeForm } from "./Forms";
-import { State } from "./State";
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
+import { RtagClient, RtagConnection } from "./client";
+import { {{userState}} as UserState } from "./types";
 import { Response } from "./base";
+import { RtagContext } from "./context";
+import { Forms, InitializeForm } from "./Forms";
+import { State } from "./State";
 
 const client = new RtagClient(import.meta.env.VITE_APP_ID);
 
@@ -20,8 +21,8 @@ function Login() {
 }
 
 function App() {
-  const [state, setState] = useState<UserState>();
   const [connection, setConnection] = useState<RtagConnection>();
+  const [state, setState] = useState<UserState>();
 
   const token = sessionStorage.getItem("token");
 
@@ -62,10 +63,10 @@ function App() {
   }
 
   return (
-    <>
-      <Forms connection={connection} />
-      <State state={state} />
-    </>
+    <RtagContext.Provider value=\{{ connection, state }}>
+      <Forms />
+      <State />
+    </RtagContext.Provider>
   );
 }
 

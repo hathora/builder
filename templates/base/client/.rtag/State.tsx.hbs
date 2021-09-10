@@ -1,4 +1,5 @@
-import React, { useRef, useLayoutEffect } from "react";
+import React, { useRef, useLayoutEffect, useContext } from "react";
+import { RtagContext } from "./context";
 import {
   {{userState}} as UserState,
   {{#each types}}
@@ -12,6 +13,8 @@ import {{this}}Plugin from "../plugins/{{this}}";
 {{#each plugins}}
 window.customElements.define("{{makePluginName this}}", {{this}}Plugin);
 {{/each}}
+
+type BaseProps<T> = { value: T };
 
 function KVDisplay(props: { label: string; children: JSX.Element }) {
   return (
@@ -47,15 +50,15 @@ function EnumDisplay(props: { value: number; enum: object }) {
   return <span className="enum-display">{labels[props.value]}</span>;
 }
 
-function StringDisplay({ value }: { value: string }) {
+function StringDisplay({ value }: BaseProps<string>) {
   return <span className="string-display">{value}</span>;
 }
 
-function NumberDisplay({ value }: { value: number }) {
+function NumberDisplay({ value }: BaseProps<number>) {
   return <span className="number-display">{value}</span>;
 }
 
-function BooleanDisplay({ value }: { value: boolean }) {
+function BooleanDisplay({ value }: BaseProps<boolean>) {
   return <span className="boolean-display">{value ? "true" : "false"}</span>;
 }
 
@@ -69,7 +72,7 @@ function PluginDisplay<T>({ value, component }: { value: T; component: string })
 
 {{#each types}}
 {{#if (eq type "object")}}
-function {{@key}}Display({ value }: { value: {{@key}} }) {
+function {{@key}}Display({ value }: BaseProps<{{@key}}>) {
   return (
     <div className="object-display">
       &#123;
@@ -82,13 +85,14 @@ function {{@key}}Display({ value }: { value: {{@key}} }) {
     </div>
   );
 }
+
 {{/if}}
 {{/each}}
-
-export function State({ state }: { state: UserState }) {
+export function State() {
+  const { state } = useContext(RtagContext)!;
   return (
     <div className="state">
-      <{{userState}}Display value={state} />
+      <{{userState}}Display value={state!} />
     </div>
   );
 }
