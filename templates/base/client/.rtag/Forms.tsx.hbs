@@ -1,11 +1,8 @@
 import React, { useState } from "react";
-import { RtagConnection } from "./client";
 import { Response } from "./base";
 import {
   {{#each methods}}
-  {{#if (ne @key ../initialize)}}
   {{makeRequestName @key}},
-  {{/if}}
   {{/each}}
   {{#each types}}
   {{@key}},
@@ -30,7 +27,7 @@ type ArrayProps<T> = BaseProps<T[]> & ContainerProps<T>;
 type OptionalProps<T> = BaseProps<T | undefined> & ContainerProps<T>;
 type EnumProps = BaseProps<number> & { enum: object };
 
-function MethodForm<T>(props: MethodProps<T>) {
+export function MethodForm<T>(props: MethodProps<T>) {
   const [value, setValue] = useState<T>(props.initialize());
   console.log("MethodForm", value);
   return (
@@ -181,14 +178,31 @@ function {{@key}}Input({ value, update }: BaseProps<{{@key}}>) {
 
 {{/if}}
 {{/each}}
-export function Forms(client: RtagConnection) {
+export function InitializeForm({ submit }: { submit: (value: {{makeRequestName initialize}}) => Promise<Response> }) {
   return (
-    <>
+    <MethodForm<{{makeRequestName initialize}}> method="{{initialize}}" submit={submit} initialize={ {{makeRequestName initialize}}.default }>
+      {(value, update) => (
+        <div className="object-input">
+          {{#with (lookup methods initialize)}}
+          {{#each properties}}
+          <span>{{@key}}</span>
+          {{> renderForm arg=@key}}
+          {{/each}}
+          {{/with}}
+        </div>
+      )}
+    </MethodForm>
+  );
+}
+
+export function Forms({ connection }: { connection: RtagConnection }) {
+  return (
+    <div className="forms">
       {{#each methods}}
       {{#if (ne @key ../initialize)}}
       <MethodForm<{{makeRequestName @key}}>
         method="{{@key}}"
-        submit={client.{{@key}}.bind(client)}
+        submit={connection.{{@key}}.bind(connection)}
         initialize={ {{makeRequestName @key}}.default }
       >
         {(value, update) => (
@@ -202,7 +216,7 @@ export function Forms(client: RtagConnection) {
       </MethodForm>
       {{/if}}
       {{/each}}
-    </>
+    </div>
   );
 }
 {{#*inline "renderForm"}}

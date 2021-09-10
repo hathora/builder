@@ -85,8 +85,12 @@ function {{@key}}Display({ value }: { value: {{@key}} }) {
 {{/if}}
 {{/each}}
 
-export function State(state: UserState) {
-  return <{{userState}}Display value={state} />;
+export function State({ state }: { state: UserState }) {
+  return (
+    <div className="state">
+      <{{userState}}Display value={state} />
+    </div>
+  );
 }
 {{#*inline "renderDisplay"}}
 {{#if (eq type "plugin")}}

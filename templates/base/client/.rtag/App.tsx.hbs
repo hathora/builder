@@ -1,0 +1,68 @@
+import { RtagClient, RtagConnection } from "./client";
+import { {{userState}} as UserState } from "./types";
+import { Forms, InitializeForm } from "./Forms";
+import { State } from "./State";
+import React, { useEffect, useState } from "react";
+import ReactDOM from "react-dom";
+import { Response } from "./base";
+
+const client = new RtagClient(import.meta.env.VITE_APP_ID);
+
+function Login() {
+  return (
+    <div>
+      <h2>Login</h2>
+      <button onClick={() => client.loginAnonymous().then((token) => sessionStorage.setItem("token", token))}>
+        <span>Login Anonymously</span>
+      </button>
+    </div>
+  );
+}
+
+function App() {
+  const [state, setState] = useState<UserState>();
+  const [connection, setConnection] = useState<RtagConnection>();
+
+  const token = sessionStorage.getItem("token");
+
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.startsWith("/state/") && token !== null) {
+      const stateId = path.split("/state/").pop()!;
+      if (stateId !== connection?.stateId) {
+        client.connectExisting(token, stateId, setState).then(setConnection);
+      }
+    }
+  }, [connection]);
+
+  if (token === null) {
+    return <Login />;
+  }
+
+  if (state === undefined || connection === undefined) {
+    return (
+      <div>
+        <h2>Home</h2>
+        <InitializeForm
+          submit={(request) =>
+            client.connectNew(token, request, setState).then((conn) => {
+              setConnection(conn);
+              history.pushState({}, "", `/state/${conn.stateId}`);
+              return Response.ok();
+            })
+          }
+        />
+        <button>Join existing</button>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <Forms connection={connection} />
+      <State state={state} />
+    </>
+  );
+}
+
+ReactDOM.render(<App />, document.getElementById("root"));
