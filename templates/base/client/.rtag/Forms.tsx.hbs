@@ -179,20 +179,20 @@ function {{@key}}Input({ value, update }: BaseProps<{{@key}}>) {
 
 {{/if}}
 {{/each}}
-export function InitializeForm({ submit }: { submit: (value: {{makeRequestName initialize}}) => Promise<Response> }) {
+export function InitializeForm({ submit }: { submit: (value: {{makeRequestName initialize}}) => void }) {
+  const [value, update] = useState<{{makeRequestName initialize}}>({{makeRequestName initialize}}.default());
   return (
-    <MethodForm<{{makeRequestName initialize}}> method="{{initialize}}" submit={submit} initialize={ {{makeRequestName initialize}}.default }>
-      {(value, update) => (
-        <div className="object-input">
-          {{#with (lookup methods initialize)}}
-          {{#each properties}}
-          <span>{{@key}}</span>
-          {{> renderForm arg=@key}}
-          {{/each}}
-          {{/with}}
-        </div>
-      )}
-    </MethodForm>
+    <div className="method-form">
+      <div className="object-input">
+        {{#with (lookup methods initialize)}}
+        {{#each properties}}
+        <span>{{@key}}</span>
+        {{> renderForm arg=@key}}
+        {{/each}}
+        {{/with}}
+      </div>
+      <button onClick={() => submit(value)}>Create</button>
+    </div>
   );
 }
 

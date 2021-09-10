@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { RtagClient, RtagConnection } from "./client";
 import { {{userState}} as UserState } from "./types";
-import { Response } from "./base";
 import { RtagContext } from "./context";
 import { Forms, InitializeForm } from "./Forms";
 import { State } from "./State";
@@ -49,7 +48,6 @@ function App() {
             client.connectNew(token, request, setState).then((conn) => {
               setConnection(conn);
               history.pushState({}, "", `/state/${conn.stateId}`);
-              return Response.ok();
             })
           }
         />
