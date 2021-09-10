@@ -39,7 +39,7 @@ function App() {
     return <Login />;
   }
 
-  if (state === undefined || connection === undefined) {
+  if (connection === undefined) {
     return (
       <div>
         <h2>Home</h2>
@@ -55,6 +55,10 @@ function App() {
         <button>Join existing</button>
       </div>
     );
+  }
+
+  if (state === undefined) {
+    return <div>Loading...</div>;
   }
 
   return (

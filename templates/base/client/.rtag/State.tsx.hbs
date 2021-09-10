@@ -62,7 +62,7 @@ function BooleanDisplay({ value }: { value: boolean }) {
 function PluginDisplay<T>({ value, component }: { value: T; component: string }) {
   const ref = useRef<{ val: T }>();
   useLayoutEffect(() => {
-    ref.current.val = value;
+    ref.current!.val = value;
   });
   return React.createElement(component, { ref });
 }
