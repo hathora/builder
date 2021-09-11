@@ -8,22 +8,10 @@ import { State } from "./State";
 
 const client = new RtagClient(import.meta.env.VITE_APP_ID);
 
-function Login() {
-  return (
-    <div>
-      <h2>Login</h2>
-      <button onClick={() => client.loginAnonymous().then((token) => sessionStorage.setItem("token", token))}>
-        <span>Login Anonymously</span>
-      </button>
-    </div>
-  );
-}
-
 function App() {
   const [connection, setConnection] = useState<RtagConnection>();
   const [state, setState] = useState<UserState>();
-
-  const token = sessionStorage.getItem("token");
+  const [token, setToken] = useState<string | null>(sessionStorage.getItem("token"));
 
   useEffect(() => {
     const path = location.pathname;
@@ -33,10 +21,24 @@ function App() {
         client.connectExisting(token, stateId, setState).then(setConnection);
       }
     }
-  }, [connection]);
+  }, [connection, token]);
 
   if (token === null) {
-    return <Login />;
+    return (
+      <div>
+        <h2>Login</h2>
+        <button
+          onClick={() =>
+            client.loginAnonymous().then((token) => {
+              sessionStorage.setItem("token", token);
+              setToken(token);
+            })
+          }
+        >
+          <span>Login Anonymously</span>
+        </button>
+      </div>
+    );
   }
 
   if (connection === undefined) {
@@ -46,8 +48,8 @@ function App() {
         <InitializeForm
           submit={(request) =>
             client.connectNew(token, request, setState).then((conn) => {
-              setConnection(conn);
               history.pushState({}, "", `/state/${conn.stateId}`);
+              setConnection(conn);
             })
           }
         />
