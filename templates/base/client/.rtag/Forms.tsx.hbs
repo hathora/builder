@@ -1,4 +1,5 @@
 import React, { useState, useContext } from "react";
+import { ToastContainer, Zoom, toast } from "react-toastify";
 import { RtagContext } from "./context";
 import { Response } from "./base";
 import {
@@ -37,7 +38,10 @@ export function MethodForm<T>(props: MethodProps<T>) {
       {props.children(value, setValue)}
       <button
         onClick={async () => {
-          console.log(await props.submit(value));
+          const res = await props.submit(value);
+          if (res.type === "error") {
+            toast.error(res.error);
+          }
           setValue(props.initialize());
         }}
       >
@@ -218,6 +222,7 @@ export function Forms() {
       </MethodForm>
       {{/if}}
       {{/each}}
+      <ToastContainer position="top-center" autoClose={2000} transition={Zoom} hideProgressBar />
     </div>
   );
 }
