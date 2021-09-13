@@ -184,6 +184,7 @@ export class Impl implements Methods<InternalState> {
       knownPlayers: roles.filter(([_, r]) => knownRoles.has(r)).map(([p, _]) => p),
       playersPerQuest: QUEST_CONFIGURATIONS.get(state.players.length) || [],
       quests: state.quests.map((q) => sanitizeQuest(q, user.name)),
+      uni: { type: "Username", val: "Test" },
     };
   }
 }

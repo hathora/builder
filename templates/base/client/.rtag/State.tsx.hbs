@@ -90,6 +90,16 @@ function {{@key}}Display({ value }: BaseProps<{{@key}}>) {
   );
 }
 
+{{else if (eq type "union")}}
+function {{@key}}Display({ value }: BaseProps<{{@key}}>) {
+  switch (value.type) {
+    {{#each options}}
+    case "{{@key}}":
+      return {{> renderDisplay arg="val"}};
+    {{/each}}
+  }
+}
+
 {{/if}}
 {{/each}}
 export function State() {

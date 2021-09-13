@@ -54,6 +54,7 @@ types:
     knownPlayers: Username[]
     playersPerQuest: number[]
     quests: QuestAttempt[]
+    uni: Uni
   Uni:
     - RoleInfo
     - PlayerAndVote
