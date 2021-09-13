@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
+{{#if auth.google}}
+import { GoogleLogin } from "react-google-login";
+{{/if}}
 import { RtagClient, RtagConnection } from "./client";
 import { {{userState}} as UserState } from "./types";
 import { RtagContext } from "./context";
@@ -27,6 +30,8 @@ function App() {
     return (
       <div>
         <h2>Login</h2>
+{{#each auth}}
+{{#if (eq @key "anonymous")}}
         <button
           onClick={() =>
             client.loginAnonymous().then((token) => {
@@ -37,6 +42,18 @@ function App() {
         >
           <span>Login Anonymously</span>
         </button>
+{{else if (eq @key "google")}}
+        <GoogleLogin
+          clientId="{{clientId}}"
+          onSuccess={({ tokenId }: any) =>
+            client.loginGoogle(tokenId).then((token) => {
+              sessionStorage.setItem("token", token);
+              setToken(token);
+            })
+          }
+        />
+{{/if}}
+{{/each}}
       </div>
     );
   }
