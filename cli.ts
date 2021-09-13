@@ -286,9 +286,6 @@ if (command === "init") {
     root: appEntryPath,
     envDir: rootDir,
     clearScreen: false,
-    resolve: {
-      alias: { vue: "vue/dist/vue.esm.js" },
-    },
   }).then((server) => server.listen());
   shelljs.cd(join(serverDir, ".rtag"));
   shelljs.exec("node --loader ts-node/esm --experimental-specifier-resolution=node store.ts", { async: true });
@@ -298,9 +295,6 @@ if (command === "init") {
     root: appEntryPath,
     build: {
       outDir: join(rootDir, "dist/client"),
-    },
-    resolve: {
-      alias: { vue: "vue/dist/vue.esm.js" },
     },
   });
   ncc(join(serverDir, ".rtag/store.ts")).then(
