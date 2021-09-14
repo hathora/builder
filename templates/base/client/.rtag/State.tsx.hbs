@@ -52,7 +52,7 @@ function EnumDisplay(props: { value: number; enum: object }) {
 }
 
 function StringDisplay({ value }: BaseProps<string>) {
-  return <span className="string-display">{value}</span>;
+  return <span className="string-display">"{value}"</span>;
 }
 
 function NumberDisplay({ value }: BaseProps<number>) {
