@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
+import { ToastContainer, Zoom, toast } from "react-toastify";
 {{#if auth.google}}
 import { GoogleLogin } from "react-google-login";
 {{/if}}
@@ -21,7 +22,10 @@ function App() {
     if (path.startsWith("/state/") && token !== null) {
       const stateId = path.split("/state/").pop()!;
       if (stateId !== connection?.stateId) {
-        client.connectExisting(token, stateId, setState).then(setConnection);
+        client
+          .connectExisting(token, stateId, setState)
+          .then(setConnection)
+          .catch((e) => toast.error("Connection error: " + e.reason));
       }
     }
   }, [connection, token]);
@@ -64,10 +68,13 @@ function App() {
         <h2>Home</h2>
         <InitializeForm
           submit={(request) =>
-            client.connectNew(token, request, setState).then((conn) => {
-              history.pushState({}, "", `/state/${conn.stateId}`);
-              setConnection(conn);
-            })
+            client
+              .connectNew(token, request, setState)
+              .then((conn) => {
+                history.pushState({}, "", `/state/${conn.stateId}`);
+                setConnection(conn);
+              })
+              .catch((e) => toast.error("Connection error: " + e.reason))
           }
         />
         <button>Join existing</button>
@@ -87,4 +94,10 @@ function App() {
   );
 }
 
-ReactDOM.render(<App />, document.getElementById("root"));
+ReactDOM.render(
+  <>
+    <App />
+    <ToastContainer position="top-center" autoClose={2000} transition={Zoom} hideProgressBar />
+  </>,
+  document.getElementById("root")
+);

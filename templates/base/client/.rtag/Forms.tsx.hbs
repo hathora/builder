@@ -1,5 +1,5 @@
 import React, { useState, useContext } from "react";
-import { ToastContainer, Zoom, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import { RtagContext } from "./context";
 import { Response } from "./base";
 import {
@@ -222,7 +222,6 @@ export function Forms() {
       </MethodForm>
       {{/if}}
       {{/each}}
-      <ToastContainer position="top-center" autoClose={2000} transition={Zoom} hideProgressBar />
     </div>
   );
 }
