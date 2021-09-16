@@ -1,0 +1,144 @@
+import { pack, unpack } from "utf8-buffer";
+import utf8Size from "utf8-buffer-size";
+
+export class Writer {
+  private pos = 0;
+  private view = new DataView(new ArrayBuffer(1024));
+  private bytes = new Uint8Array(this.view.buffer);
+
+  public writeUInt8(val: number) {
+    this.ensureSize(1);
+    this.view.setUint8(this.pos, val);
+    this.pos += 1;
+  }
+
+  public writeUInt32LE(val: number) {
+    this.ensureSize(4);
+    this.view.setUint32(this.pos, val);
+    this.pos += 4;
+  }
+
+  public writeUVarint(val: number) {
+    if (val < 0x80) {
+      this.ensureSize(1);
+      this.view.setUint8(this.pos, val);
+      this.pos += 1;
+    } else if (val < 0x4000) {
+      this.ensureSize(2);
+      this.view.setUint16(this.pos, (val & 0x7f) | ((val & 0x3f80) << 1) | 0x8000);
+      this.pos += 2;
+    } else if (val < 0x200000) {
+      this.ensureSize(3);
+      this.view.setUint8(this.pos, (val >> 14) | 0x80);
+      this.view.setUint16(this.pos + 1, (val & 0x7f) | ((val & 0x3f80) << 1) | 0x8000);
+      this.pos += 3;
+    } else {
+      this.ensureSize(4);
+      this.view.setUint32(
+        this.pos,
+        (val & 0x7f) | ((val & 0x3f80) << 1) | ((val & 0x1fc000) << 2) | ((val & 0xfe00000) << 3) | 0x80808000
+      );
+      this.pos += 4;
+    }
+  }
+
+  public writeDoubleLE(val: number) {
+    this.ensureSize(8);
+    this.view.setFloat64(this.pos, val, true);
+    this.pos += 8;
+  }
+
+  public writeString(val: string) {
+    if (val.length > 0) {
+      const byteSize = utf8Size(val);
+      this.writeUVarint(byteSize);
+      this.ensureSize(byteSize);
+      pack(val, this.bytes, this.pos);
+      this.pos += byteSize;
+    } else {
+      this.writeUInt8(0);
+    }
+  }
+
+  public toBuffer() {
+    return this.bytes.subarray(0, this.pos);
+  }
+
+  private ensureSize(size: number) {
+    while (this.view.byteLength < this.pos + size) {
+      const newView = new DataView(new ArrayBuffer(this.view.byteLength * 2));
+      const newBytes = new Uint8Array(newView.buffer);
+      newBytes.set(this.bytes);
+      this.view = newView;
+      this.bytes = newBytes;
+    }
+  }
+}
+
+export class Reader {
+  private pos = 0;
+  private view: DataView;
+  private bytes;
+
+  public constructor(buf: ArrayBufferView) {
+    this.view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
+    this.bytes = new Uint8Array(this.view.buffer, buf.byteOffset, buf.byteLength);
+  }
+
+  public readUInt8() {
+    const val = this.view.getUint8(this.pos);
+    this.pos += 1;
+    return val;
+  }
+
+  public readUInt32LE() {
+    const val = this.view.getUint32(this.pos);
+    this.pos += 4;
+    return val;
+  }
+
+  public readUVarint() {
+    let val = 0;
+
+    let byte = this.view.getUint8(this.pos++);
+    if (byte < 0x80) {
+      return byte;
+    }
+    val |= byte & 0x7f;
+
+    byte = this.view.getUint8(this.pos++);
+    if (byte < 0x80) {
+      return val | (byte << 7);
+    }
+    val |= (byte & 0x7f) << 7;
+
+    byte = this.view.getUint8(this.pos++);
+    if (byte < 0x80) {
+      return val | (byte << 14);
+    }
+    val |= (byte & 0x7f) << 14;
+
+    byte = this.view.getUint8(this.pos++);
+    return val | (byte << 21);
+  }
+
+  public readDoubleLE() {
+    const val = this.view.getFloat64(this.pos, true);
+    this.pos += 8;
+    return val;
+  }
+
+  public readString() {
+    const len = this.readUVarint();
+    if (len > 0) {
+      const val = unpack(this.bytes, this.pos, this.pos + len);
+      this.pos += len;
+      return val;
+    }
+    return "";
+  }
+
+  public remaining() {
+    return this.view.byteLength - this.pos;
+  }
+}

@@ -215,7 +215,7 @@ function loadState(stateId: StateId) {
 
 function sendUpdate(stateId: StateId, state: State | undefined, user: UserData, responses: Record<number, Response>) {
   const userState = state === undefined ? undefined : impl.getUserState(state, user);
-  return coordinator.onStateUpdate(stateId, user.id, encodeState(userState, responses));
+  return coordinator.onStateUpdate(stateId, user.id, Buffer.from(encodeState(userState, responses)));
 }
 
 function ctx(rng: ReturnType<seedrandom>, time: number) {
