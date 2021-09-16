@@ -1,6 +1,5 @@
 import { Response } from "./base";
-import { Writer } from "./writer";
-import { Reader } from "./reader";
+import { Writer, Reader } from "./serde";
 
 {{#each types}}
 {{#if (eq type "enum")}}
@@ -140,6 +139,8 @@ false
 undefined
 {{~else if (eq type "object")}}
 {{typeString}}.default()
+{{~else if (eq type "plugin")}}
+{{> renderDefault item}}
 {{/if}}
 {{/inline}}
 {{#*inline "renderEncodeArg"}}
