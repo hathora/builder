@@ -20,7 +20,7 @@ function App() {
   useEffect(() => {
     const path = location.pathname;
     if (path.startsWith("/state/") && token !== null) {
-      const stateId = path.split("/state/").pop()!;
+      const stateId = path.split("/state/").pop() ?? "";
       if (stateId !== connection?.stateId) {
         client
           .connectExisting(token, stateId, setState)
@@ -38,11 +38,13 @@ function App() {
 {{#if (eq @key "anonymous")}}
         <button
           onClick={() =>
-            client.loginAnonymous().then((token) => {
-              sessionStorage.setItem("token", token);
-              setToken(token);
-            })
-            .catch((e) => toast.error("Authentication error: " + e.reason))
+            client
+              .loginAnonymous()
+              .then((token) => {
+                sessionStorage.setItem("token", token);
+                setToken(token);
+              })
+              .catch((e) => toast.error("Authentication error: " + e.reason))
           }
         >
           <span>Login Anonymously</span>
@@ -51,11 +53,13 @@ function App() {
         <GoogleLogin
           clientId="{{clientId}}"
           onSuccess={({ tokenId }: any) =>
-            client.loginGoogle(tokenId).then((token) => {
-              sessionStorage.setItem("token", token);
-              setToken(token);
-            })
-            .catch((e) => toast.error("Authentication error: " + e.reason))
+            client
+              .loginGoogle(tokenId)
+              .then((token) => {
+                sessionStorage.setItem("token", token);
+                setToken(token);
+              })
+              .catch((e) => toast.error("Authentication error: " + e.reason))
           }
         />
 {{/if}}
