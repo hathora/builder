@@ -42,6 +42,7 @@ function App() {
               sessionStorage.setItem("token", token);
               setToken(token);
             })
+            .catch((e) => toast.error("Authentication error: " + e.reason))
           }
         >
           <span>Login Anonymously</span>
@@ -54,6 +55,7 @@ function App() {
               sessionStorage.setItem("token", token);
               setToken(token);
             })
+            .catch((e) => toast.error("Authentication error: " + e.reason))
           }
         />
 {{/if}}

@@ -27,22 +27,22 @@ type ContainerProps<T> = {
 };
 type ArrayProps<T> = BaseProps<T[]> & ContainerProps<T>;
 type OptionalProps<T> = BaseProps<T | undefined> & ContainerProps<T>;
-type EnumProps = BaseProps<number> & { enum: object };
+type EnumProps = BaseProps<number> & { enumType: object };
 
-export function MethodForm<T>(props: MethodProps<T>) {
-  const [value, setValue] = useState<T>(props.initialize());
+export function MethodForm<T>({ method, submit, initialize, children }: MethodProps<T>) {
+  const [value, setValue] = useState<T>(initialize());
   console.log("MethodForm", value);
   return (
     <div className="method-form">
-      <h3>{props.method}</h3>
-      {props.children(value, setValue)}
+      <h3>{method}</h3>
+      {children(value, setValue)}
       <button
         onClick={async () => {
-          const res = await props.submit(value);
+          const res = await submit(value);
           if (res.type === "error") {
             toast.error(res.error);
           }
-          setValue(props.initialize());
+          setValue(initialize());
         }}
       >
         Submit
@@ -51,59 +51,57 @@ export function MethodForm<T>(props: MethodProps<T>) {
   );
 }
 
-function ArrayInput<T>(props: ArrayProps<T>) {
+function ArrayInput<T>({ value, update, initialVal, children }: ArrayProps<T>) {
   function swapArgs(i1: number, i2: number) {
-    [props.value[i1], props.value[i2]] = [props.value[i2], props.value[i1]];
-    props.update(props.value);
+    [value[i1], value[i2]] = [value[i2], value[i1]];
+    update(value);
   }
   function deleteArg(i: number) {
-    props.value.splice(i, 1);
-    props.update(props.value);
+    value.splice(i, 1);
+    update(value);
   }
   return (
     <div className="array-input">
-      {props.value.map((item, i) => (
+      {value.map((item, i) => (
         <div key={i} className="array-item">
-          {props.children(item, (val) => {
-            props.update(Object.assign(props.value, { [i]: val }));
+          {children(item, (val) => {
+            update(Object.assign(value, { [i]: val }));
           })}
           <button disabled={i === 0} onClick={() => swapArgs(i, i - 1)}>
             &#8593;
           </button>
-          <button disabled={i === props.value.length - 1} onClick={() => swapArgs(i, i + 1)}>
+          <button disabled={i === value.length - 1} onClick={() => swapArgs(i, i + 1)}>
             &#8595;
           </button>
           <button onClick={() => deleteArg(i)}>x</button>
         </div>
       ))}
-      <button onClick={() => props.update(props.value.concat(props.initialVal))}>Add</button>
+      <button onClick={() => update(value.concat(initialVal))}>Add</button>
     </div>
   );
 }
 
-function OptionalInput<T>(props: OptionalProps<T>) {
+function OptionalInput<T>({ value, update, initialVal, children }: OptionalProps<T>) {
   return (
     <div className="optional-input">
-      {props.value !== undefined
-        ? props.children(props.value, (val) => {
-            props.update(val);
+      {value !== undefined
+        ? children(value, (val) => {
+            update(val);
           })
         : ""}
-      <button onClick={() => (props.value === undefined ? props.update(props.initialVal) : props.update(undefined))}>
-        Toggle
-      </button>
+      <button onClick={() => (value === undefined ? update(initialVal) : update(undefined))}>Toggle</button>
     </div>
   );
 }
 
-function EnumInput(props: EnumProps) {
+function EnumInput({ value, update, enumType }: EnumProps) {
   return (
     <div className="enum-input">
-      <select value={props.value} onChange={(e) => props.update(Number(e.target.value))}>
-        {Object.entries(props.enum)
-          .filter(([_, value]) => typeof value === "number")
-          .map(([label, value]) => (
-            <option key={value} value={value}>
+      <select value={value} onChange={(e) => update(Number(e.target.value))}>
+        {Object.entries(enumType)
+          .filter(([_, val]) => typeof val === "number")
+          .map(([label, val]) => (
+            <option key={val} value={val}>
               {label}
             </option>
           ))}
@@ -131,7 +129,7 @@ function NumberInput({ value, update }: BaseProps<number>) {
 function BooleanInput({ value, update }: BaseProps<boolean>) {
   return (
     <div className="boolean-input">
-      <select value={value.toString()} onChange={(e) => update(e.target.value === "true" ? true : false)}>
+      <select value={value.toString()} onChange={(e) => update(e.target.value === "true")}>
         <option>false</option>
         <option>true</option>
       </select>
@@ -247,7 +245,7 @@ export function Forms() {
   }
 </OptionalInput>
 {{else if (eq type "enum")}}
-<EnumInput {{#if arg}}value={ value.{{arg}} } update={(v) => update({ ...value, {{arg}}: v })}{{else}}value={value} update={update}{{/if}} enum={ {{typeString}} } />
+<EnumInput {{#if arg}}value={ value.{{arg}} } update={(v) => update({ ...value, {{arg}}: v })}{{else}}value={value} update={update}{{/if}} enumType={ {{typeString}} } />
 {{else if (eq type "string")}}
 <StringInput {{#if arg}}value={ value.{{arg}} } update={(v) => update({ ...value, {{arg}}: v })}{{else}}value={value} update={update}{{/if}} />
 {{else if (eq type "number")}}
