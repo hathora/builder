@@ -209,7 +209,7 @@ function loadState(stateId: StateId) {
 
     return { state, rng };
   } catch (e) {
-    console.error("Unable to load state", stateId.toString(36), e.message);
+    console.error("Unable to load state", stateId.toString(36), e);
   }
 }
 
