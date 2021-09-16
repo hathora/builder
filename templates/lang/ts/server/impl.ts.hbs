@@ -1,17 +1,19 @@
-import { Methods, Context, Response } from "./.rtag/methods";
+import { Methods, Context } from "./.rtag/methods";
+import { UserData, Response } from "./.rtag/base";
 import {
-  UserData,
-  {{#with (lookup types userState)}}
-  {{#each properties}}
-  {{#if (eq type "enum")}}
+{{#with (lookup types userState)}}
+{{#each properties}}
+{{#if (eq type "enum")}}
   {{typeString}},
-  {{/if}}
-  {{/each}}
-  {{/with}}
+{{else if (eq type "object")}}
+  {{typeString}},
+{{/if}}
+{{/each}}
+{{/with}}
   {{userState}},
-  {{#each methods}}
+{{#each methods}}
   {{makeRequestName @key}},
-  {{/each}}
+{{/each}}
 } from "./.rtag/types";
 
 type InternalState = {};

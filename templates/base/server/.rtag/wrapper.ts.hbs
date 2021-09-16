@@ -96,7 +96,7 @@ const handler: ProxyHandler<any> = {
 
 export const ImplWrapper = {
   initialize(user: UserData, ctx: Context, argsBuffer: Buffer): State {
-    const state = impl.createGame(user, ctx, {{makeRequestName initialize}}.decode(argsBuffer));
+    const state = impl.{{initialize}}(user, ctx, {{makeRequestName initialize}}.decode(argsBuffer));
     return new Proxy(state, handler);
   },
   getResult(state: State, user: UserData, method: Method, ctx: Context, argsBuffer: Buffer): Response | undefined {

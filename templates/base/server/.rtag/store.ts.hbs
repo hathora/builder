@@ -209,13 +209,13 @@ function loadState(stateId: StateId) {
 
     return { state, rng };
   } catch (e) {
-    console.error("Unable to load state", stateId.toString(36), e.message);
+    console.error("Unable to load state", stateId.toString(36), e);
   }
 }
 
 function sendUpdate(stateId: StateId, state: State | undefined, user: UserData, responses: Record<number, Response>) {
   const userState = state === undefined ? undefined : impl.getUserState(state, user);
-  return coordinator.onStateUpdate(stateId, user.id, encodeState(userState, responses));
+  return coordinator.onStateUpdate(stateId, user.id, Buffer.from(encodeState(userState, responses)));
 }
 
 function ctx(rng: ReturnType<seedrandom>, time: number) {

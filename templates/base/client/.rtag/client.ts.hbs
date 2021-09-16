@@ -1,7 +1,6 @@
 import WebSocket from "isomorphic-ws";
 import axios from "axios";
 import jwtDecode from "jwt-decode";
-import { Buffer } from "buffer";
 import { UserData, Response, Method } from "./base";
 import {
   decodeState,
@@ -10,8 +9,6 @@ import {
   {{makeRequestName @key}},
   {{/each}}
 } from "./types";
-
-(globalThis as any).Buffer = Buffer;
 
 const COORDINATOR_HOST = "rtag.dev";
 
@@ -89,7 +86,7 @@ export class RtagConnection {
   ) {
     socket.onmessage = ({ data }) => {
       resolve(this);
-      const { state, responses } = decodeState(Buffer.from(data as ArrayBuffer));
+      const { state, responses } = decodeState(new Uint8Array(data as ArrayBuffer));
       if (state !== undefined) {
         onStateChange(state);
       }
@@ -114,7 +111,7 @@ export class RtagConnection {
     this.socket.close();
   }
 
-  private callMethod(method: Method, request: Buffer): Promise<Response> {
+  private callMethod(method: Method, request: Uint8Array): Promise<Response> {
     return new Promise((resolve, reject) => {
       if (this.socket.readyState === this.socket.CLOSED) {
         reject("Connection is closed");

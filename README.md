@@ -2,7 +2,7 @@
 
 ## Overview
 
-Rtag is a framework that aims to simplify application development by allowing the developer focus only on application-specific logic, without having to think about adjacent concerns such as infrastructure, tooling, networking, storage, etc.
+Rtag is a framework that aims to simplify application development by allowing the developer to focus only on application-specific logic, without having to think about adjacent concerns such as infrastructure, tooling, networking, storage, etc.
 
 Rtag uses a YAML file (`rtag.yml`) to define the application specification. The developer declares the client data model, mutation functions, and other relevant configuration in this file. Rtag then uses this specification to automatically generate several key components:
 - server side method stubs that set up the entire server code structure and just need to be filled in with the application's business logic
