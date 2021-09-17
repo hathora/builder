@@ -31,7 +31,12 @@
     "type": "git",
     "url": "git+https://github.com/hpx7/rtag.git"
   },
-  "keywords": [],
+  "keywords": [
+    "realtime",
+    "multiplayer",
+    "framework",
+    "game"
+  ],
   "author": "Harsh Pandey",
   "license": "MIT",
   "bugs": {
