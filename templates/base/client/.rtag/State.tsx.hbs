@@ -71,7 +71,7 @@ function PluginDisplay<T>({ value, component }: { value: T; component: string })
     ref.current!.state = state;
     ref.current!.client = connection;
   });
-  return React.createElement(component, { ref });
+  return <div className="plugin-display">{React.createElement(component, { ref })}</div>;
 }
 
 {{#each types}}
