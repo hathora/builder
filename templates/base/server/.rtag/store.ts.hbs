@@ -17,7 +17,7 @@ import { encodeState } from "./types";
 {{#if (env "PROD_BUILD")}}
 dotenv.config();
 {{else}}
-dotenv.config({ path: "../../.env" });
+dotenv.config({ path: "../.env" });
 {{/if}}
 
 type StateId = bigint;

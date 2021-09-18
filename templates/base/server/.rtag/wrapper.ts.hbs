@@ -1,8 +1,3 @@
-{{#unless (env "PROD_BUILD")}}
-import module from "module";
-import dependencyTree from "dependency-tree";
-import chokidar from "chokidar";
-{{/unless}}
 import { Context } from "./methods";
 import { UserData, Response, Method } from "./base";
 import {
@@ -12,20 +7,9 @@ import {
 } from "./types";
 
 let impl = new (await import("../impl")).Impl();
-{{#unless (env "PROD_BUILD")}}
-const deps = dependencyTree.toList({
-  directory: ".",
-  filename: module.createRequire(import.meta.url).resolve("../impl"),
-  filter: (path) => !path.includes(".rtag") && !path.includes("node_modules"),
-});
-chokidar.watch(deps).on("change", async () => {
-  try {
-    impl = new (await import(`../impl.ts#${Math.random()}`)).Impl();
-  } catch (e) {
-    console.error("Failed to reload:", e);
-  }
-});
-{{/unless}}
+setInterval(async () => {
+  impl = new (await import("../impl")).Impl();
+}, 100);
 
 type State = ReturnType<typeof impl.{{initialize}}>;
 
