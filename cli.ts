@@ -290,10 +290,10 @@ if (command === "init") {
       alias: { vue: "vue/dist/vue.esm.js" },
     },
   }).then((server) => server.listen());
-  shelljs.cd(join(serverDir, ".rtag"));
+  shelljs.cd(serverDir);
   process.env.NODE_LOADER_CONFIG = join(__dirname, "node-loader.config.mjs");
   const loaderPath = join(__dirname, "node_modules/@node-loader/core/lib/node-loader-core.js");
-  shelljs.exec(`node --loader ${loaderPath} --experimental-specifier-resolution=node store.ts`, { async: true });
+  shelljs.exec(`node --loader ${loaderPath} --experimental-specifier-resolution=node .rtag/store.ts`, { async: true });
 } else if (command === "build") {
   process.env.VITE_APP_ID = appId;
   build({
