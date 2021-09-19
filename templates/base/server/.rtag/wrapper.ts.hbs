@@ -61,7 +61,24 @@ const handler: ProxyHandler<any> = {
     const origThis = thisArg[PROXY_TARGET];
     const res = Reflect.apply(
       target,
-      Array.isArray(thisArg) || thisArg instanceof Set || thisArg instanceof Map ? origThis : thisArg,
+      (Array.isArray(thisArg) &&
+        ![
+          "entries",
+          "every",
+          "filter",
+          "find",
+          "flatMap",
+          "forEach",
+          "map",
+          "reduce",
+          "reduceRight",
+          "some",
+          "values",
+        ].includes(target.name)) ||
+        thisArg instanceof Set ||
+        thisArg instanceof Map
+        ? origThis
+        : thisArg,
       args
     );
     if (
