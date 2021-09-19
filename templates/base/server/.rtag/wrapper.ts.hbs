@@ -59,11 +59,7 @@ const handler: ProxyHandler<any> = {
       changed = true;
     }
     const origThis = thisArg[PROXY_TARGET];
-    const res = Reflect.apply(
-      target,
-      Array.isArray(thisArg) || thisArg instanceof Set || thisArg instanceof Map ? origThis : thisArg,
-      args
-    );
+    const res = Reflect.apply(target, thisArg instanceof Set || thisArg instanceof Map ? origThis : thisArg, args);
     if (
       res !== undefined &&
       res !== null &&

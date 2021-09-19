@@ -1,10 +1,11 @@
 {
   "name": "rtag",
-  "version": "0.1.23",
+  "version": "0.1.25",
   "description": "Real-time app generator",
   "bin": "./cli.js",
   "files": [
     "cli.js",
+    "node-loader.config.mjs",
     "templates",
     "READEME.md",
     "LICENSE"

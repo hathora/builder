@@ -106,7 +106,6 @@ registerHelper("uppercase", (x) =>
 );
 registerHelper("makeRequestName", (x) => "I" + capitalize(x) + "Request");
 registerHelper("makePluginName", (x) => x.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase() + "-plugin");
-registerHelper("env", (key) => process.env[key]);
 registerHelper("uuid", () => uuidv4());
 registerHelper("sha256", (x) => createHash("sha256").update(x).digest("hex"));
 
@@ -288,9 +287,12 @@ if (command === "init") {
     clearScreen: false,
   }).then((server) => server.listen());
   shelljs.cd(serverDir);
+  process.env.DATA_DIR = join(serverDir, ".rtag/data");
+  process.env.DOTENV_CONFIG_PATH = join(rootDir, ".env");
   process.env.NODE_LOADER_CONFIG = join(__dirname, "node-loader.config.mjs");
   const loaderPath = join(__dirname, "node_modules/@node-loader/core/lib/node-loader-core.js");
-  shelljs.exec(`node --loader ${loaderPath} --experimental-specifier-resolution=node .rtag/store.ts`, { async: true });
+  const storePath = join(serverDir, ".rtag/store.ts");
+  shelljs.exec(`node --loader ${loaderPath} --experimental-specifier-resolution=node ${storePath}`, { async: true });
 } else if (command === "build") {
   process.env.VITE_APP_ID = appId;
   build({
