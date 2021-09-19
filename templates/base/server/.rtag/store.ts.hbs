@@ -1,8 +1,4 @@
 import { randomBytes } from "crypto";
-{{#unless (env "PROD_BUILD")}}
-import { dirname, join } from "path";
-import { fileURLToPath } from "url";
-{{/unless}}
 import { existsSync, mkdirSync } from "fs";
 import seedrandom from "seedrandom";
 import { decode } from "msgpackr";
@@ -25,11 +21,7 @@ type UserId = string;
 type State = ReturnType<typeof impl.initialize>;
 type StateInfo = { state: State; rng: ReturnType<seedrandom>; subscriptions: Map<UserId, UserData> };
 
-{{#if (env "PROD_BUILD")}}
 const dataDir = process.env.DATA_DIR!;
-{{else}}
-const dataDir = join(dirname(fileURLToPath(import.meta.url)), "data");
-{{/if}}
 if (!existsSync(dataDir)) {
   mkdirSync(dataDir);
 }
