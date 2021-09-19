@@ -3,18 +3,12 @@ import { existsSync, mkdirSync } from "fs";
 import seedrandom from "seedrandom";
 import { decode } from "msgpackr";
 import { SmartBuffer } from "smart-buffer";
-import dotenv from "dotenv";
+import "dotenv/config";
 import { register } from "./protocol";
 import LogStore from "./logstore";
 import { ImplWrapper as impl } from "./wrapper";
 import { UserData, Response } from "./base";
 import { encodeState } from "./types";
-
-{{#if (env "PROD_BUILD")}}
-dotenv.config();
-{{else}}
-dotenv.config({ path: "../.env" });
-{{/if}}
 
 type StateId = bigint;
 type UserId = string;
