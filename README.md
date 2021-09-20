@@ -15,7 +15,7 @@ The foundation of an rtag application is the `rtag.yml` file, which defines vari
 
 From this specification, rtag automatically generates the following:
 - server side method stubs that set up the entire server code structure and just need to be filled in with the application's business logic
-- clients for frontends to use to communicate with the rtag server in a typesafe manner
+- clients for frontends to communicate with the rtag server in a typesafe manner
 - a web-based debug application that allows for testing backend logic right away without writing any frontend code
 
 ## Installation
@@ -31,6 +31,7 @@ npm install -g rtag
 ## Example
 The spec for a simple chat app:
 ```yml
+# rtag.yml
 types:
   Username: string
   Message:
@@ -67,6 +68,10 @@ After running the relevant `rtag` cli commands (see Quickstart), the following d
 
 We then fill in the methods in `server/impl.ts` with our desired implementation:
 ```ts
+import { Methods, Context } from "./.rtag/methods";
+import { UserData, Response } from "./.rtag/base";
+import { RoomState, ICreateRoomRequest, ISendPublicMessageRequest, ISendPrivateMessageRequest } from "./.rtag/types";
+
 export class Impl implements Methods<RoomState> {
   createRoom(user: UserData, ctx: Context, request: ICreateRoomRequest): RoomState {
     return { name: request.name, createdBy: user.name, messages: [] };
