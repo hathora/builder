@@ -1,29 +1,26 @@
 import { Methods, Context } from "./.rtag/methods";
 import { UserData, Response } from "./.rtag/base";
-import {
-  RoomState,
-  ICreateRoomRequest,
-  ISendPublicMessageRequest,
-  ISendPrivateMessageRequest,
-} from "./.rtag/types";
+import { RoomState, ICreateRoomRequest, ISendPublicMessageRequest, ISendPrivateMessageRequest } from "./.rtag/types";
 
-type InternalState = {};
-
-export class Impl implements Methods<InternalState> {
-  createRoom(user: UserData, ctx: Context, request: ICreateRoomRequest): InternalState {
-    return {};
+export class Impl implements Methods<RoomState> {
+  createRoom(user: UserData, ctx: Context, request: ICreateRoomRequest): RoomState {
+    return { name: request.name, createdBy: user.name, messages: [] };
   }
-  sendPublicMessage(state: InternalState, user: UserData, ctx: Context, request: ISendPublicMessageRequest): Response {
-    return Response.error("Not implemented");
+  sendPublicMessage(state: RoomState, user: UserData, ctx: Context, request: ISendPublicMessageRequest): Response {
+    state.messages.push({ text: request.text, sentAt: ctx.time(), sentBy: user.name });
+    return Response.ok();
   }
-  sendPrivateMessage(state: InternalState, user: UserData, ctx: Context, request: ISendPrivateMessageRequest): Response {
-    return Response.error("Not implemented");
+  sendPrivateMessage(state: RoomState, user: UserData, ctx: Context, request: ISendPrivateMessageRequest): Response {
+    state.messages.push({ text: request.text, sentAt: ctx.time(), sentBy: user.name, sentTo: request.to });
+    return Response.ok();
   }
-  getUserState(state: InternalState, user: UserData): RoomState {
+  getUserState(state: RoomState, user: UserData): RoomState {
     return {
-      name: "",
-      createdBy: "",
-      messages: [],
+      name: state.name,
+      createdBy: state.createdBy,
+      messages: state.messages.filter(
+        (msg) => msg.sentBy === user.name || msg.sentTo === user.name || msg.sentTo === undefined
+      ),
     };
   }
 }
