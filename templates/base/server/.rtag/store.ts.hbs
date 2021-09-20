@@ -1,7 +1,7 @@
 import { randomBytes } from "crypto";
 import { existsSync, mkdirSync } from "fs";
 import seedrandom from "seedrandom";
-import { decode } from "msgpackr";
+import { decode } from "@msgpack/msgpack";
 import { SmartBuffer } from "smart-buffer";
 import "dotenv/config";
 import { register } from "./protocol";
