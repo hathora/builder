@@ -1,0 +1,28 @@
+types:
+  Username: string
+  Message:
+    text: string
+    sentAt: number
+    sentBy: Username
+    sentTo?: Username
+  RoomState:
+    name: string
+    createdBy: Username
+    messages: Message[]
+
+methods:
+  createRoom:
+    name: string
+  sendPublicMessage:
+    text: string
+  sendPrivateMessage:
+    text: string
+    to: Username
+
+auth:
+  anonymous:
+    separator: "-"
+
+userState: RoomState
+initialize: createRoom
+error: string

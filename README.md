@@ -1,20 +1,25 @@
-# rtag - real time app generator
-
+# rtag - realtime app generator
 ## Overview
+Rtag is a framework for building realtime applications with a focus on development experience.
 
-Rtag is a framework that aims to simplify application development by allowing the developer to focus only on application-specific logic, without having to think about adjacent concerns such as infrastructure, tooling, networking, storage, etc.
+### Features
+Rtag comes out of the box with the following features so that developers don't have to think about them:
+- Networking (state synchronization and RPC, efficient binary serialization)
+- Authentication
+- Automatic persistence
+- Declarative API format with client generation
+- Development server with hot reloading and built in debug UI
 
-Rtag uses a YAML file (`rtag.yml`) to define the application specification. The developer declares the client data model, mutation functions, and other relevant configuration in this file. Rtag then uses this specification to automatically generate several key components:
+### Application spec
+The foundation of an rtag application is the `rtag.yml` file, which defines various aspects of the application's behavior. One of the primary components the developer includes in this file is a fully typed API, which lists the server methods as well as the client state tree.
+
+From this specification, rtag automatically generates the following:
 - server side method stubs that set up the entire server code structure and just need to be filled in with the application's business logic
 - clients for frontends to use to communicate with the rtag server in a typesafe manner
 - a web-based debug application that allows for testing backend logic right away without writing any frontend code
 
-Rtag also comes with a powerful development server with features like hot code reloading and live code bundling, which aim to get out of the way of the developer and create an enjoyable development experience. 
-
 ## Installation
-
 #### Requirements
-
 - node v15+
 
 Install rtag from the npm registry:
@@ -23,120 +28,80 @@ Install rtag from the npm registry:
 npm install -g rtag
 ```
 
-## Quickstart
-
-1. Inside a new directory, create a `rtag.yml` file and fill it out as per your project specifications (see below)
-2. Run `rtag init` to generate your initial rtag project. For subsequent changes made to `rtag.yml`, run `rtag` instead
-3. Run `rtag install` to install dependencies
-4. Start the server using `rtag start`
-5. View debug app at http://localhost:3000/
-
-## App configuration (rtag.yml)
-
-Rtag apps contain a yaml configuration file in the root directory. This file sets up the contract between client and server and contains other relevant configuration for the application.
-
-#### Client state object
-
-This is the state object each connected client will have access to. Rtag automatically keeps the client state up to date as it is updated in the server.
-
-The client state definition lives inside the `types` section, and is referenced using `userState`:
-
+## Example
+The spec for a simple chat app:
 ```yml
 types:
-  MyIdAlias: string
-  MyEnum:
-    - VAL_1
-    - VAL_2
-  MyState:
-    id: MyIdAlias
-    enum: MyEnum
-    bool: boolean
-    num: number
-    str: string
-    arr: string[]
-    opt?: string
-userState: MyState
-```
+  Username: string
+  Message:
+    text: string
+    sentAt: number
+    sentBy: Username
+    sentTo?: Username
+  RoomState:
+    name: string
+    createdBy: Username
+    messages: Message[]
 
-A custom error type can also be defined, although in many cases using a primitive `string` type may suffice:
-
-```yml
-error: string
-```
-
-#### Mutation methods
-
-Methods are the way through which the state can be modified in the server. Methods take 0 or more user-defined arguments and have to be implemented in the server, possibly mutating the state and returning either a success or error response.
-
-The method signatures are defined under the `methods` section. The argument types can be primitives or can reference types defined in the `types` section. One of the methods must be designated as the `initialize` function, which is responsible for creating the initial version of the state.
-
-```yml
 methods:
-  doSomeAction:
-    arg1: string
-    arg2: MyEnum[]
-  emptyMethod:
-  createState:
-    conf: MyConfiguration
-initialize: createState
-```
+  createRoom:
+    name: string
+  sendPublicMessage:
+    text: string
+  sendPrivateMessage:
+    to: Username
+    text: string
 
-#### Authentication
-
-The `auth` section is used to configure the authentication modes that the application can use. The two currently supported modes are `anonymous` and `google`. At least one authentication method must be configured.
-
-```yml
 auth:
   anonymous:
     separator: "-"
-  google:
-    clientId: <PUBLIC_GOOGLE_APP_ID>.apps.googleusercontent.com
+
+userState: RoomState
+initialize: createRoom
+error: string
 ```
 
-## Backend
+After running the relevant `rtag` cli commands (see Quickstart), the following debug view is automatically generated:
 
-The entry point for the application's backend logic lives in the root of the `server` directory, in a file called `impl.ts`.
+[![image.png](https://i.postimg.cc/L6DLpLY3/image.png)](https://postimg.cc/1fgf0gK8)
 
-#### Internal state
+We then fill in the methods in `server/impl.ts` with our desired implementation:
+```ts
+export class Impl implements Methods<RoomState> {
+  createRoom(user: UserData, ctx: Context, request: ICreateRoomRequest): RoomState {
+    return { name: request.name, createdBy: user.name, messages: [] };
+  }
+  sendPublicMessage(state: RoomState, user: UserData, ctx: Context, request: ISendPublicMessageRequest): Response {
+    state.messages.push({ text: request.text, sentAt: ctx.time(), sentBy: user.name });
+    return Response.ok();
+  }
+  sendPrivateMessage(state: RoomState, user: UserData, ctx: Context, request: ISendPrivateMessageRequest): Response {
+    state.messages.push({ text: request.text, sentAt: ctx.time(), sentBy: user.name, sentTo: request.to });
+    return Response.ok();
+  }
+  getUserState(state: RoomState, user: UserData): RoomState {
+    return {
+      name: state.name,
+      createdBy: state.createdBy,
+      messages: state.messages.filter(
+        (msg) => msg.sentBy === user.name || msg.sentTo === user.name || msg.sentTo === undefined
+      ),
+    };
+  }
+}
+```
 
-The server side representation of a single state instance.
+Finally, we can see our working application in action:
 
-#### Initialize method
+[![image.png](https://i.postimg.cc/fyx7XPRG/image.png)](https://postimg.cc/Pv58n2Zy)
 
-Returns the initial internal state based on the user context and arguments.
+For more examples, check out the [examples](https://github.com/hpx7/rtag/tree/develop/examples) directory.
 
-#### Mutation methods
-
-Modify internal state based on the user context and arguments. Perform input/state validation by returning an error result if invalid request or a success result otherwise.
-
-#### getUserState method
-
-Maps from the internal state to the user state based on the user context. This mapping allows privacy rules to be enforced so that the user only gets the data they should have access to.
-
-#### onTick method
-
-Server ticks can be enabled by setting `tick: true` in `rtag.yml`.
-
-This method is called at a regular interval in the server and has access to the internal state. It is used for background tasks that can update the state, e.g. physics simulations etc.
-
-## Frontend
-
-One of rtag's most powerful prototyping features is the generated debug app, which lets you interact with your application and test your backend logic without writing any frontend code. Furthermore, rtag provides ways to incrementally add custom presentation logic as you become ready for it.
-
-#### Plugins
-
-Plugins go inside the `client/plugins` directory. To create a plugin for type `Foo`, create a file named `Foo.ts` and rerun the `rtag` command. This will cause the debug app to render your plugin's component anywhere `Foo` shows up in the state tree (instead of the rendering the default json view).
-
-Your plugin must export a webcomponent (a class that extends `HTMLElement`). While you are free to write a native webcomponent without any dependencies, most popular frontend libraries have ways to create webcomponents. Some examples include:
-- React (via https://github.com/bitovi/react-to-webcomponent)
-- Vue (via https://github.com/vuejs/vue-web-component-wrapper)
-- Lit (no wrapper required)
-
-Plugins receive the following props as input:
-- val -- this is the value you are rendering, it has the type of your filename
-- state -- this is the entire state tree, it has the type of `userState`
-- client -- this is the rtag client instance (so you can make method calls from within your plugin), with type `RtagClient`
-
-#### Fully custom frontend
-
-When you're ready to move away from the debug app, create an `index.html` file at the root of the `client` directory and rerun the `rtag` command. This file now serves as the entry point to your frontend. You are free to use any technologies you wish to build your frontend, just make sure to import the generated client to communicate with the rtag server.
+## Quickstart
+1. Inside a new directory, create a `rtag.yml` file and fill it out as per your project specifications (see below)
+2. Run `rtag init` to bootstrap your initial project structure
+3. Run `rtag generate` to generate the framework specific files
+4. Run `rtag install` to install dependencies
+5. Run `rtag start` to start the server
+6. View debug app at http://localhost:3000
+7. As you make changes to the server-side implementation (entrypoint `server/impl.ts`), rtag will live-reload any changed files so that server restart is not required
