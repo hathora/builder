@@ -62,7 +62,7 @@ initialize: createRoom
 error: string
 ```
 
-After running the relevant `rtag` cli commands (see Quickstart), the following debug view is automatically generated:
+After running `rtag init`, `rtag generate`, `rtag install`, and `rtag start`, the following debug view is automatically generated:
 
 [![image.png](https://i.postimg.cc/L6DLpLY3/image.png)](https://postimg.cc/1fgf0gK8)
 
@@ -101,12 +101,3 @@ Finally, we can see our working application in action:
 [![image.png](https://i.postimg.cc/fyx7XPRG/image.png)](https://postimg.cc/Pv58n2Zy)
 
 For more examples, check out the [examples](https://github.com/hpx7/rtag/tree/develop/examples) directory.
-
-## Quickstart
-1. Inside a new directory, create a `rtag.yml` file and fill it out as per your project specifications (see below)
-2. Run `rtag init` to bootstrap your initial project structure
-3. Run `rtag generate` to generate the framework specific files
-4. Run `rtag install` to install dependencies
-5. Run `rtag start` to start the server
-6. View debug app at http://localhost:3000
-7. As you make changes to the server-side implementation (entrypoint `server/impl.ts`), rtag will live-reload any changed files so that server restart is not required
