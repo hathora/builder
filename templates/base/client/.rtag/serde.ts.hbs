@@ -1,5 +1,6 @@
-import { pack, unpack } from "utf8-buffer";
+import * as utf8 from "utf8-buffer";
 import utf8Size from "utf8-buffer-size";
+const { pack, unpack } = (utf8 as any).default ?? utf8;
 
 export class Writer {
   private pos = 0;
