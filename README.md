@@ -1,9 +1,13 @@
 # rtag - realtime app generator
+
 ## Overview
+
 Rtag is a framework for building realtime applications with a focus on development experience.
 
 ### Features
+
 Rtag comes out of the box with the following features so that developers don't have to think about them:
+
 - Networking (state synchronization and RPC, efficient binary serialization)
 - Authentication
 - Automatic persistence
@@ -11,15 +15,19 @@ Rtag comes out of the box with the following features so that developers don't h
 - Development server with hot reloading and built in debug UI
 
 ### Application spec
+
 The foundation of an rtag application is the `rtag.yml` file, which defines various aspects of the application's behavior. One of the primary components the developer includes in this file is a fully typed API, which lists the server methods as well as the client state tree.
 
 From this specification, rtag automatically generates the following:
+
 - server side method stubs that set up the entire server code structure and just need to be filled in with the application's business logic
 - clients for frontends to communicate with the rtag server in a typesafe manner
 - a web-based debug application that allows for testing backend logic right away without writing any frontend code
 
 ## Installation
+
 #### Requirements
+
 - node v15+
 
 Install rtag from the npm registry:
@@ -29,9 +37,12 @@ npm install -g rtag
 ```
 
 ## Example
+
 The spec for a simple chat app:
+
 ```yml
 # rtag.yml
+
 types:
   Username: string
   Message:
@@ -67,6 +78,7 @@ After running `rtag init`, `rtag generate`, `rtag install`, and `rtag start`, th
 [![image.png](https://i.postimg.cc/L6DLpLY3/image.png)](https://postimg.cc/1fgf0gK8)
 
 We then fill in the methods in `server/impl.ts` with our desired implementation:
+
 ```ts
 import { Methods, Context } from "./.rtag/methods";
 import { UserData, Response } from "./.rtag/base";
@@ -95,6 +107,8 @@ export class Impl implements Methods<RoomState> {
   }
 }
 ```
+
+> Note that currently, the only backend language supported is typescript. More language support is planned for the future.
 
 Finally, we can see our working application in action:
 
