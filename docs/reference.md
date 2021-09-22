@@ -101,9 +101,9 @@ The server has three responsibilities:
 
 For each stateId, the backend maintains an internal representation of the state in memory inside the server. The internal state type is passed into the `Methods` interface as a parameter so that it can enforce the correct class structure.
 
-Note that in simple cases, the `userState` can be used as the type of internal state (see [chat example](https://github.com/hpx7/rtag/blob/develop/examples/chat/server/impl.ts)). However, many times you may want a separate representation of internal state which then gets converted to the `userState` via the `getUserState()` function.
+Note that in simple cases, the `userState` can be used as the type of internal state (see [chat example](../examples/chat/server/impl.ts)). However, many times you may want a separate representation of internal state which then gets converted to the `userState` via the `getUserState()` function.
 
-The internal state can be composed of any primitives and built in data structures of the language. Custom classes, whether user-defined or imported from a library, can also be used, but they need to utilize a `_modCount` property to allow for change detection (see [chess example](https://github.com/hpx7/rtag/blob/develop/examples/chess/server/impl.ts)).
+The internal state can be composed of any primitives and built in data structures of the language. Custom classes, whether user-defined or imported from a library, can also be used, but they need to utilize a `_modCount` property to allow for change detection (see [chess example](../examples/chess/server/impl.ts)).
 
 The internal state is first created via the method referenced by `initialize` in `rtag.yml`.
 
