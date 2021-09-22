@@ -116,7 +116,7 @@ Finally, we can see our working application in action:
 
 For more examples, check out the [examples directory](https://github.com/hpx7/rtag/tree/develop/examples).
 
-## Furthur information
+## Additional resources
 
 For a more detailed guide, check out the [reference docs](docs/reference.md).
 

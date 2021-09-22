@@ -87,7 +87,7 @@ The `error` key represents the response type the server sends when a method call
 
 ### tick
 
-TODO
+The optional `tick` configures whether or not the backend will run an `onTick` function at a fixed interval. See the Server section below for more details.
 
 ## Server
 
@@ -99,7 +99,7 @@ The server has three responsibilities:
 
 ### Internal State
 
-For each stateId, the backend maintains an internal representation of the state in memory inside the server. The internal state type is passed into the `Methods` interface as a parameter so that it can enforce the correct class structure.
+For each stateId, the backend maintains an internal representation of the state in memory inside the server. The internal state type is passed into the `Methods` interface as a parameter so that it can enforce the correct class structure. The server entrypoint must export a class conforming to this `Methods` interface.
 
 Note that in simple cases, the `userState` can be used as the type of internal state (see [chat example](../examples/chat/server/impl.ts)). However, many times you may want a separate representation of internal state which then gets converted to the `userState` via the `getUserState()` function.
 
@@ -175,7 +175,7 @@ Methods receive four arguments as input:
 3. `ctx`: a context object, which must be used for sources of nondeterminism (random numbers, current time, api calls)
 4. `request`: the input arguments to the method as defined in `rtag.yml`
 
-Based on these inputs, the method can validate whether the action is permitted, returning an error response if not. Otherwise, the method can mutate `state` as desired and return a success response.
+Based on these inputs, the method can validate whether the action is permitted, returning an error response if not. Otherwise, the method can mutate `state` as desired and return a success response. Any mutations that occur will ultimately be reflected in the client state via the `getUserState` function.
 
 ### getUserState
 
@@ -184,9 +184,6 @@ The `getUserState` function converts the internal state to the user state based 
 Example (poker game):
 
 ```ts
-// impl.ts
-
-// ...
   getUserState(state: InternalState, user: UserData): PlayerState {
     const showdown =
       state.players.filter((p) => p.status === PlayerStatus.WAITING).length === 0 &&
@@ -204,12 +201,13 @@ Example (poker game):
       revealedCards: state.revealedCards.map((card) => ({ rank: card[0], suit: card[1] })),
     };
   }
-// ...
 ```
 
 ### onTick
 
-TODO
+Sometimes apps may want some way to execute logic in the backend at a fixed interval outside of user called methods. Common use cases for this include running simulations (e.g. physics simulations in games), sending notifications, or updating clocks/timers.
+
+To enable this functionality, simply set `tick: true` in `rtag.yml`. This will add an `onTick` function to the `Methods` interface. The `onTick` function takes the internal state, context object, and time delta (representing the milliseconds elapsed since the previous `onTick` invocation) as arguments. Any mutations that occur inside this function will be handled the same way as mutations inside the methods.
 
 ## Client
 
