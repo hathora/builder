@@ -115,3 +115,9 @@ Finally, we can see our working application in action:
 [![image.png](https://i.postimg.cc/fyx7XPRG/image.png)](https://postimg.cc/Pv58n2Zy)
 
 For more examples, check out the [examples](https://github.com/hpx7/rtag/tree/develop/examples) directory.
+
+## Furthur information
+
+For a more detailed guide, check out the [reference docs](docs/reference.md).
+
+If you have any questions/suggestions or want to report a bug, please feel free to file an issue or start a discussion on Github!
