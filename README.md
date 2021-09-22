@@ -75,7 +75,7 @@ error: string
 
 After running `rtag init`, `rtag generate`, `rtag install`, and `rtag start`, the following debug view is automatically generated:
 
-[![image.png](https://i.postimg.cc/L6DLpLY3/image.png)](https://postimg.cc/1fgf0gK8)
+![image](https://user-images.githubusercontent.com/5400947/134371999-eca307b9-4e28-4313-96c1-1f8cbcbddec3.png)
 
 We then fill in the methods in `server/impl.ts` with our desired implementation:
 
@@ -112,9 +112,9 @@ export class Impl implements Methods<RoomState> {
 
 Finally, we can see our working application in action:
 
-[![image.png](https://i.postimg.cc/fyx7XPRG/image.png)](https://postimg.cc/Pv58n2Zy)
+![image](https://user-images.githubusercontent.com/5400947/134372344-6b4ed46c-feed-4776-95f8-9d0499570b76.png)
 
-For more examples, check out the [examples](https://github.com/hpx7/rtag/tree/develop/examples) directory.
+For more examples, check out the [examples directory](https://github.com/hpx7/rtag/tree/develop/examples).
 
 ## Furthur information
 
