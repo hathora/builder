@@ -101,7 +101,11 @@ The server has three responsibilities:
 
 For each stateId, the backend maintains an internal representation of the state in memory inside the server. The internal state type is passed into the `Methods` interface as a parameter so that it can enforce the correct class structure. The server entrypoint must export a class conforming to this `Methods` interface.
 
-Note that in simple cases, the `userState` can be used as the type of internal state (see [chat example](../examples/chat/server/impl.ts)). However, many times you may want a separate representation of internal state which then gets converted to the `userState` via the `getUserState()` function.
+Note that in simple cases, the `userState` can be used as the type of internal state (see [chat example](../examples/chat/server/impl.ts)). However, many times you may want a separate representation of internal state which then gets converted to the `userState` via the `getUserState()` function. By having this separation between server state and user state, you can do things like:
+
+- enforce privacy by selectively allowing access to parts of the state per user (e.g. private messages in chat example)
+- allow for a more optimized data structure in the server (e.g. chess.js in chess example)
+- derive certain properties rather than store them (e.g. game status in codenames example)
 
 The internal state can be composed of any primitives and built in data structures of the language. Custom classes, whether user-defined or imported from a library, can also be used, but they need to utilize a `_modCount` property to allow for change detection (see [chess example](../examples/chess/server/impl.ts)).
 
@@ -185,12 +189,10 @@ Example (poker game):
 
 ```ts
   getUserState(state: InternalState, user: UserData): PlayerState {
-    const showdown =
-      state.players.filter((p) => p.status === PlayerStatus.WAITING).length === 0 &&
-      state.players.filter((p) => p.status === PlayerStatus.PLAYED).length > 1;
     return {
       players: state.players.map((player) => {
-        const shouldReveal = player.name === user.name || (showdown && player.status === PlayerStatus.PLAYED);
+        const shouldReveal =
+          player.name === user.name || (isShowdown(state.players) && player.status === PlayerStatus.PLAYED);
         return {
           ...player,
           cards: shouldReveal ? player.cards.map((card) => ({ rank: card[0], suit: card[1] })) : [],
@@ -215,18 +217,60 @@ The rtag framework includes an automatically generated debug application that le
 
 ### Plugins
 
-Plugins go inside the client/plugins directory. To create a plugin for type Foo, create a file named Foo.ts and rerun the rtag command. This will cause the debug app to render your plugin's component anywhere Foo shows up in the state tree (instead of the rendering the default json view).
+Plugins go inside the `client/plugins` directory. To create a plugin for type `Foo`, create a file named `Foo.ts` and rerun the `rtag` command. This will cause the debug app to render your plugin's component anywhere `Foo` shows up in the state tree (instead of the rendering the default json view).
 
-Your plugin must export a webcomponent (a class that extends HTMLElement). While you are free to write a native webcomponent without any dependencies, most popular frontend libraries have ways to create webcomponents. Some examples include:
+Your plugin must export a webcomponent (a class that extends `HTMLElement`). While you are free to write a native webcomponent without any dependencies, most popular frontend libraries have ways to create webcomponents. Some examples include:
+
 - React (via https://github.com/bitovi/react-to-webcomponent)
 - Vue (via https://github.com/vuejs/vue-web-component-wrapper)
 - Lit (no wrapper required)
 
 Plugins receive the following props as input:
+
 - val -- this is the value you are rendering, it has the type of your filename
-- state -- this is the entire state tree, it has the type of userState
-- client -- this is the rtag client instance (so you can make method calls from within your plugin), with type RtagClient
+- state -- this is the entire state tree, it has the type of `userState`
+- client -- this is the rtag client instance (so you can make method calls from within your plugin), with type `RtagClient`
+
+Example (from uno, using Lit):
+
+```js
+// Card.ts
+
+import { LitElement, html } from "lit";
+import { property } from "lit/decorators.js";
+import { styleMap } from "lit/directives/style-map.js";
+import { Card, Color } from "../.rtag/types";
+import { RtagConnection } from "../.rtag/client";
+
+export default class CardComponent extends LitElement {
+  @property() val!: Card;
+  @property() client!: RtagConnection;
+
+  render() {
+    return html`<div
+      style=${styleMap({
+        width: "50px",
+        height: "75px",
+        lineHeight: "75px",
+        textAlign: "center",
+        cursor: "pointer",
+        backgroundColor: Color[this.val.color].toLowerCase(),
+      })}
+      @click="${() => this.client.playCard({ card: this.val })}"
+    >
+      ${this.val.value}
+    </div>`;
+  }
+}
+```
+
+Which renders like this in the debug application:
+![image](https://user-images.githubusercontent.com/5400947/134374863-612fb496-bb48-40c9-bbdc-ed4257565aea.png)
 
 ### Fully custom frontend
 
-When you're ready to move away from the debug app, create an index.html file at the root of the client directory and rerun the rtag command. This file now serves as the entry point to your frontend. You are free to use any technologies you wish to build your frontend, just make sure to import the generated client to communicate with the rtag server.
+When you're ready to move away from the debug app, create an `index.html` file at the root of the `client` directory and rerun the `rtag generate` command. This file now serves as the entry point to your frontend, and can load code and other resources as needed. You are free to use any technologies you wish to build your frontend, just make sure to import the generated client to communicate with the rtag server.
+
+The `rtag` frontend tooling is built around [vite](https://vitejs.dev/), which generally creates for a pleasant development experience.
+
+For an example of a fully custom frotend built using rtag, see https://github.com/knigam/hive.
