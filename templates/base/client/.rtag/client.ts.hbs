@@ -76,7 +76,7 @@ export class RtagClient {
 }
 
 export class RtagConnection {
-  private callbacks: Record<number, (response: Response) => void> = {};
+  private callbacks: Record<string, (response: Response) => void> = {};
 
   public constructor(
     public stateId: StateId,
