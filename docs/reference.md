@@ -95,7 +95,7 @@ The server has three responsibilities:
 
 1. Creating the initial internal state
 2. Mutating the internal state via methods and/or `onTick`
-3. Deriving the appropritae `userState` per user from the internal state
+3. Deriving the appropriate `userState` per user from the internal state
 
 ### Internal State
 

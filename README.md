@@ -118,6 +118,6 @@ For more examples, check out the [examples directory](https://github.com/hpx7/rt
 
 ## Additional resources
 
-For a more detailed guide, check out the [reference docs](docs/reference.md).
+For a high level overview of rtag concepts and goals, see [concepts](docs/concepts.md). For more details on how to implement an rtag application, check out the [reference docs](docs/reference.md).
 
 If you have any questions/suggestions or want to report a bug, please feel free to file an issue or start a discussion on Github!
