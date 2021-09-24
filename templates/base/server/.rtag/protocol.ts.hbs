@@ -41,23 +41,25 @@ export function register(store: Store): Promise<CoordinatorClient> {
     });
     socket.on("data", (data) => {
       const reader = SmartBuffer.fromBuffer(data);
-      const type = reader.readInt8();
-      if (type === NEW_STATE) {
-        store.newState(
-          reader.readBigUInt64LE(),
-          reader.readString(reader.readUInt32LE()),
-          reader.readBuffer(reader.readUInt32LE())
-        );
-      } else if (type === SUBSCRIBE_USER) {
-        store.subscribeUser(reader.readBigUInt64LE(), reader.readString(reader.readUInt32LE()));
-      } else if (type === UNSUBSCRIBE_USER) {
-        store.unsubscribeUser(reader.readBigUInt64LE(), reader.readString(reader.readUInt32LE()));
-      } else if (type === HANDLE_UPDATE) {
-        store.handleUpdate(
-          reader.readBigUInt64LE(),
-          reader.readString(reader.readUInt32LE()),
-          reader.readBuffer(reader.readUInt32LE())
-        );
+      while (reader.remaining() > 0) {
+        const type = reader.readInt8();
+        if (type === NEW_STATE) {
+          store.newState(
+            reader.readBigUInt64LE(),
+            reader.readString(reader.readUInt32LE()),
+            reader.readBuffer(reader.readUInt32LE())
+          );
+        } else if (type === SUBSCRIBE_USER) {
+          store.subscribeUser(reader.readBigUInt64LE(), reader.readString(reader.readUInt32LE()));
+        } else if (type === UNSUBSCRIBE_USER) {
+          store.unsubscribeUser(reader.readBigUInt64LE(), reader.readString(reader.readUInt32LE()));
+        } else if (type === HANDLE_UPDATE) {
+          store.handleUpdate(
+            reader.readBigUInt64LE(),
+            reader.readString(reader.readUInt32LE()),
+            reader.readBuffer(reader.readUInt32LE())
+          );
+        }
       }
     });
   });
