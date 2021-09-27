@@ -97,7 +97,7 @@ export const ImplWrapper = {
   },
   {{/if}}
   getUserState(state: State, user: UserData) {
-    return impl.getUserState(state, user);
+    return impl.getUserState((state as any)[PROXY_TARGET], user);
   },
   changed(): boolean {
     const res = changed;
