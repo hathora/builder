@@ -62,7 +62,7 @@ class Store {
     }, 50);
     {{/if}}
   }
-  async newState(stateId: StateId, userId: string, argsBuffer: Buffer) {
+  async newState(stateId: StateId, userId: UserId, argsBuffer: Buffer) {
     const userBuffer = await coordinator.lookupUser(userId);
     const user = decode(userBuffer) as UserData;
     const seed = randomBytes(8).readBigUInt64LE();
@@ -83,7 +83,7 @@ class Store {
         .toBuffer()
     );
   }
-  async subscribeUser(stateId: StateId, userId: string) {
+  async subscribeUser(stateId: StateId, userId: UserId) {
     if (!stateInfo.has(stateId)) {
       const loaded = loadState(stateId);
       if (loaded === undefined) {

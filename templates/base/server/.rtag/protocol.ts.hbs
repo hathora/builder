@@ -4,6 +4,9 @@ import { encode } from "@msgpack/msgpack";
 import { SmartBuffer } from "smart-buffer";
 import axios from "axios";
 
+type StateId = bigint;
+type UserId = string;
+
 const NEW_STATE = 0;
 const SUBSCRIBE_USER = 1;
 const UNSUBSCRIBE_USER = 2;
@@ -81,16 +84,16 @@ export function register(store: Store): Promise<CoordinatorClient> {
 }
 
 interface Store {
-  newState(stateId: bigint, userId: string, argsBuffer: Buffer): void;
-  subscribeUser(stateId: bigint, userId: string): void;
-  unsubscribeUser(stateId: bigint, userId: string): void;
-  handleUpdate(stateId: bigint, userId: string, data: Buffer): void;
+  newState(stateId: StateId, userId: UserId, argsBuffer: Buffer): void;
+  subscribeUser(stateId: StateId, userId: UserId): void;
+  unsubscribeUser(stateId: StateId, userId: UserId): void;
+  handleUpdate(stateId: StateId, userId: UserId, data: Buffer): void;
 }
 
 class CoordinatorClient {
   constructor(private socket: net.Socket) {}
 
-  public onStateUpdate(stateId: bigint, userId: string, data: Buffer) {
+  public onStateUpdate(stateId: StateId, userId: UserId, data: Buffer) {
     const buf = new SmartBuffer()
       .writeBigUInt64LE(stateId)
       .writeUInt32LE(userId.length)
@@ -99,7 +102,7 @@ class CoordinatorClient {
     this.socket.write(buf.insertUInt32LE(buf.length, 0).toBuffer());
   }
 
-  public async lookupUser(userId: string) {
+  public async lookupUser(userId: UserId) {
     return (await axios.get(`https://rtag.dev/users/${userId}`, { responseType: "arraybuffer" })).data;
   }
 }
