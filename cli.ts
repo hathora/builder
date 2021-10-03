@@ -285,9 +285,8 @@ if (command === "init") {
     root: appEntryPath,
     envDir: rootDir,
     clearScreen: false,
-    resolve: {
-      alias: { vue: "vue/dist/vue.esm.js" },
-    },
+    server: { host: "0.0.0.0" },
+    resolve: { alias: { vue: "vue/dist/vue.esm.js" } },
   }).then((server) => server.listen());
   shelljs.cd(serverDir);
   process.env.DATA_DIR = join(serverDir, ".rtag/data");
@@ -300,12 +299,8 @@ if (command === "init") {
   process.env.VITE_APP_ID = appId;
   build({
     root: appEntryPath,
-    build: {
-      outDir: join(rootDir, "dist/client"),
-    },
-    resolve: {
-      alias: { vue: "vue/dist/vue.esm.js" },
-    },
+    build: { outDir: join(rootDir, "dist/client") },
+    resolve: { alias: { vue: "vue/dist/vue.esm.js" } },
   });
   ncc(join(serverDir, ".rtag/store.ts")).then(
     ({ code, assets }: { code: string; assets: Record<string, { source: string | Buffer }> }) => {
