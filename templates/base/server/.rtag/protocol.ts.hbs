@@ -103,6 +103,6 @@ class CoordinatorClient {
   }
 
   public async lookupUser(userId: UserId) {
-    return (await axios.get(`https://rtag.dev/users/${userId}`, { responseType: "arraybuffer" })).data;
+    return (await axios.get<Buffer>(`https://rtag.dev/users/${userId}`, { responseType: "arraybuffer" })).data;
   }
 }
