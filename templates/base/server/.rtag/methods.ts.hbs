@@ -10,6 +10,7 @@ export interface Context {
   rand(): number;
   randInt(limit?: number): number;
   time(): number;
+  event(event: string, userId: string): void;
 }
 
 type State =
