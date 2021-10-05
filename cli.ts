@@ -285,6 +285,7 @@ if (command === "init") {
     root: appEntryPath,
     envDir: rootDir,
     clearScreen: false,
+    server: { host: "0.0.0.0" },
   }).then((server) => server.listen());
   shelljs.cd(serverDir);
   process.env.DATA_DIR = join(serverDir, ".rtag/data");
@@ -297,9 +298,7 @@ if (command === "init") {
   process.env.VITE_APP_ID = appId;
   build({
     root: appEntryPath,
-    build: {
-      outDir: join(rootDir, "dist/client"),
-    },
+    build: { outDir: join(rootDir, "dist/client") },
   });
   ncc(join(serverDir, ".rtag/store.ts")).then(
     ({ code, assets }: { code: string; assets: Record<string, { source: string | Buffer }> }) => {

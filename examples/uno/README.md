@@ -1,3 +1,3 @@
 https://rtag-uno.surge.sh/
 
-[![image.png](https://i.postimg.cc/2S5Fx8tk/image.png)](https://postimg.cc/ppgFWxx4)
+![image](https://user-images.githubusercontent.com/5400947/134374863-612fb496-bb48-40c9-bbdc-ed4257565aea.png)

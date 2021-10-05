@@ -59,7 +59,7 @@ export const {{@key}} = {
   values() {
     return [{{#each options}}"{{@key}}"{{#unless @last}}, {{/unless}}{{/each}}];
   },
-  encode(obj: Uni, buf?: Writer) {
+  encode(obj: {{@key}}, buf?: Writer) {
     buf ??= new Writer();
     writeUInt(buf, this.values().indexOf(obj.type));
     {{#each options}}
@@ -70,7 +70,7 @@ export const {{@key}} = {
     {{/each}}
     return buf.toBuffer();
   },
-  decode(buf: ArrayBufferView | Reader): Uni {
+  decode(buf: ArrayBufferView | Reader): {{@key}} {
     const sb = ArrayBuffer.isView(buf) ? new Reader(buf) : buf;
     const type = parseUInt(sb);
     {{#each options}}

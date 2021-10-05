@@ -1,5 +1,5 @@
 {
-  "name": "codenames-server",
+  "name": "chat-server",
   "version": "0.0.1",
   "type": "module",
   "devDependencies": {

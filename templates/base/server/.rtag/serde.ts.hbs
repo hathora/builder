@@ -1,5 +1,6 @@
-import utf8 from "utf8-buffer";
+import * as utf8 from "utf8-buffer";
 import utf8Size from "utf8-buffer-size";
+const { pack, unpack } = (utf8 as any).default ?? utf8;
 
 export class Writer {
   private pos = 0;
@@ -53,7 +54,7 @@ export class Writer {
       const byteSize = utf8Size(val);
       this.writeUVarint(byteSize);
       this.ensureSize(byteSize);
-      utf8.pack(val, this.bytes, this.pos);
+      pack(val, this.bytes, this.pos);
       this.pos += byteSize;
     } else {
       this.writeUInt8(0);
@@ -131,7 +132,7 @@ export class Reader {
   public readString() {
     const len = this.readUVarint();
     if (len > 0) {
-      const val = utf8.unpack(this.bytes, this.pos, this.pos + len);
+      const val = unpack(this.bytes, this.pos, this.pos + len);
       this.pos += len;
       return val;
     }

@@ -1,4 +1,6 @@
 import WebSocket from "isomorphic-ws";
+// @ts-ignore
+import getRandomValues from "get-random-values";
 import axios from "axios";
 import jwtDecode from "jwt-decode";
 import { UserData, Response, Method } from "./base";
@@ -76,7 +78,7 @@ export class RtagClient {
 }
 
 export class RtagConnection {
-  private callbacks: Record<number, (response: Response) => void> = {};
+  private callbacks: Record<string, (response: Response) => void> = {};
 
   public constructor(
     public stateId: StateId,
@@ -116,9 +118,9 @@ export class RtagConnection {
       if (this.socket.readyState === this.socket.CLOSED) {
         reject("Connection is closed");
       } else {
-        const msgId = crypto.getRandomValues(new Uint32Array(1));
-        this.socket.send(new Uint8Array([...new Uint8Array([method]), ...new Uint8Array(msgId.buffer), ...request]));
-        this.callbacks[msgId[0]] = resolve;
+        const msgId: Uint8Array = getRandomValues(new Uint8Array(4));
+        this.socket.send(new Uint8Array([...new Uint8Array([method]), ...msgId, ...request]));
+        this.callbacks[new DataView(msgId.buffer).getUint32(0, true)] = resolve;
       }
     });
   }
