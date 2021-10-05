@@ -52,7 +52,7 @@ class Store {
       const currTime = Date.now();
       stateInfo.forEach(({ state, rng }, stateId) => {
         const timeDelta = currTime - prevUpdateTime;
-        impl.onTick(state, ctx(stateId, rng, currTime), timeDelta / 1000);
+        impl.onTick(state, ctx(rng, currTime, handleEvent(stateId)), timeDelta / 1000);
         if (impl.changed()) {
           changedStates.add(stateId);
           log.append(stateId, currTime, new SmartBuffer().writeUInt8(0xfe).writeUInt32LE(timeDelta).toBuffer());
@@ -68,7 +68,7 @@ class Store {
     const seed = randomBytes(8).readBigUInt64LE();
     const rng = seedrandom(seed.toString(36));
     const time = Date.now();
-    const state = impl.initialize(user, ctx(stateId, rng, time), argsBuffer);
+    const state = impl.initialize(user, ctx(rng, time, handleEvent(stateId)), argsBuffer);
     stateInfo.set(stateId, { state, rng, subscriptions: new Map([[userId, user]]) });
     sendUpdate(stateId, state, user, []);
     log.append(
@@ -125,7 +125,7 @@ class Store {
     const [method, msgId, argsBuffer] = [reader.readUInt8(), reader.readUInt32LE(), reader.readBuffer()];
     const user = subscriptions.get(userId)!;
     const time = Date.now();
-    const response = impl.getResult(state, user, method, ctx(stateId, rng, time), argsBuffer);
+    const response = impl.getResult(state, user, method, ctx(rng, time, handleEvent(stateId)), argsBuffer);
     if (response !== undefined) {
       if (impl.changed()) {
         changedStates.add(stateId);
@@ -169,7 +169,7 @@ function loadState(stateId: StateId) {
     const user = decode(userBuffer) as UserData;
     users.set(user.id, user);
     const rng = seedrandom(seed.toString(36));
-    const state = impl.initialize(user, ctx(stateId, rng, time), argsBuffer);
+    const state = impl.initialize(user, ctx(rng, time, handleEvent(stateId)), argsBuffer);
 
     for (let i = 1; i < rows.length; i++) {
       const { time, record } = rows[i];
@@ -184,13 +184,13 @@ function loadState(stateId: StateId) {
       {{#if tick}}
       if (method === 0xfe) {
         const timeDelta = reader.readUInt32LE();
-        impl.onTick(state, ctx(stateId, rng, time), timeDelta / 1000);
+        impl.onTick(state, ctx(rng, time, handleEvent(stateId)), timeDelta / 1000);
         continue;
       }
       {{/if}}
       const userId = reader.readString(reader.readUInt32LE());
       const argsBuffer = reader.readBuffer(reader.readUInt32LE());
-      impl.getResult(state, users.get(userId)!, method, ctx(stateId, rng, time), argsBuffer);
+      impl.getResult(state, users.get(userId)!, method, ctx(rng, time, noop), argsBuffer);
     }
 
     return { state, rng };
@@ -204,22 +204,28 @@ function sendUpdate(stateId: StateId, state: State | undefined, user: UserData, 
   return coordinator.onStateUpdate(stateId, user.id, Buffer.from(encodeState(userState, messages)));
 }
 
-function ctx(stateId: StateId, rng: ReturnType<seedrandom>, time: number) {
+function ctx(rng: ReturnType<seedrandom>, time: number, handleEvent: (event: string, userId: UserId) => void) {
   return {
     rand: () => rng(),
     randInt: (limit?: number) => (limit === undefined ? rng.int32() : Math.floor(rng() * limit)),
     time: () => time,
-    event: (event: string, userId: UserId) => {
-      const messages = userMessages.get(stateId);
-      if (messages === undefined) {
-        userMessages.set(stateId, new Map([[userId, [{ type: "event", event }]]]));
-      } else {
-        if (!messages.has(userId)) {
-          messages.set(userId, [{ type: "event", event }]);
-        } else {
-          messages.get(userId)!.push({ type: "event", event });
-        }
-      }
-    },
+    event: handleEvent,
   };
 }
+
+function handleEvent(stateId: StateId) {
+  return (event: string, userId: UserId) => {
+    const messages = userMessages.get(stateId);
+    if (messages === undefined) {
+      userMessages.set(stateId, new Map([[userId, [{ type: "event", event }]]]));
+    } else {
+      if (!messages.has(userId)) {
+        messages.set(userId, [{ type: "event", event }]);
+      } else {
+        messages.get(userId)!.push({ type: "event", event });
+      }
+    }
+  };
+}
+
+function noop() {}
