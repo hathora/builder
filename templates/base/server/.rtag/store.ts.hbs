@@ -7,7 +7,7 @@ import "dotenv/config";
 import { register } from "./protocol";
 import LogStore from "./logstore";
 import { ImplWrapper as impl } from "./wrapper";
-import { UserData, Response } from "./base";
+import { UserData, Message } from "./base";
 import { encodeState } from "./types";
 
 type StateId = bigint;
@@ -22,28 +22,28 @@ if (!existsSync(dataDir)) {
 const log = new LogStore(dataDir);
 const stateInfo: Map<StateId, StateInfo> = new Map();
 const changedStates: Set<StateId> = new Set();
-const userResponses: Map<StateId, Map<UserId, Record<number, Response>>> = new Map();
+const userMessages: Map<StateId, Map<UserId, Message[]>> = new Map();
 
 class Store {
   constructor() {
     setInterval(() => {
       changedStates.forEach((stateId) => {
-        const responses = userResponses.get(stateId);
+        const messages = userMessages.get(stateId);
         stateInfo.get(stateId)?.subscriptions.forEach((user, userId) => {
-          sendUpdate(stateId, stateInfo.get(stateId)!.state, user, responses?.get(userId) ?? {});
+          sendUpdate(stateId, stateInfo.get(stateId)!.state, user, messages?.get(userId) ?? []);
         });
-        userResponses.delete(stateId);
+        userMessages.delete(stateId);
       });
-      userResponses.forEach((responses, stateId) => {
-        responses.forEach((response, userId) => {
+      userMessages.forEach((messages, stateId) => {
+        messages.forEach((message, userId) => {
           const user = stateInfo.get(stateId)?.subscriptions?.get(userId);
           if (user !== undefined) {
-            sendUpdate(stateId, undefined, user, response);
+            sendUpdate(stateId, undefined, user, message);
           }
         });
       });
       changedStates.clear();
-      userResponses.clear();
+      userMessages.clear();
     }, 100);
     {{#if tick}}
 
@@ -70,7 +70,7 @@ class Store {
     const time = Date.now();
     const state = impl.initialize(user, ctx(rng, time), argsBuffer);
     stateInfo.set(stateId, { state, rng, subscriptions: new Map([[userId, user]]) });
-    sendUpdate(stateId, state, user, {});
+    sendUpdate(stateId, state, user, []);
     log.append(
       stateId,
       time,
@@ -95,7 +95,7 @@ class Store {
     const userBuffer = await coordinator.lookupUser(userId);
     const user = decode(userBuffer) as UserData;
     stateInfo.get(stateId)!.subscriptions.set(userId, user);
-    sendUpdate(stateId, stateInfo.get(stateId)!.state, user, {});
+    sendUpdate(stateId, stateInfo.get(stateId)!.state, user, []);
     log.append(
       stateId,
       Date.now(),
@@ -112,7 +112,7 @@ class Store {
     } else {
       stateInfo.delete(stateId);
       changedStates.delete(stateId);
-      userResponses.delete(stateId);
+      userMessages.delete(stateId);
       log.unload(stateId);
     }
   }
@@ -141,13 +141,13 @@ class Store {
             .toBuffer()
         );
       }
-      if (!userResponses.has(stateId)) {
-        userResponses.set(stateId, new Map([[userId, { [msgId]: response }]]));
+      if (!userMessages.has(stateId)) {
+        userMessages.set(stateId, new Map([[userId, [{ type: "response", msgId, response }]]]));
       } else {
-        if (!userResponses.get(stateId)!.has(userId)) {
-          userResponses.get(stateId)!.set(userId, { [msgId]: response });
+        if (!userMessages.get(stateId)!.has(userId)) {
+          userMessages.get(stateId)!.set(userId, [{ type: "response", msgId, response }]);
         } else {
-          userResponses.get(stateId)!.get(userId)![msgId] = response;
+          userMessages.get(stateId)!.get(userId)!.push({ type: "response", msgId, response });
         }
       }
     }
@@ -199,9 +199,9 @@ function loadState(stateId: StateId) {
   }
 }
 
-function sendUpdate(stateId: StateId, state: State | undefined, user: UserData, responses: Record<number, Response>) {
+function sendUpdate(stateId: StateId, state: State | undefined, user: UserData, messages: Message[]) {
   const userState = state === undefined ? undefined : impl.getUserState(state, user);
-  return coordinator.onStateUpdate(stateId, user.id, Buffer.from(encodeState(userState, responses)));
+  return coordinator.onStateUpdate(stateId, user.id, Buffer.from(encodeState(userState, messages)));
 }
 
 function ctx(rng: ReturnType<seedrandom>, time: number) {
@@ -209,5 +209,15 @@ function ctx(rng: ReturnType<seedrandom>, time: number) {
     rand: () => rng(),
     randInt: (limit?: number) => (limit === undefined ? rng.int32() : Math.floor(rng() * limit)),
     time: () => time,
+    event: (event: string, userId: UserId) => {
+      const messages = userMessages.get(stateId);
+      if (messages !== undefined) {
+        if (!messages.has(userId)) {
+          messages.set(userId, [{ type: "event", event }]);
+        } else {
+          messages.get(userId)!.push({ type: "event", event });
+        }
+      }
+    },
   };
 }

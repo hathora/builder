@@ -88,14 +88,16 @@ export class RtagConnection {
   ) {
     socket.onmessage = ({ data }) => {
       resolve(this);
-      const { state, responses } = decodeState(new Uint8Array(data as ArrayBuffer));
+      const { state, messages } = decodeState(new Uint8Array(data as ArrayBuffer));
       if (state !== undefined) {
         onStateChange(state);
       }
-      Object.entries(responses).forEach(([msgId, response]) => {
-        if (msgId in this.callbacks) {
-          this.callbacks[msgId](response);
-          delete this.callbacks[msgId];
+      messages.forEach((message) => {
+        if (message.type === "response") {
+          if (message.msgId in this.callbacks) {
+            this.callbacks[message.msgId](message.response);
+            delete this.callbacks[message.msgId];
+          }
         }
       });
     };

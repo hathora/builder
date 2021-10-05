@@ -1,4 +1,4 @@
-import { Response } from "./base";
+import { Message, Response } from "./base";
 import { Writer, Reader } from "./serde";
 
 {{#each types}}
@@ -187,26 +187,38 @@ parseBoolean(sb)
 {{~/if}}
 {{/inline}}
 
-export function encodeState(state: {{userState}} | undefined, responses: Record<number, Response>) {
+export function encodeState(state: {{userState}} | undefined, messages: Message[]) {
   const buf = new Writer();
   writeOptional(buf, state, (buf, x) => {{userState}}.encode(x, buf));
-  Object.entries(responses).forEach(([msgId, response]) => {
-    buf.writeUInt32LE(Number(msgId));
-    const maybeError = response.type === "error" ? response.error : undefined;
-    writeOptional(buf, maybeError, writeString);
+  messages.forEach((message) => {
+    if (message.type === "response") {
+      buf.writeUInt8(0);
+      buf.writeUInt32LE(message.msgId);
+      const maybeError = message.response.type === "error" ? message.response.error : undefined;
+      writeOptional(buf, maybeError, writeString);
+    } else {
+      buf.writeUInt8(1);
+      buf.writeString(message.event);
+    }
   });
   return buf.toBuffer();
 }
-export function decodeState(buf: ArrayBufferView | Reader): { state?: {{userState}}; responses: Record<number, Response> } {
+export function decodeState(buf: ArrayBufferView | Reader): { state?: {{userState}}; messages: Message[] } {
   const sb = ArrayBuffer.isView(buf) ? new Reader(buf) : buf;
   const state = parseOptional(sb, () => {{userState}}.decode(sb));
-  const responses: Record<number, Response> = {};
+  const messages: Message[] = [];
   while (sb.remaining() > 0) {
-    const msgId = sb.readUInt32LE();
-    const maybeError = parseOptional(sb, () => parseString(sb));
-    responses[msgId] = maybeError === undefined ? Response.ok() : Response.error(maybeError);
+    const type = sb.readUInt8();
+    if (type === 0) {
+      const msgId = sb.readUInt32LE();
+      const maybeError = parseOptional(sb, () => parseString(sb));
+      const response = maybeError === undefined ? Response.ok() : Response.error(maybeError);
+      messages.push({ type: "response", msgId, response });
+    } else {
+      messages.push({ type: "event", event: sb.readString() });
+    }
   }
-  return { state, responses };
+  return { state, messages };
 }
 
 function writeUInt(buf: Writer, x: number) {
