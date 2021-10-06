@@ -419,9 +419,12 @@ const Home = Vue.component("home", {
       }
       const token = sessionStorage.getItem("user")!;
       client
-        .connectNew(token, this.value, (state) => {
-          Vue.set(this.$root.$data, "value", state);
-        })
+        .connectNew(
+          token,
+          this.value,
+          (state) => Vue.set(this.$root.$data, "value", state),
+          (event) => this.$toasted.info(event)
+        )
         .then((connection) => {
           Vue.set(this.$root.$data, "connection", connection);
           this.$router.push("/state/" + connection.stateId);
@@ -442,9 +445,12 @@ const State = Vue.component("state", {
     if (this.$root.$data.connection === undefined) {
       const token = sessionStorage.getItem("user")!;
       client
-        .connectExisting(token, this.$route.params.stateId, (state) => {
-          Vue.set(this.$root.$data, "value", state);
-        })
+        .connectExisting(
+          token,
+          this.$route.params.stateId,
+          (state) => Vue.set(this.$root.$data, "value", state),
+          (event) => this.$toasted.info(event)
+        )
         .then((connection) => {
           Vue.set(this.$root.$data, "connection", connection);
         })

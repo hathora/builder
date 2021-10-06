@@ -39,7 +39,8 @@ export class RtagClient {
   public connectNew(
     token: string,
     request: {{makeRequestName initialize}},
-    onStateChange: (state: UserState) => void
+    onStateChange: (state: UserState) => void,
+    onEvent: (event: string) => void
   ): Promise<RtagConnection> {
     return new Promise((resolve, reject) => {
       const socket = this.initSocket(reject);
@@ -48,7 +49,7 @@ export class RtagClient {
         socket.send({{makeRequestName initialize}}.encode(request));
       };
       socket.onmessage = ({ data }) => {
-        new RtagConnection(data as string, socket, resolve, onStateChange);
+        new RtagConnection(data as string, socket, resolve, onStateChange, onEvent);
       };
     });
   }
@@ -56,11 +57,12 @@ export class RtagClient {
   public connectExisting(
     token: string,
     stateId: StateId,
-    onStateChange: (state: UserState) => void
+    onStateChange: (state: UserState) => void,
+    onEvent: (event: string) => void
   ): Promise<RtagConnection> {
     return new Promise((resolve, reject) => {
       const socket = this.initSocket(reject);
-      new RtagConnection(stateId, socket, resolve, onStateChange);
+      new RtagConnection(stateId, socket, resolve, onStateChange, onEvent);
       socket.onopen = () => {
         socket.send(token);
         socket.send(stateId);
@@ -84,7 +86,8 @@ export class RtagConnection {
     public stateId: StateId,
     private socket: WebSocket,
     resolve: (connection: RtagConnection) => void,
-    onStateChange: (state: UserState) => void
+    onStateChange: (state: UserState) => void,
+    onEvent: (event: string) => void
   ) {
     socket.onmessage = ({ data }) => {
       resolve(this);
@@ -98,6 +101,8 @@ export class RtagConnection {
             this.callbacks[message.msgId](message.response);
             delete this.callbacks[message.msgId];
           }
+        } else {
+          onEvent(message.event);
         }
       });
     };
