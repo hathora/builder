@@ -12,10 +12,7 @@ import {
 
 export class Impl implements Methods<PlayerState> {
   createGame(user: UserData, ctx: Context, request: ICreateGameRequest): PlayerState {
-    return {
-      round: 0,
-      player1: { name: user.name, score: 0 },
-    };
+    return { round: 0, player1: { name: user.name, score: 0 } };
   }
   joinGame(state: PlayerState, user: UserData, ctx: Context, request: IJoinGameRequest): Response {
     if (state.player1.name === user.name || state.player2?.name === user.name) {
@@ -31,13 +28,23 @@ export class Impl implements Methods<PlayerState> {
     if (state.player2 === undefined) {
       return Response.error("Game not started");
     }
-    if (state.player1.name === user.name) {
-      return handleChoice(state.player1, state.player2, request.guesture);
-    } else if (state.player2.name === user.name) {
-      return handleChoice(state.player2, state.player1, request.guesture);
-    } else {
+    const player = [state.player1, state.player2].find((p) => p.name === user.name);
+    if (player === undefined) {
       return Response.error("Invalid player");
     }
+    if (player.gesture !== undefined) {
+      return Response.error("Already picked");
+    }
+    player.gesture = request.gesture;
+    const otherPlayer = user.name === state.player1.name ? state.player2 : state.player1;
+    if (otherPlayer.gesture !== undefined) {
+      if (gestureWins(player.gesture, otherPlayer.gesture)) {
+        player.score++;
+      } else if (gestureWins(otherPlayer.gesture, player.gesture)) {
+        otherPlayer.score++;
+      }
+    }
+    return Response.ok();
   }
   nextRound(state: PlayerState, user: UserData, ctx: Context, request: INextRoundRequest): Response {
     if (state.player2 === undefined) {
@@ -64,21 +71,6 @@ export class Impl implements Methods<PlayerState> {
       player2: user.name === state.player2.name ? state.player2 : { ...state.player2, gesture: undefined },
     };
   }
-}
-
-function handleChoice(player: PlayerInfo, otherPlayer: PlayerInfo, guesture: Gesture) {
-  if (player.gesture !== undefined) {
-    return Response.error("Already picked");
-  }
-  player.gesture = guesture;
-  if (otherPlayer.gesture !== undefined) {
-    if (gestureWins(player.gesture, otherPlayer.gesture)) {
-      player.score++;
-    } else if (gestureWins(otherPlayer.gesture, player.gesture)) {
-      otherPlayer.score++;
-    }
-  }
-  return Response.ok();
 }
 
 function gestureWins(gesture: Gesture, otherGesture: Gesture) {
