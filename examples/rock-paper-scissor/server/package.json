@@ -1,5 +1,5 @@
 {
-  "name": "tictactoe-server",
+  "name": "rock-paper-scissor-server",
   "version": "0.0.1",
   "type": "module",
   "devDependencies": {
