@@ -1,0 +1,8 @@
+{
+  "name": "tictactoe-server",
+  "version": "0.0.1",
+  "type": "module",
+  "devDependencies": {
+    "typescript": "^4.4.3"
+  }
+}
