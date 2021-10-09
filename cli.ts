@@ -283,6 +283,7 @@ if (command === "init") {
 } else if (command === "start") {
   createServer({
     root: appEntryPath,
+    publicDir: join(clientDir, "public"),
     envDir: rootDir,
     clearScreen: false,
     server: { host: "0.0.0.0" },
@@ -299,6 +300,7 @@ if (command === "init") {
   process.env.VITE_APP_ID = appId;
   build({
     root: appEntryPath,
+    publicDir: join(clientDir, "public"),
     build: { outDir: join(rootDir, "dist/client") },
     resolve: { alias: { vue: "vue/dist/vue.esm.js" } },
   });
