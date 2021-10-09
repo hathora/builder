@@ -8,7 +8,7 @@ import { join, basename } from "path";
 import shelljs from "shelljs";
 import { z } from "zod";
 import { v4 as uuidv4 } from "uuid";
-import { createServer, build } from "vite";
+import { createServer, build, printHttpServerUrls } from "vite";
 // @ts-ignore
 import ncc from "@vercel/ncc";
 
@@ -288,7 +288,9 @@ if (command === "init") {
     clearScreen: false,
     server: { host: "0.0.0.0" },
     resolve: { alias: { vue: "vue/dist/vue.esm.js" } },
-  }).then((server) => server.listen());
+  })
+    .then((server) => server.listen())
+    .then((server) => printHttpServerUrls(server.httpServer!, server.config));
   shelljs.cd(serverDir);
   process.env.DATA_DIR = join(serverDir, ".rtag/data");
   process.env.DOTENV_CONFIG_PATH = join(rootDir, ".env");

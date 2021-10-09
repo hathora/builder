@@ -20,7 +20,7 @@
     "shelljs": "0.8.4",
     "ts-node": "10.2.1",
     "uuid": "8.3.2",
-    "vite": "2.6.2",
+    "vite": "2.6.5",
     "zod": "3.9.5"
   },
   "devDependencies": {
