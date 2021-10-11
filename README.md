@@ -73,7 +73,7 @@ initialize: createRoom
 error: string
 ```
 
-After running `rtag init`, `rtag generate`, `rtag install`, and `rtag start`, the following debug view is automatically generated:
+After running `rtag init` and `rtag dev`, the following debug view is automatically generated:
 
 ![image](https://user-images.githubusercontent.com/5400947/134371999-eca307b9-4e28-4313-96c1-1f8cbcbddec3.png)
 
