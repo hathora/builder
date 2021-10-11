@@ -6,6 +6,7 @@
   "files": [
     "cli.js",
     "generate.js",
+    "helpers.js",
     "node-loader.config.mjs",
     "templates",
     "READEME.md",
