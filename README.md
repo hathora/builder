@@ -114,6 +114,15 @@ Finally, we can see our working application in action:
 
 ![image](https://user-images.githubusercontent.com/5400947/134372344-6b4ed46c-feed-4776-95f8-9d0499570b76.png)
 
+Here are some example apps built with rtag:
+
+- [avalon](examples/avalon)
+- [chess](examples/chess)
+- [codenames](examples/codenames)
+- [poker](examples/poker)
+- [rock-paper-scissor](examples/rock-paper-scissor)
+- [uno](examples/uno)
+
 For more examples, check out the [examples directory](https://github.com/hpx7/rtag/tree/develop/examples).
 
 ## Additional resources
