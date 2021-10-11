@@ -5,6 +5,7 @@
   "bin": "./cli.js",
   "files": [
     "cli.js",
+    "generate.js",
     "node-loader.config.mjs",
     "templates",
     "READEME.md",
