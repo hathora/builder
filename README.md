@@ -122,8 +122,8 @@ Here are some example apps built with rtag:
 - [poker](examples/poker)
 - [rock-paper-scissor](examples/rock-paper-scissor)
 - [uno](examples/uno)
-
-For more examples, check out the [examples directory](https://github.com/hpx7/rtag/tree/develop/examples).
+- [ship-battle](https://github.com/hpx7/ship-battle)
+- [hive](https://github.com/knigam/hive)
 
 ## Additional resources
 
