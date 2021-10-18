@@ -84,6 +84,8 @@ class Store {
     );
   }
   async subscribeUser(stateId: StateId, userId: UserId) {
+    const userBuffer = await coordinator.lookupUser(userId);
+    const user = decode(userBuffer) as UserData;
     if (!stateInfo.has(stateId)) {
       const loaded = loadState(stateId);
       if (loaded === undefined) {
@@ -92,8 +94,6 @@ class Store {
       }
       stateInfo.set(stateId, { state: loaded.state, rng: loaded.rng, subscriptions: new Map() });
     }
-    const userBuffer = await coordinator.lookupUser(userId);
-    const user = decode(userBuffer) as UserData;
     stateInfo.get(stateId)!.subscriptions.set(userId, user);
     sendUpdate(stateId, stateInfo.get(stateId)!.state, user, {});
     log.append(
