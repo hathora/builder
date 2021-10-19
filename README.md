@@ -73,7 +73,7 @@ initialize: createRoom
 error: string
 ```
 
-After running `rtag init`, `rtag generate`, `rtag install`, and `rtag start`, the following debug view is automatically generated:
+After running `rtag init` and `rtag dev`, the following debug view is automatically generated:
 
 ![image](https://user-images.githubusercontent.com/5400947/134371999-eca307b9-4e28-4313-96c1-1f8cbcbddec3.png)
 
@@ -114,7 +114,16 @@ Finally, we can see our working application in action:
 
 ![image](https://user-images.githubusercontent.com/5400947/134372344-6b4ed46c-feed-4776-95f8-9d0499570b76.png)
 
-For more examples, check out the [examples directory](https://github.com/hpx7/rtag/tree/develop/examples).
+Here are some example apps built with rtag:
+
+- [avalon](examples/avalon)
+- [chess](examples/chess)
+- [codenames](examples/codenames)
+- [poker](examples/poker)
+- [rock-paper-scissor](examples/rock-paper-scissor)
+- [uno](examples/uno)
+- [ship-battle](https://github.com/hpx7/ship-battle)
+- [hive](https://github.com/knigam/hive)
 
 ## Additional resources
 
