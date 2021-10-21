@@ -46,19 +46,6 @@ function install() {
   npmInstall(join(serverDir, ".rtag"));
 }
 
-async function startFrontend() {
-  return createServer({
-    root: appEntryPath,
-    publicDir: join(clientDir, "public"),
-    envDir: rootDir,
-    clearScreen: false,
-    server: { host: "0.0.0.0" },
-    resolve: { alias: { vue: "vue/dist/vue.esm.js" } },
-  })
-    .then((server) => server.listen())
-    .then((server) => printHttpServerUrls(server.httpServer!, server.config));
-}
-
 async function startServer() {
   shelljs.cd(serverDir);
   process.env.DATA_DIR = join(serverDir, ".rtag/data");
@@ -73,6 +60,19 @@ async function startServer() {
     cp.stdout?.on("data", resolve);
     cp.on("error", reject);
   });
+}
+
+async function startFrontend() {
+  return createServer({
+    root: appEntryPath,
+    publicDir: join(clientDir, "public"),
+    envDir: rootDir,
+    clearScreen: false,
+    server: { host: "0.0.0.0" },
+    resolve: { alias: { vue: "vue/dist/vue.esm.js" } },
+  })
+    .then((server) => server.listen())
+    .then((server) => printHttpServerUrls(server.httpServer!, server.config));
 }
 
 const rootDir = getProjectRoot(process.cwd());

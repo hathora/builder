@@ -480,6 +480,10 @@ const router = new VueRouter({
 });
 
 router.beforeEach((to, from, next) => {
+  if (to.hash.length > 0) {
+    sessionStorage.setItem("user", to.hash.substring(1));
+    next({ ...to, hash: "" });
+  }
   if (to.path !== "/login" && sessionStorage.getItem("user") === null) {
     next(`/login${to.path === "/" ? "" : "?url=" + to.path}`);
   } else {
