@@ -45,8 +45,24 @@ function install() {
   npmInstall(join(serverDir, ".rtag"));
 }
 
-function start() {
-  createServer({
+async function startServer() {
+  shelljs.cd(serverDir);
+  process.env.DATA_DIR = join(serverDir, ".rtag/data");
+  process.env.DOTENV_CONFIG_PATH = join(rootDir, ".env");
+  process.env.NODE_LOADER_CONFIG = join(__dirname, "node-loader.config.mjs");
+  const loaderPath = join(__dirname, "node_modules/@node-loader/core/lib/node-loader-core.js");
+  const storePath = join(serverDir, ".rtag/store.ts");
+  const cp = shelljs.exec(`node --loader ${loaderPath} --experimental-specifier-resolution=node ${storePath}`, {
+    async: true,
+  });
+  return new Promise((resolve, reject) => {
+    cp.stdout?.on("data", resolve);
+    cp.on("error", reject);
+  });
+}
+
+async function startFrontend() {
+  return createServer({
     root: appEntryPath,
     publicDir: join(clientDir, "public"),
     envDir: rootDir,
@@ -56,13 +72,6 @@ function start() {
   })
     .then((server) => server.listen())
     .then((server) => printHttpServerUrls(server.httpServer!, server.config));
-  shelljs.cd(serverDir);
-  process.env.DATA_DIR = join(serverDir, ".rtag/data");
-  process.env.DOTENV_CONFIG_PATH = join(rootDir, ".env");
-  process.env.NODE_LOADER_CONFIG = join(__dirname, "node-loader.config.mjs");
-  const loaderPath = join(__dirname, "node_modules/@node-loader/core/lib/node-loader-core.js");
-  const storePath = join(serverDir, ".rtag/store.ts");
-  shelljs.exec(`node --loader ${loaderPath} --experimental-specifier-resolution=node ${storePath}`, { async: true });
 }
 
 const rootDir = getProjectRoot(process.cwd());
@@ -94,10 +103,10 @@ if (command === "init") {
 } else if (command === "install") {
   install();
 } else if (command === "start") {
-  start();
+  startServer().then(() => startFrontend());
 } else if (command === "dev") {
   install();
-  start();
+  startServer().then(() => startFrontend());
 } else if (command === "build") {
   process.env.VITE_APP_ID = appId;
   build({
