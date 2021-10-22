@@ -10,5 +10,3 @@ users.forEach((user) => {
   const token = jwt.sign(user, secret);
   console.log(`http://localhost:3000/state/${stateId.toString(36)}#${token}`);
 });
-
-export const foo = {};

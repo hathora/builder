@@ -9,7 +9,6 @@ import { createServer, build, printHttpServerUrls } from "vite";
 // @ts-ignore
 import ncc from "@vercel/ncc";
 import { generate } from "./generate";
-import { fork } from "./fork";
 import "./helpers";
 
 function getProjectRoot(cwd: string): string {
