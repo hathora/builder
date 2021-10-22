@@ -53,7 +53,6 @@ async function startServer() {
   process.env.NODE_LOADER_CONFIG = join(__dirname, "node-loader.config.mjs");
   const loaderPath = join(__dirname, "node_modules/@node-loader/core/lib/node-loader-core.js");
   const storePath = join(serverDir, ".rtag/store.ts");
-  console.log(`node --loader ${loaderPath} --experimental-specifier-resolution=node ${storePath}`);
   const cp = shelljs.exec(`node --loader ${loaderPath} --experimental-specifier-resolution=node ${storePath}`, {
     async: true,
   });
@@ -123,7 +122,6 @@ if (command === "init") {
   process.env.NODE_LOADER_CONFIG = join(__dirname, "node-loader.config.mjs");
   const loaderPath = join(__dirname, "node_modules/ts-node/esm");
   const loadPath = join(serverDir, ".rtag/load.ts");
-  console.log(`node --loader ${loaderPath} --experimental-specifier-resolution=node ${loadPath}`);
   shelljs.exec(`node --loader ${loaderPath} --experimental-specifier-resolution=node ${loadPath}`, { async: true });
 } else if (command === "build") {
   process.env.VITE_APP_ID = appId;
