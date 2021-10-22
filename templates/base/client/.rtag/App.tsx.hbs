@@ -18,6 +18,11 @@ function App() {
   const [token, setToken] = useState<string | null>(sessionStorage.getItem("token"));
 
   useEffect(() => {
+    if (location.hash.length > 0) {
+      sessionStorage.setItem("token", location.hash.substring(1));
+      setToken(location.hash.substring(1));
+      history.replaceState({}, "", location.pathname);
+    }
     const path = location.pathname;
     if (path.startsWith("/state/") && token !== null) {
       const stateId = path.split("/state/").pop() ?? "";
