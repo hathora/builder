@@ -16,6 +16,7 @@ function App() {
   const [connection, setConnection] = useState<RtagConnection>();
   const [state, setState] = useState<UserState>();
   const [token, setToken] = useState<string | null>(sessionStorage.getItem("token"));
+  const [stateId, setStateId] = useState<string>("");
 
   useEffect(() => {
     if (location.hash.length > 0) {
@@ -88,7 +89,20 @@ function App() {
               .catch((e) => toast.error("Connection error: " + e.reason))
           }
         />
-        <button>Join existing</button>
+        <input type="text" value={stateId} onChange={(e) => setStateId(e.target.value)}></input>
+        <button
+          onClick={() =>
+            client
+              .connectExisting(token, stateId, setState)
+              .then((conn) => {
+                history.pushState({}, "", `/state/${conn.stateId}`);
+                setConnection(conn);
+              })
+              .catch((e) => toast.error("Connection error: " + e.reason))
+          }
+        >
+          Join existing
+        </button>
       </div>
     );
   }
