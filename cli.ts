@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { createHash } from "crypto";
-import { outputFileSync, existsSync } from "fs-extra";
+import { createHash, randomBytes } from "crypto";
+import { outputFileSync, existsSync, copyFileSync } from "fs-extra";
 import { join } from "path";
 import shelljs from "shelljs";
 import { v4 as uuidv4 } from "uuid";
@@ -53,6 +53,7 @@ async function startServer() {
   process.env.NODE_LOADER_CONFIG = join(__dirname, "node-loader.config.mjs");
   const loaderPath = join(__dirname, "node_modules/@node-loader/core/lib/node-loader-core.js");
   const storePath = join(serverDir, ".rtag/store.ts");
+  console.log(`node --loader ${loaderPath} --experimental-specifier-resolution=node ${storePath}`);
   const cp = shelljs.exec(`node --loader ${loaderPath} --experimental-specifier-resolution=node ${storePath}`, {
     async: true,
   });
@@ -109,13 +110,21 @@ if (command === "init") {
   install();
   startServer().then(() => startFrontend());
 } else if (command === "fork") {
-  startServer()
-    .then(() => startFrontend())
-    .then(() => {
-      const stateIdStr = process.argv[3];
-      const stateId = [...stateIdStr].reduce((r, v) => r * BigInt(36) + BigInt(parseInt(v, 36)), 0n);
-      fork(stateId, join(serverDir, ".rtag", "data"));
-    });
+  const stateIdStr = process.argv[3];
+  const stateId = [...stateIdStr].reduce((r, v) => r * BigInt(36) + BigInt(parseInt(v, 36)), 0n);
+  const newStateId = randomBytes(8).readBigUInt64LE();
+  const dataDir = join(serverDir, ".rtag/data");
+  copyFileSync(join(dataDir, stateId.toString(36)), join(dataDir, newStateId.toString(36)));
+  process.env.STATE_ID = stateId.toString();
+
+  shelljs.cd(serverDir);
+  process.env.DATA_DIR = join(serverDir, ".rtag/data");
+  process.env.DOTENV_CONFIG_PATH = join(rootDir, ".env");
+  process.env.NODE_LOADER_CONFIG = join(__dirname, "node-loader.config.mjs");
+  const loaderPath = join(__dirname, "node_modules/ts-node/esm");
+  const loadPath = join(serverDir, ".rtag/load.ts");
+  console.log(`node --loader ${loaderPath} --experimental-specifier-resolution=node ${loadPath}`);
+  shelljs.exec(`node --loader ${loaderPath} --experimental-specifier-resolution=node ${loadPath}`, { async: true });
 } else if (command === "build") {
   process.env.VITE_APP_ID = appId;
   build({

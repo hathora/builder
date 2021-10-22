@@ -1,0 +1,14 @@
+import { Store } from "./store";
+import jwt from "jsonwebtoken";
+
+const secret = process.env.APP_SECRET!;
+const stateId = BigInt(process.env.STATE_ID!);
+
+const store = new Store();
+const { users } = store.loadState(stateId)!;
+users.forEach((user) => {
+  const token = jwt.sign(user, secret);
+  console.log(`http://localhost:3000/state/${stateId.toString(36)}#${token}`);
+});
+
+export const foo = {};

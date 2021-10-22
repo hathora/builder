@@ -13,18 +13,13 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@msgpack/msgpack": "^2.7.1",
     "@node-loader/core": "1.0.5",
     "@vercel/ncc": "0.31.1",
-    "dotenv": "^10.0.0",
     "fs-extra": "10.0.0",
     "handlebars": "4.7.7",
     "hot-esm": "1.2.1",
     "js-yaml": "4.1.0",
-    "jsonwebtoken": "^8.5.1",
-    "open": "^8.3.0",
     "shelljs": "0.8.4",
-    "smart-buffer": "^4.2.0",
     "ts-node": "10.3.1",
     "uuid": "8.3.2",
     "vite": "2.6.10",
@@ -33,7 +28,6 @@
   "devDependencies": {
     "@types/fs-extra": "9.0.13",
     "@types/js-yaml": "4.0.3",
-    "@types/jsonwebtoken": "^8.5.5",
     "@types/node": "16.11.2",
     "@types/shelljs": "0.8.9",
     "@types/uuid": "8.3.1",
