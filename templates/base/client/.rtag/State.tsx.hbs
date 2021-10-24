@@ -10,12 +10,10 @@ import {
 {{#each plugins}}
 import {{this}}Plugin from "../plugins/{{this}}";
 {{/each}}
-
 {{#each plugins}}
+
 window.customElements.define("{{makePluginName this}}", {{this}}Plugin);
 {{/each}}
-
-type BaseProps<T> = { value: T };
 
 function KVDisplay(props: { label: string; children: JSX.Element }) {
   return (
@@ -51,15 +49,15 @@ function EnumDisplay(props: { value: number; enum: object }) {
   return <span className="enum-display">{labels[props.value]}</span>;
 }
 
-function StringDisplay({ value }: BaseProps<string>) {
+function StringDisplay({ value }: { value: string }) {
   return <span className="string-display">"{value}"</span>;
 }
 
-function NumberDisplay({ value }: BaseProps<number>) {
+function NumberDisplay({ value }: { value: number }) {
   return <span className="number-display">{value}</span>;
 }
 
-function BooleanDisplay({ value }: BaseProps<boolean>) {
+function BooleanDisplay({ value }: { value: boolean }) {
   return <span className="boolean-display">{value ? "true" : "false"}</span>;
 }
 
@@ -76,7 +74,7 @@ function PluginDisplay<T>({ value, component }: { value: T; component: string })
 
 {{#each types}}
 {{#if (eq type "object")}}
-function {{@key}}Display({ value }: BaseProps<{{@key}}>) {
+function {{@key}}Display({ value }: { value: {{@key}} }) {
   return (
     <div className="object-display">
       &#123;
@@ -91,7 +89,7 @@ function {{@key}}Display({ value }: BaseProps<{{@key}}>) {
 }
 
 {{else if (eq type "union")}}
-function {{@key}}Display({ value }: BaseProps<{{@key}}>) {
+function {{@key}}Display({ value }: { value: {{@key}} }) {
   switch (value.type) {
     {{#each options}}
     case "{{@key}}":

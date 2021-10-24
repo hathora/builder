@@ -17,14 +17,8 @@ type MethodProps<T> = {
   initialize: () => T;
   children: (value: T, update: (value: T) => void) => JSX.Element;
 };
-type BaseProps<T> = {
-  value: T;
-  update: (value: T) => void;
-};
-type ContainerProps<T> = {
-  initialVal: T;
-  children: (value: T, update: (value: T) => void) => JSX.Element;
-};
+type BaseProps<T> = { value: T; update: (value: T) => void };
+type ContainerProps<T> = { initialVal: T; children: (value: T, update: (value: T) => void) => JSX.Element };
 type ArrayProps<T> = BaseProps<T[]> & ContainerProps<T>;
 type OptionalProps<T> = BaseProps<T | undefined> & ContainerProps<T>;
 type EnumProps = BaseProps<number> & { enumType: object };
@@ -64,9 +58,7 @@ function ArrayInput<T>({ value, update, initialVal, children }: ArrayProps<T>) {
     <div className="array-input">
       {value.map((item, i) => (
         <div key={i} className="array-item">
-          {children(item, (val) => {
-            update(Object.assign(value, { [i]: val }));
-          })}
+          {children(item, (val) => update(Object.assign(value, { [i]: val })))}
           <button disabled={i === 0} onClick={() => swapArgs(i, i - 1)}>
             &#8593;
           </button>
@@ -84,11 +76,7 @@ function ArrayInput<T>({ value, update, initialVal, children }: ArrayProps<T>) {
 function OptionalInput<T>({ value, update, initialVal, children }: OptionalProps<T>) {
   return (
     <div className="optional-input">
-      {value !== undefined
-        ? children(value, (val) => {
-            update(val);
-          })
-        : ""}
+      {value !== undefined ? children(value, (val) => update(val)) : ""}
       <button onClick={() => (value === undefined ? update(initialVal) : update(undefined))}>Toggle</button>
     </div>
   );

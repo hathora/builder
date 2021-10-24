@@ -16,7 +16,6 @@ function App() {
   const [connection, setConnection] = useState<RtagConnection>();
   const [state, setState] = useState<UserState>();
   const [token, setToken] = useState<string | null>(sessionStorage.getItem("token"));
-  const [stateId, setStateId] = useState<string>("");
 
   useEffect(() => {
     if (location.hash.length > 0) {
@@ -58,7 +57,7 @@ function App() {
 
 function Login({ setToken }: { setToken: (token: string) => void }) {
   return (
-    <div>
+    <div className="login">
       <h2>Login</h2>
 {{#each auth}}
 {{#if (eq @key "anonymous")}}
@@ -98,7 +97,7 @@ type HomeProps = { token: string; setState: (state: UserState) => void; setConne
 function Home({ token, setState, setConnection }: HomeProps) {
   const [stateId, setStateId] = useState<string>("");
   return (
-    <div>
+    <div className="home">
       <h2>Home</h2>
       <InitializeForm
         submit={(request) =>
