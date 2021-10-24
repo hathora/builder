@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
+import { BrowserRouter, Route, Switch, useHistory, useParams } from "react-router-dom";
 import { ToastContainer, Zoom, toast } from "react-toastify";
 {{#if auth.google}}
 import { GoogleLogin } from "react-google-login";
@@ -16,42 +17,30 @@ function App() {
   const [connection, setConnection] = useState<RtagConnection>();
   const [state, setState] = useState<UserState>();
   const [token, setToken] = useState<string | null>(sessionStorage.getItem("token"));
+  const history = useHistory();
 
   useEffect(() => {
+    const location = history.location;
     if (location.hash.length > 0) {
       sessionStorage.setItem("token", location.hash.substring(1));
       setToken(location.hash.substring(1));
-      history.replaceState({}, "", location.pathname);
+      history.replace(location.pathname);
     }
-    const path = location.pathname;
-    if (path.startsWith("/state/") && token !== null) {
-      const stateId = path.split("/state/").pop() ?? "";
-      if (stateId !== connection?.stateId) {
-        client
-          .connectExisting(token, stateId, setState)
-          .then(setConnection)
-          .catch((e) => toast.error("Connection error: " + e.reason));
-      }
-    }
-  }, [connection, token]);
+  }, [history]);
 
   if (token === null) {
     return <Login setToken={setToken} />;
   }
 
-  if (connection === undefined) {
-    return <Home token={token} setState={setState} setConnection={setConnection} />;
-  }
-
-  if (state === undefined) {
-    return <div>Loading...</div>;
-  }
-
   return (
-    <RtagContext.Provider value=\{{ connection, state }}>
-      <State />
-      <Forms />
-    </RtagContext.Provider>
+    <Switch>
+      <Route path="/state/:stateId">
+        <Main token={token} state={state} connection={connection} setState={setState} setConnection={setConnection} />
+      </Route>
+      <Route path="/">
+        <Home token={token} setState={setState} setConnection={setConnection} />
+      </Route>
+    </Switch>
   );
 }
 
@@ -96,6 +85,7 @@ function Login({ setToken }: { setToken: (token: string) => void }) {
 type HomeProps = { token: string; setState: (state: UserState) => void; setConnection: (conn: RtagConnection) => void };
 function Home({ token, setState, setConnection }: HomeProps) {
   const [stateId, setStateId] = useState<string>("");
+  const history = useHistory();
   return (
     <div className="home">
       <h2>Home</h2>
@@ -104,34 +94,50 @@ function Home({ token, setState, setConnection }: HomeProps) {
           client
             .connectNew(token, request, setState)
             .then((conn) => {
-              history.pushState({}, "", `/state/${conn.stateId}`);
+              history.push(`/state/${conn.stateId}`);
               setConnection(conn);
             })
             .catch((e) => toast.error("Connection error: " + e.reason))
         }
       />
       <input type="text" value={stateId} onChange={(e) => setStateId(e.target.value)}></input>
-      <button
-        onClick={() =>
-          client
-            .connectExisting(token, stateId, setState)
-            .then((conn) => {
-              history.pushState({}, "", `/state/${conn.stateId}`);
-              setConnection(conn);
-            })
-            .catch((e) => toast.error("Connection error: " + e.reason))
-        }
-      >
-        Join existing
-      </button>
+      <button onClick={() => history.push(`/state/${stateId}`)}>Join existing</button>
     </div>
   );
 }
 
+type MainProps = {
+  token: string;
+  state: UserState | undefined;
+  setState: (state: UserState) => void;
+  connection: RtagConnection | undefined;
+  setConnection: (conn: RtagConnection) => void;
+};
+function Main({ token, state, setState, connection, setConnection }: MainProps) {
+  const { stateId } = useParams<{ stateId: string }>();
+  if (stateId !== connection?.stateId) {
+    client
+      .connectExisting(token, stateId, setState)
+      .then(setConnection)
+      .catch((e) => toast.error("Connection error: " + e.reason));
+  }
+
+  if (state === undefined || connection === undefined) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <RtagContext.Provider value=\{{ connection, state }}>
+      <State />
+      <Forms />
+    </RtagContext.Provider>
+  );
+}
+
 ReactDOM.render(
-  <>
+  <BrowserRouter>
     <App />
     <ToastContainer position="top-center" autoClose={2000} transition={Zoom} hideProgressBar />
-  </>,
+  </BrowserRouter>,
   document.getElementById("root")
 );
