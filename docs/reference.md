@@ -269,7 +269,7 @@ Which renders like this in the debug application:
 
 ### Fully custom frontend
 
-When you're ready to move away from the debug app, create an `index.html` file at the root of the `client` directory and rerun the `rtag generate` command. This file now serves as the entry point to your frontend, and can load code and other resources as needed. You are free to use any technologies you wish to build your frontend, just make sure to import the generated client to communicate with the rtag server.
+When you're ready to move away from the debug app, simply create an `index.html` file at the root of the `client` directory. This file now serves as the entry point to your frontend at http://localhost:4000, and can load code and other resources as needed. You are free to use any technologies you wish to build your frontend, just make sure to import the generated client to communicate with the rtag server.
 
 The `rtag` frontend tooling is built around [vite](https://vitejs.dev/), which generally creates for a pleasant development experience.
 

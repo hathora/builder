@@ -61,22 +61,28 @@ async function startServer() {
   });
 }
 
-async function startFrontend() {
+async function startFrontend(root: string, port: number) {
   return createServer({
-    root: appEntryPath,
+    root,
     publicDir: join(clientDir, "public"),
     envDir: rootDir,
     clearScreen: false,
-    server: { host: "0.0.0.0" },
+    server: { host: "0.0.0.0", port },
   })
     .then((server) => server.listen())
     .then((server) => printHttpServerUrls(server.httpServer!, server.config));
 }
 
+async function startFrontends() {
+  startFrontend(join(clientDir, ".rtag"), 3000);
+  if (existsSync(join(clientDir, "index.html"))) {
+    startFrontend(clientDir, 4000);
+  }
+}
+
 const rootDir = getProjectRoot(process.cwd());
 const clientDir = join(rootDir, "client");
 const serverDir = join(rootDir, "server");
-const appEntryPath = existsSync(join(clientDir, "index.html")) ? clientDir : join(clientDir, ".rtag");
 
 const appSecret = process.env.APP_SECRET ?? uuidv4();
 const appId = createHash("sha256").update(appSecret).digest("hex");
@@ -102,14 +108,14 @@ if (command === "init") {
 } else if (command === "install") {
   install();
 } else if (command === "start") {
-  startServer().then(() => startFrontend());
+  startServer().then(() => startFrontends());
 } else if (command === "dev") {
   install();
-  startServer().then(() => startFrontend());
+  startServer().then(() => startFrontends());
 } else if (command === "build") {
   process.env.VITE_APP_ID = appId;
   build({
-    root: appEntryPath,
+    root: existsSync(join(clientDir, "index.html")) ? clientDir : join(clientDir, ".rtag"),
     publicDir: join(clientDir, "public"),
     build: { outDir: join(rootDir, "dist/client") },
   });
