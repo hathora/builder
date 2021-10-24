@@ -37,74 +37,11 @@ function App() {
   }, [connection, token]);
 
   if (token === null) {
-    return (
-      <div>
-        <h2>Login</h2>
-{{#each auth}}
-{{#if (eq @key "anonymous")}}
-        <button
-          onClick={() =>
-            client
-              .loginAnonymous()
-              .then((token) => {
-                sessionStorage.setItem("token", token);
-                setToken(token);
-              })
-              .catch((e) => toast.error("Authentication error: " + e.reason))
-          }
-        >
-          <span>Login Anonymously</span>
-        </button>
-{{else if (eq @key "google")}}
-        <GoogleLogin
-          clientId="{{clientId}}"
-          onSuccess={({ tokenId }: any) =>
-            client
-              .loginGoogle(tokenId)
-              .then((token) => {
-                sessionStorage.setItem("token", token);
-                setToken(token);
-              })
-              .catch((e) => toast.error("Authentication error: " + e.reason))
-          }
-        />
-{{/if}}
-{{/each}}
-      </div>
-    );
+    return <Login setToken={setToken} />;
   }
 
   if (connection === undefined) {
-    return (
-      <div>
-        <h2>Home</h2>
-        <InitializeForm
-          submit={(request) =>
-            client
-              .connectNew(token, request, setState)
-              .then((conn) => {
-                history.pushState({}, "", `/state/${conn.stateId}`);
-                setConnection(conn);
-              })
-              .catch((e) => toast.error("Connection error: " + e.reason))
-          }
-        />
-        <input type="text" value={stateId} onChange={(e) => setStateId(e.target.value)}></input>
-        <button
-          onClick={() =>
-            client
-              .connectExisting(token, stateId, setState)
-              .then((conn) => {
-                history.pushState({}, "", `/state/${conn.stateId}`);
-                setConnection(conn);
-              })
-              .catch((e) => toast.error("Connection error: " + e.reason))
-          }
-        >
-          Join existing
-        </button>
-      </div>
-    );
+    return <Home token={token} setState={setState} setConnection={setConnection} />;
   }
 
   if (state === undefined) {
@@ -116,6 +53,79 @@ function App() {
       <State />
       <Forms />
     </RtagContext.Provider>
+  );
+}
+
+function Login({ setToken }: { setToken: (token: string) => void }) {
+  return (
+    <div>
+      <h2>Login</h2>
+{{#each auth}}
+{{#if (eq @key "anonymous")}}
+      <button
+        onClick={() =>
+          client
+            .loginAnonymous()
+            .then((token) => {
+              sessionStorage.setItem("token", token);
+              setToken(token);
+            })
+            .catch((e) => toast.error("Authentication error: " + e.reason))
+        }
+      >
+        <span>Login Anonymously</span>
+      </button>
+{{else if (eq @key "google")}}
+      <GoogleLogin
+        clientId="{{clientId}}"
+        onSuccess={({ tokenId }: any) =>
+          client
+            .loginGoogle(tokenId)
+            .then((token) => {
+              sessionStorage.setItem("token", token);
+              setToken(token);
+            })
+            .catch((e) => toast.error("Authentication error: " + e.reason))
+        }
+      />
+{{/if}}
+{{/each}}
+    </div>
+  );
+}
+
+type HomeProps = { token: string; setState: (state: UserState) => void; setConnection: (conn: RtagConnection) => void };
+function Home({ token, setState, setConnection }: HomeProps) {
+  const [stateId, setStateId] = useState<string>("");
+  return (
+    <div>
+      <h2>Home</h2>
+      <InitializeForm
+        submit={(request) =>
+          client
+            .connectNew(token, request, setState)
+            .then((conn) => {
+              history.pushState({}, "", `/state/${conn.stateId}`);
+              setConnection(conn);
+            })
+            .catch((e) => toast.error("Connection error: " + e.reason))
+        }
+      />
+      <input type="text" value={stateId} onChange={(e) => setStateId(e.target.value)}></input>
+      <button
+        onClick={() =>
+          client
+            .connectExisting(token, stateId, setState)
+            .then((conn) => {
+              history.pushState({}, "", `/state/${conn.stateId}`);
+              setConnection(conn);
+            })
+            .catch((e) => toast.error("Connection error: " + e.reason))
+        }
+      >
+        Join existing
+      </button>
+    </div>
   );
 }
 
