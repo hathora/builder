@@ -37,8 +37,11 @@ function App() {
       <Route path="/state/:stateId">
         <Main token={token} state={state} connection={connection} setState={setState} setConnection={setConnection} />
       </Route>
-      <Route path="/">
+      <Route exact path="/">
         <Home token={token} setState={setState} setConnection={setConnection} />
+      </Route>
+      <Route path="/">
+        <div>Not Found</div>
       </Route>
     </Switch>
   );
