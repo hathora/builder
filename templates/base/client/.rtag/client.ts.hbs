@@ -48,7 +48,7 @@ export class RtagClient {
         socket.send({{makeRequestName initialize}}.encode(request));
       };
       socket.onmessage = ({ data }) => {
-        new RtagConnection(data as string, socket, resolve, onStateChange);
+        resolve(new RtagConnection(data as string, socket, onStateChange));
       };
     });
   }
@@ -60,7 +60,10 @@ export class RtagClient {
   ): Promise<RtagConnection> {
     return new Promise((resolve, reject) => {
       const socket = this.initSocket(reject);
-      new RtagConnection(stateId, socket, resolve, onStateChange);
+      const conn = new RtagConnection(stateId, socket, (state) => {
+        resolve(conn);
+        onStateChange(state);
+      });
       socket.onopen = () => {
         socket.send(token);
         socket.send(stateId);
@@ -80,14 +83,8 @@ export class RtagClient {
 export class RtagConnection {
   private callbacks: Record<string, (response: Response) => void> = {};
 
-  public constructor(
-    public stateId: StateId,
-    private socket: WebSocket,
-    resolve: (connection: RtagConnection) => void,
-    onStateChange: (state: UserState) => void
-  ) {
+  public constructor(public stateId: StateId, private socket: WebSocket, onStateChange: (state: UserState) => void) {
     socket.onmessage = ({ data }) => {
-      resolve(this);
       const { state, responses } = decodeState(new Uint8Array(data as ArrayBuffer));
       if (state !== undefined) {
         onStateChange(state);
