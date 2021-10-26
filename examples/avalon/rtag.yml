@@ -54,17 +54,10 @@ types:
     knownPlayers: Username[]
     playersPerQuest: number[]
     quests: QuestAttempt[]
-    uni: Uni
-  Uni:
-    - RoleInfo
-    - PlayerAndVote
-    - Username
 
 methods:
   createGame:
   joinGame:
-    uni: Uni
-    test: QuestAttempt[]
   startGame:
     roleList: Role[]
     playerOrder?: Username[]
