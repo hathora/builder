@@ -68,7 +68,6 @@ async function startFrontend(root: string, port: number) {
     envDir: rootDir,
     clearScreen: false,
     server: { host: "0.0.0.0", port },
-    resolve: { alias: { vue: "vue/dist/vue.esm.js" } },
   })
     .then((server) => server.listen())
     .then((server) => printHttpServerUrls(server.httpServer!, server.config));
@@ -119,7 +118,6 @@ if (command === "init") {
     root: existsSync(join(clientDir, "index.html")) ? clientDir : join(clientDir, ".rtag"),
     publicDir: join(clientDir, "public"),
     build: { outDir: join(rootDir, "dist/client") },
-    resolve: { alias: { vue: "vue/dist/vue.esm.js" } },
   });
   ncc(join(serverDir, ".rtag/store.ts")).then(
     ({ code, assets }: { code: string; assets: Record<string, { source: string | Buffer }> }) => {
