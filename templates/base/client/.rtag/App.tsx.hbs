@@ -32,44 +32,50 @@ function App() {
     return <Login setToken={setToken} />;
   }
 
+  const user = RtagClient.getUserFromToken(token);
   return (
-    <Switch>
-      <Route exact path="/state/:stateId">
-        <Main
-          state={state}
-          connection={connection}
-          onConnect={(stateId) =>
-            client
-              .connectExisting(token, stateId, setState)
-              .then((conn) => setConnection(conn))
-              .catch((e) => toast.error("Connection error: " + e.reason))
-          }
-          onDisconnect={() => {
-            if (connection !== undefined) {
-              connection.disconnect();
-              setConnection(undefined);
-              setState(undefined);
-            }
-          }}
-        />
-      </Route>
-      <Route exact path="/">
-        <Home
-          onConnect={(request) =>
-            client
-              .connectNew(token, request, setState)
-              .then((conn) => {
-                setConnection(conn);
-                history.push(`/state/${conn.stateId}`);
-              })
-              .catch((e) => toast.error("Connection error: " + e.reason))
-          }
-        />
-      </Route>
-      <Route path="/">
-        <div>Not Found</div>
-      </Route>
-    </Switch>
+    <>
+      <div>{user.name}</div>
+      <div id="app">
+        <Switch>
+          <Route exact path="/state/:stateId">
+            <Main
+              state={state}
+              connection={connection}
+              onConnect={(stateId) =>
+                client
+                  .connectExisting(token, stateId, setState)
+                  .then((conn) => setConnection(conn))
+                  .catch((e) => toast.error("Connection error: " + e.reason))
+              }
+              onDisconnect={() => {
+                if (connection !== undefined) {
+                  connection.disconnect();
+                  setConnection(undefined);
+                  setState(undefined);
+                }
+              }}
+            />
+          </Route>
+          <Route exact path="/">
+            <Home
+              onConnect={(request) =>
+                client
+                  .connectNew(token, request, setState)
+                  .then((conn) => {
+                    setConnection(conn);
+                    history.push(`/state/${conn.stateId}`);
+                  })
+                  .catch((e) => toast.error("Connection error: " + e.reason))
+              }
+            />
+          </Route>
+          <Route path="/">
+            <div>Not Found</div>
+          </Route>
+        </Switch>
+      </div>
+    </>
   );
 }
 
