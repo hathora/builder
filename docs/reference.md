@@ -87,7 +87,7 @@ The `error` key represents the response type the server sends when a method call
 
 ### tick
 
-The optional `tick` configures whether or not the backend will run an `onTick` function at a fixed interval. See the Server section below for more details.
+The optional `tick` configures whether or not the backend will run an `onTick` function at a configurable interval. See the Server section below for more details.
 
 ## Server
 
@@ -209,7 +209,7 @@ Example (poker game):
 
 Sometimes apps may want some way to execute logic in the backend at a fixed interval outside of user called methods. Common use cases for this include running simulations (e.g. physics simulations in games), sending notifications, or updating clocks/timers.
 
-To enable this functionality, simply set `tick: true` in `rtag.yml`. This will add an `onTick` function to the `Methods` interface. The `onTick` function takes the internal state, context object, and time delta (representing the milliseconds elapsed since the previous `onTick` invocation) as arguments. Any mutations that occur inside this function will be handled the same way as mutations inside the methods.
+To enable this functionality, simply set the `tick` key in `rtag.yml` to an integer (>= 50) representing the interval at which the server will call the `onTick` function. This will add an `onTick` function to the `Methods` interface. The `onTick` function takes the internal state, context object, and time delta (representing the milliseconds elapsed since the previous `onTick` invocation) as arguments. Any mutations that occur inside this function will be handled the same way as mutations inside the methods.
 
 ## Client
 
@@ -269,7 +269,7 @@ Which renders like this in the debug application:
 
 ### Fully custom frontend
 
-When you're ready to move away from the debug app, create an `index.html` file at the root of the `client` directory and rerun the `rtag generate` command. This file now serves as the entry point to your frontend, and can load code and other resources as needed. You are free to use any technologies you wish to build your frontend, just make sure to import the generated client to communicate with the rtag server.
+When you're ready to move away from the debug app, simply create an `index.html` file at the root of the `client` directory. This file now serves as the entry point to your frontend at http://localhost:4000, and can load code and other resources as needed. You are free to use any technologies you wish to build your frontend, just make sure to import the generated client to communicate with the rtag server.
 
 The `rtag` frontend tooling is built around [vite](https://vitejs.dev/), which generally creates for a pleasant development experience.
 

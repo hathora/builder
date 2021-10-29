@@ -18,7 +18,7 @@ const RtagConfig = z
     userState: z.string(),
     initialize: z.string(),
     error: z.string(),
-    tick: z.optional(z.boolean()),
+    tick: z.optional(z.number().int().gte(50)),
   })
   .strict();
 

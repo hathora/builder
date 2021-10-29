@@ -45,30 +45,44 @@ function install() {
   npmInstall(join(serverDir, ".rtag"));
 }
 
-function start() {
-  createServer({
-    root: appEntryPath,
-    publicDir: join(clientDir, "public"),
-    envDir: rootDir,
-    clearScreen: false,
-    server: { host: "0.0.0.0" },
-    resolve: { alias: { vue: "vue/dist/vue.esm.js" } },
-  })
-    .then((server) => server.listen())
-    .then((server) => printHttpServerUrls(server.httpServer!, server.config));
+async function startServer() {
   shelljs.cd(serverDir);
   process.env.DATA_DIR = join(serverDir, ".rtag/data");
   process.env.DOTENV_CONFIG_PATH = join(rootDir, ".env");
   process.env.NODE_LOADER_CONFIG = join(__dirname, "node-loader.config.mjs");
   const loaderPath = join(__dirname, "node_modules/@node-loader/core/lib/node-loader-core.js");
   const storePath = join(serverDir, ".rtag/store.ts");
-  shelljs.exec(`node --loader ${loaderPath} --experimental-specifier-resolution=node ${storePath}`, { async: true });
+  const cp = shelljs.exec(`node --loader ${loaderPath} --experimental-specifier-resolution=node ${storePath}`, {
+    async: true,
+  });
+  return new Promise((resolve, reject) => {
+    cp.stdout?.on("data", resolve);
+    cp.on("error", reject);
+  });
+}
+
+async function startFrontend(root: string, port: number) {
+  return createServer({
+    root,
+    publicDir: join(clientDir, "public"),
+    envDir: rootDir,
+    clearScreen: false,
+    server: { host: "0.0.0.0", port },
+  })
+    .then((server) => server.listen())
+    .then((server) => printHttpServerUrls(server.httpServer!, server.config));
+}
+
+async function startFrontends() {
+  startFrontend(join(clientDir, ".rtag"), 3000);
+  if (existsSync(join(clientDir, "index.html"))) {
+    startFrontend(clientDir, 4000);
+  }
 }
 
 const rootDir = getProjectRoot(process.cwd());
 const clientDir = join(rootDir, "client");
 const serverDir = join(rootDir, "server");
-const appEntryPath = existsSync(join(clientDir, "index.html")) ? clientDir : join(clientDir, ".rtag");
 
 const appSecret = process.env.APP_SECRET ?? uuidv4();
 const appId = createHash("sha256").update(appSecret).digest("hex");
@@ -94,17 +108,16 @@ if (command === "init") {
 } else if (command === "install") {
   install();
 } else if (command === "start") {
-  start();
+  startServer().then(() => startFrontends());
 } else if (command === "dev") {
   install();
-  start();
+  startServer().then(() => startFrontends());
 } else if (command === "build") {
   process.env.VITE_APP_ID = appId;
   build({
-    root: appEntryPath,
+    root: existsSync(join(clientDir, "index.html")) ? clientDir : join(clientDir, ".rtag"),
     publicDir: join(clientDir, "public"),
     build: { outDir: join(rootDir, "dist/client") },
-    resolve: { alias: { vue: "vue/dist/vue.esm.js" } },
   });
   ncc(join(serverDir, ".rtag/store.ts")).then(
     ({ code, assets }: { code: string; assets: Record<string, { source: string | Buffer }> }) => {

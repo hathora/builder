@@ -1,0 +1,158 @@
+import React, { useRef, useLayoutEffect, useContext } from "react";
+import { RtagContext } from "./context";
+import { RtagConnection } from "./client";
+import {
+  {{userState}} as UserState,
+  {{#each types}}
+  {{@key}},
+  {{/each}}
+} from "./types";
+{{#each plugins}}
+import {{this}}Plugin from "../plugins/{{this}}";
+{{/each}}
+{{#each plugins}}
+
+window.customElements.define("{{makePluginName this}}", {{this}}Plugin);
+{{/each}}
+
+function KVDisplay(props: { label: string; children: JSX.Element }) {
+  return (
+    <div className="kv-display">
+      <span>{props.label}: </span>
+      {props.children}
+    </div>
+  );
+}
+
+function ArrayDisplay<T>(props: { value: T[]; children: (value: T) => JSX.Element }) {
+  return (
+    <span className="array-display">
+      [
+      {props.value.map((val, i) => (
+        <div className="array-item" key={i}>
+          {props.children(val)}
+        </div>
+      ))}
+      ]
+    </span>
+  );
+}
+
+function OptionalDisplay<T>(props: { value: T | undefined; children: (value: T) => JSX.Element }) {
+  return <span className="optional-display">{props.value !== undefined ? props.children(props.value) : ""}</span>;
+}
+
+function EnumDisplay(props: { value: number; enum: object }) {
+  const labels = Object.entries(props.enum)
+    .filter(([_, value]) => typeof value === "number")
+    .map(([label, _]) => label);
+  return <span className="enum-display">{labels[props.value]}</span>;
+}
+
+function StringDisplay({ value }: { value: string }) {
+  return <span className="string-display">"{value}"</span>;
+}
+
+function NumberDisplay({ value }: { value: number }) {
+  return <span className="number-display">{value}</span>;
+}
+
+function BooleanDisplay({ value }: { value: boolean }) {
+  return <span className="boolean-display">{value ? "true" : "false"}</span>;
+}
+
+function PluginDisplay<T>({ value, component }: { value: T; component: string }) {
+  const { state, connection } = useContext(RtagContext)!;
+  const ref = useRef<{ val: T; state: UserState; client: RtagConnection }>();
+  useLayoutEffect(() => {
+    ref.current!.val = value;
+    ref.current!.state = state;
+    ref.current!.client = connection;
+  });
+  return <div className="plugin-display">{React.createElement(component, { ref })}</div>;
+}
+
+{{#each types}}
+{{#if (eq type "object")}}
+function {{@key}}Display({ value }: { value: {{@key}} }) {
+  return (
+    <div className="object-display">
+      &#123;
+      {{#each properties}}
+      <KVDisplay label="{{@key}}">
+        {{> renderDisplay arg=@key}}
+      </KVDisplay>
+      {{/each}}
+      &#125;
+    </div>
+  );
+}
+
+{{else if (eq type "union")}}
+function {{@key}}Display({ value }: { value: {{@key}} }) {
+  switch (value.type) {
+    {{#each options}}
+    case "{{@key}}":
+      return {{> renderDisplay arg="val"}};
+    {{/each}}
+  }
+}
+
+{{/if}}
+{{/each}}
+export function State() {
+  const { state } = useContext(RtagContext)!;
+  return (
+    <div className="state">
+      <{{userState}}Display value={state!} />
+    </div>
+  );
+}
+{{#*inline "renderDisplay"}}
+{{#if (eq type "plugin")}}
+<PluginDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} component="{{makePluginName typeString}}" />
+{{else if (eq type "object")}}
+<{{typeString}}Display {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} />
+{{else if (eq type "union")}}
+<{{typeString}}Display {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} />
+{{else if (eq type "array")}}
+<ArrayDisplay<{{> renderTypeArg items}}> {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}}>
+  {(value) => 
+    {{> renderDisplay items}}
+  }
+</ArrayDisplay>
+{{else if (eq type "optional")}}
+<OptionalDisplay<{{> renderTypeArg}}> {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}}>
+  {(value) => 
+    {{> renderDisplay item}}
+  }
+</OptionalDisplay>
+{{else if (eq type "enum")}}
+<EnumDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} enum={ {{typeString}} } />
+{{else if (eq type "string")}}
+<StringDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} />
+{{else if (eq type "number")}}
+<NumberDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} />
+{{else if (eq type "boolean")}}
+<BooleanDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} />
+{{/if}}
+{{/inline}}
+{{#*inline "renderTypeArg"}}
+{{#if alias}}
+{{typeString}}
+{{~else if (eq type "optional")}}
+{{> renderTypeArg item}}
+{{~else if (eq type "array")}}
+{{> renderTypeArg items}}[]
+{{~else if (eq type "number")}}
+number
+{{~else if (eq type "string")}}
+string
+{{~else if (eq type "boolean")}}
+boolean
+{{~else if (eq type "plugin")}}
+{{> renderTypeArg item}}
+{{~else}}
+{{makeRequestName @key}}
+{{~/if}}
+{{/inline}}

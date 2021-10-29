@@ -1,0 +1,166 @@
+import React, { useEffect, useState } from "react";
+import ReactDOM from "react-dom";
+import { BrowserRouter, Route, Switch, useHistory, useParams } from "react-router-dom";
+import { ToastContainer, Zoom, toast } from "react-toastify";
+{{#if auth.google}}
+import { GoogleLogin } from "react-google-login";
+{{/if}}
+import { RtagClient, RtagConnection } from "./client";
+import { {{makeRequestName initialize}}, {{userState}} as UserState } from "./types";
+import { RtagContext } from "./context";
+import { Forms, InitializeForm } from "./Forms";
+import { State } from "./State";
+
+const client = new RtagClient(import.meta.env.VITE_APP_ID);
+
+function App() {
+  const [connection, setConnection] = useState<RtagConnection>();
+  const [state, setState] = useState<UserState>();
+  const [token, setToken] = useState<string | null>(sessionStorage.getItem("token"));
+  const history = useHistory();
+
+  useEffect(() => {
+    const location = history.location;
+    if (location.hash.length > 0) {
+      sessionStorage.setItem("token", location.hash.substring(1));
+      setToken(location.hash.substring(1));
+      history.replace(location.pathname);
+    }
+  }, [history]);
+
+  if (token === null) {
+    return <Login setToken={setToken} />;
+  }
+
+  const user = RtagClient.getUserFromToken(token);
+  return (
+    <>
+      <div>{user.name}</div>
+      <div id="app">
+        <Switch>
+          <Route exact path="/state/:stateId">
+            <Main
+              state={state}
+              connection={connection}
+              onConnect={(stateId) =>
+                client
+                  .connectExisting(token, stateId, setState, toast.info)
+                  .then((conn) => setConnection(conn))
+                  .catch((e) => toast.error("Connection error: " + e.reason))
+              }
+              onDisconnect={() => {
+                if (connection !== undefined) {
+                  connection.disconnect();
+                  setConnection(undefined);
+                  setState(undefined);
+                }
+              }}
+            />
+          </Route>
+          <Route exact path="/">
+            <Home
+              onConnect={(request) =>
+                client
+                  .connectNew(token, request, setState, toast.info)
+                  .then((conn) => {
+                    setConnection(conn);
+                    history.push(`/state/${conn.stateId}`);
+                  })
+                  .catch((e) => toast.error("Connection error: " + e.reason))
+              }
+            />
+          </Route>
+          <Route path="/">
+            <div>Not Found</div>
+          </Route>
+        </Switch>
+      </div>
+    </>
+  );
+}
+
+function Login({ setToken }: { setToken: (token: string) => void }) {
+  return (
+    <div className="login">
+      <h2>Login</h2>
+{{#each auth}}
+{{#if (eq @key "anonymous")}}
+      <button
+        onClick={() =>
+          client
+            .loginAnonymous()
+            .then((token) => {
+              sessionStorage.setItem("token", token);
+              setToken(token);
+            })
+            .catch((e) => toast.error("Authentication error: " + e.reason))
+        }
+      >
+        <span>Login Anonymously</span>
+      </button>
+{{else if (eq @key "google")}}
+      <GoogleLogin
+        clientId="{{clientId}}"
+        onSuccess={({ tokenId }: any) =>
+          client
+            .loginGoogle(tokenId)
+            .then((token) => {
+              sessionStorage.setItem("token", token);
+              setToken(token);
+            })
+            .catch((e) => toast.error("Authentication error: " + e.reason))
+        }
+      />
+{{/if}}
+{{/each}}
+    </div>
+  );
+}
+
+function Home({ onConnect }: { onConnect: (request: {{makeRequestName initialize}}) => void }) {
+  const [stateId, setStateId] = useState<string>("");
+  const history = useHistory();
+  return (
+    <div className="home">
+      <h2>Home</h2>
+      <InitializeForm submit={onConnect} />
+      <input type="text" value={stateId} onChange={(e) => setStateId(e.target.value)}></input>
+      <button onClick={() => history.push(`/state/${stateId}`)}>Join existing</button>
+    </div>
+  );
+}
+
+type MainProps = {
+  state: UserState | undefined;
+  connection: RtagConnection | undefined;
+  onConnect: (stateId: string) => void;
+  onDisconnect: () => void;
+};
+function Main({ state, connection, onConnect, onDisconnect }: MainProps) {
+  const { stateId } = useParams<{ stateId: string }>();
+  useEffect(() => {
+    if (connection === undefined) {
+      onConnect(stateId);
+    }
+    return onDisconnect;
+  }, [connection]);
+
+  if (state === undefined || connection === undefined) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <RtagContext.Provider value=\{{ connection, state }}>
+      <State />
+      <Forms />
+    </RtagContext.Provider>
+  );
+}
+
+ReactDOM.render(
+  <BrowserRouter>
+    <App />
+    <ToastContainer position="top-center" autoClose={2000} transition={Zoom} hideProgressBar />
+  </BrowserRouter>,
+  document.getElementById("root")
+);
