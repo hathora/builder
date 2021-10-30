@@ -5,6 +5,7 @@
     "strict": true,
     "target": "esnext",
     "moduleResolution": "node",
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false
   }
 }
