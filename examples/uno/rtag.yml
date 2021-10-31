@@ -12,8 +12,8 @@ types:
     hand: Card[]
     players: PlayerName[]
     turn: PlayerName
-    pile?: Card
-    winner?: PlayerName
+    pile: Card?
+    winner: PlayerName?
 
 methods:
   createGame:

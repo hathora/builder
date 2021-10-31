@@ -49,7 +49,7 @@ types:
     text: string
     sentAt: number
     sentBy: Username
-    sentTo?: Username
+    sentTo: Username?
   RoomState:
     name: string
     createdBy: Username

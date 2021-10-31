@@ -7,11 +7,11 @@ types:
   PlayerInfo:
     name: Username
     score: number
-    gesture?: Gesture
+    gesture: Gesture?
   PlayerState:
     round: number
     player1: PlayerInfo
-    player2?: PlayerInfo
+    player2: PlayerInfo?
 
 methods:
   createGame:

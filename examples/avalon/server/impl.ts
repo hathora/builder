@@ -83,10 +83,10 @@ export class Impl implements Methods<InternalState> {
     if (request.leader !== undefined && !state.players.includes(request.leader)) {
       return Response.error("Invalid leader");
     }
-    if (request.playerOrder !== undefined && request.playerOrder.length > 0) {
+    if (request.playerOrder.length > 0) {
       if (
         request.playerOrder.length !== state.players.length ||
-        !state.players.every((player) => request.playerOrder!.includes(player))
+        !state.players.every((player) => request.playerOrder.includes(player))
       ) {
         return Response.error("Invalid player order");
       }

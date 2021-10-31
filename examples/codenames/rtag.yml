@@ -12,8 +12,8 @@ types:
     isSpymaster: boolean
   Card:
     word: string
-    color?: Color
-    selectedBy?: Color
+    color: Color?
+    selectedBy: Color?
   GameStatus:
     - NOT_STARTED
     - IN_PROGRESS
@@ -27,7 +27,7 @@ types:
     players: PlayerInfo[]
     gameStatus: GameStatus
     currentTurn: Color
-    turnInfo?: TurnInfo
+    turnInfo: TurnInfo?
     redRemaining: number
     blueRemaining: number
     cards: Cards

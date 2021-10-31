@@ -26,7 +26,7 @@ types:
     myBool: boolean
     myEnum: MyEnum
   MyObj2:
-    myOptional?: MyEnum
+    myOptional: MyEnum?
     myArray: MyAlias[]
     myObj: MyObj1
   MyUnion:
