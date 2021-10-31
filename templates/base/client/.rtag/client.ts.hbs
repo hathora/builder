@@ -67,7 +67,7 @@ export class RtagClient {
         socket,
         (state) => {
           resolve(conn);
-          onStateChange(state);
+          setTimeout(() => onStateChange(state), 0);
         },
         onEvent
       );

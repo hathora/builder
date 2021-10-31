@@ -2,7 +2,9 @@ import { Message, Response } from "./base";
 import { Writer, Reader } from "./serde";
 
 {{#each types}}
-{{#if (eq type "enum")}}
+{{#if alias}}
+export type {{@key}} = {{> renderTypeArg}};
+{{else if (eq type "enum")}}
 export enum {{@key}} {
   {{#each options}}
   {{label}},
