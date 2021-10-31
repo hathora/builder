@@ -62,7 +62,7 @@ export class RtagClient {
       const socket = this.initSocket(reject);
       const conn = new RtagConnection(stateId, socket, (state) => {
         resolve(conn);
-        onStateChange(state);
+        setTimeout(() => onStateChange(state), 0);
       });
       socket.onopen = () => {
         socket.send(token);
