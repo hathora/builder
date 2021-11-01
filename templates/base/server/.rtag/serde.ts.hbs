@@ -42,7 +42,7 @@ export class Writer {
       this.pos += 4;
     } else if (val < 0x800000000) {
       this.ensureSize(5);
-      this.view.setUint8(this.pos, (val >> 28) | 0x80);
+      this.view.setUint8(this.pos, Math.floor(val / Math.pow(2, 28)) | 0x80);
       this.view.setUint32(
         this.pos + 1,
         (val & 0x7f) | ((val & 0x3f80) << 1) | ((val & 0x1fc000) << 2) | ((val & 0xfe00000) << 3) | 0x80808000
@@ -63,12 +63,8 @@ export class Writer {
   }
 
   public writeVarint(val: number) {
-    if (val < Math.pow(2, 32)) {
-      this.writeUVarint((val >>> 31) ^ (val << 1));
-    } else {
-      const bigval = BigInt(val);
-      this.writeUVarint(Number((bigval >> 63n) ^ (bigval << 1n)));
-    }
+    const bigval = BigInt(val);
+    this.writeUVarint(Number((bigval >> 63n) ^ (bigval << 1n)));
   }
 
   public writeDouble(val: number) {
