@@ -106,9 +106,17 @@ function StringInput({ value, update }: BaseProps<string>) {
   );
 }
 
-function NumberInput({ value, update }: BaseProps<number>) {
+function IntInput({ value, update }: BaseProps<number>) {
   return (
-    <div className="number-input">
+    <div className="int-input">
+      <input type="number" value={value} onChange={(e) => update(parseInt(e.target.value))}></input>
+    </div>
+  );
+}
+
+function FloatInput({ value, update }: BaseProps<number>) {
+  return (
+    <div className="float-input">
       <input type="number" value={value} onChange={(e) => update(Number(e.target.value))}></input>
     </div>
   );
@@ -236,8 +244,10 @@ export function Forms() {
 <EnumInput {{#if arg}}value={ value.{{arg}} } update={(v) => update({ ...value, {{arg}}: v })}{{else}}value={value} update={update}{{/if}} enumType={ {{typeString}} } />
 {{else if (eq type "string")}}
 <StringInput {{#if arg}}value={ value.{{arg}} } update={(v) => update({ ...value, {{arg}}: v })}{{else}}value={value} update={update}{{/if}} />
-{{else if (eq type "number")}}
-<NumberInput {{#if arg}}value={ value.{{arg}} } update={(v) => update({ ...value, {{arg}}: v })}{{else}}value={value} update={update}{{/if}} />
+{{else if (eq type "int")}}
+<IntInput {{#if arg}}value={ value.{{arg}} } update={(v) => update({ ...value, {{arg}}: v })}{{else}}value={value} update={update}{{/if}} />
+{{else if (eq type "float")}}
+<FloatInput {{#if arg}}value={ value.{{arg}} } update={(v) => update({ ...value, {{arg}}: v })}{{else}}value={value} update={update}{{/if}} />
 {{else if (eq type "boolean")}}
 <BooleanInput {{#if arg}}value={ value.{{arg}} } update={(v) => update({ ...value, {{arg}}: v })}{{else}}value={value} update={update}{{/if}} />
 {{/if}}
@@ -249,7 +259,9 @@ export function Forms() {
 {{> renderTypeArg item}}
 {{~else if (eq type "array")}}
 {{> renderTypeArg items}}[]
-{{~else if (eq type "number")}}
+{{~else if (eq type "int")}}
+number
+{{~else if (eq type "float")}}
 number
 {{~else if (eq type "string")}}
 string
@@ -264,8 +276,10 @@ boolean
 {{#*inline "renderDefault"}}
 {{#if (eq type "array")}}
 []
-{{~else if (eq type "number")}}
+{{~else if (eq type "int")}}
 0
+{{~else if (eq type "float")}}
+0.0
 {{~else if (eq type "string")}}
 ""
 {{~else if (eq type "enum")}}

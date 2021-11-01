@@ -30,7 +30,8 @@ type Arg =
   | EnumArg
   | UnionArg
   | StringArg
-  | NumberArg
+  | IntArg
+  | FloatArg
   | BooleanArg;
 interface ObjectArg {
   type: "object";
@@ -73,8 +74,13 @@ interface StringArg {
   alias: boolean;
   typeString?: string;
 }
-interface NumberArg {
-  type: "number";
+interface IntArg {
+  type: "int";
+  alias: boolean;
+  typeString?: string;
+}
+interface FloatArg {
+  type: "float";
   alias: boolean;
   typeString?: string;
 }
@@ -88,7 +94,6 @@ function getArgsInfo(
   doc: z.infer<typeof RtagConfig>,
   plugins: string[],
   args: z.infer<typeof TypeArgs>,
-  required: boolean,
   alias: boolean,
   typeString?: string
 ): Arg {
@@ -98,7 +103,7 @@ function getArgsInfo(
         type: "union",
         typeString,
         alias,
-        options: Object.fromEntries(args.map((type) => [type, getArgsInfo(doc, plugins, type, true, false)])),
+        options: Object.fromEntries(args.map((type) => [type, getArgsInfo(doc, plugins, type, false)])),
       };
     }
     return {
@@ -113,31 +118,28 @@ function getArgsInfo(
       typeString,
       alias,
       properties: Object.fromEntries(
-        Object.entries(args).map(([name, type]) => [
-          name.replace(/[\W]+/g, ""),
-          getArgsInfo(doc, plugins, type, !name.endsWith("?"), false),
-        ])
+        Object.entries(args).map(([name, type]) => [name.replace(/[\W]+/g, ""), getArgsInfo(doc, plugins, type, false)])
       ),
     };
   } else {
-    if (!required) {
+    if (args.endsWith("?")) {
       return {
         type: "optional",
-        typeString: args + "?",
+        typeString: args,
         alias,
-        item: getArgsInfo(doc, plugins, args, true, false),
+        item: getArgsInfo(doc, plugins, args.substring(0, args.length - 1), false),
       };
     } else if (args.endsWith("[]")) {
       return {
         type: "array",
         typeString: typeString ?? args,
         alias,
-        items: getArgsInfo(doc, plugins, args.substring(0, args.length - 2), true, false),
+        items: getArgsInfo(doc, plugins, args.substring(0, args.length - 2), false),
       };
     } else if (args in doc.types) {
-      const argsInfo = getArgsInfo(doc, plugins, doc.types[args], required, true, args);
+      const argsInfo = getArgsInfo(doc, plugins, doc.types[args], true, args);
       return plugins.includes(args) ? { type: "plugin", typeString: args, alias, item: argsInfo } : argsInfo;
-    } else if (args === "string" || args === "number" || args === "boolean") {
+    } else if (args === "string" || args === "int" || args === "float" || args === "boolean") {
       const argsInfo: Arg = { type: args, typeString: typeString ?? args, alias };
       return plugins.includes(args) ? { type: "plugin", typeString: args, alias, item: argsInfo } : argsInfo;
     } else {
@@ -151,15 +153,15 @@ function enrichDoc(doc: z.infer<typeof RtagConfig>, plugins: string[], appName: 
     ...doc,
     types: Object.fromEntries(
       Object.entries(doc.types).map(([key, val]) => {
-        return [key, getArgsInfo(doc, plugins, val, true, false)];
+        return [key, getArgsInfo(doc, plugins, val, false)];
       })
     ),
     methods: Object.fromEntries(
       Object.entries(doc.methods).map(([key, val]) => {
-        return [key, getArgsInfo(doc, plugins, val === null ? {} : val, true, false)];
+        return [key, getArgsInfo(doc, plugins, val === null ? {} : val, false)];
       })
     ),
-    error: getArgsInfo(doc, plugins, doc.error, true, false),
+    error: getArgsInfo(doc, plugins, doc.error, false),
     plugins,
     appName,
   };

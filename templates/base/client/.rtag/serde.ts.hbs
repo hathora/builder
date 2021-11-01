@@ -13,7 +13,7 @@ export class Writer {
     this.pos += 1;
   }
 
-  public writeUInt32LE(val: number) {
+  public writeUInt32(val: number) {
     this.ensureSize(4);
     this.view.setUint32(this.pos, val);
     this.pos += 4;
@@ -33,17 +33,45 @@ export class Writer {
       this.view.setUint8(this.pos, (val >> 14) | 0x80);
       this.view.setUint16(this.pos + 1, (val & 0x7f) | ((val & 0x3f80) << 1) | 0x8000);
       this.pos += 3;
-    } else {
+    } else if (val < 0x10000000) {
       this.ensureSize(4);
       this.view.setUint32(
         this.pos,
         (val & 0x7f) | ((val & 0x3f80) << 1) | ((val & 0x1fc000) << 2) | ((val & 0xfe00000) << 3) | 0x80808000
       );
       this.pos += 4;
+    } else if (val < 0x800000000) {
+      this.ensureSize(5);
+      this.view.setUint8(this.pos, (val >> 28) | 0x80);
+      this.view.setUint32(
+        this.pos + 1,
+        (val & 0x7f) | ((val & 0x3f80) << 1) | ((val & 0x1fc000) << 2) | ((val & 0xfe00000) << 3) | 0x80808000
+      );
+      this.pos += 5;
+    } else if (val < 0x40000000000) {
+      this.ensureSize(6);
+      const shiftedVal = Math.floor(val / Math.pow(2, 28));
+      this.view.setUint16(this.pos, (shiftedVal & 0x7f) | ((shiftedVal & 0x3f80) << 1) | 0x8080);
+      this.view.setUint32(
+        this.pos + 2,
+        (val & 0x7f) | ((val & 0x3f80) << 1) | ((val & 0x1fc000) << 2) | ((val & 0xfe00000) << 3) | 0x80808000
+      );
+      this.pos += 6;
+    } else {
+      throw new Error("Value out of range");
     }
   }
 
-  public writeDoubleLE(val: number) {
+  public writeVarint(val: number) {
+    if (val < Math.pow(2, 32)) {
+      this.writeUVarint((val >>> 31) ^ (val << 1));
+    } else {
+      const bigval = BigInt(val);
+      this.writeUVarint(Number((bigval >> 63n) ^ (bigval << 1n)));
+    }
+  }
+
+  public writeDouble(val: number) {
     this.ensureSize(8);
     this.view.setFloat64(this.pos, val, true);
     this.pos += 8;
@@ -92,7 +120,7 @@ export class Reader {
     return val;
   }
 
-  public readUInt32LE() {
+  public readUInt32() {
     const val = this.view.getUint32(this.pos);
     this.pos += 4;
     return val;
@@ -100,30 +128,21 @@ export class Reader {
 
   public readUVarint() {
     let val = 0;
-
-    let byte = this.view.getUint8(this.pos++);
-    if (byte < 0x80) {
-      return byte;
+    while (true) {
+      let byte = this.view.getUint8(this.pos++);
+      if (byte < 0x80) {
+        return val + byte;
+      }
+      val = (val + (byte & 0x7f)) * 128;
     }
-    val |= byte & 0x7f;
-
-    byte = this.view.getUint8(this.pos++);
-    if (byte < 0x80) {
-      return val | (byte << 7);
-    }
-    val |= (byte & 0x7f) << 7;
-
-    byte = this.view.getUint8(this.pos++);
-    if (byte < 0x80) {
-      return val | (byte << 14);
-    }
-    val |= (byte & 0x7f) << 14;
-
-    byte = this.view.getUint8(this.pos++);
-    return val | (byte << 21);
   }
 
-  public readDoubleLE() {
+  public readVarint() {
+    const val = BigInt(this.readUVarint());
+    return Number((val >> 1n) ^ -(val & 1n));
+  }
+
+  public readDouble() {
     const val = this.view.getFloat64(this.pos, true);
     this.pos += 8;
     return val;

@@ -22,11 +22,12 @@ types:
     - VAL2
   MyObj1:
     myString: string
-    myNum: number
+    myInteger: int
+    myDecimal: float
     myBool: boolean
     myEnum: MyEnum
   MyObj2:
-    myOptional?: MyEnum
+    myOptional: MyEnum?
     myArray: MyAlias[]
     myObj: MyObj1
   MyUnion:
@@ -118,8 +119,8 @@ Example (poker game):
 
 methods:
   createGame:
-    startingChips: number
-    startingBlind: number
+    startingChips: int
+    startingBlind: int
 # ...
 initialize: createGame
 ```
