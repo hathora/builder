@@ -47,7 +47,7 @@ types:
   Username: string
   Message:
     text: string
-    sentAt: number
+    sentAt: int
     sentBy: Username
     sentTo: Username?
   RoomState:
