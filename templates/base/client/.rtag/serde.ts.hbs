@@ -63,7 +63,12 @@ export class Writer {
   }
 
   public writeVarint(val: number) {
-    this.writeUVarint((val >> 31) ^ (val << 1));
+    if (val < Math.pow(2, 32)) {
+      this.writeUVarint((val >>> 31) ^ (val << 1));
+    } else {
+      const bigval = BigInt(val);
+      this.writeUVarint(Number((bigval >> 63n) ^ (bigval << 1n)));
+    }
   }
 
   public writeDouble(val: number) {
@@ -133,8 +138,8 @@ export class Reader {
   }
 
   public readVarint() {
-    const val = this.readUVarint();
-    return (val >> 1) ^ -(val & 1);
+    const val = BigInt(this.readUVarint());
+    return Number((val >> 1n) ^ -(val & 1n));
   }
 
   public readDouble() {
