@@ -21,15 +21,15 @@ types:
     - BLUE_WON
   TurnInfo:
     hint: string
-    amount: number
-    guessed: number
+    amount: int
+    guessed: int
   PlayerState:
     players: PlayerInfo[]
     gameStatus: GameStatus
     currentTurn: Color
     turnInfo: TurnInfo?
-    redRemaining: number
-    blueRemaining: number
+    redRemaining: int
+    blueRemaining: int
     cards: Cards
 
 methods:
@@ -38,7 +38,7 @@ methods:
   startGame:
   giveClue:
     hint: string
-    amount: number
+    amount: int
   selectCard:
     word: string
   endTurn:

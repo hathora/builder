@@ -6,10 +6,10 @@ types:
     - SCISSOR
   PlayerInfo:
     name: Username
-    score: number
+    score: int
     gesture: Gesture?
   PlayerState:
-    round: number
+    round: int
     player1: PlayerInfo
     player2: PlayerInfo?
 
