@@ -30,7 +30,8 @@ type Arg =
   | EnumArg
   | UnionArg
   | StringArg
-  | NumberArg
+  | IntArg
+  | FloatArg
   | BooleanArg;
 interface ObjectArg {
   type: "object";
@@ -73,8 +74,13 @@ interface StringArg {
   alias: boolean;
   typeString?: string;
 }
-interface NumberArg {
-  type: "number";
+interface IntArg {
+  type: "int";
+  alias: boolean;
+  typeString?: string;
+}
+interface FloatArg {
+  type: "float";
   alias: boolean;
   typeString?: string;
 }
@@ -133,7 +139,7 @@ function getArgsInfo(
     } else if (args in doc.types) {
       const argsInfo = getArgsInfo(doc, plugins, doc.types[args], true, args);
       return plugins.includes(args) ? { type: "plugin", typeString: args, alias, item: argsInfo } : argsInfo;
-    } else if (args === "string" || args === "number" || args === "boolean") {
+    } else if (args === "string" || args === "int" || args === "float" || args === "boolean") {
       const argsInfo: Arg = { type: args, typeString: typeString ?? args, alias };
       return plugins.includes(args) ? { type: "plugin", typeString: args, alias, item: argsInfo } : argsInfo;
     } else {

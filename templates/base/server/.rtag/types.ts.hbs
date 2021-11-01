@@ -63,7 +63,7 @@ export const {{@key}} = {
   },
   encode(obj: {{@key}}, buf?: Writer) {
     buf ??= new Writer();
-    writeUInt(buf, this.values().indexOf(obj.type));
+    writeUInt8(buf, this.values().indexOf(obj.type));
     {{#each options}}
     {{#unless @first}}else {{/unless}}if (obj.type === "{{@key}}") {
       const x = obj.val;
@@ -74,7 +74,7 @@ export const {{@key}} = {
   },
   decode(buf: ArrayBufferView | Reader): {{@key}} {
     const sb = ArrayBuffer.isView(buf) ? new Reader(buf) : buf;
-    const type = parseUInt(sb);
+    const type = parseUInt8(sb);
     {{#each options}}
     {{#unless @first}}else {{/unless}}if (type === {{@index}}) {
       return { type: "{{@key}}", val: {{> renderDecodeArg}} };
@@ -118,7 +118,9 @@ export const {{makeRequestName @key}} = {
 {{> renderTypeArg item}}
 {{~else if (eq type "array")}}
 {{> renderTypeArg items}}[]
-{{~else if (eq type "number")}}
+{{~else if (eq type "int")}}
+number
+{{~else if (eq type "float")}}
 number
 {{~else if (eq type "string")}}
 string
@@ -131,8 +133,10 @@ boolean
 {{#*inline "renderDefault"}}
 {{#if (eq type "array")}}
 []
-{{~else if (eq type "number")}}
+{{~else if (eq type "int")}}
 0
+{{~else if (eq type "float")}}
+0.0
 {{~else if (eq type "string")}}
 ""
 {{~else if (eq type "enum")}}
@@ -159,9 +163,11 @@ writeOptional(buf, obj.{{arg}}, (buf, x) => {{> renderEncodeArg item}})
 {{~else if (eq type "array")}}
 writeArray(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}}, (buf, x) => {{> renderEncodeArg items}})
 {{~else if (eq type "enum")}}
-writeUInt(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}})
-{{~else if (eq type "number")}}
-writeNumber(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}})
+writeUInt8(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}})
+{{~else if (eq type "int")}}
+writeInt(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}})
+{{~else if (eq type "float")}}
+writeFloat(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}})
 {{~else if (eq type "string")}}
 writeString(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}})
 {{~else if (eq type "boolean")}}
@@ -178,9 +184,11 @@ parseOptional(sb, () => {{> renderDecodeArg item}})
 {{~else if (eq type "array")}}
 parseArray(sb, () => {{> renderDecodeArg items}})
 {{~else if (eq type "enum")}}
-parseUInt(sb)
-{{~else if (eq type "number")}}
-parseNumber(sb)
+parseUInt8(sb)
+{{~else if (eq type "int")}}
+parseInt(sb)
+{{~else if (eq type "float")}}
+parseFloat(sb)
 {{~else if (eq type "string")}}
 parseString(sb)
 {{~else if (eq type "boolean")}}
@@ -196,7 +204,7 @@ export function encodeState(state: {{userState}} | undefined, responses: Record<
   const buf = new Writer();
   writeOptional(buf, state, (buf, x) => {{userState}}.encode(x, buf));
   Object.entries(responses).forEach(([msgId, response]) => {
-    buf.writeUInt32LE(Number(msgId));
+    buf.writeUInt32(Number(msgId));
     const maybeError = response.type === "error" ? response.error : undefined;
     writeOptional(buf, maybeError, writeString);
   });
@@ -207,21 +215,24 @@ export function decodeState(buf: ArrayBufferView | Reader): { state?: {{userStat
   const state = parseOptional(sb, () => {{userState}}.decode(sb));
   const responses: Record<number, Response> = {};
   while (sb.remaining() > 0) {
-    const msgId = sb.readUInt32LE();
+    const msgId = sb.readUInt32();
     const maybeError = parseOptional(sb, () => parseString(sb));
     responses[msgId] = maybeError === undefined ? Response.ok() : Response.error(maybeError);
   }
   return { state, responses };
 }
 
-function writeUInt(buf: Writer, x: number) {
+function writeUInt8(buf: Writer, x: number) {
   buf.writeUInt8(x);
 }
 function writeBoolean(buf: Writer, x: boolean) {
   buf.writeUInt8(x ? 1 : 0);
 }
-function writeNumber(buf: Writer, x: number) {
-  buf.writeDoubleLE(x);
+function writeInt(buf: Writer, x: number) {
+  buf.writeVarint(x);
+}
+function writeFloat(buf: Writer, x: number) {
+  buf.writeDouble(x);
 }
 function writeString(buf: Writer, x: string) {
   buf.writeString(x);
@@ -239,14 +250,17 @@ function writeArray<T>(buf: Writer, x: T[], innerWrite: (buf: Writer, x: T) => v
   }
 }
 
-function parseUInt(buf: Reader): number {
+function parseUInt8(buf: Reader): number {
   return buf.readUInt8();
 }
 function parseBoolean(buf: Reader): boolean {
   return buf.readUInt8() > 0;
 }
-function parseNumber(buf: Reader): number {
-  return buf.readDoubleLE();
+function parseInt(buf: Reader): number {
+  return buf.readVarint();
+}
+function parseFloat(buf: Reader): number {
+  return buf.readDouble();
 }
 function parseString(buf: Reader): string {
   return buf.readString();

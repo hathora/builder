@@ -53,8 +53,12 @@ function StringDisplay({ value }: { value: string }) {
   return <span className="string-display">"{value}"</span>;
 }
 
-function NumberDisplay({ value }: { value: number }) {
-  return <span className="number-display">{value}</span>;
+function IntDisplay({ value }: { value: number }) {
+  return <span className="int-display">{value}</span>;
+}
+
+function FloatDisplay({ value }: { value: number }) {
+  return <span className="float-display">{value}</span>;
 }
 
 function BooleanDisplay({ value }: { value: boolean }) {
@@ -131,8 +135,10 @@ export function State() {
 <EnumDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} enum={ {{typeString}} } />
 {{else if (eq type "string")}}
 <StringDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} />
-{{else if (eq type "number")}}
-<NumberDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} />
+{{else if (eq type "int")}}
+<IntDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} />
+{{else if (eq type "float")}}
+<FloatDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} />
 {{else if (eq type "boolean")}}
 <BooleanDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} />
 {{/if}}
@@ -144,7 +150,9 @@ export function State() {
 {{> renderTypeArg item}}
 {{~else if (eq type "array")}}
 {{> renderTypeArg items}}[]
-{{~else if (eq type "number")}}
+{{~else if (eq type "int")}}
+number
+{{~else if (eq type "float")}}
 number
 {{~else if (eq type "string")}}
 string

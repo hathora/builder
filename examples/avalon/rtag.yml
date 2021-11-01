@@ -1,6 +1,6 @@
 types:
   Username: string
-  QuestId: number
+  QuestId: int
 
   Role:
     - MERLIN
@@ -31,20 +31,20 @@ types:
     role: Role
     isEvil: boolean
     knownRoles: Role[]
-    quantity: number
+    quantity: int
   PlayerAndVote:
     player: Username
     vote: Vote?
   QuestAttempt:
     id: QuestId
     status: QuestStatus
-    roundNumber: number
-    attemptNumber: number
+    roundNumber: int
+    attemptNumber: int
     leader: Username
     members: Username[]
     proposalVotes: PlayerAndVote[]
     results: PlayerAndVote[]
-    numFailures: number
+    numFailures: int
   PlayerState:
     status: GameStatus
     rolesInfo: RoleInfo[]
@@ -52,7 +52,7 @@ types:
     players: Username[]
     role: Role?
     knownPlayers: Username[]
-    playersPerQuest: number[]
+    playersPerQuest: int[]
     quests: QuestAttempt[]
 
 methods:
