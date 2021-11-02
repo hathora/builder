@@ -1,6 +1,12 @@
 import { Response } from "./base";
 import { Writer, Reader } from "./serde";
 
+type DeepPartial<T> = T extends string | number | boolean | undefined
+  ? T | undefined
+  : T extends Array<infer ArrayType>
+  ? Array<ArrayType>
+  : { [K in keyof T]?: DeepPartial<T[K]> };
+
 {{#each types}}
 {{#if alias}}
 export type {{@key}} = {{> renderTypeArg}};
@@ -47,6 +53,20 @@ export const {{@key}} = {
     {{/each}}
     return buf.toBuffer();
   },
+  encodeDiff(obj: DeepPartial<{{@key}}>, tracker: ("0" | "1")[], buf?: Writer) {
+    buf ??= new Writer();
+    {{#each properties}}
+    tracker.push(obj.hasOwnProperty("{{@key}}") ? "1" : "0");
+    {{#if (eq type "optional")}}
+    if (obj.hasOwnProperty("{{@key}}")) {
+    {{else}}
+    if (obj.{{@key}} !== undefined) {
+    {{/if}}
+      {{> renderEncodeDiffArg arg=@key}};
+    }
+    {{/each}}
+    return buf.toBuffer();
+  },
   decode(buf: ArrayBufferView | Reader): {{@key}} {
     const sb = ArrayBuffer.isView(buf) ? new Reader(buf) : buf;
     return {
@@ -55,7 +75,17 @@ export const {{@key}} = {
       {{/each}}
     };
   },
-}
+  decodeDiff(buf: ArrayBufferView | Reader, tracker: ("0" | "1")[]): DeepPartial<{{@key}}> {
+    const sb = ArrayBuffer.isView(buf) ? new Reader(buf) : buf;
+    const obj: DeepPartial<{{@key}}> = {};
+    {{#each properties}}
+    if (tracker.pop()! === "1") {
+      obj.{{@key}} = {{> renderDecodeDiffArg}};
+    }
+    {{/each}}
+    return obj;
+  },
+};
 {{else if (eq type "union")}}
 export const {{@key}} = {
   values() {
@@ -178,6 +208,27 @@ writeBoolean(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}})
 {{typeString}}.encode({{#if arg}}obj.{{arg}}{{else}}x{{/if}}, buf)
 {{~/if}}
 {{/inline}}
+{{#*inline "renderEncodeDiffArg"}}
+{{#if (eq type "optional")}}
+writeOptional(buf, obj.{{arg}}, (buf, x) => {{> renderEncodeDiffArg item}})
+{{~else if (eq type "array")}}
+writeArray(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}}, (buf, x) => {{> renderEncodeArg items}})
+{{~else if (eq type "enum")}}
+writeUInt8(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}})
+{{~else if (eq type "int")}}
+writeInt(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}})
+{{~else if (eq type "float")}}
+writeFloat(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}})
+{{~else if (eq type "string")}}
+writeString(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}})
+{{~else if (eq type "boolean")}}
+writeBoolean(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}})
+{{~else if (eq type "plugin")}}
+{{> renderEncodeDiffArg item arg=arg}}
+{{~else}}
+{{typeString}}.encodeDiff({{#if arg}}obj.{{arg}}{{else}}x{{/if}}, tracker, buf)
+{{~/if}}
+{{/inline}}
 {{#*inline "renderDecodeArg"}}
 {{#if (eq type "optional")}}
 parseOptional(sb, () => {{> renderDecodeArg item}})
@@ -197,6 +248,27 @@ parseBoolean(sb)
 {{> renderDecodeArg item}}
 {{~else}}
 {{typeString}}.decode(sb)
+{{~/if}}
+{{/inline}}
+{{#*inline "renderDecodeDiffArg"}}
+{{#if (eq type "optional")}}
+parseOptional(sb, () => {{> renderDecodeDiffArg item}})
+{{~else if (eq type "array")}}
+parseArray(sb, () => {{> renderDecodeArg items}})
+{{~else if (eq type "enum")}}
+parseUInt8(sb)
+{{~else if (eq type "int")}}
+parseInt(sb)
+{{~else if (eq type "float")}}
+parseFloat(sb)
+{{~else if (eq type "string")}}
+parseString(sb)
+{{~else if (eq type "boolean")}}
+parseBoolean(sb)
+{{~else if (eq type "plugin")}}
+{{> renderDecodeDiffArg item}}
+{{~else}}
+{{typeString}}.decodeDiff(sb, tracker)
 {{~/if}}
 {{/inline}}
 
