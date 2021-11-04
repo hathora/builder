@@ -222,7 +222,7 @@ export function Forms() {
 {{#*inline "renderForm"}}
 {{#if (eq type "plugin")}}
 {{#with item}}
-{{> renderForm}}
+{{> renderForm arg=../arg}}
 {{/with}}
 {{else if (eq type "object")}}
 <{{typeString}}Input {{#if arg}}value={ value.{{arg}} } update={(v) => update({ ...value, {{arg}}: v })}{{else}}value={value} update={update}{{/if}} />
