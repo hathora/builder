@@ -180,7 +180,7 @@ undefined
 {{~else if (eq type "union")}}
 {{#each options}}
 {{#if @first}}
-{ type: "{{@key}}", val: {{@key}}.default() }
+{ type: "{{@key}}", val: {{> renderDefault}} }
 {{~/if}}
 {{/each}}
 {{~else if (eq type "plugin")}}
