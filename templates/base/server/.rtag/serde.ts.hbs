@@ -2,6 +2,31 @@ import * as utf8 from "utf8-buffer";
 import utf8Size from "utf8-buffer-size";
 const { pack, unpack } = (utf8 as any).default ?? utf8;
 
+export class BitString {
+  private pos = 0;
+
+  public constructor(private bits: number = 0) {
+    this.bits = bits;
+  }
+
+  public push(val: 0 | 1) {
+    if (val === 1) {
+      this.bits |= 1 << this.pos;
+    }
+    this.pos++;
+  }
+
+  public pop() {
+    const val = (this.bits >>> this.pos) & 1;
+    this.pos++;
+    return val;
+  }
+
+  public getBits() {
+    return this.bits;
+  }
+}
+
 export class Writer {
   private pos = 0;
   private view = new DataView(new ArrayBuffer(1024));

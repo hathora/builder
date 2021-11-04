@@ -1,5 +1,5 @@
 import { Response } from "./base";
-import { Writer, Reader } from "./serde";
+import { Writer, Reader, BitString } from "./serde";
 
 type DeepPartial<T> = T extends string | number | boolean | undefined
   ? T | undefined
@@ -54,10 +54,10 @@ export const {{@key}} = {
     {{/each}}
     return buf.toBuffer();
   },
-  encodeDiff(obj: DeepPartial<{{@key}}>, tracker: ("0" | "1")[], buf?: Writer) {
+  encodeDiff(obj: DeepPartial<{{@key}}>, tracker: BitString, buf?: Writer) {
     buf ??= new Writer();
     {{#each properties}}
-    tracker.push(obj.hasOwnProperty("{{@key}}") ? "1" : "0");
+    tracker.push(obj.hasOwnProperty("{{@key}}") ? 1 : 0);
     {{#if (eq type "optional")}}
     if (obj.hasOwnProperty("{{@key}}")) {
     {{else}}
@@ -76,11 +76,11 @@ export const {{@key}} = {
       {{/each}}
     };
   },
-  decodeDiff(buf: ArrayBufferView | Reader, tracker: ("0" | "1")[]): DeepPartial<{{@key}}> {
+  decodeDiff(buf: ArrayBufferView | Reader, tracker: BitString): DeepPartial<{{@key}}> {
     const sb = ArrayBuffer.isView(buf) ? new Reader(buf) : buf;
     const obj: DeepPartial<{{@key}}> = {};
     {{#each properties}}
-    if (tracker.pop()! === "1") {
+    if (tracker.pop() === 1) {
       obj.{{@key}} = {{> renderDecodeDiffArg}};
     }
     {{/each}}
@@ -103,7 +103,7 @@ export const {{@key}} = {
     {{/each}}
     return buf.toBuffer();
   },
-  encodeDiff(obj: {{@key}}Partial, tracker: ("0" | "1")[], buf?: Writer) {
+  encodeDiff(obj: {{@key}}Partial, tracker: BitString, buf?: Writer) {
     buf ??= new Writer();
     writeUInt8(buf, this.values().indexOf(obj.type));
     {{#each options}}
@@ -124,7 +124,7 @@ export const {{@key}} = {
     {{/each}}
     throw new Error("Invalid union");
   },
-  decodeDiff(buf: ArrayBufferView | Reader, tracker: ("0" | "1")[]): {{@key}}Partial {
+  decodeDiff(buf: ArrayBufferView | Reader, tracker: BitString): {{@key}}Partial {
     const sb = ArrayBuffer.isView(buf) ? new Reader(buf) : buf;
     const type = parseUInt8(sb);
     {{#each options}}
