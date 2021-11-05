@@ -120,13 +120,13 @@ function OptionalInput<T>({ value, update, initialVal, children }: OptionalProps
       <Switch
               checked={value !== undefined}
               onChange={() => (value === undefined ? update(initialVal) : update(undefined))}
-              className={`${ value ? 'bg-indigo-600' : 'bg-gray-400' }
+              className={`${ value !== undefined ? 'bg-indigo-600' : 'bg-gray-400' }
                 relative inline-flex items-center h-6 rounded-full w-11 mb-2`}
       >
       <span className="sr-only">Toggle Input Value</span>
       <span
               className={`${
-              value ? 'translate-x-6' : 'translate-x-1'
+              value !== undefined ? 'translate-x-6' : 'translate-x-1'
       } inline-block w-4 h-4 transform bg-white rounded-full`}
       />
       </Switch>
