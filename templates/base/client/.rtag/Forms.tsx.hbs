@@ -74,7 +74,7 @@ function ArrayInput<T>({ value, update, initialVal, children }: ArrayProps<T>) {
   return (
     <div className="array-input">
       {value.map((item, i) => (
-        <div key={i} className="array-item flex mb-1 bg-gray-300 items-center">
+        <div key={i} className="array-item flex mb-1 border-t-2 items-center">
           {children(item, (val) => update(Object.assign(value, { [i]: val })))}
           <button
                   type="button"
