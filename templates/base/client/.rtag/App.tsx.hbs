@@ -8,6 +8,7 @@ import { GoogleLogin } from "react-google-login";
 import { RtagClient, RtagConnection } from "./client";
 import { {{makeRequestName initialize}}, {{userState}} as UserState } from "./types";
 import { RtagContext } from "./context";
+import { Page } from "./Page";
 import { Forms, InitializeForm } from "./Forms";
 import { State } from "./State";
 
@@ -17,6 +18,7 @@ function App() {
   const [connection, setConnection] = useState<RtagConnection>();
   const [state, setState] = useState<UserState>();
   const [token, setToken] = useState<string | null>(sessionStorage.getItem("token"));
+  const [openMethods, setOpenMethods] = useState(false)
   const history = useHistory();
 
   useEffect(() => {
@@ -35,7 +37,7 @@ function App() {
   const user = RtagClient.getUserFromToken(token);
   return (
     <>
-      <div>{user.name}</div>
+      <Page openMethods={openMethods} setOpenMethods={setOpenMethods} user={user} state={state}>
       <div id="app">
         <Switch>
           <Route exact path="/state/:stateId">
@@ -55,6 +57,8 @@ function App() {
                   setState(undefined);
                 }
               }}
+              openMethods={openMethods}
+              setOpenMethods={setOpenMethods}
             />
           </Route>
           <Route exact path="/">
@@ -75,6 +79,7 @@ function App() {
           </Route>
         </Switch>
       </div>
+      </Page>
     </>
   );
 }
@@ -135,8 +140,10 @@ type MainProps = {
   connection: RtagConnection | undefined;
   onConnect: (stateId: string) => void;
   onDisconnect: () => void;
+  openMethods: boolean;
+  setOpenMethods: (v: boolean) => void;
 };
-function Main({ state, connection, onConnect, onDisconnect }: MainProps) {
+function Main({ state, connection, onConnect, onDisconnect, openMethods, setOpenMethods }: MainProps) {
   const { stateId } = useParams<{ stateId: string }>();
   useEffect(() => {
     if (connection === undefined) {
@@ -152,7 +159,7 @@ function Main({ state, connection, onConnect, onDisconnect }: MainProps) {
   return (
     <RtagContext.Provider value=\{{ connection, state }}>
       <State />
-      <Forms />
+      <Forms open={openMethods} setOpen={setOpenMethods} />
     </RtagContext.Provider>
   );
 }

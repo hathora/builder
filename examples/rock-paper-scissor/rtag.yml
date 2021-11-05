@@ -6,12 +6,12 @@ types:
     - SCISSOR
   PlayerInfo:
     name: Username
-    score: int
-    gesture: Gesture?
+    score: number
+    gesture?: Gesture
   PlayerState:
-    round: int
+    round: number
     player1: PlayerInfo
-    player2: PlayerInfo?
+    player2?: PlayerInfo
 
 methods:
   createGame:

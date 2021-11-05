@@ -29,7 +29,7 @@ types:
     board: Board
     status: GameStatus
     color: Color
-    opponent: PlayerName?
+    opponent?: PlayerName
 
 methods:
   createGame:

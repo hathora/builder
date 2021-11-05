@@ -1,0 +1,236 @@
+/* This example requires Tailwind CSS v2.0+ */
+import React, { Fragment, useContext } from 'react'
+import { Disclosure, Menu, Transition } from '@headlessui/react'
+import { BellIcon, MenuIcon, XIcon } from '@heroicons/react/outline'
+import {
+AtSymbolIcon,
+CalendarIcon,
+CheckIcon,
+ChevronDownIcon,
+CurrencyDollarIcon,
+LightningBoltIcon,
+LinkIcon,
+LocationMarkerIcon,
+PencilIcon,
+UserCircleIcon,
+UserGroupIcon,
+} from '@heroicons/react/solid'
+
+import { {{userState}} as UserState } from "./types";
+import { RtagContext } from "./context";
+
+const userDefault = {
+name: 'Tom Cook',
+email: 'tom@example.com',
+imageUrl:
+'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
+}
+const navigation = [
+{ name: 'Prototype UI', href: '#', current: true },
+{{!{ name: 'Docs', href: 'https://hathora.dev/docs', current: false },}}
+]
+const userNavigation = [
+{ name: 'Coming Soon!', href: '#' },
+]
+
+function classNames(...classes) {
+return classes.filter(Boolean).join(' ')
+}
+
+type PageProps = {
+  openMethods: boolean;
+  setOpenMethods: (v: boolean) => void;
+  children: React.ReactNode;
+  state: UserState | undefined;
+  user: any;
+};
+export function Page({openMethods, setOpenMethods, children, state, user}: PageProps) {
+return (
+<>
+<div className="min-h-full">
+  <Disclosure as="nav" className="bg-indigo-500">
+    {({ open }) => (
+    <>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="flex items-center justify-between h-16">
+        <div className="flex items-center">
+          <div className="flex-shrink-0">
+            <img className="h-10 w-10" src="https://i.ibb.co/sQMmTTq/hathora-hammer-logo-light.png" alt="hathora-hammer-logo" border="0" />
+            {{!<img className="h-10 w-10" src="https://i.ibb.co/93KgwC2/hathora-hammer-logo.png" alt="hathora-hammer-logo" border="0" />}}
+          </div>
+          <div className="flex-shrink-0">
+            <span className="font-display font-bold text-xl text-white">Hathora</span>
+          </div>
+          <div className="hidden md:block">
+            <div className="ml-10 flex items-baseline space-x-4">
+              {navigation.map((item) => (
+              <a
+                      key={item.name}
+                      href={item.href}
+                      className={classNames(
+                      item.current
+                      ? 'bg-indigo-700 text-white'
+              : 'text-indigo-500 hover:bg-indigo-600 hover:text-white',
+              'px-3 py-2 rounded-md text-sm font-medium'
+              )}
+              aria-current={item.current ? 'page' : undefined}
+              >
+              {item.name}
+              </a>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="hidden md:block">
+          <div className="ml-4 flex items-center md:ml-6">
+            <button
+                    type="button"
+                    className="bg-gray-800 p-1 rounded-full text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
+            >
+              <span className="sr-only">View notifications</span>
+              <BellIcon className="h-6 w-6" aria-hidden="true" />
+            </button>
+
+            {/* Profile dropdown */}
+            <Menu as="div" className="ml-3 relative">
+              <div>
+                <Menu.Button className="max-w-xs bg-gray-800 rounded-full flex items-center text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
+                  <span className="sr-only">Open user menu</span>
+                  <img className="h-8 w-8 rounded-full" src={userDefault.imageUrl} alt="" />
+                </Menu.Button>
+              </div>
+              <Transition
+                      as={Fragment}
+                      enter="transition ease-out duration-100"
+                      enterFrom="transform opacity-0 scale-95"
+                      enterTo="transform opacity-100 scale-100"
+                      leave="transition ease-in duration-75"
+                      leaveFrom="transform opacity-100 scale-100"
+                      leaveTo="transform opacity-0 scale-95"
+              >
+                <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                  {userNavigation.map((item) => (
+                  <Menu.Item key={item.name}>
+                    {({ active }) => (
+                    <a
+                            href={item.href}
+                            className={classNames(
+                            active ? 'bg-gray-100' : '',
+                    'block px-4 py-2 text-sm text-gray-700'
+                    )}
+                    >
+                    {item.name}
+                    </a>
+                    )}
+                  </Menu.Item>
+                  ))}
+                </Menu.Items>
+              </Transition>
+            </Menu>
+          </div>
+        </div>
+        <div className="-mr-2 flex md:hidden">
+          {/* Mobile menu button */}
+          <Disclosure.Button className="bg-gray-800 inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
+            <span className="sr-only">Open main menu</span>
+            {open ? (
+            <XIcon className="block h-6 w-6" aria-hidden="true" />
+            ) : (
+            <MenuIcon className="block h-6 w-6" aria-hidden="true" />
+            )}
+          </Disclosure.Button>
+        </div>
+      </div>
+    </div>
+
+    <Disclosure.Panel className="md:hidden">
+      <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+        {navigation.map((item) => (
+        <Disclosure.Button
+                key={item.name}
+                as="a"
+                href={item.href}
+                className={classNames(
+                item.current ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white',
+        'block px-3 py-2 rounded-md text-base font-medium'
+        )}
+        aria-current={item.current ? 'page' : undefined}
+        >
+        {item.name}
+        </Disclosure.Button>
+        ))}
+      </div>
+      <div className="pt-4 pb-3 border-t border-gray-700">
+        <div className="flex items-center px-5">
+          <div className="flex-shrink-0">
+            <img className="h-10 w-10 rounded-full" src={userDefault.imageUrl} alt="" />
+          </div>
+          <div className="ml-3">
+            <div className="text-base font-medium leading-none text-white">{userDefault.name}</div>
+            <div className="text-sm font-medium leading-none text-gray-400">{userDefault.email}</div>
+          </div>
+          <button
+                  type="button"
+                  className="ml-auto bg-gray-800 flex-shrink-0 p-1 rounded-full text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
+          >
+            <span className="sr-only">View notifications</span>
+            <BellIcon className="h-6 w-6" aria-hidden="true" />
+          </button>
+        </div>
+        <div className="mt-3 px-2 space-y-1">
+          {userNavigation.map((item) => (
+          <Disclosure.Button
+                  key={item.name}
+                  as="a"
+                  href={item.href}
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700"
+          >
+            {item.name}
+          </Disclosure.Button>
+          ))}
+        </div>
+      </div>
+    </Disclosure.Panel>
+  </>
+  )}
+  </Disclosure>
+  <div className="p-6 bg-white lg:flex lg:items-center lg:justify-between">
+    <div className="flex-1 min-w-0">
+      <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">{{appName}}</h2>
+      <div className="mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:mt-0 sm:space-x-6">
+        <div className="mt-2 flex items-center text-sm text-gray-500">
+          <AtSymbolIcon className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" aria-hidden="true" />
+          {{stateId}}
+        </div>
+        <div className="mt-2 flex items-center text-sm text-gray-500">
+          <UserCircleIcon className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" aria-hidden="true" />
+          {{user.name}}
+        </div>
+        <div className="mt-2 flex items-center text-sm text-gray-500">
+          <UserGroupIcon className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" aria-hidden="true" />
+          {{state.players.length}} player(s)
+        </div>
+      </div>
+    </div>
+    <div className="mt-5 flex lg:mt-0 lg:ml-4">
+        <span className="sm:ml-3">
+          <button
+                  type="button"
+                  onClick={() => setOpenMethods(true)}
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            <LightningBoltIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+            Methods
+          </button>
+        </span>
+      </div>
+  </div>
+  <main>
+    <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      {children}
+    </div>
+  </main>
+</div>
+</>
+)
+}

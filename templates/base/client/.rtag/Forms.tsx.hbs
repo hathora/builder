@@ -1,5 +1,8 @@
-import React, { useState, useContext } from "react";
+import React, { Fragment, useState, useContext } from "react";
 import { toast } from "react-toastify";
+import { Dialog, Listbox, Switch, Transition } from '@headlessui/react'
+import { ArrowUpIcon, ArrowDownIcon, CheckIcon, PlusIcon, SelectorIcon, XIcon } from '@heroicons/react/outline'
+import { LightningBoltIcon } from '@heroicons/react/solid'
 import { RtagContext } from "./context";
 import { Response } from "./base";
 import {
@@ -23,24 +26,38 @@ type ArrayProps<T> = BaseProps<T[]> & ContainerProps<T>;
 type OptionalProps<T> = BaseProps<T | undefined> & ContainerProps<T>;
 type EnumProps = BaseProps<number> & { enumType: object };
 
+function classNames(...classes) {
+  return classes.filter(Boolean).join(' ')
+}
+
 export function MethodForm<T>({ method, submit, initialize, children }: MethodProps<T>) {
   const [value, setValue] = useState<T>(initialize());
   console.log("MethodForm", value);
   return (
-    <div className="method-form">
-      <h3>{method}</h3>
+    <div className="method-form p-3 mb-3 bg-gray-100 shadow sm:rounded-md">
+      <label className="block mb-1 text-base font-medium text-gray-900">
+        {method}
+      </label>
       {children(value, setValue)}
-      <button
-        onClick={async () => {
-          const res = await submit(value);
-          if (res.type === "error") {
-            toast.error(res.error);
-          }
-          setValue(initialize());
-        }}
-      >
-        Submit
-      </button>
+
+      <div className="mt-3 flex">
+        <span className="">
+          <button
+                  type="button"
+                  onClick={async () => {
+                    const res = await submit(value);
+                    if (res.type === "error") {
+                      toast.error(res.error);
+                    }
+                    setValue(initialize());
+                  }}
+                  className="inline-flex items-center px-3 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            <LightningBoltIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+            Submit
+          </button>
+        </span>
+      </div>
     </div>
   );
 }
@@ -57,79 +74,172 @@ function ArrayInput<T>({ value, update, initialVal, children }: ArrayProps<T>) {
   return (
     <div className="array-input">
       {value.map((item, i) => (
-        <div key={i} className="array-item">
+        <div key={i} className="array-item flex mb-1 bg-gray-300 items-center">
           {children(item, (val) => update(Object.assign(value, { [i]: val })))}
-          <button disabled={i === 0} onClick={() => swapArgs(i, i - 1)}>
-            &#8593;
+          <button
+                  type="button"
+                  disabled={i === 0}
+                  onClick={() => swapArgs(i, i - 1)}
+            className="inline-flex items-center ml-1 p-1 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-700 bg-gray-300 hover:bg-gray-400 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+            <ArrowUpIcon className="h-5 w-5 fill-current" aria-hidden="true" />
           </button>
-          <button disabled={i === value.length - 1} onClick={() => swapArgs(i, i + 1)}>
-            &#8595;
+          <button
+                  type="button"
+                  disabled={i === value.length - 1}
+                  onClick={() => swapArgs(i, i + 1)}
+            className="inline-flex items-center ml-1 p-1 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-700 bg-gray-300 hover:bg-gray-400 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+            <ArrowDownIcon className="h-5 w-5 fill-current" aria-hidden="true" />
           </button>
-          <button onClick={() => deleteArg(i)}>x</button>
+
+          <button
+                  type="button"
+                  onClick={() => deleteArg(i)}
+            className="inline-flex items-center ml-1 p-1 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-700 bg-gray-300 hover:bg-gray-400 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+            <XIcon className="h-5 w-5 fill-current" aria-hidden="true" />
+          </button>
         </div>
       ))}
-      <button onClick={() => update(value.concat(initialVal))}>Add</button>
+      <button
+              type="button"
+              onClick={() => update(value.concat(initialVal))}
+        className="inline-flex items-center p-1 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-700 bg-gray-300 hover:bg-gray-400 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+        <PlusIcon className="h-4 w-4 fill-current" aria-hidden="true" />
+        Add
+      </button>
     </div>
   );
 }
 
 function OptionalInput<T>({ value, update, initialVal, children }: OptionalProps<T>) {
   return (
-    <div className="optional-input">
-      {value !== undefined ? children(value, (val) => update(val)) : ""}
-      <button onClick={() => (value === undefined ? update(initialVal) : update(undefined))}>Toggle</button>
-    </div>
+    <>
+      <Switch
+              checked={value !== undefined}
+              onChange={() => (value === undefined ? update(initialVal) : update(undefined))}
+              className={`${ value ? 'bg-indigo-600' : 'bg-gray-400' }
+                relative inline-flex items-center h-6 rounded-full w-11 mb-2`}
+      >
+      <span className="sr-only">Toggle Input Value</span>
+      <span
+              className={`${
+              value ? 'translate-x-6' : 'translate-x-1'
+      } inline-block w-4 h-4 transform bg-white rounded-full`}
+      />
+      </Switch>
+      <div className="">
+        {value !== undefined ? children(value, (val) => update(val)) : ""}
+      </div>
+    </>
   );
 }
 
 function EnumInput({ value, update, enumType }: EnumProps) {
   return (
-    <div className="enum-input">
-      <select value={value} onChange={(e) => update(Number(e.target.value))}>
+  <Listbox value={value} onChange={update}>
+    <div className="mt-1 relative">
+    <Listbox.Button className="relative w-64 bg-white border border-gray-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            <span className="flex items-center">
+              <span className="ml-3 block truncate">{enumType[value]}</span>
+            </span>
+      <span className="ml-3 absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+              <SelectorIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+            </span>
+    </Listbox.Button>
+
+    <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
+      <Listbox.Options className="absolute z-10 mt-1 w-64 bg-white shadow-lg max-h-56 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
         {Object.entries(enumType)
           .filter(([_, val]) => typeof val === "number")
           .map(([label, val]) => (
-            <option key={val} value={val}>
-              {label}
-            </option>
-          ))}
-      </select>
+            <Listbox.Option key={val} value={val} className={({ active }) =>
+              classNames(
+              active ? 'text-white bg-red-600' : 'text-gray-900',
+              'cursor-default select-none relative py-2 pl-3 pr-9'
+              )
+              }
+            >
+              {({ selected, active }) => (
+              <>
+              <div className="flex items-center">
+                <span className={classNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}>
+                {label}
+                </span>
+              </div>
+
+              {selected ? (
+              <span
+                      className={classNames(
+                      active ? 'text-white' : 'text-indigo-600',
+              'absolute inset-y-0 right-0 flex items-center pr-4'
+              )}
+              >
+              <CheckIcon className="h-5 w-5" aria-hidden="true" />
+              </span>
+              ) : null}
+            </>
+            )}
+            </Listbox.Option>
+        ))}
+      </Listbox.Options>
+    </Transition>
     </div>
+  </Listbox>
   );
 }
 
 function StringInput({ value, update }: BaseProps<string>) {
   return (
-    <div className="string-input">
-      <input type="text" value={value} onChange={(e) => update(e.target.value)}></input>
-    </div>
+    <input
+            type="text"
+            value={value}
+            onChange={(e) => update(e.target.value)}
+            className="focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+    />
   );
 }
 
 function IntInput({ value, update }: BaseProps<number>) {
   return (
-    <div className="int-input">
-      <input type="number" value={value} onChange={(e) => update(parseInt(e.target.value))}></input>
-    </div>
+    <input
+            type="number"
+            value={value}
+            onChange={(e) => update(parseInt(e.target.value))}
+            className="focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+    />
   );
 }
 
 function FloatInput({ value, update }: BaseProps<number>) {
   return (
-    <div className="float-input">
-      <input type="number" value={value} onChange={(e) => update(Number(e.target.value))}></input>
-    </div>
+    <input
+            type="number"
+            value={value}
+            onChange={(e) => update(Number(e.target.value))}
+            className="focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+    />
   );
 }
 
-function BooleanInput({ value, update }: BaseProps<boolean>) {
+function BooleanInput({ value, update }: BaseProps<div>) {
   return (
-    <div className="boolean-input">
-      <select value={value.toString()} onChange={(e) => update(e.target.value === "true")}>
-        <option>false</option>
-        <option>true</option>
-      </select>
-    </div>
+    <Switch
+            checked={value}
+            onChange={(newValue) => update(newValue)}
+            className={`${
+              value ? 'bg-indigo-600' : 'bg-gray-400'
+            } relative inline-flex items-center h-6 rounded-full w-11`}
+    >
+    <span className="sr-only">Enable notifications</span>
+    <span
+            className={`${
+            value ? 'translate-x-6' : 'translate-x-1'
+    } inline-block w-4 h-4 transform bg-white rounded-full`}
+    />
+    </Switch>
   );
 }
 
@@ -137,10 +247,12 @@ function BooleanInput({ value, update }: BaseProps<boolean>) {
 {{#if (eq type "object")}}
 function {{@key}}Input({ value, update }: BaseProps<{{@key}}>) {
   return (
-    <div className="object-input">
+    <div className="gap-2 ml-2 border-l border-gray-300 pl-2">
       {{#each properties}}
-      <span>{{@key}}</span>
-      {{> renderForm arg=@key}}
+        <div className="col-span-6 sm:col-span-4">
+          <label className="block text-sm mb-1 font-medium text-gray-700">{{@key}}</label>
+          {{> renderForm arg=@key}}
+        </div>
       {{/each}}
     </div>
   );
@@ -149,29 +261,69 @@ function {{@key}}Input({ value, update }: BaseProps<{{@key}}>) {
 {{else if (eq type "union")}}
 function {{@key}}Input({ value, update }: BaseProps<{{@key}}>) {
   return (
-    <div className="union-input">
-      <select
-        value={value.type}
-        onChange={(e) => {
-          {{#each options}}
-          {{#unless @first}}else {{/unless}}if (e.target.value === "{{@key}}") {
-            update({ type: "{{@key}}", val: {{> renderDefault}} });
-          }
-          {{/each}}
-        }}
-      >
-        { {{@key}}.values().map((val, i) => (
-          <option key={i}>{val}</option>
-        ))}
-      </select>
-      {(() => {
+  <div className="">
+    <Listbox className="mb-2" value={value.type} onChange={(newValue) => {
         {{#each options}}
+          {{#unless @first}}else {{/unless}}if (newValue === "{{@key}}") {
+            update({ type: "{{@key}}", val: {{> renderDefault}} });
+            }
+        {{/each}}
+      }}
+    >
+      <div className="mt-1 relative">
+        <Listbox.Button className="relative w-full bg-white border border-gray-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            <span className="flex items-center">
+              <span className="ml-3 block truncate">{value.type}</span>
+            </span>
+          <span className="ml-3 absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+              <SelectorIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+            </span>
+        </Listbox.Button>
+
+        <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
+          <Listbox.Options className="absolute z-10 mt-1 w-full max-w-xs bg-white shadow-lg max-h-56 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
+            { {{@key}}.values().map((val, i) => (
+              <Listbox.Option key={i} value={val} className={({ active }) =>
+                classNames(
+                active ? 'text-white bg-red-600' : 'text-gray-900',
+                'cursor-default select-none relative py-2 pl-3 pr-9'
+                )
+                }
+                >
+                {({ selected, active }) => (
+                <>
+                <div className="flex items-center">
+                  <span className={classNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}>
+                  {val}
+                  </span>
+                </div>
+
+                {selected ? (
+                <span
+                        className={classNames(
+                        active ? 'text-white' : 'text-indigo-600',
+                'absolute inset-y-0 right-0 flex items-center pr-4'
+                )}
+                >
+                <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                </span>
+                ) : null}
+              </>
+              )}
+              </Listbox.Option>
+            ))}
+          </Listbox.Options>
+        </Transition>
+      </div>
+    </Listbox>
+    {(() => {
+      {{#each options}}
         {{#unless @first}}else {{/unless}}if (value.type === "{{@key}}") {
           return {{> renderForm arg="val"}}
-        }
-        {{/each}}
-      })()}
-    </div>
+          }
+      {{/each}}
+    })()}
+  </div>
   );
 }
 
@@ -194,29 +346,95 @@ export function InitializeForm({ submit }: { submit: (value: {{makeRequestName i
   );
 }
 
-export function Forms() {
+type FormsProps = {
+  open: boolean;
+  setOpen: (v: boolean) => void;
+};
+export function Forms({open, setOpen}: FormsProps) {
   const { connection } = useContext(RtagContext)!;
   return (
-    <div className="forms">
-      {{#each methods}}
-      {{#if (ne @key ../initialize)}}
-      <MethodForm<{{makeRequestName @key}}>
-        method="{{@key}}"
-        submit={connection.{{@key}}.bind(connection)}
-        initialize={ {{makeRequestName @key}}.default }
-      >
-        {(value, update) => (
-          <div className="object-input">
-            {{#each properties}}
-            <span>{{@key}}</span>
-            {{> renderForm arg=@key}}
-            {{/each}}
-          </div>
-        )}
-      </MethodForm>
-      {{/if}}
-      {{/each}}
-    </div>
+  <Transition.Root show={open} as={Fragment}>
+    <Dialog as="div" className="fixed inset-0 overflow-hidden" onClose={setOpen}>
+      <div className="absolute inset-0 overflow-hidden">
+        <Transition.Child
+                as={Fragment}
+                enter="ease-in-out duration-500"
+                enterFrom="opacity-0"
+                enterTo="opacity-100"
+                leave="ease-in-out duration-500"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+        >
+          <Dialog.Overlay className="absolute inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+        </Transition.Child>
+        <div className="fixed inset-y-0 right-0 pl-10 max-w-full flex">
+          <Transition.Child
+                  as={Fragment}
+                  enter="transform transition ease-in-out duration-500 sm:duration-700"
+                  enterFrom="translate-x-full"
+                  enterTo="translate-x-0"
+                  leave="transform transition ease-in-out duration-500 sm:duration-700"
+                  leaveFrom="translate-x-0"
+                  leaveTo="translate-x-full"
+          >
+            <div className="relative w-screen max-w-lg">
+              <Transition.Child
+                      as={Fragment}
+                      enter="ease-in-out duration-500"
+                      enterFrom="opacity-0"
+                      enterTo="opacity-100"
+                      leave="ease-in-out duration-500"
+                      leaveFrom="opacity-100"
+                      leaveTo="opacity-0"
+              >
+                <div className="absolute top-0 left-0 -ml-8 pt-4 pr-2 flex sm:-ml-10 sm:pr-4">
+                  <button
+                          type="button"
+                          className="rounded-md text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
+                          onClick={() => setOpen(false)}
+                  >
+                  <span className="sr-only">Close panel</span>
+                  <XIcon className="h-6 w-6" aria-hidden="true" />
+                  </button>
+                </div>
+              </Transition.Child>
+              <div className="h-full flex flex-col py-6 bg-white shadow-xl overflow-y-scroll">
+                <div className="px-4 sm:px-6">
+                  <Dialog.Title className="text-lg font-medium text-gray-900">Methods</Dialog.Title>
+                </div>
+                <div className="mt-6 relative flex-1 px-4 sm:px-6">
+
+                  <div className="forms">
+                    {{#each methods}}
+                    {{#if (ne @key ../initialize)}}
+                    <MethodForm<{{makeRequestName @key}}>
+                      method="{{@key}}"
+                      submit={connection.{{@key}}.bind(connection)}
+                      initialize={ {{makeRequestName @key}}.default }
+                    >
+                      {(value, update) => (
+                        <div className="grid grid-cols-6 gap-2 ml-2 border-l border-gray-300 pl-2">
+                          {{#each properties}}
+                          <div className="col-span-6 sm:col-span-4">
+                            <label className="block text-sm mb-1 font-medium text-gray-700">{{@key}}</label>
+                            {{> renderForm arg=@key}}
+                          </div>
+                          {{/each}}
+                        </div>
+                      )}
+                    </MethodForm>
+                    {{/if}}
+                    {{/each}}
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </Transition.Child>
+        </div>
+      </div>
+    </Dialog>
+  </Transition.Root>
   );
 }
 {{#*inline "renderForm"}}

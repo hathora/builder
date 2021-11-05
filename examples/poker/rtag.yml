@@ -9,8 +9,8 @@ types:
     suit: string
   PlayerInfo:
     name: Username
-    chipCount: int
-    chipsInPot: int
+    chipCount: number
+    chipsInPot: number
     cards: Card[]
     status: PlayerStatus
   PlayerState:
@@ -21,14 +21,14 @@ types:
 
 methods:
   createGame:
-    startingChips: int
-    startingBlind: int
+    startingChips: number
+    startingBlind: number
   joinGame:
   startRound:
   fold:
   call:
   raise:
-    amount: int
+    amount: number
 
 auth:
   anonymous:

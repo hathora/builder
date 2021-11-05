@@ -5,7 +5,6 @@
     "module": "esnext",
     "strict": true,
     "target": "esnext",
-    "moduleResolution": "node",
-    "useDefineForClassFields": false
+    "moduleResolution": "node"
   }
 }
