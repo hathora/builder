@@ -1,7 +1,7 @@
 import { Response } from "./base";
 import { Writer, Reader, BitString } from "./serde";
 
-type DeepPartial<T> = T extends string | number | boolean | undefined
+export type DeepPartial<T> = T extends string | number | boolean | undefined
   ? T | undefined
   : T extends Array<infer ArrayType>
   ? Array<ArrayType>

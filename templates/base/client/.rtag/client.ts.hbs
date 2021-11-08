@@ -5,7 +5,8 @@ import axios from "axios";
 import jwtDecode from "jwt-decode";
 import { UserData, Response, Method } from "./base";
 import {
-  decodeState,
+  decodeStateSnapshot,
+  decodeStateUpdate,
   {{userState}} as UserState,
   {{#each methods}}
   {{makeRequestName @key}},
