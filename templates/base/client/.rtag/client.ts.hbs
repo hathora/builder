@@ -87,14 +87,13 @@ export class RtagConnection {
   public constructor(public stateId: StateId, private socket: WebSocket, onStateChange: (state: UserState) => void) {
     socket.onmessage = ({ data }) => {
       if (this.state === undefined) {
-        const state = decodeStateSnapshot(new Uint8Array(data as ArrayBuffer));
-        this.state = state;
-        onStateChange(state);
+        this.state = decodeStateSnapshot(new Uint8Array(data as ArrayBuffer));
+        onStateChange({ ...this.state });
       } else {
         const { stateDiff, responses } = decodeStateUpdate(new Uint8Array(data as ArrayBuffer));
         if (stateDiff !== undefined) {
-          this.state = applyDiff(this.state, stateDiff);
-          onStateChange(this.state);
+          patch(this.state, stateDiff);
+          onStateChange({ ...this.state });
         }
         Object.entries(responses).forEach(([msgId, response]) => {
           if (msgId in this.callbacks) {
@@ -131,6 +130,12 @@ export class RtagConnection {
   }
 }
 
-function applyDiff(state: UserState, stateDiff: DeepPartial<UserState>): UserState {
-  throw new Error("Function not implemented.");
+function patch(obj: any, patch: any) {
+  Object.entries(patch).forEach(([k, v]) => {
+    if (typeof v === "object" && !Array.isArray(v)) {
+      patch(obj[k], v);
+    } else {
+      obj[k] = v;
+    }
+  });
 }
