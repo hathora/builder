@@ -294,9 +294,25 @@ parseBoolean(sb)
 {{~/if}}
 {{/inline}}
 
-export function encodeState(state: {{userState}} | undefined, responses: Record<number, Response>) {
+export function encodeStateSnapshot(state: {{userState}}) {
   const buf = new Writer();
-  writeOptional(buf, state, (buf, x) => {{userState}}.encode(x, buf));
+  {{userState}}.encode(state, buf);
+  return buf.toBuffer();
+}
+export function encodeStateUpdate(
+  stateDiff: DeepPartial<{{userState}}> | undefined,
+  responses: Record<number, Response>
+) {
+  const buf = new Writer();
+  if (stateDiff !== undefined) {
+    const tracker = new BitString();
+    const diffBuf = {{userState}}.encodeDiff(stateDiff, tracker);
+    buf.writeUInt8(1);
+    buf.writeUVarint(tracker.getBits());
+    buf.writeBuffer(diffBuf);
+  } else {
+    buf.writeUInt8(0);
+  }
   Object.entries(responses).forEach(([msgId, response]) => {
     buf.writeUInt32(Number(msgId));
     const maybeError = response.type === "error" ? response.error : undefined;
@@ -304,16 +320,27 @@ export function encodeState(state: {{userState}} | undefined, responses: Record<
   });
   return buf.toBuffer();
 }
-export function decodeState(buf: ArrayBufferView | Reader): { state?: {{userState}}; responses: Record<number, Response> } {
+export function decodeStateSnapshot(buf: ArrayBufferView | Reader): {{userState}} {
   const sb = ArrayBuffer.isView(buf) ? new Reader(buf) : buf;
-  const state = parseOptional(sb, () => {{userState}}.decode(sb));
+  return {{userState}}.decode(sb);
+}
+export function decodeStateUpdate(buf: ArrayBufferView | Reader): {
+  stateDiff?: DeepPartial<{{userState}}>;
+  responses: Record<number, Response>;
+} {
+  const sb = ArrayBuffer.isView(buf) ? new Reader(buf) : buf;
+  let stateDiff = undefined;
+  if (sb.readUInt8() > 0) {
+    const tracker = new BitString(sb.readUVarint());
+    stateDiff = {{userState}}.decodeDiff(sb, tracker);
+  }
   const responses: Record<number, Response> = {};
   while (sb.remaining() > 0) {
     const msgId = sb.readUInt32();
     const maybeError = parseOptional(sb, () => parseString(sb));
     responses[msgId] = maybeError === undefined ? Response.ok() : Response.error(maybeError);
   }
-  return { state, responses };
+  return { stateDiff, responses };
 }
 
 function writeUInt8(buf: Writer, x: number) {

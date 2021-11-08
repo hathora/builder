@@ -110,6 +110,12 @@ export class Writer {
     }
   }
 
+  public writeBuffer(buf: Uint8Array) {
+    this.ensureSize(buf.length);
+    this.bytes.set(buf, this.pos);
+    this.pos += buf.length;
+  }
+
   public toBuffer() {
     return this.bytes.subarray(0, this.pos);
   }
