@@ -25,7 +25,6 @@ type EnumProps = BaseProps<number> & { enumType: object };
 
 export function MethodForm<T>({ method, submit, initialize, children }: MethodProps<T>) {
   const [value, setValue] = useState<T>(initialize());
-  console.log("MethodForm", value);
   return (
     <div className="method-form">
       <h3>{method}</h3>
