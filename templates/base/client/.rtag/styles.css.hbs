@@ -3,13 +3,23 @@
   justify-content: space-between;
 }
 
-.state {
-  width: 48%;
-  padding: 24px
+.object-display {
+  max-width: 280px;
 }
 
-.array-item {
-  display: flex;
+.state-display > div {
+  width: 100%;
+  max-width: none;
+}
+
+.array-item > .plugin-display {
+  min-width: 64px;
+  max-width: 280px;
+}
+
+.array-item > .object-display {
+  min-width: 160px;
+  max-width: 280px;
 }
 
 <!--.object-input {-->
@@ -25,15 +35,16 @@
 }
 
 .object-display > div {
-  margin-left: 40px;
+  margin-left: 8px;
 }
 
 .array-display > div {
-  margin-left: 20px;
+  margin-left: 12px;
 }
 
 .plugin-display {
-  margin-left: 20px;
+<!--  margin-left: 12px;-->
+  max-width: 50%;
 }
 
 .enum-display {

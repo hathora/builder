@@ -80,7 +80,10 @@ function ArrayInput<T>({ value, update, initialVal, children }: ArrayProps<T>) {
                   type="button"
                   disabled={i === 0}
                   onClick={() => swapArgs(i, i - 1)}
-            className="inline-flex items-center ml-1 mt-0.5 p-1 h-8 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-700 bg-gray-300 hover:bg-gray-400 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="inline-flex items-center ml-1 mt-0.5 p-1 h-8 border border-transparent rounded-md shadow-sm
+                    text-sm font-medium text-gray-700 bg-gray-300 hover:bg-gray-400 hover:text-gray-900
+                    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-200
+                    disabled:text-gray-500 disabled:cursor-auto disabled:pointer-events-none"
             >
             <ArrowUpIcon className="h-5 w-5 fill-current" aria-hidden="true" />
           </button>
@@ -88,7 +91,10 @@ function ArrayInput<T>({ value, update, initialVal, children }: ArrayProps<T>) {
                   type="button"
                   disabled={i === value.length - 1}
                   onClick={() => swapArgs(i, i + 1)}
-            className="inline-flex items-center ml-1 mt-0.5 p-1 h-8 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-700 bg-gray-300 hover:bg-gray-400 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="inline-flex items-center ml-1 mt-0.5 p-1 h-8 border border-transparent rounded-md shadow-sm
+                    text-sm font-medium text-gray-700 bg-gray-300 hover:bg-gray-400 hover:text-gray-900
+                    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-200
+                    disabled:text-gray-500 disabled:cursor-auto disabled:pointer-events-none"
             >
             <ArrowDownIcon className="h-5 w-5 fill-current" aria-hidden="true" />
           </button>
@@ -120,13 +126,13 @@ function OptionalInput<T>({ value, update, initialVal, children }: OptionalProps
       <Switch
               checked={value !== undefined}
               onChange={() => (value === undefined ? update(initialVal) : update(undefined))}
-              className={`${ value ? 'bg-indigo-600' : 'bg-gray-400' }
+              className={`${ value !== undefined ? 'bg-indigo-600' : 'bg-gray-400' }
                 relative inline-flex items-center h-6 rounded-full w-11 mb-2`}
       >
       <span className="sr-only">Toggle Input Value</span>
       <span
               className={`${
-              value ? 'translate-x-6' : 'translate-x-1'
+              value !== undefined ? 'translate-x-6' : 'translate-x-1'
       } inline-block w-4 h-4 transform bg-white rounded-full`}
       />
       </Switch>

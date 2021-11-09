@@ -200,15 +200,15 @@ return (
       <div className="mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:mt-0 sm:space-x-6">
         <div className="mt-2 flex items-center text-sm text-gray-500">
           <AtSymbolIcon className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" aria-hidden="true" />
-          {{stateId}}
+          {window.location.href}
         </div>
         <div className="mt-2 flex items-center text-sm text-gray-500">
           <UserCircleIcon className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" aria-hidden="true" />
-          {{user.name}}
+          {user.name}
         </div>
         <div className="mt-2 flex items-center text-sm text-gray-500">
           <UserGroupIcon className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" aria-hidden="true" />
-          {{state.players.length}} player(s)
+          {state && state.players ? state.players.length : 0} player{state && state.players && state.players.length === 1? '' : 's'}
         </div>
       </div>
     </div>
@@ -226,7 +226,7 @@ return (
       </div>
   </div>
   <main>
-    <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div className="py-6 sm:px-6 lg:px-8">
       {children}
     </div>
   </main>
