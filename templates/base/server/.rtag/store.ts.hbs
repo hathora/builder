@@ -8,7 +8,8 @@ import { register } from "./protocol";
 import LogStore from "./logstore";
 import { ImplWrapper as impl } from "./wrapper";
 import { UserData, Response, Method } from "./base";
-import { PlayerState as UserState, DeepPartial, encodeStateSnapshot, encodeStateUpdate } from "./types";
+import { encodeStateSnapshot, encodeStateUpdate } from "./types";
+import { computeDiff } from "./diff";
 
 type StateId = bigint;
 type UserId = string;
@@ -243,30 +244,6 @@ function sendResponses(stateId: StateId, responses: Map<UserId, Record<number, R
     const buf = Buffer.from(encodeStateUpdate(undefined, response));
     coordinator.onStateUpdate(stateId, userId, buf);
   });
-}
-
-function computeDiff(state: any, prevState: any): DeepPartial<UserState> {
-  const diff: Record<string, any> = {};
-  Object.entries(state).forEach(([k, v]) => {
-    if (typeof v === "object" && !Array.isArray(v)) {
-      if (k in prevState) {
-        const recursiveDiff = computeDiff(state[k], prevState[k]);
-        if (Object.keys(recursiveDiff).length > 0) {
-          diff[k] = recursiveDiff;
-        }
-      } else {
-        diff[k] = state[k];
-      }
-    } else if (Array.isArray(v)) {
-      const oldV = prevState[k] as any[];
-      if (v.length !== oldV.length || JSON.stringify(v) !== JSON.stringify(oldV)) {
-        diff[k] = state[k];
-      }
-    } else if (state[k] !== prevState[k]) {
-      diff[k] = state[k];
-    }
-  });
-  return diff as DeepPartial<UserState>;
 }
 
 function ctx(rng: ReturnType<seedrandom>, time: number) {

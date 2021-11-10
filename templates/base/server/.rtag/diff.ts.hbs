@@ -1,4 +1,5 @@
 import {
+  NO_DIFF,
   DeepPartial,
   {{#each types}}
   {{@key}},
@@ -14,6 +15,7 @@ function diff{{@key}}(obj: {{@key}}, prevObj: {{@key}}): DeepPartial<{{@key}}> {
     {{/each}}
   };
 }
+
 {{else if (eq type "union")}}
 function diff{{@key}}(obj: {{@key}}, prevObj: {{@key}}): {{@key}}Partial {
   if (obj.type === prevObj.type) {
@@ -22,11 +24,15 @@ function diff{{@key}}(obj: {{@key}}, prevObj: {{@key}}): {{@key}}Partial {
     return obj;
   }
 }
+
 {{/if}}
 {{/each}}
+export function computeDiff(state: PlayerState, prevState: PlayerState): DeepPartial<PlayerState> {
+  return diffPlayerState(state, prevState);
+}
 
 function diffPrimitive<T>(a: T, b: T) {
-  return a === b ? undefined : a;
+  return a === b ? NO_DIFF : a;
 }
 
 function diffOptional<T>(a: T | undefined, b: T | undefined, innerDiff: (x: T, y: T) => DeepPartial<T>) {
@@ -35,11 +41,11 @@ function diffOptional<T>(a: T | undefined, b: T | undefined, innerDiff: (x: T, y
   } else if (a !== undefined || b !== undefined) {
     return b;
   }
-  return undefined;
+  return NO_DIFF;
 }
 
 function diffArray<T>(a: T[], b: T[], innerDiff: (x: T, y: T) => DeepPartial<T>) {
-  return a.map((val, i) => (i < b.length ? innerDiff(val, b[i]) : undefined));
+  return a.map((val, i) => (i < b.length ? innerDiff(val, b[i]) : NO_DIFF));
 }
 {{#*inline "renderDiff"}}
 {{#if (eq type "plugin")}}
