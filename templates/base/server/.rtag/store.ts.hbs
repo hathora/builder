@@ -14,13 +14,16 @@ import { computeDiff } from "./diff";
 type StateId = bigint;
 type UserId = string;
 type State = ReturnType<typeof impl.initialize>;
+type PendingUpdate =
+  | { user: UserData; time: number; method: Method; argsBuffer: Buffer }
+  | { time: number; timeDelta: number };
 type StateInfo = {
   state: State;
   rng: ReturnType<seedrandom>;
   prevState: State;
   prevRng: ReturnType<seedrandom>;
   subscriptions: Map<UserId, UserData>;
-  pendingUpdates: { user: UserData; time: number; method: Method; argsBuffer: Buffer }[];
+  pendingUpdates: PendingUpdate[];
 };
 
 const dataDir = process.env.DATA_DIR!;
@@ -48,11 +51,12 @@ class Store {
     let prevUpdateTime = Date.now();
     setInterval(() => {
       const currTime = Date.now();
-      stateInfo.forEach(({ state, rng }, stateId) => {
+      stateInfo.forEach(({ state, rng, pendingUpdates }, stateId) => {
         const timeDelta = currTime - prevUpdateTime;
         impl.onTick(state, ctx(rng, currTime), timeDelta / 1000);
         if (impl.changed()) {
           changedStates.add(stateId);
+          pendingUpdates.push({ time: currTime, timeDelta });
           log.append(stateId, currTime, new SmartBuffer().writeUInt8(0xfe).writeUInt32LE(timeDelta).toBuffer());
         }
       });
@@ -64,11 +68,11 @@ class Store {
     const userBuffer = await coordinator.lookupUser(userId);
     const user = decode(userBuffer) as UserData;
     const seed = randomBytes(8).readBigUInt64LE();
-    const rng = seedrandom(seed.toString(36));
     const time = Date.now();
+    const rng = seedrandom(seed.toString(36));
     const state = impl.initialize(user, ctx(rng, time), argsBuffer);
-    const prevState = impl.initialize(user, ctx(rng, time), argsBuffer);
     const prevRng = seedrandom(seed.toString(36));
+    const prevState = impl.initialize(user, ctx(prevRng, time), argsBuffer);
     stateInfo.set(stateId, {
       state,
       rng,
@@ -202,6 +206,7 @@ function loadState(stateId: StateId) {
       if (method === 0xfe) {
         const timeDelta = reader.readUInt32LE();
         impl.onTick(state, ctx(rng, time), timeDelta / 1000);
+        impl.onTick(prevState, ctx(prevRng, time), timeDelta / 1000);
         continue;
       }
       {{/if}}
@@ -232,9 +237,15 @@ function sendUpdates(stateId: StateId, responses: Map<UserId, Record<number, Res
       const buf = Buffer.from(encodeStateUpdate(diff, responses.get(userId) ?? {}));
       coordinator.onStateUpdate(stateId, userId, buf);
     });
-    pendingUpdates.forEach(({ user, time, method, argsBuffer }) =>
-      impl.getResult(prevState, user, method, ctx(prevRng, time), argsBuffer)
-    );
+    pendingUpdates.forEach((update) => {
+      if ("user" in update) {
+        const { user, time, method, argsBuffer } = update;
+        impl.getResult(prevState, user, method, ctx(prevRng, time), argsBuffer);
+      } else {
+        const { time, timeDelta } = update;
+        impl.onTick(prevState, ctx(prevRng, time), timeDelta / 1000);
+      }
+    });
     stateInfo.get(stateId)!.pendingUpdates = [];
   }
 }
