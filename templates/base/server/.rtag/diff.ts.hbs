@@ -45,7 +45,7 @@ function diffOptional<T>(a: T | undefined, b: T | undefined, innerDiff: (x: T, y
 }
 
 function diffArray<T>(a: T[], b: T[], innerDiff: (x: T, y: T) => DeepPartial<T>) {
-  return a.map((val, i) => (i < b.length ? innerDiff(val, b[i]) : NO_DIFF));
+  return a.map((val, i) => (i < b.length ? innerDiff(val, b[i]) : val));
 }
 {{#*inline "renderDiff"}}
 {{#if (eq type "plugin")}}

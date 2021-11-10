@@ -48,15 +48,15 @@ export const {{@key}} = {
       {{/each}}
     };
   },
-  encode(obj: {{@key}}, buf?: Writer) {
-    buf ??= new Writer();
+  encode(obj: {{@key}}) {
+    const buf = new Writer();
     {{#each properties}}
     {{> renderEncodeArg arg=@key}};
     {{/each}}
     return buf.toBuffer();
   },
-  encodeDiff(obj: DeepPartial<{{@key}}>, buf?: Writer) {
-    buf ??= new Writer();
+  encodeDiff(obj: DeepPartial<{{@key}}>) {
+    const buf = new Writer();
     const tracker = new BitString();
     {{#each properties}}
     tracker.push(obj.{{@key}} === NO_DIFF ? 0 : 1);
@@ -92,8 +92,8 @@ export const {{@key}} = {
   values() {
     return [{{#each options}}"{{@key}}"{{#unless @last}}, {{/unless}}{{/each}}];
   },
-  encode(obj: {{@key}}, buf?: Writer) {
-    buf ??= new Writer();
+  encode(obj: {{@key}}) {
+    const buf = new Writer();
     writeUInt8(buf, this.values().indexOf(obj.type));
     {{#each options}}
     {{#unless @first}}else {{/unless}}if (obj.type === "{{@key}}") {
@@ -103,8 +103,8 @@ export const {{@key}} = {
     {{/each}}
     return buf.toBuffer();
   },
-  encodeDiff(obj: {{@key}}Partial, tracker: BitString, buf?: Writer) {
-    buf ??= new Writer();
+  encodeDiff(obj: {{@key}}Partial, tracker: BitString) {
+    const buf = new Writer();
     writeUInt8(buf, this.values().indexOf(obj.type));
     {{#each options}}
     {{#unless @first}}else {{/unless}}if (obj.type === "{{@key}}") {
@@ -146,8 +146,8 @@ export const {{makeRequestName @key}} = {
       {{/each}}
     };
   },
-  encode(obj: {{makeRequestName @key}}, buf?: Writer) {
-    buf ??= new Writer();
+  encode(obj: {{makeRequestName @key}}) {
+    const buf = new Writer();
     {{#each properties}}
     {{> renderEncodeArg arg=@key}};
     {{/each}}
@@ -211,9 +211,9 @@ undefined
 {{/inline}}
 {{#*inline "renderEncodeArg"}}
 {{#if (eq type "optional")}}
-writeOptional(buf, obj.{{arg}}, (buf, x) => {{> renderEncodeArg item}})
+writeOptional(buf, obj.{{arg}}, (x) => {{> renderEncodeArg item}})
 {{~else if (eq type "array")}}
-writeArray(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}}, (buf, x) => {{> renderEncodeArg items}})
+writeArray(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}}, (x) => {{> renderEncodeArg items}})
 {{~else if (eq type "enum")}}
 writeUInt8(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}})
 {{~else if (eq type "int")}}
@@ -227,14 +227,14 @@ writeBoolean(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}})
 {{~else if (eq type "plugin")}}
 {{> renderEncodeArg item arg=arg}}
 {{~else}}
-{{typeString}}.encode({{#if arg}}obj.{{arg}}{{else}}x{{/if}}, buf)
+{{#if arg}}{{typeString}}.encode(obj.{{arg}}){{else}}buf.writeBuffer({{typeString}}.encode(x)){{/if}}
 {{~/if}}
 {{/inline}}
 {{#*inline "renderEncodeDiffArg"}}
 {{#if (eq type "optional")}}
-writeOptional(buf, obj.{{arg}}, (buf, x) => {{> renderEncodeDiffArg item}})
+writeOptional(buf, obj.{{arg}}, (x) => {{> renderEncodeDiffArg item}})
 {{~else if (eq type "array")}}
-writeArrayDiff(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}}, (buf, x) => {{> renderEncodeDiffArg items}})
+writeArrayDiff(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}}, (x) => {{> renderEncodeDiffArg items}})
 {{~else if (eq type "enum")}}
 writeUInt8(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}})
 {{~else if (eq type "int")}}
@@ -248,7 +248,7 @@ writeBoolean(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}})
 {{~else if (eq type "plugin")}}
 {{> renderEncodeDiffArg item arg=arg}}
 {{~else}}
-{{typeString}}.encodeDiff({{#if arg}}obj.{{arg}}{{else}}x{{/if}}, buf)
+{{#if arg}}{{typeString}}.encodeDiff(obj.{{arg}}){{else}}buf.writeBuffer({{typeString}}.encodeDiff(x)){{/if}}
 {{~/if}}
 {{/inline}}
 {{#*inline "renderDecodeArg"}}
@@ -295,20 +295,18 @@ parseBoolean(sb)
 {{/inline}}
 
 export function encodeStateSnapshot(state: {{userState}}) {
-  const buf = new Writer();
-  {{userState}}.encode(state, buf);
-  return buf.toBuffer();
+  return {{userState}}.encode(state);
 }
 export function encodeStateUpdate(
   stateDiff: DeepPartial<{{userState}}> | undefined,
   responses: Record<number, Response>
 ) {
   const buf = new Writer();
-  writeOptional(buf, stateDiff, (buf, x) => {{userState}}.encodeDiff(x, buf));
+  writeOptional(buf, stateDiff, (x) => buf.writeBuffer({{userState}}.encodeDiff(x)));
   Object.entries(responses).forEach(([msgId, response]) => {
     buf.writeUInt32(Number(msgId));
     const maybeError = response.type === "error" ? response.error : undefined;
-    writeOptional(buf, maybeError, writeString);
+    writeOptional(buf, maybeError, (x) => writeString(buf, x));
   });
   return buf.toBuffer();
 }
@@ -346,19 +344,19 @@ function writeFloat(buf: Writer, x: number) {
 function writeString(buf: Writer, x: string) {
   buf.writeString(x);
 }
-function writeOptional<T>(buf: Writer, x: T | undefined, innerWrite: (buf: Writer, x: T) => void) {
+function writeOptional<T>(buf: Writer, x: T | undefined, innerWrite: (x: T) => void) {
   writeBoolean(buf, x !== undefined);
   if (x !== undefined) {
-    innerWrite(buf, x);
+    innerWrite(x);
   }
 }
-function writeArray<T>(buf: Writer, x: T[], innerWrite: (buf: Writer, x: T) => void) {
+function writeArray<T>(buf: Writer, x: T[], innerWrite: (x: T) => void) {
   buf.writeUVarint(x.length);
   for (let i = 0; i < x.length; i++) {
-    innerWrite(buf, x[i]);
+    innerWrite(x[i]);
   }
 }
-function writeArrayDiff<T>(buf: Writer, x: (T | typeof NO_DIFF)[], innerWrite: (buf: Writer, x: T) => void) {
+function writeArrayDiff<T>(buf: Writer, x: (T | typeof NO_DIFF)[], innerWrite: (x: T) => void) {
   buf.writeUVarint(x.length);
   for (let i = 0; i < x.length; i++) {
     const val = x[i];
@@ -366,7 +364,7 @@ function writeArrayDiff<T>(buf: Writer, x: (T | typeof NO_DIFF)[], innerWrite: (
       writeBoolean(buf, false);
     } else {
       writeBoolean(buf, true);
-      innerWrite(buf, val);
+      innerWrite(val);
     }
   }
 }
@@ -397,12 +395,14 @@ function parseArray<T>(buf: Reader, innerParse: () => T): T[] {
   }
   return arr;
 }
-function parseArrayDiff<T>(buf: Reader, innerParse: () => T): T[] {
+function parseArrayDiff<T>(buf: Reader, innerParse: () => T): (T | typeof NO_DIFF)[] {
   const len = buf.readUVarint();
   const arr = [];
   for (let i = 0; i < len; i++) {
     if (parseBoolean(buf)) {
       arr.push(innerParse());
+    } else {
+      arr.push(NO_DIFF);
     }
   }
   return arr;
