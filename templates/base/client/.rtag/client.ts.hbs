@@ -6,7 +6,6 @@ import jwtDecode from "jwt-decode";
 import { UserData, Response, Method } from "./base";
 import {
   NO_DIFF,
-  decodeStateSnapshot,
   decodeStateUpdate,
   {{userState}} as UserState,
   {{#each methods}}
@@ -89,7 +88,7 @@ export class RtagConnection {
   public constructor(public stateId: StateId, private socket: WebSocket, onStateChange: (state: UserState) => void) {
     socket.onmessage = ({ data }) => {
       if (this.state === undefined) {
-        this.state = decodeStateSnapshot(new Uint8Array(data as ArrayBuffer));
+        this.state = UserState.decode(new Uint8Array(data as ArrayBuffer));
         onStateChange({ ...this.state });
       } else {
         const { stateDiff, responses } = decodeStateUpdate(new Uint8Array(data as ArrayBuffer));

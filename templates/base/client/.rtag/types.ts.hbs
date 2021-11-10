@@ -294,9 +294,6 @@ parseBoolean(sb)
 {{~/if}}
 {{/inline}}
 
-export function encodeStateSnapshot(state: {{userState}}) {
-  return {{userState}}.encode(state);
-}
 export function encodeStateUpdate(
   stateDiff: DeepPartial<{{userState}}> | undefined,
   responses: Record<number, Response>
@@ -309,10 +306,6 @@ export function encodeStateUpdate(
     writeOptional(buf, maybeError, (x) => writeString(buf, x));
   });
   return buf.toBuffer();
-}
-export function decodeStateSnapshot(buf: ArrayBufferView | Reader): {{userState}} {
-  const sb = ArrayBuffer.isView(buf) ? new Reader(buf) : buf;
-  return {{userState}}.decode(sb);
 }
 export function decodeStateUpdate(buf: ArrayBufferView | Reader): {
   stateDiff?: DeepPartial<{{userState}}>;

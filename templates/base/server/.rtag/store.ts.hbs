@@ -8,7 +8,7 @@ import { register } from "./protocol";
 import LogStore from "./logstore";
 import { ImplWrapper as impl } from "./wrapper";
 import { UserData, Response, Method } from "./base";
-import { encodeStateSnapshot, encodeStateUpdate } from "./types";
+import { encodeStateUpdate, {{userState}} as UserState } from "./types";
 import { computeDiff } from "./diff";
 
 type StateId = bigint;
@@ -225,7 +225,7 @@ function loadState(stateId: StateId) {
 function sendSnapshot(stateId: StateId, user: UserData) {
   const { state } = stateInfo.get(stateId)!;
   const userState = impl.getUserState(state, user);
-  const buf = Buffer.from(encodeStateSnapshot(userState));
+  const buf = Buffer.from(UserState.encode(userState));
   coordinator.onStateUpdate(stateId, user.id, buf);
 }
 
