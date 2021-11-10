@@ -44,7 +44,7 @@ class Store {
       });
       changedStates.clear();
       userResponses.clear();
-    }, {{tick}});
+    }, 50);
     {{#if tick}}
 
     let prevUpdateTime = Date.now();
@@ -59,7 +59,7 @@ class Store {
         }
       });
       prevUpdateTime = currTime;
-    }, 50);
+    }, {{tick}});
     {{/if}}
   }
   async newState(stateId: StateId, userId: UserId, argsBuffer: Buffer) {

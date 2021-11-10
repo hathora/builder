@@ -1,5 +1,6 @@
 /* This example requires Tailwind CSS v2.0+ */
 import React, { Fragment, useContext } from 'react'
+import { useNavigate } from "react-router-dom";
 import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { BellIcon, MenuIcon, XIcon } from '@heroicons/react/outline'
 import {
@@ -45,6 +46,8 @@ type PageProps = {
   user: any;
 };
 export function Page({openMethods, setOpenMethods, children, state, user}: PageProps) {
+const navigate = useNavigate();
+
 return (
 <>
 <div className="min-h-full">
@@ -54,11 +57,11 @@ return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between h-16">
         <div className="flex items-center">
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 cursor-pointer" onClick={() => navigate(`/`)}>
             <img className="h-10 w-10" src="https://i.ibb.co/sQMmTTq/hathora-hammer-logo-light.png" alt="hathora-hammer-logo" border="0" />
             {{!<img className="h-10 w-10" src="https://i.ibb.co/93KgwC2/hathora-hammer-logo.png" alt="hathora-hammer-logo" border="0" />}}
           </div>
-          <div className="flex-shrink-0 flex items-center">
+          <div className="flex-shrink-0 flex items-center cursor-pointer" onClick={() => navigate(`/`)}>
             <span className="font-display font-semibold text-2xl text-white mt-1 ml-3 uppercase">{{appName}}</span>
           </div>
           {user && <div className="hidden md:block">
