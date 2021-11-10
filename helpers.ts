@@ -2,6 +2,7 @@ import { createHash } from "crypto";
 import { registerHelper } from "handlebars";
 import { v4 as uuidv4 } from "uuid";
 
+registerHelper("concat", (a, b) => a + b);
 registerHelper("eq", (a, b) => a === b);
 registerHelper("ne", (a, b) => a !== b);
 registerHelper("stringify", JSON.stringify);

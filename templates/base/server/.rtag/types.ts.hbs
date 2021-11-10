@@ -1,11 +1,12 @@
 import { Response } from "./base";
 import { Writer, Reader, BitString } from "./serde";
 
+export const NO_DIFF = Symbol("NODIFF");
 export type DeepPartial<T> = T extends string | number | boolean | undefined
-  ? T | undefined
+  ? T | typeof NO_DIFF
   : T extends Array<infer ArrayType>
-  ? Array<ArrayType>
-  : { [K in keyof T]?: DeepPartial<T[K]> };
+  ? Array<ArrayType | typeof NO_DIFF>
+  : { [K in keyof T]: DeepPartial<T[K]> };
 
 {{#each types}}
 {{#if alias}}
@@ -58,13 +59,13 @@ export const {{@key}} = {
     buf ??= new Writer();
     {{#each properties}}
     tracker.push(obj.hasOwnProperty("{{@key}}") ? 1 : 0);
-    {{#if (eq type "optional")}}
-    if (obj.hasOwnProperty("{{@key}}")) {
+    {{#if (eq type "array")}}
+    {{> renderEncodeDiffArg arg=@key}};
     {{else}}
-    if (obj.{{@key}} !== undefined) {
-    {{/if}}
+    if (obj.{{@key}} !== NO_DIFF) {
       {{> renderEncodeDiffArg arg=@key}};
     }
+    {{/if}}
     {{/each}}
     return buf.toBuffer();
   },
@@ -234,7 +235,7 @@ writeBoolean(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}})
 {{#if (eq type "optional")}}
 writeOptional(buf, obj.{{arg}}, (buf, x) => {{> renderEncodeDiffArg item}})
 {{~else if (eq type "array")}}
-writeArray(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}}, (buf, x) => {{> renderEncodeArg items}})
+writeArrayDiff(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}}, (buf, x) => {{> renderEncodeArg items}})
 {{~else if (eq type "enum")}}
 writeUInt8(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}})
 {{~else if (eq type "int")}}
@@ -365,6 +366,12 @@ function writeOptional<T>(buf: Writer, x: T | undefined, innerWrite: (buf: Write
   }
 }
 function writeArray<T>(buf: Writer, x: T[], innerWrite: (buf: Writer, x: T) => void) {
+  buf.writeUVarint(x.length);
+  for (let i = 0; i < x.length; i++) {
+    innerWrite(buf, x[i]);
+  }
+}
+function writeArrayDiff<T>(buf: Writer, x: (T | typeof NO_DIFF)[], innerWrite: (buf: Writer, x: T) => void) {
   buf.writeUVarint(x.length);
   for (let i = 0; i < x.length; i++) {
     innerWrite(buf, x[i]);

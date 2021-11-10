@@ -1,0 +1,58 @@
+import {
+  DeepPartial,
+  {{#each types}}
+  {{@key}},
+  {{/each}}
+} from "./types";
+
+{{#each types}}
+{{#if (eq type "object")}}
+function diff{{@key}}(obj: {{@key}}, prevObj: {{@key}}): DeepPartial<{{@key}}> {
+  return {
+    {{#each properties}}
+    {{@key}}: {{> renderDiff a=(concat "obj." @key) b=(concat "prevObj." @key)}},
+    {{/each}}
+  };
+}
+{{else if (eq type "union")}}
+function diff{{@key}}(obj: {{@key}}, prevObj: {{@key}}): {{@key}}Partial {
+  if (obj.type === prevObj.type) {
+    // TODO diff vals
+  } else {
+    return obj;
+  }
+}
+{{/if}}
+{{/each}}
+
+function diffPrimitive<T>(a: T, b: T) {
+  return a === b ? undefined : a;
+}
+
+function diffOptional<T>(a: T | undefined, b: T | undefined, innerDiff: (x: T, y: T) => DeepPartial<T>) {
+  if (a !== undefined && b !== undefined) {
+    return innerDiff(a, b);
+  } else if (a !== undefined || b !== undefined) {
+    return b;
+  }
+  return undefined;
+}
+
+function diffArray<T>(a: T[], b: T[], innerDiff: (x: T, y: T) => DeepPartial<T>) {
+  return a.map((val, i) => (i < b.length ? innerDiff(val, b[i]) : undefined));
+}
+{{#*inline "renderDiff"}}
+{{#if (eq type "plugin")}}
+{{> renderDiff item}}
+{{~else if (eq type "object")}}
+diff{{typeString}}({{a}}, {{b}})
+{{~else if (eq type "union")}}
+diff{{typeString}}({{a}}, {{b}})
+{{~else if (eq type "array")}}
+diffArray({{a}}, {{b}}, (a, b) => {{> renderDiff items a="a" b="b"}})
+{{~else if (eq type "optional")}}
+diffOptional({{a}}, {{b}}, (a, b) => {{> renderDiff item a="a" b="b"}})
+{{~else}}
+diffPrimitive({{a}}, {{b}})
+{{~/if}}
+{{/inline}}
