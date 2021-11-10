@@ -27,8 +27,8 @@ function diff{{@key}}(obj: {{@key}}, prevObj: {{@key}}): {{@key}}Partial {
 
 {{/if}}
 {{/each}}
-export function computeDiff(state: PlayerState, prevState: PlayerState): DeepPartial<PlayerState> {
-  return diffPlayerState(state, prevState);
+export function computeDiff(state: {{userState}}, prevState: {{userState}}): DeepPartial<{{userState}}> {
+  return diff{{userState}}(state, prevState);
 }
 
 function diffPrimitive<T>(a: T, b: T) {
