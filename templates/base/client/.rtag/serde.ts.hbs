@@ -92,10 +92,10 @@ export class Writer {
     this.writeUVarint(Number((bigval >> 63n) ^ (bigval << 1n)));
   }
 
-  public writeDouble(val: number) {
-    this.ensureSize(8);
-    this.view.setFloat64(this.pos, val, true);
-    this.pos += 8;
+  public writeFloat(val: number) {
+    this.ensureSize(4);
+    this.view.setFloat32(this.pos, val, true);
+    this.pos += 4;
   }
 
   public writeString(val: string) {
@@ -169,9 +169,9 @@ export class Reader {
     return Number((val >> 1n) ^ -(val & 1n));
   }
 
-  public readDouble() {
-    const val = this.view.getFloat64(this.pos, true);
-    this.pos += 8;
+  public readFloat() {
+    const val = this.view.getFloat32(this.pos, true);
+    this.pos += 4;
     return val;
   }
 

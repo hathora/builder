@@ -339,7 +339,7 @@ function writeInt(buf: Writer, x: number) {
   buf.writeVarint(x);
 }
 function writeFloat(buf: Writer, x: number) {
-  buf.writeDouble(x);
+  buf.writeFloat(x);
 }
 function writeString(buf: Writer, x: string) {
   buf.writeString(x);
@@ -379,7 +379,7 @@ function parseInt(buf: Reader): number {
   return buf.readVarint();
 }
 function parseFloat(buf: Reader): number {
-  return buf.readDouble();
+  return buf.readFloat();
 }
 function parseString(buf: Reader): string {
   return buf.readString();
