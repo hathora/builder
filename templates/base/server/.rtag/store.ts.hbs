@@ -14,9 +14,13 @@ import { computeDiff } from "./diff";
 type StateId = bigint;
 type UserId = string;
 type State = ReturnType<typeof impl.initialize>;
+{{#if tick}}
 type PendingUpdate =
   | { user: UserData; time: number; method: Method; argsBuffer: Buffer }
   | { time: number; timeDelta: number };
+{{else}}
+type PendingUpdate = { user: UserData; time: number; method: Method; argsBuffer: Buffer };
+{{/if}}
 type StateInfo = {
   state: State;
   rng: ReturnType<seedrandom>;
@@ -238,6 +242,7 @@ function sendUpdates(stateId: StateId, responses: Map<UserId, Record<number, Res
       coordinator.onStateUpdate(stateId, userId, buf);
     });
     pendingUpdates.forEach((update) => {
+      {{#if tick}}
       if ("user" in update) {
         const { user, time, method, argsBuffer } = update;
         impl.getResult(prevState, user, method, ctx(prevRng, time), argsBuffer);
@@ -245,6 +250,10 @@ function sendUpdates(stateId: StateId, responses: Map<UserId, Record<number, Res
         const { time, timeDelta } = update;
         impl.onTick(prevState, ctx(prevRng, time), timeDelta / 1000);
       }
+      {{else}}
+      const { user, time, method, argsBuffer } = update;
+      impl.getResult(prevState, user, method, ctx(prevRng, time), argsBuffer);
+      {{/if}}
     });
     stateInfo.get(stateId)!.pendingUpdates = [];
   }
