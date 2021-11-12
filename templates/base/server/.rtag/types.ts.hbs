@@ -21,7 +21,6 @@ export enum {{@key}} {
 }
 {{else if (eq type "union")}}
 export type {{@key}} = {{#each options}}{{#unless @first}} | {{/unless}}{ type: "{{> renderTypeArg}}"; val: {{> renderTypeArg}} }{{/each}};
-type {{@key}}Partial = {{#each options}}{{#unless @first}} | {{/unless}}{ type: "{{> renderTypeArg}}"; val: DeepPartial<{{> renderTypeArg}}> }{{/each}};
 {{else if (eq type "object")}}
 export type {{@key}} = {
   {{#each properties}}
@@ -105,9 +104,8 @@ export const {{@key}} = {
     {{/each}}
     return buf.toBuffer();
   },
-  encodeDiff(obj: {{@key}}Partial) {
+  encodeDiff(obj: DeepPartial<{{@key}}>) {
     const buf = new Writer();
-    writeUInt8(buf, this.values().indexOf(obj.type));
     {{#each options}}
     {{#unless @first}}else {{/unless}}if (obj.type === "{{@key}}") {
       const x = obj.val;
@@ -126,7 +124,7 @@ export const {{@key}} = {
     {{/each}}
     throw new Error("Invalid union");
   },
-  decodeDiff(buf: ArrayBufferView | Reader): {{@key}}Partial {
+  decodeDiff(buf: ArrayBufferView | Reader): DeepPartial<{{@key}}> {
     const sb = ArrayBuffer.isView(buf) ? new Reader(buf) : buf;
     const type = parseUInt8(sb);
     {{#each options}}

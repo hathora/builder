@@ -17,9 +17,14 @@ function diff{{@key}}(obj: {{@key}}, prevObj: {{@key}}): DeepPartial<{{@key}}> {
 }
 
 {{else if (eq type "union")}}
-function diff{{@key}}(obj: {{@key}}, prevObj: {{@key}}): {{@key}}Partial {
+function diff{{@key}}(obj: {{@key}}, prevObj: {{@key}}): DeepPartial<{{@key}}> {
   if (obj.type === prevObj.type) {
-    // TODO diff vals
+    {{#each options}}
+    {{#unless @first}}else {{/unless}}if (obj.type === "{{@key}}") {
+      const x = obj.val;
+      {{> renderDiff}};
+    }
+    {{/each}}
   } else {
     return obj;
   }
@@ -35,7 +40,11 @@ function diffPrimitive<T>(a: T, b: T) {
   return a === b ? NO_DIFF : a;
 }
 
-function diffOptional<T>(a: T | undefined, b: T | undefined, innerDiff: (x: T, y: T) => DeepPartial<T>) {
+function diffOptional<T>(
+  a: T | undefined,
+  b: T | undefined,
+  innerDiff: (x: T, y: T) => DeepPartial<T> | typeof NO_DIFF
+) {
   if (a !== undefined && b !== undefined) {
     return innerDiff(a, b);
   } else if (a !== undefined || b !== undefined) {
@@ -44,7 +53,7 @@ function diffOptional<T>(a: T | undefined, b: T | undefined, innerDiff: (x: T, y
   return NO_DIFF;
 }
 
-function diffArray<T>(a: T[], b: T[], innerDiff: (x: T, y: T) => DeepPartial<T>) {
+function diffArray<T>(a: T[], b: T[], innerDiff: (x: T, y: T) => DeepPartial<T> | typeof NO_DIFF) {
   return a.map((val, i) => (i < b.length ? innerDiff(val, b[i]) : val));
 }
 {{#*inline "renderDiff"}}
