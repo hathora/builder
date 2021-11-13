@@ -7,7 +7,7 @@ export type DeepPartial<T> = T extends string | number | boolean | undefined
   : T extends Array<infer ArrayType>
   ? Array<DeepPartial<ArrayType> | typeof NO_DIFF> | typeof NO_DIFF
   : T extends { type: string; val: any }
-  ? { type: T["type"]; val: DeepPartial<T["val"]> }
+  ? { type: T["type"]; val: DeepPartial<T["val"] | typeof NO_DIFF> }
   : { [K in keyof T]: DeepPartial<T[K]> | typeof NO_DIFF };
 
 {{#each types}}
@@ -95,9 +95,9 @@ export const {{@key}} = {
   },
   encode(obj: {{@key}}) {
     const buf = new Writer();
-    writeUInt8(buf, this.values().indexOf(obj.type));
     {{#each options}}
     {{#unless @first}}else {{/unless}}if (obj.type === "{{@key}}") {
+      writeUInt8(buf, {{@index}});
       const x = obj.val;
       {{> renderEncodeArg}};
     }
@@ -108,8 +108,12 @@ export const {{@key}} = {
     const buf = new Writer();
     {{#each options}}
     {{#unless @first}}else {{/unless}}if (obj.type === "{{@key}}") {
-      const x = obj.val;
-      {{> renderEncodeDiffArg}};
+      writeUInt8(buf, {{@index}});
+      writeBoolean(buf, obj.val !== NO_DIFF);
+      if (obj.val !== NO_DIFF) {
+        const x = obj.val;
+        {{> renderEncodeDiffArg}};
+      }
     }
     {{/each}}
     return buf.toBuffer();
@@ -129,7 +133,7 @@ export const {{@key}} = {
     const type = parseUInt8(sb);
     {{#each options}}
     {{#unless @first}}else {{/unless}}if (type === {{@index}}) {
-      return { type: "{{@key}}", val: {{> renderDecodeDiffArg}} };
+      return { type: "{{@key}}", val: parseBoolean(sb) ? {{> renderDecodeDiffArg}} : NO_DIFF };
     }
     {{/each}}
     throw new Error("Invalid union");

@@ -18,16 +18,12 @@ function diff{{@key}}(obj: {{@key}}, prevObj: {{@key}}): DeepPartial<{{@key}}> {
 
 {{else if (eq type "union")}}
 function diff{{@key}}(obj: {{@key}}, prevObj: {{@key}}): DeepPartial<{{@key}}> {
-  if (obj.type === prevObj.type) {
-    {{#each options}}
-    {{#unless @first}}else {{/unless}}if (obj.type === "{{@key}}") {
-      const x = obj.val;
-      {{> renderDiff}};
-    }
-    {{/each}}
-  } else {
-    return obj;
+  {{#each options}}
+  {{#unless @first}}else {{/unless}}if (obj.type === "{{@key}}" && prevObj.type === "{{@key}}") {
+    return { type: "{{@key}}", val: {{> renderDiff a="obj.val" b="prevObj.val"}} };
   }
+  {{/each}}
+  return obj;
 }
 
 {{/if}}
