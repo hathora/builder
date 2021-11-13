@@ -118,7 +118,7 @@ if (command === "init") {
   build({
     root: existsSync(join(clientDir, "index.html")) ? clientDir : join(clientDir, ".rtag"),
     publicDir: join(clientDir, "public"),
-    build: { outDir: join(rootDir, "dist/client") },
+    build: { outDir: join(rootDir, "dist/client"), target: ["esnext"] },
   });
   ncc(join(serverDir, ".rtag/store.ts")).then(
     ({ code, assets }: { code: string; assets: Record<string, { source: string | Buffer }> }) => {
