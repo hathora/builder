@@ -4,8 +4,8 @@ import getRandomValues from "get-random-values";
 import axios from "axios";
 import jwtDecode from "jwt-decode";
 import { UserData, Response, Method } from "./base";
+import { computePatch } from "./patch";
 import {
-  NO_DIFF,
   decodeStateUpdate,
   {{userState}} as UserState,
   {{#each methods}}
@@ -93,7 +93,7 @@ export class RtagConnection {
       } else {
         const { stateDiff, responses } = decodeStateUpdate(new Uint8Array(data as ArrayBuffer));
         if (stateDiff !== undefined) {
-          applyPatch(this.state, stateDiff);
+          this.state = computePatch(this.state, stateDiff);
           onStateChange({ ...this.state });
         }
         Object.entries(responses).forEach(([msgId, response]) => {
@@ -129,30 +129,4 @@ export class RtagConnection {
       }
     });
   }
-}
-
-function applyPatch(obj: any, patch: any) {
-  Object.entries(patch).forEach(([k, v]) => {
-    if (typeof v === "object") {
-      if (Array.isArray(v)) {
-        const arr = obj[k] as any[];
-        v.forEach((val, i) => {
-          if (i >= arr.length) {
-            arr.push(val);
-          } else if (typeof val === "object") {
-            applyPatch(arr[i], val);
-          } else if (val !== NO_DIFF) {
-            arr[i] = val;
-          }
-        });
-        if (v.length < arr.length) {
-          arr.splice(v.length);
-        }
-      } else {
-        applyPatch(obj[k], v);
-      }
-    } else if (v !== NO_DIFF) {
-      obj[k] = v;
-    }
-  });
 }
