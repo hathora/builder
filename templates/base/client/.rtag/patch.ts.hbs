@@ -32,10 +32,6 @@ function patch{{@key}}(obj: {{@key}}, patch: DeepPartial<{{@key}}>) {
 
 {{/if}}
 {{/each}}
-function patchPrimitive<T>(a: T, b: T) {
-  return b;
-}
-
 function patchArray<T>(arr: T[], patch: (typeof NO_DIFF | any)[], innerPatch: (a: T, b: DeepPartial<T>) => T) {
   patch.forEach((val, i) => {
     if (val !== NO_DIFF) {
@@ -46,6 +42,9 @@ function patchArray<T>(arr: T[], patch: (typeof NO_DIFF | any)[], innerPatch: (a
       }
     }
   });
+  if (patch.length < arr.length) {
+    arr.splice(patch.length);
+  }
   return arr;
 }
 
@@ -62,8 +61,8 @@ patch{{typeString}}({{a}}, {{b}})
 {{~else if (eq type "array")}}
 patchArray(obj.{{@key}}, patch.{{@key}}, (a, b) => {{> renderPatch items a="a" b="b"}})
 {{~else if (eq type "optional")}}
-patchPrimitive({{a}}, {{b}})
+{{b}}
 {{~else}}
-patchPrimitive({{a}}, {{b}})
+{{b}}
 {{~/if}}
 {{/inline}}
