@@ -59,7 +59,7 @@ patch{{typeString}}({{a}}, {{b}})
 {{~else if (eq type "union")}}
 patch{{typeString}}({{a}}, {{b}})
 {{~else if (eq type "array")}}
-patchArray(obj.{{@key}}, patch.{{@key}}, (a, b) => {{> renderPatch items a="a" b="b"}})
+patchArray({{a}}, {{b}}, (a, b) => {{> renderPatch items a="a" b="b"}})
 {{~else if (eq type "optional")}}
 {{b}}
 {{~else}}
