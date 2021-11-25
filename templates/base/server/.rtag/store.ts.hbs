@@ -194,7 +194,7 @@ function loadState(stateId: StateId) {
     const rng = seedrandom(seed.toString(36));
     const prevRng = seedrandom(seed.toString(36));
     const state = impl.initialize(user, ctx(rng, time), argsBuffer);
-    const prevState = impl.initialize(user, ctx(rng, time), argsBuffer);
+    const prevState = impl.initialize(user, ctx(prevRng, time), argsBuffer);
 
     for (let i = 1; i < rows.length; i++) {
       const { time, record } = rows[i];
