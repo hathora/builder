@@ -8,12 +8,12 @@ import {
 
 {{#each types}}
 {{#if (eq type "object")}}
-function diff{{@key}}(obj: {{@key}}, prevObj: {{@key}}): DeepPartial<{{@key}}> {
-  return {
+function diff{{@key}}(obj: {{@key}}, prevObj: {{@key}}): DeepPartial<{{@key}}> | typeof NO_DIFF {
+  return diffObj({
     {{#each properties}}
     {{@key}}: {{> renderDiff a=(concat "obj." @key) b=(concat "prevObj." @key)}},
     {{/each}}
-  };
+  });
 }
 
 {{else if (eq type "union")}}
@@ -28,7 +28,7 @@ function diff{{@key}}(obj: {{@key}}, prevObj: {{@key}}): DeepPartial<{{@key}}> {
 
 {{/if}}
 {{/each}}
-export function computeDiff(state: {{userState}}, prevState: {{userState}}): DeepPartial<{{userState}}> {
+export function computeDiff(state: {{userState}}, prevState: {{userState}}): DeepPartial<{{userState}}> | typeof NO_DIFF {
   return diff{{userState}}(state, prevState);
 }
 
@@ -50,7 +50,12 @@ function diffOptional<T>(
 }
 
 function diffArray<T>(a: T[], b: T[], innerDiff: (x: T, y: T) => DeepPartial<T> | typeof NO_DIFF) {
-  return a.map((val, i) => (i < b.length ? innerDiff(val, b[i]) : val));
+  const arr = a.map((val, i) => (i < b.length ? innerDiff(val, b[i]) : val));
+  return arr.every((v) => v === NO_DIFF) ? NO_DIFF : arr;
+}
+
+function diffObj<T>(obj: T) {
+  return Object.values(obj).every((v) => v === NO_DIFF) ? NO_DIFF : obj;
 }
 {{#*inline "renderDiff"}}
 {{#if (eq type "plugin")}}

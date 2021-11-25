@@ -8,7 +8,7 @@ import { register } from "./protocol";
 import LogStore from "./logstore";
 import { ImplWrapper as impl } from "./wrapper";
 import { UserData, Response, Method } from "./base";
-import { encodeStateUpdate, {{userState}} as UserState } from "./types";
+import { encodeStateUpdate, NO_DIFF, {{userState}} as UserState } from "./types";
 import { computeDiff } from "./diff";
 
 type StateId = bigint;
@@ -238,8 +238,10 @@ function sendUpdates(stateId: StateId, responses: Map<UserId, Record<number, Res
     const { state, prevState, prevRng, subscriptions, pendingUpdates } = stateInfo.get(stateId)!;
     subscriptions.forEach((user, userId) => {
       const diff = computeDiff(impl.getUserState(state, user), impl.getUserState(prevState, user));
-      const buf = Buffer.from(encodeStateUpdate(diff, responses.get(userId) ?? {}));
-      coordinator.onStateUpdate(stateId, userId, buf);
+      if (diff !== NO_DIFF) {
+        const buf = Buffer.from(encodeStateUpdate(diff, responses.get(userId) ?? {}));
+        coordinator.onStateUpdate(stateId, userId, buf);
+      }
     });
     pendingUpdates.forEach((update) => {
       {{#if tick}}
