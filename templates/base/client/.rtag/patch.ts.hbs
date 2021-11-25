@@ -1,0 +1,68 @@
+import {
+  NO_DIFF,
+  DeepPartial,
+  {{#each types}}
+  {{@key}},
+  {{/each}}
+} from "./types";
+
+{{#each types}}
+{{#if (eq type "object")}}
+function patch{{@key}}(obj: {{@key}}, patch: DeepPartial<{{@key}}>) {
+  {{#each properties}}
+  if (patch.{{@key}} !== NO_DIFF) {
+    obj.{{@key}} = {{> renderPatch a=(concat "obj." @key) b=(concat "patch." @key)}};
+  }
+  {{/each}}
+  return obj;
+}
+
+{{else if (eq type "union")}}
+function patch{{@key}}(obj: {{@key}}, patch: DeepPartial<{{@key}}>) {
+  if (obj.type === patch.type) {
+    return patch as {{@key}};
+  }
+  {{#each options}}
+  if (patch.type === "{{@key}}" && obj.type === "{{@key}}" && patch.val !== NO_DIFF) {
+    obj.val = {{> renderPatch a="obj.val" b="patch.val"}};
+  }
+  {{/each}}
+  return obj;
+}
+
+{{/if}}
+{{/each}}
+function patchArray<T>(arr: T[], patch: (typeof NO_DIFF | any)[], innerPatch: (a: T, b: DeepPartial<T>) => T) {
+  patch.forEach((val, i) => {
+    if (val !== NO_DIFF) {
+      if (i >= arr.length) {
+        arr.push(val as T);
+      } else {
+        arr[i] = innerPatch(arr[i], val);
+      }
+    }
+  });
+  if (patch.length < arr.length) {
+    arr.splice(patch.length);
+  }
+  return arr;
+}
+
+export function computePatch(state: {{userState}}, patch: DeepPartial<{{userState}}>) {
+  return patch{{userState}}(state, patch);
+}
+{{#*inline "renderPatch"}}
+{{#if (eq type "plugin")}}
+{{> renderPatch item}}
+{{~else if (eq type "object")}}
+patch{{typeString}}({{a}}, {{b}})
+{{~else if (eq type "union")}}
+patch{{typeString}}({{a}}, {{b}})
+{{~else if (eq type "array")}}
+patchArray({{a}}, {{b}}, (a, b) => {{> renderPatch items a="a" b="b"}})
+{{~else if (eq type "optional")}}
+{{b}}
+{{~else}}
+{{b}}
+{{~/if}}
+{{/inline}}
