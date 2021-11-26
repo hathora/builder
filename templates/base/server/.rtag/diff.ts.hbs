@@ -51,7 +51,7 @@ function diffOptional<T>(
 
 function diffArray<T>(a: T[], b: T[], innerDiff: (x: T, y: T) => DeepPartial<T> | typeof NO_DIFF) {
   const arr = a.map((val, i) => (i < b.length ? innerDiff(val, b[i]) : val));
-  return arr.every((v) => v === NO_DIFF) ? NO_DIFF : arr;
+  return a.length === b.length && arr.every((v) => v === NO_DIFF) ? NO_DIFF : arr;
 }
 
 function diffObj<T>(obj: T) {
