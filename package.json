@@ -1,6 +1,6 @@
 {
   "name": "rtag",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Realtime app generator",
   "bin": "./cli.js",
   "files": [
