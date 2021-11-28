@@ -59,7 +59,7 @@ function diffObj<T>(obj: T) {
 }
 {{#*inline "renderDiff"}}
 {{#if (eq type "plugin")}}
-{{> renderDiff item}}
+{{> renderDiff item a=a b=b}}
 {{~else if (eq type "object")}}
 diff{{typeString}}({{a}}, {{b}})
 {{~else if (eq type "union")}}

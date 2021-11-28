@@ -53,7 +53,7 @@ export function computePatch(state: {{userState}}, patch: DeepPartial<{{userStat
 }
 {{#*inline "renderPatch"}}
 {{#if (eq type "plugin")}}
-{{> renderPatch item}}
+{{> renderPatch item a=a b=b}}
 {{~else if (eq type "object")}}
 patch{{typeString}}({{a}}, {{b}})
 {{~else if (eq type "union")}}
