@@ -112,7 +112,7 @@ function ArrayInput<T>({ value, update, initialVal, children }: ArrayProps<T>) {
               onClick={() => update(value.concat(initialVal))}
         className="inline-flex items-center p-1 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-700 bg-gray-300 hover:bg-gray-400 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
-        <PlusIcon className="h-4 w-4 mt-1 fill-current" aria-hidden="true" />
+        <PlusIcon className="h-4 w-4 fill-current" aria-hidden="true" />
         Add
       </button>
     </div>
@@ -365,7 +365,7 @@ export function Forms({open, setOpen}: FormsProps) {
   const { connection } = useContext(RtagContext)!;
   return (
   <Transition.Root show={open} as={Fragment}>
-    <Dialog as="div" className="fixed inset-0 overflow-hidden" onClose={setOpen}>
+    <Dialog as="div" className="fixed inset-y-0 right-0 pl-10 max-w-full overflow-hidden" onClose={() =>{}}>
       <div className="absolute inset-0 overflow-hidden">
         <Transition.Child
                 as={Fragment}
@@ -389,29 +389,17 @@ export function Forms({open, setOpen}: FormsProps) {
                   leaveTo="translate-x-full"
           >
             <div className="relative w-screen max-w-lg">
-              <Transition.Child
-                      as={Fragment}
-                      enter="ease-in-out duration-500"
-                      enterFrom="opacity-0"
-                      enterTo="opacity-100"
-                      leave="ease-in-out duration-500"
-                      leaveFrom="opacity-100"
-                      leaveTo="opacity-0"
-              >
-                <div className="absolute top-0 left-0 -ml-8 pt-4 pr-2 flex sm:-ml-10 sm:pr-4">
+              <div className="h-full flex flex-col py-6 bg-white shadow-xl overflow-y-scroll">
+                <div className="px-4 sm:px-6 flex justify-between">
+                  <Dialog.Title className="text-lg font-medium text-gray-900">Methods</Dialog.Title>
                   <button
                           type="button"
-                          className="rounded-md text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
                           onClick={() => setOpen(false)}
+                  className="inline-flex items-center p-1 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-700 bg-gray-300 hover:bg-gray-400 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                   >
-                  <span className="sr-only">Close panel</span>
-                  <XIcon className="h-6 w-6" aria-hidden="true" />
+                  <XIcon className="h-4 w-4 fill-current" aria-hidden="true" />
+                  Close
                   </button>
-                </div>
-              </Transition.Child>
-              <div className="h-full flex flex-col py-6 bg-white shadow-xl overflow-y-scroll">
-                <div className="px-4 sm:px-6">
-                  <Dialog.Title className="text-lg font-medium text-gray-900">Methods</Dialog.Title>
                 </div>
                 <div className="mt-6 relative flex-1 px-4 sm:px-6">
 
