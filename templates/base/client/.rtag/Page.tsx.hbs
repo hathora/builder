@@ -28,7 +28,6 @@ imageUrl:
 }
 const navigation = [
 { name: 'Prototype UI', href: '#', current: true },
-{{!{ name: 'Docs', href: 'https://hathora.dev/docs', current: false },}}
 ]
 const userNavigation = [
 { name: 'Coming Soon!', href: '#' },
@@ -59,7 +58,6 @@ return (
         <div className="flex items-center">
           <div className="flex-shrink-0 cursor-pointer" onClick={() => navigate(`/`)}>
             <img className="h-10 w-10" src="https://i.ibb.co/sQMmTTq/hathora-hammer-logo-light.png" alt="hathora-hammer-logo" border="0" />
-            {{!<img className="h-10 w-10" src="https://i.ibb.co/93KgwC2/hathora-hammer-logo.png" alt="hathora-hammer-logo" border="0" />}}
           </div>
           <div className="flex-shrink-0 flex items-center cursor-pointer" onClick={() => navigate(`/`)}>
             <span className="font-display font-semibold text-2xl text-white mt-1 ml-3 uppercase">{{appName}}</span>
