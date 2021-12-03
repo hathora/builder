@@ -38,8 +38,10 @@ export class Impl implements Methods<InternalState> {
 {{#*inline "renderDefault"}}
 {{#if (eq type "array")}}
 []
-{{~else if (eq type "number")}}
+{{~else if (eq type "int")}}
 0
+{{~else if (eq type "float")}}
+0.0
 {{~else if (eq type "string")}}
 ""
 {{~else if (eq type "enum")}}
@@ -50,6 +52,12 @@ false
 undefined
 {{~else if (eq type "object")}}
 {{typeString}}.default()
+{{~else if (eq type "union")}}
+{{#each options}}
+{{#if @first}}
+{ type: "{{@key}}", val: {{> renderDefault}} }
+{{~/if}}
+{{/each}}
 {{~else if (eq type "plugin")}}
 {{> renderDefault item}}
 {{/if}}
