@@ -231,7 +231,7 @@ writeBoolean(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}})
 {{~else if (eq type "plugin")}}
 {{> renderEncodeArg item arg=arg}}
 {{~else}}
-{{#if arg}}{{typeString}}.encode(obj.{{arg}}){{else}}buf.writeBuffer({{typeString}}.encode(x)){{/if}}
+buf.writeBuffer({{typeString}}.encode({{#if arg}}obj.{{arg}}{{else}}x{{/if}}))
 {{~/if}}
 {{/inline}}
 {{#*inline "renderEncodeDiffArg"}}
