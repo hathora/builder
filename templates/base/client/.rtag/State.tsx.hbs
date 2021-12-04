@@ -1,5 +1,5 @@
 import React, { useRef, useLayoutEffect, useContext, useState } from "react";
-import { ArrowSmDownIcon, MinusSmIcon, PlusSmIcon } from '@heroicons/react/solid'
+import { MinusSmIcon, PlusSmIcon } from "@heroicons/react/solid";
 import { RtagContext } from "./context";
 import { RtagConnection } from "./client";
 import {
@@ -25,44 +25,48 @@ function KVDisplay(props: { label: string; children: JSX.Element }) {
   );
 }
 
-function ArrayDisplay<T>(props: { value: T[]; children: (value: T) => JSX.Element, childType: string }) {
+function ArrayDisplay<T>(props: { value: T[]; children: (value: T) => JSX.Element }) {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(props.value && props.value.length > 7 ? true : false);
 
   let icon;
   if (isCollapsed) {
-    icon = <PlusSmIcon className="h-3 w-3 fill-current" aria-hidden="true" />
+    icon = <PlusSmIcon className="h-3 w-3 fill-current" aria-hidden="true" />;
   } else {
-    icon = <MinusSmIcon className="h-3 w-3 fill-current" aria-hidden="true" />
+    icon = <MinusSmIcon className="h-3 w-3 fill-current" aria-hidden="true" />;
   }
   return (
     <span className={`array-display`}>
-      {props.value && props.value.length > 0 &&
+      {props.value && props.value.length > 0 && (
         <span className="align-middle mr-0.5">
           <button
-                  type="button"
-                  onClick={() => setIsCollapsed(!isCollapsed)}
+            type="button"
+            onClick={() => setIsCollapsed(!isCollapsed)}
             className="inline-flex items-center border border-gray-700 rounded-md shadow-sm
               text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 hover:text-gray-900 hover:border-gray-900
               focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-indigo-500 disabled:opacity-50"
           >
             {icon}
           </button>
-        </span>}
+        </span>
+      )}
       [
-        {props.value && props.value.length > 0 &&
-          <>
-          <span className="text-gray-500 text-sm italic">{props.value.length} {props.value.length === 1 ? 'item' : 'items'}</span>
-          {!isCollapsed &&
-            <div className={`flex ${typeof props.value[0] === 'object' ? 'flex-row overflow-x-auto' : 'flex-col' }`}>
+      {props.value && props.value.length > 0 && (
+        <>
+          <span className="text-gray-500 text-sm italic">
+            {props.value.length} {props.value.length === 1 ? "item" : "items"}
+          </span>
+          {!isCollapsed && (
+            <div className={`flex ${typeof props.value[0] === "object" ? "flex-row overflow-x-auto" : "flex-col"}`}>
               {props.value.map((val, i) => (
-                <div className={`array-item`}
-                    key={i}>
+                <div className={`array-item`} key={i}>
                   {props.children(val)}
                 </div>
               ))}
-            </div>}
-          {isCollapsed && '...'}
-          </>}
+            </div>
+          )}
+          {isCollapsed && "..."}
+        </>
+      )}
       ]
     </span>
   );
@@ -95,7 +99,15 @@ function BooleanDisplay({ value }: { value: boolean }) {
   return <span className="boolean-display">{value ? "true" : "false"}</span>;
 }
 
-function PluginDisplay<T>({ value, component, parentIsArray }: { value: T; component: string, parentIsArray: boolean }) {
+function PluginDisplay<T>({
+  value,
+  component,
+  parentIsArray,
+}: {
+  value: T;
+  component: string;
+  parentIsArray: boolean;
+}) {
   const { state, connection } = useContext(RtagContext)!;
   const ref = useRef<{ val: T; state: UserState; client: RtagConnection }>();
   useLayoutEffect(() => {
@@ -106,26 +118,35 @@ function PluginDisplay<T>({ value, component, parentIsArray }: { value: T; compo
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   let icon;
   if (isCollapsed) {
-    icon = <PlusSmIcon className="h-3 w-3 fill-current" aria-hidden="true" />
+    icon = <PlusSmIcon className="h-3 w-3 fill-current" aria-hidden="true" />;
   } else {
-    icon = <MinusSmIcon className="h-3 w-3 fill-current" aria-hidden="true" />
+    icon = <MinusSmIcon className="h-3 w-3 fill-current" aria-hidden="true" />;
   }
-  return (<>
-    {!parentIsArray && <span className="align-middle mr-0.5">
-      <button
-              type="button"
-              onClick={() => setIsCollapsed(!isCollapsed)}
-        className="inline-flex items-center border border-gray-700 rounded-md shadow-sm
+  return (
+    <>
+      {!parentIsArray && (
+        <span className="align-middle mr-0.5">
+          <button
+            type="button"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="inline-flex items-center border border-gray-700 rounded-md shadow-sm
           text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 hover:text-gray-900 hover:border-gray-900
           focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-indigo-500 disabled:opacity-50"
-      >
-        {icon}
-      </button>
-    </span>}
-    {!isCollapsed ?
-    <div className="plugin-display p-1">{React.createElement(component, { ref })}</div> :
-    <span ref={ref} className="text-gray-500 text-sm italic"> plugin collapsed</span>}
-  </>);
+          >
+            {icon}
+          </button>
+        </span>
+      )}
+      {!isCollapsed ? (
+        <div className="plugin-display p-1">{React.createElement(component, { ref })}</div>
+      ) : (
+        <span ref={ref} className="text-gray-500 text-sm italic">
+          {" "}
+          plugin collapsed
+        </span>
+      )}
+    </>
+  );
 }
 
 {{#each types}}
@@ -134,32 +155,37 @@ function {{@key}}Display({ value, parentIsArray }: { value: {{@key}}, parentIsAr
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   let icon;
   if (isCollapsed) {
-    icon = <PlusSmIcon className="h-3 w-3 fill-current" aria-hidden="true" />
+    icon = <PlusSmIcon className="h-3 w-3 fill-current" aria-hidden="true" />;
   } else {
-    icon = <MinusSmIcon className="h-3 w-3 fill-current" aria-hidden="true" />
+    icon = <MinusSmIcon className="h-3 w-3 fill-current" aria-hidden="true" />;
   }
-  return (<>
-    {!parentIsArray && <span className="align-middle mr-0.5">
-      <button
-              type="button"
-              onClick={() => setIsCollapsed(!isCollapsed)}
-        className="inline-flex items-center border border-gray-700 rounded-md shadow-sm
+  return (
+    <>
+      {!parentIsArray && (
+        <span className="align-middle mr-0.5">
+          <button
+            type="button"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="inline-flex items-center border border-gray-700 rounded-md shadow-sm
           text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 hover:text-gray-900 hover:border-gray-900
           focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-indigo-500 disabled:opacity-50"
-      >
-        {icon}
-      </button>
-    </span>}
-    {!isCollapsed ?
-    <div className="object-display bg-white m-1 p-1 border rounded">
-      {{#each properties}}
-      <KVDisplay label="{{@key}}">
-        {{> renderDisplay arg=@key}}
-      </KVDisplay>
-      {{/each}}
-    </div> :
-    <span className="text-gray-500 text-sm italic"> object collapsed</span>}
-  </>
+          >
+            {icon}
+          </button>
+        </span>
+      )}
+      {!isCollapsed ? (
+        <div className="object-display bg-white m-1 p-1 border rounded">
+          {{#each properties}}
+          <KVDisplay label="{{@key}}">
+            {{> renderDisplay arg=@key}}
+          </KVDisplay>
+          {{/each}}
+        </div>
+      ) : (
+        <span className="text-gray-500 text-sm italic"> object collapsed</span>
+      )}
+    </>
   );
 }
 
@@ -185,11 +211,11 @@ export function State() {
 }
 {{#*inline "renderDisplay"}}
 {{#if (eq type "plugin")}}
-<PluginDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} component="{{makePluginName typeString}}" parentIsArray="{{parentIsArray}}" />
+<PluginDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} component="{{makePluginName typeString}}" parentIsArray={ {{parentIsArray}} } />
 {{else if (eq type "object")}}
-<{{typeString}}Display {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} parentIsArray="{{parentIsArray}}" />
+<{{typeString}}Display {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} parentIsArray={ {{parentIsArray}} } />
 {{else if (eq type "union")}}
-<{{typeString}}Display {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} />
+<{{typeString}}Display {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} parentIsArray={ {{parentIsArray}} } />
 {{else if (eq type "array")}}
 <ArrayDisplay<{{> renderTypeArg items}}> {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}}>
   {(value) => 
