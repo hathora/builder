@@ -178,7 +178,7 @@ function {{@key}}Display({ value }: { value: {{@key}} }) {
 export function State() {
   const { state: value } = useContext(RtagContext)!;
   return (
-    <div className="state">
+    <div className="state-display font-mono text-gray-700 w-full">
       {{> renderDisplay (lookup types userState) parentIsArray=true}}
     </div>
   );
