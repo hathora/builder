@@ -111,9 +111,11 @@ function PluginDisplay<T>({
   const { state, connection } = useContext(RtagContext)!;
   const ref = useRef<{ val: T; state: UserState; client: RtagConnection }>();
   useLayoutEffect(() => {
-    ref.current!.val = value;
-    ref.current!.state = state;
-    ref.current!.client = connection;
+    if (ref.current) {
+      ref.current.val = value;
+      ref.current.state = state;
+      ref.current.client = connection;
+    }
   });
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   let icon;
@@ -140,10 +142,7 @@ function PluginDisplay<T>({
       {!isCollapsed ? (
         <div className="plugin-display p-1">{React.createElement(component, { ref })}</div>
       ) : (
-        <span ref={ref} className="text-gray-500 text-sm italic">
-          {" "}
-          plugin collapsed
-        </span>
+        <span className="text-gray-500 text-sm italic">plugin collapsed</span>
       )}
     </>
   );
@@ -178,7 +177,7 @@ function {{@key}}Display({ value, parentIsArray }: { value: {{@key}}, parentIsAr
         <div className="object-display bg-white m-1 p-1 border rounded">
           {{#each properties}}
           <KVDisplay label="{{@key}}">
-            {{> renderDisplay arg=@key}}
+            {{> renderDisplay arg=@key parentIsArray=false}}
           </KVDisplay>
           {{/each}}
         </div>
@@ -194,7 +193,7 @@ function {{@key}}Display({ value }: { value: {{@key}} }) {
   switch (value.type) {
     {{#each options}}
     case "{{@key}}":
-      return {{> renderDisplay arg="val"}};
+      return {{> renderDisplay arg="val" parentIsArray=false}};
     {{/each}}
   }
 }
@@ -225,7 +224,7 @@ export function State() {
 {{else if (eq type "optional")}}
 <OptionalDisplay<{{> renderTypeArg}}> {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}}>
   {(value) => 
-    {{> renderDisplay item}}
+    {{> renderDisplay item parentIsArray=parentIsArray}}
   }
 </OptionalDisplay>
 {{else if (eq type "enum")}}

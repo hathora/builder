@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { BrowserRouter, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import { ToastContainer, Zoom, toast } from "react-toastify";
-import { Disclosure, Menu, Transition } from "@headlessui/react";
+import { Disclosure } from "@headlessui/react";
 import { LightningBoltIcon, UserCircleIcon } from "@heroicons/react/solid";
 {{#if auth.google}}
 import { GoogleLogin } from "react-google-login";
@@ -34,7 +34,7 @@ function App() {
   if (token === null) {
     return (
       <>
-        <NavBar token={null} />
+        <NavBar />
         <div className="py-6 sm:px-6 lg:px-8">
           <Login setToken={setToken} />
         </div>
@@ -94,16 +94,12 @@ function App() {
   );
 }
 
-type NavBarProps = {
-  token: string | null;
-};
-function NavBar({ token }: NavBarProps) {
+function NavBar({ token }: { token?: string }) {
   const navigate = useNavigate();
-  const user = token ? RtagClient.getUserFromToken(token) : null;
-
+  const user = token !== undefined ? RtagClient.getUserFromToken(token) : undefined;
   return (
     <Disclosure as="nav" className="bg-indigo-500">
-      {({ open }) => (
+      {() => (
         <>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
