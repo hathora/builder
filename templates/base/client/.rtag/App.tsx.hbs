@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { BrowserRouter, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import { ToastContainer, Zoom, toast } from "react-toastify";
-import { Disclosure, Menu, Transition } from '@headlessui/react'
-import { LightningBoltIcon, UserCircleIcon } from '@heroicons/react/solid'
+import { Disclosure, Menu, Transition } from "@headlessui/react";
+import { LightningBoltIcon, UserCircleIcon } from "@heroicons/react/solid";
 {{#if auth.google}}
 import { GoogleLogin } from "react-google-login";
 {{/if}}
@@ -32,12 +32,14 @@ function App() {
   }, [location]);
 
   if (token === null) {
-    return (<>
-      <NavBar token={null} />
-      <div className="py-6 sm:px-6 lg:px-8">
-        <Login setToken={setToken} />
-      </div>
-    </>);
+    return (
+      <>
+        <NavBar token={null} />
+        <div className="py-6 sm:px-6 lg:px-8">
+          <Login setToken={setToken} />
+        </div>
+      </>
+    );
   }
 
   return (
@@ -95,7 +97,7 @@ function App() {
 type NavBarProps = {
   token: string | null;
 };
-function NavBar({token}: NavBarProps) {
+function NavBar({ token }: NavBarProps) {
   const navigate = useNavigate();
   const user = token ? RtagClient.getUserFromToken(token) : null;
 
@@ -107,36 +109,48 @@ function NavBar({token}: NavBarProps) {
             <div className="flex items-center justify-between h-16">
               <div className="flex items-center">
                 <div className="flex-shrink-0 cursor-pointer" onClick={() => navigate(`/`)}>
-                <img className="h-10 w-10" src="https://i.ibb.co/sQMmTTq/hathora-hammer-logo-light.png" alt="hathora-hammer-logo" border="0" />
+                  <img
+                    className="h-10 w-10"
+                    src="https://i.ibb.co/sQMmTTq/hathora-hammer-logo-light.png"
+                    alt="hathora-hammer-logo"
+                  />
+                </div>
+                <div className="flex-shrink-0 flex items-center cursor-pointer" onClick={() => navigate(`/`)}>
+                  <span className="font-display font-semibold text-2xl text-white mt-1 ml-3 uppercase">{{appName}}</span>
+                </div>
+                {user && (
+                  <div className="hidden md:block">
+                    <div className="ml-10 flex items-baseline space-x-4">
+                      <span
+                        key={user.name}
+                        className="bg-indigo-700 text-gray-200 px-3 py-2 rounded-md text-sm font-medium"
+                      >
+                        <UserCircleIcon
+                          className="inline flex-shrink-0 mr-1.5 h-5 w-5 text-gray-200"
+                          aria-hidden="true"
+                        />
+                        {user.name}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
-              <div className="flex-shrink-0 flex items-center cursor-pointer" onClick={() => navigate(`/`)}>
-              <span className="font-display font-semibold text-2xl text-white mt-1 ml-3 uppercase">{{appName}}</span>
             </div>
-            {user && <div className="hidden md:block">
-              <div className="ml-10 flex items-baseline space-x-4">
-                <span key={user.name} className="bg-indigo-700 text-gray-200 px-3 py-2 rounded-md text-sm font-medium">
-                  <UserCircleIcon className="inline flex-shrink-0 mr-1.5 h-5 w-5 text-gray-200" aria-hidden="true" />
-                  {user.name}
-                </span>
-            </div>
-            </div>}
           </div>
-        </div>
-      </div>
-    </>
-    )}
+        </>
+      )}
     </Disclosure>
   );
 }
 
-function MethodButton({setOpenMethods}: {setOpenMethods: (v: boolean) => void}) {
-  return(
+function MethodButton({ setOpenMethods }: { setOpenMethods: (v: boolean) => void }) {
+  return (
     <div className="fixed top-24 right-6 lg:right-8">
       <span className="sm:ml-3">
         <button
-                type="button"
-                onClick={() => setOpenMethods(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          type="button"
+          onClick={() => setOpenMethods(true)}
+          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
           <LightningBoltIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
           Methods
@@ -152,8 +166,8 @@ function Login({ setToken }: { setToken: (token: string) => void }) {
       <div className="w-6/12 m-auto">
         <h2 className="text-base text-xl font-semibold text-gray-900">Login</h2>
         <div className="flex flex-col mt-2">
-      {{#each auth}}
-        {{#if (eq @key "anonymous")}}
+{{#each auth}}
+{{#if (eq @key "anonymous")}}
           <div className="w-6/12 mb-4">
             <button
               type="button"
@@ -168,30 +182,29 @@ function Login({ setToken }: { setToken: (token: string) => void }) {
               }
               className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
-            Login (Anonymous)
+              Login (Anonymous)
             </button>
           </div>
-      {{else if (eq @key "google")}}
-
-        <div className="w-6/12">
-          <GoogleLogin
-            clientId="{{clientId}}"
-            onSuccess={({ tokenId }: any) =>
-              client
-                .loginGoogle(tokenId)
-                .then((token) => {
-                  sessionStorage.setItem("token", token);
-                  setToken(token);
-                })
-                .catch((e) => toast.error("Authentication error: " + e.reason))
-            }
+{{else if (eq @key "google")}}
+          <div className="w-6/12">
+            <GoogleLogin
+              clientId="848412826788-m4msrb6q44dm2ue3kgvui0fq7kda55ls.apps.googleusercontent.com"
+              onSuccess={({ tokenId }: any) =>
+                client
+                  .loginGoogle(tokenId)
+                  .then((token) => {
+                    sessionStorage.setItem("token", token);
+                    setToken(token);
+                  })
+                  .catch((e) => toast.error("Authentication error: " + e.reason))
+              }
             />
+          </div>
+{{/if}}
+{{/each}}
         </div>
-      {{/if}}
-    {{/each}}
       </div>
     </div>
-  </div>
   );
 }
 
@@ -208,10 +221,10 @@ function Home({ onConnect }: { onConnect: (request: {{makeRequestName initialize
           </div>
           <div className="w-6/12">
             <input
-                    type="text"
-                    value={stateId}
-                    onChange={(e) => setStateId(e.target.value)}
-            className="focus:ring-indigo-500 focus:border-indigo-500 mb-2 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+              type="text"
+              value={stateId}
+              onChange={(e) => setStateId(e.target.value)}
+              className="focus:ring-indigo-500 focus:border-indigo-500 mb-2 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
             />
             <button
               type="button"
