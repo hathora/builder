@@ -4,8 +4,9 @@ import getRandomValues from "get-random-values";
 import axios from "axios";
 import jwtDecode from "jwt-decode";
 import { UserData, Response, Method } from "./base";
+import { computePatch } from "./patch";
 import {
-  decodeState,
+  decodeStateUpdate,
   {{userState}} as UserState,
   {{#each methods}}
   {{makeRequestName @key}},
@@ -82,19 +83,26 @@ export class RtagClient {
 
 export class RtagConnection {
   private callbacks: Record<string, (response: Response) => void> = {};
+  private state?: UserState = undefined;
 
   public constructor(public stateId: StateId, private socket: WebSocket, onStateChange: (state: UserState) => void) {
     socket.onmessage = ({ data }) => {
-      const { state, responses } = decodeState(new Uint8Array(data as ArrayBuffer));
-      if (state !== undefined) {
-        onStateChange(state);
-      }
-      Object.entries(responses).forEach(([msgId, response]) => {
-        if (msgId in this.callbacks) {
-          this.callbacks[msgId](response);
-          delete this.callbacks[msgId];
+      if (this.state === undefined) {
+        this.state = UserState.decode(new Uint8Array(data as ArrayBuffer));
+        onStateChange(JSON.parse(JSON.stringify(this.state)));
+      } else {
+        const { stateDiff, responses } = decodeStateUpdate(new Uint8Array(data as ArrayBuffer));
+        if (stateDiff !== undefined) {
+          this.state = computePatch(this.state, stateDiff);
+          onStateChange(JSON.parse(JSON.stringify(this.state)));
         }
-      });
+        Object.entries(responses).forEach(([msgId, response]) => {
+          if (msgId in this.callbacks) {
+            this.callbacks[msgId](response);
+            delete this.callbacks[msgId];
+          }
+        });
+      }
     };
   }
 

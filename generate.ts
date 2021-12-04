@@ -153,7 +153,11 @@ function enrichDoc(doc: z.infer<typeof RtagConfig>, plugins: string[], appName: 
     ...doc,
     types: Object.fromEntries(
       Object.entries(doc.types).map(([key, val]) => {
-        return [key, getArgsInfo(doc, plugins, val, false)];
+        const argsInfo = getArgsInfo(doc, plugins, val, false, key);
+        return [
+          key,
+          plugins.includes(key) ? { type: "plugin", typeString: key, alias: false, item: argsInfo } : argsInfo,
+        ];
       })
     ),
     methods: Object.fromEntries(

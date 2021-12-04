@@ -2,6 +2,31 @@ import * as utf8 from "utf8-buffer";
 import utf8Size from "utf8-buffer-size";
 const { pack, unpack } = (utf8 as any).default ?? utf8;
 
+export class BitString {
+  private pos = 0;
+
+  public constructor(private bits: number = 0) {
+    this.bits = bits;
+  }
+
+  public push(val: 0 | 1) {
+    if (val === 1) {
+      this.bits |= 1 << this.pos;
+    }
+    this.pos++;
+  }
+
+  public pop() {
+    const val = (this.bits >>> this.pos) & 1;
+    this.pos++;
+    return val;
+  }
+
+  public getBits() {
+    return this.bits;
+  }
+}
+
 export class Writer {
   private pos = 0;
   private view = new DataView(new ArrayBuffer(1024));
@@ -67,10 +92,10 @@ export class Writer {
     this.writeUVarint(Number((bigval >> 63n) ^ (bigval << 1n)));
   }
 
-  public writeDouble(val: number) {
-    this.ensureSize(8);
-    this.view.setFloat64(this.pos, val, true);
-    this.pos += 8;
+  public writeFloat(val: number) {
+    this.ensureSize(4);
+    this.view.setFloat32(this.pos, val, true);
+    this.pos += 4;
   }
 
   public writeString(val: string) {
@@ -83,6 +108,12 @@ export class Writer {
     } else {
       this.writeUInt8(0);
     }
+  }
+
+  public writeBuffer(buf: Uint8Array) {
+    this.ensureSize(buf.length);
+    this.bytes.set(buf, this.pos);
+    this.pos += buf.length;
   }
 
   public toBuffer() {
@@ -138,9 +169,9 @@ export class Reader {
     return Number((val >> 1n) ^ -(val & 1n));
   }
 
-  public readDouble() {
-    const val = this.view.getFloat64(this.pos, true);
-    this.pos += 8;
+  public readFloat() {
+    const val = this.view.getFloat32(this.pos, true);
+    this.pos += 4;
     return val;
   }
 

@@ -176,10 +176,10 @@ function {{@key}}Display({ value }: { value: {{@key}} }) {
 {{/if}}
 {{/each}}
 export function State() {
-  const { state } = useContext(RtagContext)!;
+  const { state: value } = useContext(RtagContext)!;
   return (
     <div className="state-display font-mono text-gray-700 w-full">
-      <{{userState}}Display value={state!} parentIsArray={true} />
+      {{> renderDisplay (lookup types userState) parentIsArray=true}}
     </div>
   );
 }
