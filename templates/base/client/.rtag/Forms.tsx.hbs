@@ -26,8 +26,8 @@ type ArrayProps<T> = BaseProps<T[]> & ContainerProps<T>;
 type OptionalProps<T> = BaseProps<T | undefined> & ContainerProps<T>;
 type EnumProps = BaseProps<number> & { enumType: object };
 
-function classNames(...classes) {
-  return classes.filter(Boolean).join(" ");
+function classNames(...classes: string[]) {
+  return classes.join(" ");
 }
 
 export function MethodForm<T>({ method, submit, initialize, children }: MethodProps<T>) {
@@ -36,24 +36,21 @@ export function MethodForm<T>({ method, submit, initialize, children }: MethodPr
     <div className="method-form p-3 mb-3 bg-gray-100 shadow sm:rounded-md">
       <label className="block mb-1 text-base font-medium text-gray-900">{method}</label>
       {children(value, setValue)}
-
       <div className="mt-3 flex">
-        <span className="">
-          <button
-            type="button"
-            onClick={async () => {
-              const res = await submit(value);
-              if (res.type === "error") {
-                toast.error(res.error);
-              }
-              setValue(initialize());
-            }}
-            className="inline-flex items-center px-3 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            <LightningBoltIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
-            Submit
-          </button>
-        </span>
+        <button
+          type="button"
+          onClick={async () => {
+            const res = await submit(value);
+            if (res.type === "error") {
+              toast.error(res.error);
+            }
+            setValue(initialize());
+          }}
+          className="inline-flex items-center px-3 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+          <LightningBoltIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+          Submit
+        </button>
       </div>
     </div>
   );
@@ -123,17 +120,20 @@ function OptionalInput<T>({ value, update, initialVal, children }: OptionalProps
       <Switch
         checked={value !== undefined}
         onChange={() => (value === undefined ? update(initialVal) : update(undefined))}
-        className={`${value !== undefined ? "bg-indigo-600" : "bg-gray-400"}
-                relative inline-flex items-center h-6 rounded-full w-11 mb-2`}
+        className={classNames(
+          value !== undefined ? "bg-indigo-600" : "bg-gray-400",
+          "relative inline-flex items-center h-6 rounded-full w-11 mb-2"
+        )}
       >
         <span className="sr-only">Toggle Input Value</span>
         <span
-          className={`${
-            value !== undefined ? "translate-x-6" : "translate-x-1"
-          } inline-block w-4 h-4 transform bg-white rounded-full`}
+          className={classNames(
+            value !== undefined ? "translate-x-6" : "translate-x-1",
+            "inline-block w-4 h-4 transform bg-white rounded-full"
+          )}
         />
       </Switch>
-      <div className="">{value !== undefined ? children(value, (val) => update(val)) : ""}</div>
+      <div>{value !== undefined ? children(value, (val) => update(val)) : ""}</div>
     </>
   );
 }
@@ -228,16 +228,22 @@ function FloatInput({ value, update }: BaseProps<number>) {
   );
 }
 
-function BooleanInput({ value, update }: BaseProps<div>) {
+function BooleanInput({ value, update }: BaseProps<boolean>) {
   return (
     <Switch
       checked={value}
       onChange={(newValue) => update(newValue)}
-      className={`${value ? "bg-indigo-600" : "bg-gray-400"} relative inline-flex items-center h-6 rounded-full w-11`}
+      className={classNames(
+        value ? "bg-indigo-600" : "bg-gray-400",
+        "relative inline-flex items-center h-6 rounded-full w-11"
+      )}
     >
       <span className="sr-only">Enable notifications</span>
       <span
-        className={`${value ? "translate-x-6" : "translate-x-1"} inline-block w-4 h-4 transform bg-white rounded-full`}
+        className={classNames(
+          value ? "translate-x-6" : "translate-x-1",
+          "inline-block w-4 h-4 transform bg-white rounded-full"
+        )}
       />
     </Switch>
   );
