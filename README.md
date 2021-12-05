@@ -28,7 +28,7 @@ From this specification, rtag automatically generates the following:
 
 #### Requirements
 
-- node v15+
+- node v16.12.0+
 
 Install rtag from the npm registry:
 
