@@ -98,25 +98,25 @@ function NavBar({ token }: { token?: string }) {
   const user = token !== undefined ? RtagClient.getUserFromToken(token) : undefined;
   return (
     <div className="bg-indigo-500">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <div className="flex-shrink-0 cursor-pointer" onClick={() => navigate(`/`)}>
               <img
-                className="h-10 w-10"
+                className="w-10 h-10"
                 src="https://i.ibb.co/sQMmTTq/hathora-hammer-logo-light.png"
                 alt="hathora-hammer-logo"
               />
             </div>
-            <div className="flex-shrink-0 flex items-center cursor-pointer" onClick={() => navigate(`/`)}>
-              <span className="font-display font-semibold text-2xl text-white mt-1 ml-3 uppercase">{{appName}}</span>
+            <div className="flex items-center flex-shrink-0 cursor-pointer" onClick={() => navigate(`/`)}>
+              <span className="mt-1 ml-3 text-2xl font-semibold text-white uppercase font-display">{{appName}}</span>
             </div>
             {user && (
               <div className="hidden md:block">
-                <div className="ml-10 flex items-baseline space-x-4">
+                <div className="flex items-baseline ml-10 space-x-4">
                   <span
                     key={user.name}
-                    className="bg-indigo-700 text-gray-200 px-3 py-2 rounded-md text-sm font-medium"
+                    className="px-3 py-2 text-sm font-medium text-gray-200 bg-indigo-700 rounded-md"
                   >
                     <UserCircleIcon className="inline flex-shrink-0 mr-1.5 h-5 w-5 text-gray-200" aria-hidden="true" />
                     {user.name}
@@ -138,9 +138,9 @@ function MethodButton({ setOpenMethods }: { setOpenMethods: (v: boolean) => void
         <button
           type="button"
           onClick={() => setOpenMethods(true)}
-          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
-          <LightningBoltIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+          <LightningBoltIcon className="w-5 h-5 mr-2 -ml-1" aria-hidden="true" />
           Methods
         </button>
       </span>
@@ -150,7 +150,7 @@ function MethodButton({ setOpenMethods }: { setOpenMethods: (v: boolean) => void
 
 function Login({ setToken }: { setToken: (token: string) => void }) {
   return (
-    <div className="login w-full flex flex-col md:justify-center">
+    <div className="flex flex-col w-full md:justify-center">
       <div className="w-6/12 m-auto">
         <h2 className="text-base text-xl font-semibold text-gray-900">Login</h2>
         <div className="flex flex-col mt-2">
@@ -200,7 +200,7 @@ function Home({ onConnect }: { onConnect: (request: {{makeRequestName initialize
   const [stateId, setStateId] = useState<string>("");
   const navigate = useNavigate();
   return (
-    <div className="home w-full flex flex-col md:justify-center">
+    <div className="flex flex-col w-full md:justify-center">
       <div className="w-6/12 m-auto">
         <h2 className="text-base text-xl font-semibold text-gray-900">Home</h2>
         <div className="flex flex-col mt-2">
@@ -212,12 +212,12 @@ function Home({ onConnect }: { onConnect: (request: {{makeRequestName initialize
               type="text"
               value={stateId}
               onChange={(e) => setStateId(e.target.value)}
-              className="focus:ring-indigo-500 focus:border-indigo-500 mb-2 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+              className="block w-full mb-2 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
             <button
               type="button"
               onClick={() => navigate(`/state/${stateId}`)}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               Join Existing
             </button>
