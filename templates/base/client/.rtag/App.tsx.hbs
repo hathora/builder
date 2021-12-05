@@ -97,7 +97,7 @@ function NavBar({ token }: { token?: string }) {
   const navigate = useNavigate();
   const user = token !== undefined ? RtagClient.getUserFromToken(token) : undefined;
   return (
-    <div as="nav" className="bg-indigo-500">
+    <div className="bg-indigo-500">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
@@ -118,10 +118,7 @@ function NavBar({ token }: { token?: string }) {
                     key={user.name}
                     className="bg-indigo-700 text-gray-200 px-3 py-2 rounded-md text-sm font-medium"
                   >
-                    <UserCircleIcon
-                      className="inline flex-shrink-0 mr-1.5 h-5 w-5 text-gray-200"
-                      aria-hidden="true"
-                    />
+                    <UserCircleIcon className="inline flex-shrink-0 mr-1.5 h-5 w-5 text-gray-200" aria-hidden="true" />
                     {user.name}
                   </span>
                 </div>
