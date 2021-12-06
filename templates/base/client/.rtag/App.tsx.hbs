@@ -17,7 +17,7 @@ const client = new RtagClient(import.meta.env.VITE_APP_ID);
 function App() {
   const [connection, setConnection] = useState<RtagConnection>();
   const [state, setState] = useState<UserState>();
-  const [token, setToken] = useState<string | null>(sessionStorage.getItem("token"));
+  const [token, setToken] = useState<string | undefined>(sessionStorage.getItem("token") ?? undefined);
   const [openMethods, setOpenMethods] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -30,66 +30,59 @@ function App() {
     }
   }, [location]);
 
-  if (token === null) {
-    return (
-      <>
-        <NavBar />
-        <div className="py-6 sm:px-6 lg:px-8">
-          <Login setToken={setToken} />
-        </div>
-      </>
-    );
-  }
-
   return (
-    <div>
+    <>
       <NavBar token={token} />
       <div id="app" className="py-6 sm:px-6 lg:px-8">
-        <Routes>
-          <Route
-            path="/state/:stateId"
-            element={
-              <Main
-                state={state}
-                connection={connection}
-                onConnect={(stateId) =>
-                  client
-                    .connectExisting(token, stateId, setState)
-                    .then((conn) => setConnection(conn))
-                    .catch((e) => toast.error("Connection error: " + e.reason))
-                }
-                onDisconnect={() => {
-                  if (connection !== undefined) {
-                    connection.disconnect();
-                    setConnection(undefined);
-                    setState(undefined);
+        {token === undefined ? (
+          <Login setToken={setToken} />
+        ) : (
+          <Routes>
+            <Route
+              path="/state/:stateId"
+              element={
+                <Main
+                  state={state}
+                  connection={connection}
+                  onConnect={(stateId) =>
+                    client
+                      .connectExisting(token, stateId, setState)
+                      .then((conn) => setConnection(conn))
+                      .catch((e) => toast.error("Connection error: " + e.reason))
                   }
-                }}
-                openMethods={openMethods}
-                setOpenMethods={setOpenMethods}
-              />
-            }
-          />
-          <Route
-            path="/"
-            element={
-              <Home
-                onConnect={(request) =>
-                  client
-                    .connectNew(token, request, setState)
-                    .then((conn) => {
-                      setConnection(conn);
-                      navigate(`/state/${conn.stateId}`);
-                    })
-                    .catch((e) => toast.error("Connection error: " + e.reason))
-                }
-              />
-            }
-          />
-          <Route path="*" element={<div>Not Found</div>} />
-        </Routes>
+                  onDisconnect={() => {
+                    if (connection !== undefined) {
+                      connection.disconnect();
+                      setConnection(undefined);
+                      setState(undefined);
+                    }
+                  }}
+                  openMethods={openMethods}
+                  setOpenMethods={setOpenMethods}
+                />
+              }
+            />
+            <Route
+              path="/"
+              element={
+                <Home
+                  onConnect={(request) =>
+                    client
+                      .connectNew(token, request, setState)
+                      .then((conn) => {
+                        setConnection(conn);
+                        navigate(`/state/${conn.stateId}`);
+                      })
+                      .catch((e) => toast.error("Connection error: " + e.reason))
+                  }
+                />
+              }
+            />
+            <Route path="*" element={<div>Not Found</div>} />
+          </Routes>
+        )}
       </div>
-    </div>
+    </>
   );
 }
 
@@ -98,33 +91,28 @@ function NavBar({ token }: { token?: string }) {
   const user = token !== undefined ? RtagClient.getUserFromToken(token) : undefined;
   return (
     <div className="bg-indigo-500">
-      <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center">
-            <div className="flex-shrink-0 cursor-pointer" onClick={() => navigate(`/`)}>
-              <img
-                className="w-10 h-10"
-                src="https://i.ibb.co/sQMmTTq/hathora-hammer-logo-light.png"
-                alt="hathora-hammer-logo"
-              />
-            </div>
-            <div className="flex items-center flex-shrink-0 cursor-pointer" onClick={() => navigate(`/`)}>
-              <span className="mt-1 ml-3 text-2xl font-semibold text-white uppercase font-display">{{appName}}</span>
-            </div>
-            {user && (
-              <div className="hidden md:block">
-                <div className="flex items-baseline ml-10 space-x-4">
-                  <span
-                    key={user.name}
-                    className="px-3 py-2 text-sm font-medium text-gray-200 bg-indigo-700 rounded-md"
-                  >
-                    <UserCircleIcon className="inline flex-shrink-0 mr-1.5 h-5 w-5 text-gray-200" aria-hidden="true" />
-                    {user.name}
-                  </span>
-                </div>
-              </div>
-            )}
+      <div className="flex items-center justify-between h-16 px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+        <div className="flex items-center">
+          <div className="flex-shrink-0 cursor-pointer" onClick={() => navigate(`/`)}>
+            <img
+              className="w-10 h-10"
+              src="https://i.ibb.co/sQMmTTq/hathora-hammer-logo-light.png"
+              alt="hathora-hammer-logo"
+            />
           </div>
+          <div className="flex items-center flex-shrink-0 cursor-pointer" onClick={() => navigate(`/`)}>
+            <span className="mt-1 ml-3 text-2xl font-semibold text-white uppercase font-display">{{appName}}</span>
+          </div>
+          {user && (
+            <div className="hidden md:block">
+              <div className="flex items-baseline ml-10 space-x-4">
+                <span key={user.name} className="px-3 py-2 text-sm font-medium text-gray-200 bg-indigo-700 rounded-md">
+                  <UserCircleIcon className="inline flex-shrink-0 mr-1.5 h-5 w-5 text-gray-200" aria-hidden="true" />
+                  {user.name}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
