@@ -18,7 +18,6 @@ function App() {
   const [connection, setConnection] = useState<RtagConnection>();
   const [state, setState] = useState<UserState>();
   const [token, setToken] = useState<string | undefined>(sessionStorage.getItem("token") ?? undefined);
-  const [openMethods, setOpenMethods] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -57,8 +56,6 @@ function App() {
                       setState(undefined);
                     }
                   }}
-                  openMethods={openMethods}
-                  setOpenMethods={setOpenMethods}
                 />
               }
             />
@@ -119,23 +116,6 @@ function NavBar({ token }: { token?: string }) {
   );
 }
 
-function MethodButton({ setOpenMethods }: { setOpenMethods: (v: boolean) => void }) {
-  return (
-    <div className="fixed top-24 right-6 lg:right-8">
-      <span className="sm:ml-3">
-        <button
-          type="button"
-          onClick={() => setOpenMethods(true)}
-          className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          <LightningBoltIcon className="w-5 h-5 mr-2 -ml-1" aria-hidden="true" />
-          Methods
-        </button>
-      </span>
-    </div>
-  );
-}
-
 function Login({ setToken }: { setToken: (token: string) => void }) {
   return (
     <div className="flex flex-col w-full md:justify-center">
@@ -164,7 +144,7 @@ function Login({ setToken }: { setToken: (token: string) => void }) {
 {{else if (eq @key "google")}}
           <div className="w-6/12">
             <GoogleLogin
-              clientId="848412826788-m4msrb6q44dm2ue3kgvui0fq7kda55ls.apps.googleusercontent.com"
+              clientId="{{clientId}}"
               onSuccess={({ tokenId }: any) =>
                 client
                   .loginGoogle(tokenId)
@@ -221,11 +201,10 @@ type MainProps = {
   connection: RtagConnection | undefined;
   onConnect: (stateId: string) => void;
   onDisconnect: () => void;
-  openMethods: boolean;
-  setOpenMethods: (v: boolean) => void;
 };
-function Main({ state, connection, onConnect, onDisconnect, openMethods, setOpenMethods }: MainProps) {
+function Main({ state, connection, onConnect, onDisconnect }: MainProps) {
   const { stateId } = useParams();
+  const [openMethods, setOpenMethods] = useState(false);
   useEffect(() => {
     if (connection === undefined) {
       onConnect(stateId!);
@@ -239,7 +218,18 @@ function Main({ state, connection, onConnect, onDisconnect, openMethods, setOpen
 
   return (
     <RtagContext.Provider value=\{{ connection, state }}>
-      <MethodButton setOpenMethods={setOpenMethods} />
+      <div className="fixed top-24 right-6 lg:right-8">
+        <span className="sm:ml-3">
+          <button
+            type="button"
+            onClick={() => setOpenMethods(true)}
+            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            <LightningBoltIcon className="w-5 h-5 mr-2 -ml-1" aria-hidden="true" />
+            Methods
+          </button>
+        </span>
+      </div>
       <State />
       <Forms open={openMethods} setOpen={setOpenMethods} />
     </RtagContext.Provider>
