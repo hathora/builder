@@ -328,7 +328,7 @@ export function Forms({ open, setOpen }: { open: boolean; setOpen: (v: boolean) 
                           <div className="grid grid-cols-6 gap-2 pl-2 ml-2 border-l border-gray-300">
                             {{#each properties}}
                             <div className="col-span-6 sm:col-span-4">
-                              <label className="block mt-2 mb-1 text-sm font-medium text-gray-700">roleList</label>
+                              <label className="block mt-2 mb-1 text-sm font-medium text-gray-700">{{@key}}</label>
                               {{> renderForm arg=@key}}
                             </div>
                             {{/each}}
@@ -357,7 +357,7 @@ function {{@key}}Input({ value, update }: BaseProps<{{@key}}>) {
     <div className="gap-2 p-2 ml-2 border border-gray-300 rounded-md">
       {{#each properties}}
       <div className="col-span-6 sm:col-span-4">
-        <label className="block mb-1 text-sm font-medium text-gray-700">role</label>
+        <label className="block mb-1 text-sm font-medium text-gray-700">{{@key}}</label>
         {{> renderForm arg=@key}}
       </div>
       {{/each}}
@@ -373,11 +373,11 @@ function {{@key}}Input({ value, update }: BaseProps<{{@key}}>) {
         className="mb-2"
         value={value.type}
         onChange={(newValue) => {
-          if (newValue === "RoleInfo") {
-            update({ type: "RoleInfo", val: RoleInfo.default() });
-          } else if (newValue === "PlayerAndVote") {
-            update({ type: "PlayerAndVote", val: PlayerAndVote.default() });
+          {{#each options}}
+          {{#unless @first}}else {{/unless}}if (newValue === "{{@key}}") {
+            update({ type: "{{@key}}", val: {{> renderDefault}} });
           }
+          {{/each}}
         }}
       >
         <div className="mt-1 relative">
