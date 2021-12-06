@@ -250,96 +250,7 @@ function BooleanInput({ value, update }: BaseProps<boolean>) {
 }
 
 {{#each types}}
-{{#if (eq type "object")}}
-function {{@key}}Input({ value, update }: BaseProps<{{@key}}>) {
-  return (
-    <div className="gap-2 p-2 ml-2 border border-gray-300 rounded-md">
-      {{#each properties}}
-      <div className="col-span-6 sm:col-span-4">
-        <label className="block mb-1 text-sm font-medium text-gray-700">role</label>
-        {{> renderForm arg=@key}}
-      </div>
-      {{/each}}
-    </div>
-  );
-}
-
-{{else if (eq type "union")}}
-function {{@key}}Input({ value, update }: BaseProps<{{@key}}>) {
-  return (
-    <div className="">
-      <Listbox
-        className="mb-2"
-        value={value.type}
-        onChange={(newValue) => {
-          if (newValue === "RoleInfo") {
-            update({ type: "RoleInfo", val: RoleInfo.default() });
-          } else if (newValue === "PlayerAndVote") {
-            update({ type: "PlayerAndVote", val: PlayerAndVote.default() });
-          }
-        }}
-      >
-        <div className="mt-1 relative">
-          <Listbox.Button className="relative w-full bg-white border border-gray-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-            <span className="flex items-center">
-              <span className="ml-3 block truncate">{value.type}</span>
-            </span>
-            <span className="ml-3 absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-              <SelectorIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-            </span>
-          </Listbox.Button>
-
-          <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
-            <Listbox.Options className="absolute z-10 mt-1 w-full max-w-xs bg-white shadow-lg max-h-56 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
-              { {{@key}}.values().map((val, i) => (
-                <Listbox.Option
-                  key={i}
-                  value={val}
-                  className={({ active }) =>
-                    classNames(
-                      active ? "text-white bg-red-600" : "text-gray-900",
-                      "cursor-default select-none relative py-2 pl-3 pr-9"
-                    )
-                  }
-                >
-                  {({ selected, active }) => (
-                    <>
-                      <div className="flex items-center">
-                        <span className={classNames(selected ? "font-semibold" : "font-normal", "ml-3 block truncate")}>
-                          {val}
-                        </span>
-                      </div>
-
-                      {selected ? (
-                        <span
-                          className={classNames(
-                            active ? "text-white" : "text-indigo-600",
-                            "absolute inset-y-0 right-0 flex items-center pr-4"
-                          )}
-                        >
-                          <CheckIcon className="h-5 w-5" aria-hidden="true" />
-                        </span>
-                      ) : null}
-                    </>
-                  )}
-                </Listbox.Option>
-              ))}
-            </Listbox.Options>
-          </Transition>
-        </div>
-      </Listbox>
-      {(() => {
-        {{#each options}}
-          {{#unless @first}}else {{/unless}}if (value.type === "{{@key}}") {
-            return {{> renderForm arg="val"}}
-          }
-        {{/each}}
-      })()}
-    </div>
-  );
-}
-
-{{/if}}
+{{> renderInput}}
 {{/each}}
 export function InitializeForm({ submit }: { submit: (value: {{makeRequestName initialize}}) => void }) {
   const [value, update] = useState<{{makeRequestName initialize}}>({{makeRequestName initialize}}.default());
@@ -437,6 +348,100 @@ export function Forms({ open, setOpen }: { open: boolean; setOpen: (v: boolean) 
     </Transition.Root>
   );
 }
+{{#*inline "renderInput"}}
+{{#if (eq type "plugin")}}
+{{> renderInput item}}
+{{else if (eq type "object")}}
+function {{@key}}Input({ value, update }: BaseProps<{{@key}}>) {
+  return (
+    <div className="gap-2 p-2 ml-2 border border-gray-300 rounded-md">
+      {{#each properties}}
+      <div className="col-span-6 sm:col-span-4">
+        <label className="block mb-1 text-sm font-medium text-gray-700">role</label>
+        {{> renderForm arg=@key}}
+      </div>
+      {{/each}}
+    </div>
+  );
+}
+
+{{else if (eq type "union")}}
+function {{@key}}Input({ value, update }: BaseProps<{{@key}}>) {
+  return (
+    <div className="">
+      <Listbox
+        className="mb-2"
+        value={value.type}
+        onChange={(newValue) => {
+          if (newValue === "RoleInfo") {
+            update({ type: "RoleInfo", val: RoleInfo.default() });
+          } else if (newValue === "PlayerAndVote") {
+            update({ type: "PlayerAndVote", val: PlayerAndVote.default() });
+          }
+        }}
+      >
+        <div className="mt-1 relative">
+          <Listbox.Button className="relative w-full bg-white border border-gray-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            <span className="flex items-center">
+              <span className="ml-3 block truncate">{value.type}</span>
+            </span>
+            <span className="ml-3 absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+              <SelectorIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+            </span>
+          </Listbox.Button>
+
+          <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
+            <Listbox.Options className="absolute z-10 mt-1 w-full max-w-xs bg-white shadow-lg max-h-56 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
+              { {{@key}}.values().map((val, i) => (
+                <Listbox.Option
+                  key={i}
+                  value={val}
+                  className={({ active }) =>
+                    classNames(
+                      active ? "text-white bg-red-600" : "text-gray-900",
+                      "cursor-default select-none relative py-2 pl-3 pr-9"
+                    )
+                  }
+                >
+                  {({ selected, active }) => (
+                    <>
+                      <div className="flex items-center">
+                        <span className={classNames(selected ? "font-semibold" : "font-normal", "ml-3 block truncate")}>
+                          {val}
+                        </span>
+                      </div>
+
+                      {selected ? (
+                        <span
+                          className={classNames(
+                            active ? "text-white" : "text-indigo-600",
+                            "absolute inset-y-0 right-0 flex items-center pr-4"
+                          )}
+                        >
+                          <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                        </span>
+                      ) : null}
+                    </>
+                  )}
+                </Listbox.Option>
+              ))}
+            </Listbox.Options>
+          </Transition>
+        </div>
+      </Listbox>
+      {(() => {
+        {{#each options}}
+          {{#unless @first}}else {{/unless}}if (value.type === "{{@key}}") {
+            return {{> renderForm arg="val"}}
+          }
+        {{/each}}
+      })()}
+    </div>
+  );
+}
+
+{{/if}}
+{{/inline}}
 {{#*inline "renderForm"}}
 {{#if (eq type "plugin")}}
 {{#with item}}
