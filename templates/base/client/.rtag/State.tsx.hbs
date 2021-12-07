@@ -1,4 +1,5 @@
-import React, { useRef, useLayoutEffect, useContext } from "react";
+import React, { useRef, useLayoutEffect, useContext, useState } from "react";
+import { MinusSmIcon, PlusSmIcon } from "@heroicons/react/solid";
 import { RtagContext } from "./context";
 import { RtagConnection } from "./client";
 import {
@@ -18,21 +19,52 @@ window.customElements.define("{{makePluginName this}}", {{this}}Plugin);
 function KVDisplay(props: { label: string; children: JSX.Element }) {
   return (
     <div className="kv-display">
-      <span>{props.label}: </span>
+      <span className="font-bold">{props.label}: </span>
       {props.children}
     </div>
   );
 }
 
 function ArrayDisplay<T>(props: { value: T[]; children: (value: T) => JSX.Element }) {
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(props.value && props.value.length > 7 ? true : false);
+
+  let icon;
+  if (isCollapsed) {
+    icon = <PlusSmIcon className="w-3 h-3 fill-current" aria-hidden="true" />;
+  } else {
+    icon = <MinusSmIcon className="w-3 h-3 fill-current" aria-hidden="true" />;
+  }
   return (
-    <span className="array-display">
+    <span className={`array-display`}>
+      {props.value && props.value.length > 0 && (
+        <span className="align-middle mr-0.5">
+          <button
+            type="button"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="inline-flex items-center text-sm font-medium text-gray-700 bg-gray-100 border border-gray-700 rounded-md shadow-sm hover:bg-gray-200 hover:text-gray-900 hover:border-gray-900 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-indigo-500 disabled:opacity-50"
+          >
+            {icon}
+          </button>
+        </span>
+      )}
       [
-      {props.value.map((val, i) => (
-        <div className="array-item" key={i}>
-          {props.children(val)}
-        </div>
-      ))}
+      {props.value && props.value.length > 0 && (
+        <>
+          <span className="text-sm italic text-gray-500">
+            {props.value.length} {props.value.length === 1 ? "item" : "items"}
+          </span>
+          {!isCollapsed && (
+            <div className={`flex ${typeof props.value[0] === "object" ? "flex-row overflow-x-auto" : "flex-col"}`}>
+              {props.value.map((val, i) => (
+                <div className={`array-item`} key={i}>
+                  {props.children(val)}
+                </div>
+              ))}
+            </div>
+          )}
+          {isCollapsed && "..."}
+        </>
+      )}
       ]
     </span>
   );
@@ -65,30 +97,116 @@ function BooleanDisplay({ value }: { value: boolean }) {
   return <span className="boolean-display">{value ? "true" : "false"}</span>;
 }
 
-function PluginDisplay<T>({ value, component }: { value: T; component: string }) {
+function PluginDisplay<T>({
+  value,
+  component,
+  isCollapsible,
+}: {
+  value: T;
+  component: string;
+  isCollapsible: boolean;
+}) {
   const { state, connection } = useContext(RtagContext)!;
   const ref = useRef<{ val: T; state: UserState; client: RtagConnection }>();
   useLayoutEffect(() => {
-    ref.current!.val = value;
-    ref.current!.state = state;
-    ref.current!.client = connection;
+    if (ref.current) {
+      ref.current.val = value;
+      ref.current.state = state;
+      ref.current.client = connection;
+    }
   });
-  return <div className="plugin-display">{React.createElement(component, { ref })}</div>;
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+  let icon;
+  if (isCollapsed) {
+    icon = <PlusSmIcon className="w-3 h-3 fill-current" aria-hidden="true" />;
+  } else {
+    icon = <MinusSmIcon className="w-3 h-3 fill-current" aria-hidden="true" />;
+  }
+  return (
+    <>
+      {!isCollapsed ? (
+        <div>
+          {isCollapsible && (
+            <span className="align-middle mr-0.5">
+              <button
+                type="button"
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                className="inline-flex items-center text-sm font-medium text-gray-700 bg-gray-100 border border-gray-700 rounded-md shadow-sm hover:bg-gray-200 hover:text-gray-900 hover:border-gray-900 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-indigo-500 disabled:opacity-50"
+              >
+                {icon}
+              </button>
+            </span>
+          )}
+          <div className="p-1 plugin-display">{React.createElement(component, { ref })}</div>
+        </div>
+      ) : (
+        <div className="p-1 m-1 bg-white border rounded object-display">
+          {isCollapsible && (
+            <span className="align-middle mr-0.5">
+              <button
+                type="button"
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                className="inline-flex items-center text-sm font-medium text-gray-700 bg-gray-100 border border-gray-700 rounded-md shadow-sm hover:bg-gray-200 hover:text-gray-900 hover:border-gray-900 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-indigo-500 disabled:opacity-50"
+              >
+                {icon}
+              </button>
+            </span>
+          )}
+          <span className="text-sm italic text-gray-500">plugin collapsed</span>
+        </div>
+      )}
+    </>
+  );
 }
 
 {{#each types}}
 {{#if (eq type "object")}}
-function {{@key}}Display({ value }: { value: {{@key}} }) {
+function {{@key}}Display({ value, isCollapsible }: { value: {{@key}}, isCollapsible: boolean  }) {
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+  let icon;
+  if (isCollapsed) {
+    icon = <PlusSmIcon className="w-3 h-3 fill-current" aria-hidden="true" />;
+  } else {
+    icon = <MinusSmIcon className="w-3 h-3 fill-current" aria-hidden="true" />;
+  }
   return (
-    <div className="object-display">
-      &#123;
-      {{#each properties}}
-      <KVDisplay label="{{@key}}">
-        {{> renderDisplay arg=@key}}
-      </KVDisplay>
-      {{/each}}
-      &#125;
-    </div>
+    <>
+      {!isCollapsed ? (
+        <div className="p-1 m-1 bg-white border rounded object-display">
+          {isCollapsible && (
+            <span className="align-middle mr-0.5">
+              <button
+                type="button"
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                className="inline-flex items-center text-sm font-medium text-gray-700 bg-gray-100 border border-gray-700 rounded-md shadow-sm hover:bg-gray-200 hover:text-gray-900 hover:border-gray-900 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-indigo-500 disabled:opacity-50"
+              >
+                {icon}
+              </button>
+            </span>
+          )}
+          {{#each properties}}
+          <KVDisplay label="{{@key}}">
+            {{> renderDisplay arg=@key isCollapsible=true}}
+          </KVDisplay>
+          {{/each}}
+        </div>
+      ) : (
+        <div className="p-1 m-1 bg-white border rounded object-display">
+          {isCollapsible && (
+            <span className="align-middle mr-0.5">
+              <button
+                type="button"
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                className="inline-flex items-center text-sm font-medium text-gray-700 bg-gray-100 border border-gray-700 rounded-md shadow-sm hover:bg-gray-200 hover:text-gray-900 hover:border-gray-900 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-indigo-500 disabled:opacity-50"
+              >
+                {icon}
+              </button>
+            </span>
+          )}
+          <span className="text-sm italic text-gray-500"> object collapsed</span>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -97,7 +215,7 @@ function {{@key}}Display({ value }: { value: {{@key}} }) {
   switch (value.type) {
     {{#each options}}
     case "{{@key}}":
-      return {{> renderDisplay arg="val"}};
+      return {{> renderDisplay arg="val" isCollapsible=true}};
     {{/each}}
   }
 }
@@ -107,28 +225,28 @@ function {{@key}}Display({ value }: { value: {{@key}} }) {
 export function State() {
   const { state: value } = useContext(RtagContext)!;
   return (
-    <div className="state">
-      {{> renderDisplay (lookup types userState)}}
+    <div className="w-full font-mono text-gray-700 state-display">
+      {{> renderDisplay (lookup types userState) isCollapsible=false}}
     </div>
   );
 }
 {{#*inline "renderDisplay"}}
 {{#if (eq type "plugin")}}
-<PluginDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} component="{{makePluginName typeString}}" />
+<PluginDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} component="{{makePluginName typeString}}" isCollapsible={ {{isCollapsible}} } />
 {{else if (eq type "object")}}
-<{{typeString}}Display {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} />
+<{{typeString}}Display {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} isCollapsible={ {{isCollapsible}} } />
 {{else if (eq type "union")}}
-<{{typeString}}Display {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} />
+<{{typeString}}Display {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} isCollapsible={ {{isCollapsible}} } />
 {{else if (eq type "array")}}
 <ArrayDisplay<{{> renderTypeArg items}}> {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}}>
   {(value) => 
-    {{> renderDisplay items}}
+    {{> renderDisplay items isCollapsible=true}}
   }
 </ArrayDisplay>
 {{else if (eq type "optional")}}
 <OptionalDisplay<{{> renderTypeArg}}> {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}}>
   {(value) => 
-    {{> renderDisplay item}}
+    {{> renderDisplay item isCollapsible=isCollapsible}}
   }
 </OptionalDisplay>
 {{else if (eq type "enum")}}
