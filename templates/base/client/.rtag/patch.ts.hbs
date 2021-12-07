@@ -25,6 +25,16 @@ function patchArray<T>(arr: T[], patch: (typeof NO_DIFF | any)[], innerPatch: (a
   return arr;
 }
 
+function patchOptional<T>(obj: T | undefined, patch: any, innerPatch: (a: T, b: DeepPartial<T>) => T) {
+  if (patch === undefined) {
+    return undefined;
+  } else if (obj === undefined) {
+    return patch as T;
+  } else {
+    return innerPatch(obj, patch);
+  }
+}
+
 export function computePatch(state: {{userState}}, patch: DeepPartial<{{userState}}>) {
   return patch{{userState}}(state, patch);
 }
@@ -66,7 +76,7 @@ patch{{typeString}}({{a}}, {{b}})
 {{~else if (eq type "array")}}
 patchArray({{a}}, {{b}}, (a, b) => {{> renderPatch items a="a" b="b"}})
 {{~else if (eq type "optional")}}
-{{b}}
+patchOptional({{a}}, {{b}}, (a, b) => {{> renderPatch item a="a" b="b"}})
 {{~else}}
 {{b}}
 {{~/if}}
