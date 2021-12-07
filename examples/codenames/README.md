@@ -1,3 +1,3 @@
 https://rtag-codenames.surge.sh/
 
-![image](https://user-images.githubusercontent.com/5400947/134374629-9558f696-f8d1-40b3-9f29-b7adba70a9d2.png)
+![image](https://user-images.githubusercontent.com/5400947/144971711-f586b034-bb1d-4ea7-9908-81323ed3e78a.png)
