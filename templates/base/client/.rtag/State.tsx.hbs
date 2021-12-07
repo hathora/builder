@@ -97,7 +97,15 @@ function BooleanDisplay({ value }: { value: boolean }) {
   return <span className="boolean-display">{value ? "true" : "false"}</span>;
 }
 
-function PluginDisplay<T>({ value, component, isCollapsible }: { value: T; component: string, isCollapsible: boolean }) {
+function PluginDisplay<T>({
+  value,
+  component,
+  isCollapsible,
+}: {
+  value: T;
+  component: string;
+  isCollapsible: boolean;
+}) {
   const { state, connection } = useContext(RtagContext)!;
   const ref = useRef<{ val: T; state: UserState; client: RtagConnection }>();
   useLayoutEffect(() => {
@@ -126,7 +134,7 @@ function PluginDisplay<T>({ value, component, isCollapsible }: { value: T; compo
                 className="inline-flex items-center text-sm font-medium text-gray-700 bg-gray-100 border border-gray-700 rounded-md shadow-sm hover:bg-gray-200 hover:text-gray-900 hover:border-gray-900 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-indigo-500 disabled:opacity-50"
               >
                 {icon}
-                </button>
+              </button>
             </span>
           )}
           <div className="p-1 plugin-display">{React.createElement(component, { ref })}</div>
@@ -134,15 +142,15 @@ function PluginDisplay<T>({ value, component, isCollapsible }: { value: T; compo
       ) : (
         <div className="p-1 m-1 bg-white border rounded object-display">
           {isCollapsible && (
-          <span className="align-middle mr-0.5">
-                <button
-                  type="button"
-                  onClick={() => setIsCollapsed(!isCollapsed)}
-                  className="inline-flex items-center text-sm font-medium text-gray-700 bg-gray-100 border border-gray-700 rounded-md shadow-sm hover:bg-gray-200 hover:text-gray-900 hover:border-gray-900 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-indigo-500 disabled:opacity-50"
-                >
-                  {icon}
-            </button>
-              </span>
+            <span className="align-middle mr-0.5">
+              <button
+                type="button"
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                className="inline-flex items-center text-sm font-medium text-gray-700 bg-gray-100 border border-gray-700 rounded-md shadow-sm hover:bg-gray-200 hover:text-gray-900 hover:border-gray-900 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-indigo-500 disabled:opacity-50"
+              >
+                {icon}
+              </button>
+            </span>
           )}
           <span className="text-sm italic text-gray-500">plugin collapsed</span>
         </div>
@@ -173,7 +181,7 @@ function {{@key}}Display({ value, isCollapsible }: { value: {{@key}}, isCollapsi
                 className="inline-flex items-center text-sm font-medium text-gray-700 bg-gray-100 border border-gray-700 rounded-md shadow-sm hover:bg-gray-200 hover:text-gray-900 hover:border-gray-900 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-indigo-500 disabled:opacity-50"
               >
                 {icon}
-                </button>
+              </button>
             </span>
           )}
           {{#each properties}}
