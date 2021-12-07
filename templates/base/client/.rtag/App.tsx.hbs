@@ -101,9 +101,9 @@ function NavBar({ token }: { token?: string }) {
             <span className="mt-1 ml-3 text-2xl font-semibold text-white uppercase font-display">{{appName}}</span>
           </div>
           {user && (
-            <div className="hidden md:block">
+            <div className="block">
               <div className="flex items-baseline ml-10 space-x-4">
-                <span key={user.name} className="px-3 py-2 text-sm font-medium text-gray-200 bg-indigo-700 rounded-md">
+                <span className="px-3 py-2 font-medium text-gray-200 bg-indigo-700 rounded-md text-xs md:text-sm">
                   <UserCircleIcon className="inline flex-shrink-0 mr-1.5 h-5 w-5 text-gray-200" aria-hidden="true" />
                   {user.name}
                 </span>
