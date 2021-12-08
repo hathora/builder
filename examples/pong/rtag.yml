@@ -17,7 +17,6 @@ types:
 
 methods:
   createGame:
-  joinGame:
   setDirection:
     direction: Direction
 

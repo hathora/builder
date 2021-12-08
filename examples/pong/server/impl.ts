@@ -1,6 +1,6 @@
 import { Methods, Context } from "./.rtag/methods";
 import { UserData, Response } from "./.rtag/base";
-import { Direction, PlayerState, ICreateGameRequest, IJoinGameRequest, ISetDirectionRequest } from "./.rtag/types";
+import { Direction, PlayerState, ICreateGameRequest, ISetDirectionRequest } from "./.rtag/types";
 
 const MAP_WIDTH = 600;
 const MAP_HEIGHT = 400;
@@ -37,21 +37,15 @@ export class Impl implements Methods<InternalState> {
       updatedAt: 0,
     };
   }
-  joinGame(state: InternalState, user: UserData, ctx: Context, request: IJoinGameRequest): Response {
-    if (state.playerA.id === user.id || state.playerB.id === user.id) {
-      return Response.error("Already joined");
-    }
-    if (state.playerB.id !== undefined) {
-      return Response.error("Already started");
-    }
-    state.playerB.id = user.id;
-    return Response.ok();
-  }
   setDirection(state: InternalState, user: UserData, ctx: Context, request: ISetDirectionRequest): Response {
     if (state.playerA.id === user.id) {
       state.playerA.direction = request.direction;
       return Response.ok();
     } else if (state.playerB.id === user.id) {
+      state.playerB.direction = request.direction;
+      return Response.ok();
+    } else if (state.playerB.id === undefined) {
+      state.playerB.id = user.id;
       state.playerB.direction = request.direction;
       return Response.ok();
     } else {
