@@ -1,0 +1,30 @@
+types:
+  Direction:
+    - NONE
+    - UP
+    - DOWN
+  Point:
+    x: float
+    y: float
+  Player:
+    paddle: float
+    score: int
+  PlayerState:
+    playerA: Player
+    playerB: Player
+    ball: Point
+    updatedAt: int
+
+methods:
+  createGame:
+  setDirection:
+    direction: Direction
+
+auth:
+  anonymous:
+    separator: "-"
+
+userState: PlayerState
+initialize: createGame
+error: string
+tick: 100

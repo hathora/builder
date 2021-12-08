@@ -1,0 +1,11 @@
+{
+  "name": "pong-client",
+  "version": "0.0.1",
+  "type": "module",
+  "dependencies": {
+    "lit": "^2.0.2"
+  },
+  "devDependencies": {
+    "typescript": "^4.5.2"
+  }
+}
