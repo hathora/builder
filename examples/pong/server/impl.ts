@@ -4,12 +4,13 @@ import { Direction, PlayerState, ICreateGameRequest, IJoinGameRequest, ISetDirec
 
 const MAP_WIDTH = 600;
 const MAP_HEIGHT = 400;
+const PADDLE_HEIGHT = 50;
 const PADDLE_SPEED = 100;
 const BALL_SPEED = 250;
 
 type InternalState = {
-  playerA: { id: string; direction: Direction; paddle: number };
-  playerB: { id?: string; direction: Direction; paddle: number };
+  playerA: { id: string; direction: Direction; paddle: number; score: number };
+  playerB: { id?: string; direction: Direction; paddle: number; score: number };
   ball: { x: number; y: number; angle: number };
   updatedAt: number;
 };
@@ -21,15 +22,17 @@ export class Impl implements Methods<InternalState> {
         id: user.id,
         direction: Direction.NONE,
         paddle: MAP_HEIGHT / 2,
+        score: 0,
       },
       playerB: {
         direction: Direction.NONE,
         paddle: MAP_HEIGHT / 2,
+        score: 0,
       },
       ball: {
         x: MAP_WIDTH / 2,
         y: MAP_HEIGHT / 2,
-        angle: ctx.rand() * Math.PI,
+        angle: ctx.rand() * 2 * Math.PI,
       },
       updatedAt: 0,
     };
@@ -57,17 +60,14 @@ export class Impl implements Methods<InternalState> {
   }
   getUserState(state: InternalState, user: UserData): PlayerState {
     return {
-      paddleA: state.playerA.paddle,
-      paddleB: state.playerB.paddle,
+      playerA: state.playerA,
+      playerB: state.playerB,
       ball: state.ball,
       updatedAt: state.updatedAt,
     };
   }
   onTick(state: InternalState, ctx: Context, timeDelta: number): void {
     if (state.playerB.id === undefined) {
-      return;
-    }
-    if (state.ball.x < 0 || state.ball.y < 0 || state.ball.x >= MAP_WIDTH || state.ball.y >= MAP_HEIGHT) {
       return;
     }
     if (state.playerA.direction !== Direction.NONE) {
@@ -78,5 +78,28 @@ export class Impl implements Methods<InternalState> {
     }
     state.ball.x += Math.cos(state.ball.angle) * BALL_SPEED * timeDelta;
     state.ball.y += Math.sin(state.ball.angle) * BALL_SPEED * timeDelta;
+    if (state.ball.x < 0) {
+      if (
+        state.ball.y < state.playerA.paddle - PADDLE_HEIGHT / 2 ||
+        state.ball.y > state.playerA.paddle + PADDLE_HEIGHT / 2
+      ) {
+        state.playerB.score++;
+      }
+      state.ball.x = 0;
+      state.ball.angle = Math.PI - state.ball.angle;
+    }
+    if (state.ball.x >= MAP_WIDTH) {
+      if (
+        state.ball.y < state.playerB.paddle - PADDLE_HEIGHT / 2 ||
+        state.ball.y > state.playerB.paddle + PADDLE_HEIGHT / 2
+      ) {
+        state.playerA.score++;
+      }
+      state.ball.x = MAP_WIDTH - 1;
+      state.ball.angle = Math.PI - state.ball.angle;
+    }
+    if (state.ball.y < 0 || state.ball.y >= MAP_HEIGHT) {
+      state.ball.angle = 2 * Math.PI - state.ball.angle;
+    }
   }
 }
