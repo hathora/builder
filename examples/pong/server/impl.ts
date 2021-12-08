@@ -67,14 +67,17 @@ export class Impl implements Methods<InternalState> {
     };
   }
   onTick(state: InternalState, ctx: Context, timeDelta: number): void {
-    if (state.playerB.id === undefined) {
-      return;
-    }
     if (state.playerA.direction !== Direction.NONE) {
       state.playerA.paddle += PADDLE_SPEED * timeDelta * (state.playerA.direction === Direction.DOWN ? 1 : -1);
+      state.updatedAt = ctx.time();
     }
     if (state.playerB.direction !== Direction.NONE) {
       state.playerB.paddle += PADDLE_SPEED * timeDelta * (state.playerB.direction === Direction.DOWN ? 1 : -1);
+      state.updatedAt = ctx.time();
+    }
+
+    if (state.playerB.id === undefined) {
+      return;
     }
     state.ball.x += Math.cos(state.ball.angle) * BALL_SPEED * timeDelta;
     state.ball.y += Math.sin(state.ball.angle) * BALL_SPEED * timeDelta;
@@ -101,5 +104,6 @@ export class Impl implements Methods<InternalState> {
     if (state.ball.y < 0 || state.ball.y >= MAP_HEIGHT) {
       state.ball.angle = 2 * Math.PI - state.ball.angle;
     }
+    state.updatedAt = ctx.time();
   }
 }

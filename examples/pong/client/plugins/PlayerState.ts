@@ -2,7 +2,9 @@ import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
 import { Direction, PlayerState } from "../.rtag/types";
 import { RtagConnection } from "../.rtag/client";
+import { StateBuffer } from "../stateBuffer";
 
+const BUFFER_TIME = 140;
 const WIDTH = 600;
 const HEIGHT = 400;
 const PADDLE_WIDTH = 5;
@@ -13,9 +15,7 @@ export default class CardsComponent extends LitElement {
   @property() val!: PlayerState;
   @property() client!: RtagConnection;
 
-  ctx: CanvasRenderingContext2D | undefined;
-  playerAScoreEl: Element | undefined;
-  playerBScoreEl: Element | undefined;
+  buffer!: StateBuffer;
 
   render() {
     return html`<div style="display: flex; align-items: center;">
@@ -26,9 +26,10 @@ export default class CardsComponent extends LitElement {
   }
 
   firstUpdated() {
-    this.ctx = this.renderRoot.querySelector("canvas")!.getContext("2d")!;
-    this.playerAScoreEl = this.renderRoot.querySelector("div#playerAScore")!;
-    this.playerBScoreEl = this.renderRoot.querySelector("div#playerBScore")!;
+    this.buffer = new StateBuffer(this.val);
+    const ctx = this.renderRoot.querySelector("canvas")!.getContext("2d")!;
+    const playerAScoreEl = this.renderRoot.querySelector("div#playerAScore")!;
+    const playerBScoreEl = this.renderRoot.querySelector("div#playerBScore")!;
 
     document.addEventListener("keydown", (e) => {
       if (e.repeat) {
@@ -45,25 +46,28 @@ export default class CardsComponent extends LitElement {
         this.client.setDirection({ direction: Direction.NONE });
       }
     });
+
+    const draw = () => {
+      const state = this.buffer.getInterpolatedState(Date.now());
+
+      ctx.fillStyle = "black";
+      ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+      ctx.fillStyle = "blue";
+      ctx.fillRect(0, state.playerA.paddle - PADDLE_HEIGHT / 2, PADDLE_WIDTH, PADDLE_HEIGHT);
+      ctx.fillRect(WIDTH - PADDLE_WIDTH, state.playerB.paddle - PADDLE_HEIGHT / 2, PADDLE_WIDTH, PADDLE_HEIGHT);
+      ctx.beginPath();
+      ctx.arc(state.ball.x, state.ball.y, BALL_RADIUS, 0, 2 * Math.PI);
+      ctx.fill();
+
+      playerAScoreEl!.textContent = state.playerA.score.toString();
+      playerBScoreEl!.textContent = state.playerB.score.toString();
+      requestAnimationFrame(draw);
+    };
+    requestAnimationFrame(draw);
   }
 
   updated() {
-    const ctx = this.ctx!;
-    if (ctx === undefined) {
-      return;
-    }
-
-    ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, WIDTH, HEIGHT);
-
-    ctx.fillStyle = "blue";
-    ctx.fillRect(0, this.val.playerA.paddle - PADDLE_HEIGHT / 2, PADDLE_WIDTH, PADDLE_HEIGHT);
-    ctx.fillRect(WIDTH - PADDLE_WIDTH, this.val.playerB.paddle - PADDLE_HEIGHT / 2, PADDLE_WIDTH, PADDLE_HEIGHT);
-    ctx.beginPath();
-    ctx.arc(this.val.ball.x, this.val.ball.y, BALL_RADIUS, 0, 2 * Math.PI);
-    ctx.fill();
-
-    this.playerAScoreEl!.textContent = this.val.playerA.score.toString();
-    this.playerBScoreEl!.textContent = this.val.playerB.score.toString();
+    this.buffer.enqueue({ ...this.val, updatedAt: this.val.updatedAt + BUFFER_TIME });
   }
 }
