@@ -43,6 +43,8 @@ export function register(store: Store): Promise<CoordinatorClient> {
               anonymous: { separator: "{{separator}}" },
 {{else if (eq @key "google")}}
               google: { clientId: "{{clientId}}" },
+{{else if (eq @key "email")}}
+              email: { magicSecretApiKey: process.env.MAGIC_SECRET_KEY! },
 {{/if}}
 {{/each}}
             },

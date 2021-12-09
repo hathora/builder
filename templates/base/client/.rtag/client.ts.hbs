@@ -3,6 +3,9 @@ import WebSocket from "isomorphic-ws";
 import getRandomValues from "get-random-values";
 import axios from "axios";
 import jwtDecode from "jwt-decode";
+{{#if auth.email}}
+import { Magic } from "magic-sdk";
+{{/if}}
 import { UserData, Response, Method } from "./base";
 import { computePatch } from "./patch";
 import {
@@ -14,6 +17,9 @@ import {
 } from "./types";
 
 const COORDINATOR_HOST = "rtag.dev";
+{{#with auth.email}}
+const magic = new Magic("{{magicPublicApiKey}}");
+{{/with}}
 
 export type StateId = string;
 
@@ -33,6 +39,14 @@ export class RtagClient {
 {{else if (eq @key "google")}}
   public async loginGoogle(idToken: string): Promise<string> {
     return (await axios.post(`https://${COORDINATOR_HOST}/${this.appId}/login/google`, { idToken })).data.token;
+  }
+
+{{else if (eq @key "email")}}
+  public async loginEmail(email: string): Promise<string> {
+    return magic.auth
+      .loginWithMagicLink({ email })
+      .then((didToken) => axios.post(`https://${COORDINATOR_HOST}/${this.appId}/login/email`, { didToken }))
+      .then((res) => res.data.token);
   }
 
 {{/if}}

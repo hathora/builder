@@ -13,6 +13,7 @@ const RtagConfig = z
       .object({
         anonymous: z.optional(z.object({ separator: z.string() }).strict()),
         google: z.optional(z.object({ clientId: z.string() }).strict()),
+        email: z.optional(z.object({ magicPublicApiKey: z.string() }).strict()),
       })
       .strict(),
     userState: z.string(),

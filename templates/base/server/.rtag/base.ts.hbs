@@ -33,6 +33,8 @@ export interface {{capitalize @key}}UserData {
   email: string;
   locale: string;
   picture: string;
+{{else if (eq @key "email")}}
+  email: string;
 {{/if}}
 }
 {{/each}}

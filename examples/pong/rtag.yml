@@ -23,6 +23,8 @@ methods:
 auth:
   anonymous:
     separator: "-"
+  email:
+    magicPublicApiKey: pk_live_C51086447ADD349D
 
 userState: PlayerState
 initialize: createGame

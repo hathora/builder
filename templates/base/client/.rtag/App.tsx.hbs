@@ -117,14 +117,17 @@ function NavBar({ token }: { token?: string }) {
 }
 
 function Login({ setToken }: { setToken: (token: string) => void }) {
+  {{#if auth.email}}
+  const [email, setEmail] = useState<string>("");
+  {{/if}}
   return (
     <div className="flex flex-col w-full md:justify-center">
       <div className="w-6/12 m-auto">
         <h2 className="text-base text-xl font-semibold text-gray-900">Login</h2>
         <div className="flex flex-col mt-2">
 {{#each auth}}
-{{#if (eq @key "anonymous")}}
           <div className="w-6/12 mb-4">
+{{#if (eq @key "anonymous")}}
             <button
               type="button"
               onClick={() =>
@@ -140,9 +143,7 @@ function Login({ setToken }: { setToken: (token: string) => void }) {
             >
               Login (Anonymous)
             </button>
-          </div>
 {{else if (eq @key "google")}}
-          <div className="w-6/12">
             <GoogleLogin
               clientId="{{clientId}}"
               onSuccess={({ tokenId }: any) =>
@@ -155,8 +156,32 @@ function Login({ setToken }: { setToken: (token: string) => void }) {
                   .catch((e) => toast.error("Authentication error: " + e.reason))
               }
             />
-          </div>
+{{else if (eq @key "email")}}
+            <input
+              type="text"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="block w-full mb-2 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                if (email.length > 0) {
+                  client
+                    .loginEmail(email)
+                    .then((token) => {
+                      sessionStorage.setItem("token", token);
+                      setToken(token);
+                    })
+                    .catch((e) => toast.error("Authentication error: " + e.reason));
+                }
+              }}
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Login (Email)
+            </button>
 {{/if}}
+          </div>
 {{/each}}
         </div>
       </div>
