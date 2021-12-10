@@ -1,6 +1,7 @@
 import { Context } from "./methods";
-import { UserData, Response, Method } from "./base";
+import { Response, Method } from "./base";
 import {
+  UserId,
   {{#each methods}}
   {{makeRequestName @key}},
   {{/each}}
@@ -75,16 +76,16 @@ const handler: ProxyHandler<any> = {
 };
 
 export const ImplWrapper = {
-  initialize(user: UserData, ctx: Context, argsBuffer: Buffer): State {
-    const state = impl.{{initialize}}(user, ctx, {{makeRequestName initialize}}.decode(argsBuffer));
+  initialize(userId: UserId, ctx: Context, argsBuffer: Buffer): State {
+    const state = impl.{{initialize}}(userId, ctx, {{makeRequestName initialize}}.decode(argsBuffer));
     return new Proxy(state, handler);
   },
-  getResult(state: State, user: UserData, method: Method, ctx: Context, argsBuffer: Buffer): Response | undefined {
+  getResult(state: State, userId: UserId, method: Method, ctx: Context, argsBuffer: Buffer): Response | undefined {
     switch (method) {
       {{#each methods}}
       {{#if (ne @key ../initialize)}}
       case Method.{{uppercase @key}}:
-        return impl.{{@key}}(state, user, ctx, {{makeRequestName @key}}.decode(argsBuffer));
+        return impl.{{@key}}(state, userId, ctx, {{makeRequestName @key}}.decode(argsBuffer));
       {{/if}}
       {{/each}}
       default:
@@ -96,8 +97,8 @@ export const ImplWrapper = {
     impl.onTick(state, ctx, timeDelta);
   },
   {{/if}}
-  getUserState(state: State, user: UserData) {
-    return impl.getUserState((state as any)[PROXY_TARGET], user);
+  getUserState(state: State, userId: UserId) {
+    return impl.getUserState((state as any)[PROXY_TARGET], userId);
   },
   changed(): boolean {
     const res = changed;
