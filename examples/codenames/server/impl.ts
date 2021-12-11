@@ -1,6 +1,7 @@
 import { Methods, Context } from "./.rtag/methods";
-import { UserData, Response } from "./.rtag/base";
+import { Response } from "./.rtag/base";
 import {
+  UserId,
   ICreateGameRequest,
   IJoinGameRequest,
   IStartGameRequest,
@@ -11,7 +12,6 @@ import {
   Card,
   Color,
   PlayerInfo,
-  PlayerName,
   GameStatus,
   TurnInfo,
 } from "./.rtag/types";
@@ -26,24 +26,24 @@ type InternalState = {
 };
 
 export class Impl implements Methods<InternalState> {
-  createGame(userData: UserData, ctx: Context, request: ICreateGameRequest): InternalState {
+  createGame(userId: UserId, ctx: Context, request: ICreateGameRequest): InternalState {
     return {
-      players: [createPlayer(userData.name)],
+      players: [createPlayer(userId)],
       currentTurn: Color.YELLOW,
       cards: [],
     };
   }
-  joinGame(state: InternalState, userData: UserData, ctx: Context, request: IJoinGameRequest): Response {
+  joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {
     if (getGameStatus(state.cards) !== GameStatus.NOT_STARTED) {
       return Response.error("Game already started");
     }
-    if (state.players.find((player) => player.name === userData.name)) {
+    if (state.players.find((player) => player.id === userId)) {
       return Response.error("Already joined");
     }
-    state.players.push(createPlayer(userData.name));
+    state.players.push(createPlayer(userId));
     return Response.ok();
   }
-  startGame(state: InternalState, userData: UserData, ctx: Context, request: IStartGameRequest): Response {
+  startGame(state: InternalState, userId: UserId, ctx: Context, request: IStartGameRequest): Response {
     if (getGameStatus(state.cards) === GameStatus.IN_PROGRESS) {
       return Response.error("Game is in progress");
     }
@@ -71,11 +71,11 @@ export class Impl implements Methods<InternalState> {
     state.currentTurn = Color.RED;
     return Response.ok();
   }
-  giveClue(state: InternalState, userData: UserData, ctx: Context, request: IGiveClueRequest): Response {
+  giveClue(state: InternalState, userId: UserId, ctx: Context, request: IGiveClueRequest): Response {
     if (getGameStatus(state.cards) !== GameStatus.IN_PROGRESS) {
       return Response.error("Game is over");
     }
-    const player = state.players.find((p) => p.name === userData.name);
+    const player = state.players.find((p) => p.id === userId);
     if (player === undefined) {
       return Response.error("Invalid player");
     }
@@ -88,11 +88,11 @@ export class Impl implements Methods<InternalState> {
     state.turnInfo = { hint: request.hint, amount: request.amount, guessed: 0 };
     return Response.ok();
   }
-  selectCard(state: InternalState, userData: UserData, ctx: Context, request: ISelectCardRequest): Response {
+  selectCard(state: InternalState, userId: UserId, ctx: Context, request: ISelectCardRequest): Response {
     if (getGameStatus(state.cards) !== GameStatus.IN_PROGRESS) {
       return Response.error("Game is over");
     }
-    const player = state.players.find((p) => p.name === userData.name);
+    const player = state.players.find((p) => p.id === userId);
     if (player === undefined) {
       return Response.error("Invalid player");
     }
@@ -120,11 +120,11 @@ export class Impl implements Methods<InternalState> {
     }
     return Response.ok();
   }
-  endTurn(state: InternalState, userData: UserData, ctx: Context, request: IEndTurnRequest): Response {
+  endTurn(state: InternalState, userId: UserId, ctx: Context, request: IEndTurnRequest): Response {
     if (getGameStatus(state.cards) !== GameStatus.IN_PROGRESS) {
       return Response.error("Game is over");
     }
-    const player = state.players.find((p) => p.name === userData.name);
+    const player = state.players.find((p) => p.id === userId);
     if (player === undefined) {
       return Response.error("Invalid player");
     }
@@ -141,8 +141,8 @@ export class Impl implements Methods<InternalState> {
     state.turnInfo = undefined;
     return Response.ok();
   }
-  getUserState(state: InternalState, userData: UserData): PlayerState {
-    const player = state.players.find((p) => p.name === userData.name);
+  getUserState(state: InternalState, userId: UserId): PlayerState {
+    const player = state.players.find((p) => p.id === userId);
     const gameStatus = getGameStatus(state.cards);
     return {
       players: state.players,
@@ -156,8 +156,8 @@ export class Impl implements Methods<InternalState> {
   }
 }
 
-function createPlayer(name: PlayerName) {
-  return { name, team: Color.YELLOW, isSpymaster: false };
+function createPlayer(id: UserId): PlayerInfo {
+  return { id, team: Color.YELLOW, isSpymaster: false };
 }
 
 function getGameStatus(cards: Card[]): GameStatus {

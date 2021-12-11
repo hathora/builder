@@ -1,6 +1,7 @@
 import { Methods, Context } from "./.rtag/methods";
-import { UserData, Response } from "./.rtag/base";
+import { Response } from "./.rtag/base";
 import {
+  UserId,
   PlayerState,
   ICreateGameRequest,
   IJoinGameRequest,
@@ -8,14 +9,13 @@ import {
   IFoldRequest,
   ICallRequest,
   IRaiseRequest,
-  Username,
   PlayerStatus,
 } from "./.rtag/types";
 import { shuffle } from "./utils";
 import { Cards, createDeck, drawCardsFromDeck, findHighestHands } from "@pairjacks/poker-cards";
 
 type InternalPlayerInfo = {
-  name: Username;
+  id: UserId;
   chipCount: number;
   chipsInPot: number;
   cards: Cards;
@@ -33,9 +33,9 @@ type InternalState = {
 };
 
 export class Impl implements Methods<InternalState> {
-  createGame(user: UserData, ctx: Context, request: ICreateGameRequest): InternalState {
+  createGame(userId: UserId, ctx: Context, request: ICreateGameRequest): InternalState {
     return {
-      players: [createPlayer(user.name, request.startingChips)],
+      players: [createPlayer(userId, request.startingChips)],
       dealerIdx: 0,
       activePlayerIdx: 0,
       revealedCards: [],
@@ -44,14 +44,14 @@ export class Impl implements Methods<InternalState> {
       deck: [],
     };
   }
-  joinGame(state: InternalState, user: UserData, ctx: Context, request: IJoinGameRequest): Response {
-    if (state.players.find((p) => p.name === user.name) !== undefined) {
+  joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {
+    if (state.players.find((p) => p.id === userId) !== undefined) {
       return Response.error("Already joined");
     }
-    state.players.push(createPlayer(user.name, state.startingChips));
+    state.players.push(createPlayer(userId, state.startingChips));
     return Response.ok();
   }
-  startRound(state: InternalState, user: UserData, ctx: Context, request: IStartRoundRequest): Response {
+  startRound(state: InternalState, userId: UserId, ctx: Context, request: IStartRoundRequest): Response {
     if (state.players.length < 2) {
       return Response.error("At least 2 players required");
     }
@@ -72,18 +72,18 @@ export class Impl implements Methods<InternalState> {
     });
     return Response.ok();
   }
-  fold(state: InternalState, user: UserData, ctx: Context, request: IFoldRequest): Response {
+  fold(state: InternalState, userId: UserId, ctx: Context, request: IFoldRequest): Response {
     const player = state.players[state.activePlayerIdx];
-    if (player.name !== user.name || player.status !== PlayerStatus.WAITING) {
+    if (player.id !== userId || player.status !== PlayerStatus.WAITING) {
       return Response.error("Not your turn");
     }
     player.status = PlayerStatus.FOLDED;
     advanceRound(state);
     return Response.ok();
   }
-  call(state: InternalState, user: UserData, ctx: Context, request: ICallRequest): Response {
+  call(state: InternalState, userId: UserId, ctx: Context, request: ICallRequest): Response {
     const player = state.players[state.activePlayerIdx];
-    if (player.name !== user.name || player.status !== PlayerStatus.WAITING) {
+    if (player.id !== userId || player.status !== PlayerStatus.WAITING) {
       return Response.error("Not your turn");
     }
     const betAmount = getAmountToCall(state.players, player);
@@ -94,9 +94,9 @@ export class Impl implements Methods<InternalState> {
     advanceRound(state);
     return Response.ok();
   }
-  raise(state: InternalState, user: UserData, ctx: Context, request: IRaiseRequest): Response {
+  raise(state: InternalState, userId: UserId, ctx: Context, request: IRaiseRequest): Response {
     const player = state.players[state.activePlayerIdx];
-    if (player.name !== user.name || player.status !== PlayerStatus.WAITING) {
+    if (player.id !== userId || player.status !== PlayerStatus.WAITING) {
       return Response.error("Not your turn");
     }
     const betAmount = getAmountToCall(state.players, player) + request.amount;
@@ -108,28 +108,28 @@ export class Impl implements Methods<InternalState> {
     advanceRound(state);
     return Response.ok();
   }
-  getUserState(state: InternalState, user: UserData): PlayerState {
+  getUserState(state: InternalState, userId: UserId): PlayerState {
     const showdown =
       state.players.filter((p) => p.status === PlayerStatus.WAITING).length === 0 &&
       state.players.filter((p) => p.status === PlayerStatus.PLAYED).length > 1;
     return {
       players: state.players.map((player) => {
-        const shouldReveal = player.name === user.name || (showdown && player.status === PlayerStatus.PLAYED);
+        const shouldReveal = player.id === userId || (showdown && player.status === PlayerStatus.PLAYED);
         return {
           ...player,
           cards: shouldReveal ? player.cards.map((card) => ({ rank: card[0], suit: card[1] })) : [],
         };
       }),
-      dealer: state.players[state.dealerIdx].name,
-      activePlayer: state.players[state.activePlayerIdx].name,
+      dealer: state.players[state.dealerIdx].id,
+      activePlayer: state.players[state.activePlayerIdx].id,
       revealedCards: state.revealedCards.map((card) => ({ rank: card[0], suit: card[1] })),
     };
   }
 }
 
-function createPlayer(name: Username, chipCount: number): InternalPlayerInfo {
+function createPlayer(id: UserId, chipCount: number): InternalPlayerInfo {
   return {
-    name,
+    id,
     chipCount,
     chipsInPot: 0,
     cards: [],

@@ -1,5 +1,4 @@
 types:
-  PlayerName: string
   Square: string
   Board: Piece[]
 
@@ -29,7 +28,7 @@ types:
     board: Board
     status: GameStatus
     color: Color
-    opponent: PlayerName?
+    opponent: UserId?
 
 methods:
   createGame:

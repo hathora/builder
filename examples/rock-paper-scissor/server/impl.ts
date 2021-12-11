@@ -1,7 +1,7 @@
 import { Methods, Context } from "./.rtag/methods";
-import { UserData, Response } from "./.rtag/base";
+import { Response } from "./.rtag/base";
 import {
-  PlayerInfo,
+  UserId,
   PlayerState,
   ICreateGameRequest,
   IJoinGameRequest,
@@ -11,24 +11,24 @@ import {
 } from "./.rtag/types";
 
 export class Impl implements Methods<PlayerState> {
-  createGame(user: UserData, ctx: Context, request: ICreateGameRequest): PlayerState {
-    return { round: 0, player1: { name: user.name, score: 0 } };
+  createGame(userId: UserId, ctx: Context, request: ICreateGameRequest): PlayerState {
+    return { round: 0, player1: { id: userId, score: 0 } };
   }
-  joinGame(state: PlayerState, user: UserData, ctx: Context, request: IJoinGameRequest): Response {
-    if (state.player1.name === user.name || state.player2?.name === user.name) {
+  joinGame(state: PlayerState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {
+    if (state.player1.id === userId || state.player2?.id === userId) {
       return Response.error("Already joined");
     }
     if (state.player2 !== undefined) {
       return Response.error("Game full");
     }
-    state.player2 = { name: user.name, score: 0 };
+    state.player2 = { id: userId, score: 0 };
     return Response.ok();
   }
-  chooseGesture(state: PlayerState, user: UserData, ctx: Context, request: IChooseGestureRequest): Response {
+  chooseGesture(state: PlayerState, userId: UserId, ctx: Context, request: IChooseGestureRequest): Response {
     if (state.player2 === undefined) {
       return Response.error("Game not started");
     }
-    const player = [state.player1, state.player2].find((p) => p.name === user.name);
+    const player = [state.player1, state.player2].find((p) => p.id === userId);
     if (player === undefined) {
       return Response.error("Invalid player");
     }
@@ -36,7 +36,7 @@ export class Impl implements Methods<PlayerState> {
       return Response.error("Already picked");
     }
     player.gesture = request.gesture;
-    const otherPlayer = user.name === state.player1.name ? state.player2 : state.player1;
+    const otherPlayer = userId === state.player1.id ? state.player2 : state.player1;
     if (otherPlayer.gesture !== undefined) {
       if (gestureWins(player.gesture, otherPlayer.gesture)) {
         player.score++;
@@ -46,7 +46,7 @@ export class Impl implements Methods<PlayerState> {
     }
     return Response.ok();
   }
-  nextRound(state: PlayerState, user: UserData, ctx: Context, request: INextRoundRequest): Response {
+  nextRound(state: PlayerState, userId: UserId, ctx: Context, request: INextRoundRequest): Response {
     if (state.player2 === undefined) {
       return Response.error("Game not started");
     }
@@ -58,7 +58,7 @@ export class Impl implements Methods<PlayerState> {
     state.player2.gesture = undefined;
     return Response.ok();
   }
-  getUserState(state: PlayerState, user: UserData): PlayerState {
+  getUserState(state: PlayerState, userId: UserId): PlayerState {
     if (state.player2 === undefined) {
       return state;
     }
@@ -67,8 +67,8 @@ export class Impl implements Methods<PlayerState> {
     }
     return {
       round: state.round,
-      player1: user.name === state.player1.name ? state.player1 : { ...state.player1, gesture: undefined },
-      player2: user.name === state.player2.name ? state.player2 : { ...state.player2, gesture: undefined },
+      player1: userId === state.player1.id ? state.player1 : { ...state.player1, gesture: undefined },
+      player2: userId === state.player2.id ? state.player2 : { ...state.player2, gesture: undefined },
     };
   }
 }

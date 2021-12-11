@@ -1,5 +1,4 @@
 types:
-  PlayerName: string
   Color:
     - RED
     - BLUE
@@ -10,10 +9,10 @@ types:
     color: Color
   PlayerState:
     hand: Card[]
-    players: PlayerName[]
-    turn: PlayerName
+    players: UserId[]
+    turn: UserId
     pile: Card?
-    winner: PlayerName?
+    winner: UserId?
 
 methods:
   createGame:

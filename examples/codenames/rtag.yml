@@ -1,5 +1,4 @@
 types:
-  PlayerName: string
   Cards: Card[]
   Color:
     - RED
@@ -7,7 +6,7 @@ types:
     - BLACK
     - YELLOW
   PlayerInfo:
-    name: PlayerName
+    id: UserId
     team: Color
     isSpymaster: boolean
   Card:
