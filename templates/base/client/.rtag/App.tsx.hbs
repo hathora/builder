@@ -8,6 +8,7 @@ import { GoogleLogin } from "react-google-login";
 {{/if}}
 import { RtagClient, RtagConnection } from "./client";
 import { {{makeRequestName initialize}}, {{userState}} as UserState } from "./types";
+import { getUserDisplayName } from "./base";
 import { RtagContext } from "./context";
 import { Forms, InitializeForm } from "./Forms";
 import { State } from "./State";
