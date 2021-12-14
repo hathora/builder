@@ -1,6 +1,7 @@
 import { Methods, Context } from "./.rtag/methods";
-import { UserData, Response } from "./.rtag/base";
+import { Response } from "./.rtag/base";
 import {
+  UserId,
   GameStatus,
   Color,
   Piece,
@@ -9,39 +10,37 @@ import {
   IStartGameRequest,
   IMovePieceRequest,
   PieceType,
-  PlayerName,
 } from "./.rtag/types";
 import { Chess, ChessInstance, Piece as ChessPiece, Square } from "chess.js";
 
 type InternalUser = {
-  name: PlayerName;
+  name: UserId;
   color: Color;
 };
-
 type InternalState = {
   chess: ChessInstance & { _modCnt: number };
   users: InternalUser[];
 };
 
 export class Impl implements Methods<InternalState> {
-  createGame(user: UserData, ctx: Context, request: ICreateGameRequest): InternalState {
+  createGame(userId: UserId, ctx: Context, request: ICreateGameRequest): InternalState {
     return {
       chess: Object.assign(new Chess(), { _modCnt: 0 }),
-      users: [{ name: user.name, color: Color.WHITE }],
+      users: [{ name: userId, color: Color.WHITE }],
     };
   }
-  startGame(state: InternalState, user: UserData, ctx: Context, request: IStartGameRequest): Response {
-    if (state.users.find((u) => u.name === user.name) !== undefined) {
+  startGame(state: InternalState, userId: UserId, ctx: Context, request: IStartGameRequest): Response {
+    if (state.users.find((u) => u.name === userId) !== undefined) {
       return Response.error("Need opponent to start game");
     }
-    state.users.push({ name: user.name, color: Color.BLACK });
+    state.users.push({ name: userId, color: Color.BLACK });
     return Response.ok();
   }
-  movePiece(state: InternalState, user: UserData, ctx: Context, request: IMovePieceRequest): Response {
+  movePiece(state: InternalState, userId: UserId, ctx: Context, request: IMovePieceRequest): Response {
     if (gameStatus(state) === GameStatus.WAITING) {
       return Response.error("Game not started");
     }
-    const color = state.users.find((u) => u.name === user.name)?.color;
+    const color = state.users.find((u) => u.name === userId)?.color;
     if (convertColor(state.chess.turn()) !== color) {
       return Response.error("Not your turn");
     }
@@ -52,15 +51,15 @@ export class Impl implements Methods<InternalState> {
     state.chess._modCnt++;
     return Response.ok();
   }
-  getUserState(state: InternalState, user: UserData): PlayerState {
-    const internalUser = state.users.find((u) => u.name === user.name);
+  getUserState(state: InternalState, userId: UserId): PlayerState {
+    const internalUser = state.users.find((u) => u.name === userId);
     return {
       board: state.chess.board().flatMap((pieces, i) => {
         return pieces.flatMap((piece, j) => (piece === null ? [] : convertPiece(piece, i, j)));
       }),
       status: gameStatus(state),
       color: internalUser?.color ?? Color.WHITE,
-      opponent: internalUser !== undefined ? state.users.find((u) => u.name !== user.name)?.name : undefined,
+      opponent: internalUser !== undefined ? state.users.find((u) => u.name !== userId)?.name : undefined,
     };
   }
 }

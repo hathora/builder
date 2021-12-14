@@ -1,7 +1,8 @@
-import React, { useRef, useLayoutEffect, useContext, useState } from "react";
+import React, { useRef, useLayoutEffect, useContext, useState, useEffect } from "react";
 import { MinusSmIcon, PlusSmIcon } from "@heroicons/react/solid";
-import { RtagContext } from "./context";
+import { getUserDisplayName, lookupUser, UserData } from "./base";
 import { RtagConnection } from "./client";
+import { RtagContext } from "./context";
 import {
   {{userState}} as UserState,
   {{#each types}}
@@ -79,6 +80,17 @@ function EnumDisplay(props: { value: number; enum: object }) {
     .filter(([_, value]) => typeof value === "number")
     .map(([label, _]) => label);
   return <span className="enum-display">{labels[props.value]}</span>;
+}
+
+function UserIdDisplay({ value }: { value: string }) {
+  const [userData, setUserData] = useState<UserData>();
+  useEffect(() => {
+    lookupUser(value).then(setUserData);
+  }, [value]);
+  if (userData === undefined) {
+    return <span className="string-display">"{value}"</span>;
+  }
+  return <span className="string-display">"{getUserDisplayName(userData)}"</span>;
 }
 
 function StringDisplay({ value }: { value: string }) {
@@ -251,6 +263,8 @@ export function State() {
 </OptionalDisplay>
 {{else if (eq type "enum")}}
 <EnumDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} enum={ {{typeString}} } />
+{{else if (eq typeString "UserId")}}
+<UserIdDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} />
 {{else if (eq type "string")}}
 <StringDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} />
 {{else if (eq type "int")}}

@@ -1,5 +1,6 @@
-import { UserData, Response } from "./base";
+import { Response } from "./base";
 import {
+  UserId,
   {{userState}} as UserState,
   {{#each methods}}
   {{makeRequestName @key}},
@@ -25,12 +26,12 @@ type State =
 export interface Methods<T extends State> {
   {{#each methods}}
   {{#if (eq @key ../initialize)}}
-  {{../initialize}}(user: UserData, ctx: Context, request: {{makeRequestName @key}}): T;
+  {{../initialize}}(userId: UserId, ctx: Context, request: {{makeRequestName @key}}): T;
   {{else}}
-  {{@key}}(state: T, user: UserData, ctx: Context, request: {{makeRequestName @key}}): Response;
+  {{@key}}(state: T, userId: UserId, ctx: Context, request: {{makeRequestName @key}}): Response;
   {{/if}}
   {{/each}}
-  getUserState(state: T, user: UserData): UserState;
+  getUserState(state: T, userId: UserId): UserState;
   {{#if tick}}
   onTick(state: T, ctx: Context, timeDelta: number): void;
   {{/if}}

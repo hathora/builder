@@ -149,6 +149,7 @@ function getArgsInfo(
 }
 
 function enrichDoc(doc: z.infer<typeof RtagConfig>, plugins: string[], appName: string) {
+  doc.types["UserId"] = "string";
   return {
     ...doc,
     types: Object.fromEntries(

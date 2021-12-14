@@ -1,32 +1,30 @@
 import { randomBytes } from "crypto";
 import { existsSync, mkdirSync } from "fs";
 import seedrandom from "seedrandom";
-import { decode } from "@msgpack/msgpack";
 import { SmartBuffer } from "smart-buffer";
 import "dotenv/config";
 import { register } from "./protocol";
 import LogStore from "./logstore";
 import { ImplWrapper as impl } from "./wrapper";
-import { UserData, Response, Method } from "./base";
-import { encodeStateUpdate, NO_DIFF, {{userState}} as UserState } from "./types";
+import { Response, Method } from "./base";
+import { UserId, encodeStateUpdate, NO_DIFF, {{userState}} as UserState } from "./types";
 import { computeDiff } from "./diff";
 
 type StateId = bigint;
-type UserId = string;
 type State = ReturnType<typeof impl.initialize>;
 {{#if tick}}
 type PendingUpdate =
-  | { user: UserData; time: number; method: Method; argsBuffer: Buffer }
+  | { userId: UserId; time: number; method: Method; argsBuffer: Buffer }
   | { time: number; timeDelta: number };
 {{else}}
-type PendingUpdate = { user: UserData; time: number; method: Method; argsBuffer: Buffer };
+type PendingUpdate = { userId: UserId; time: number; method: Method; argsBuffer: Buffer };
 {{/if}}
 type StateInfo = {
   state: State;
   rng: ReturnType<seedrandom>;
   prevState: State;
   prevRng: ReturnType<seedrandom>;
-  subscriptions: Map<UserId, UserData>;
+  subscriptions: Set<UserId>;
   pendingUpdates: PendingUpdate[];
 };
 
@@ -61,7 +59,7 @@ class Store {
         if (impl.changed()) {
           changedStates.add(stateId);
           pendingUpdates.push({ time: currTime, timeDelta });
-          log.append(stateId, currTime, new SmartBuffer().writeUInt8(0xfe).writeUInt32LE(timeDelta).toBuffer());
+          log.append(stateId, currTime, new SmartBuffer().writeUInt8(0xff).writeUInt32LE(timeDelta).toBuffer());
         }
       });
       prevUpdateTime = currTime;
@@ -69,38 +67,34 @@ class Store {
     {{/if}}
   }
   async newState(stateId: StateId, userId: UserId, argsBuffer: Buffer) {
-    const userBuffer = await coordinator.lookupUser(userId);
-    const user = decode(userBuffer) as UserData;
     const seed = randomBytes(8).readBigUInt64LE();
     const time = Date.now();
     const rng = seedrandom(seed.toString(36));
-    const state = impl.initialize(user, ctx(rng, time), argsBuffer);
+    const state = impl.initialize(userId, ctx(rng, time), argsBuffer);
     const prevRng = seedrandom(seed.toString(36));
-    const prevState = impl.initialize(user, ctx(prevRng, time), argsBuffer);
+    const prevState = impl.initialize(userId, ctx(prevRng, time), argsBuffer);
     stateInfo.set(stateId, {
       state,
       rng,
       prevState,
       prevRng,
-      subscriptions: new Map([[userId, user]]),
+      subscriptions: new Set([userId]),
       pendingUpdates: [],
     });
-    sendSnapshot(stateId, user);
+    sendSnapshot(stateId, userId);
     log.append(
       stateId,
       time,
       new SmartBuffer()
         .writeBigUInt64LE(seed)
-        .writeUInt32LE(userBuffer.length)
-        .writeBuffer(userBuffer)
+        .writeUInt32LE(userId.length)
+        .writeString(userId)
         .writeUInt32LE(argsBuffer.length)
         .writeBuffer(argsBuffer)
         .toBuffer()
     );
   }
   async subscribeUser(stateId: StateId, userId: UserId) {
-    const userBuffer = await coordinator.lookupUser(userId);
-    const user = decode(userBuffer) as UserData;
     if (!stateInfo.has(stateId)) {
       const loaded = loadState(stateId);
       if (loaded === undefined) {
@@ -112,17 +106,12 @@ class Store {
         prevState: loaded.prevState,
         rng: loaded.rng,
         prevRng: loaded.prevRng,
-        subscriptions: new Map(),
+        subscriptions: new Set(),
         pendingUpdates: [],
       });
     }
-    stateInfo.get(stateId)!.subscriptions.set(userId, user);
-    sendSnapshot(stateId, user);
-    log.append(
-      stateId,
-      Date.now(),
-      new SmartBuffer().writeUInt8(0xff).writeUInt32LE(userBuffer.length).writeBuffer(userBuffer).toBuffer()
-    );
+    stateInfo.get(stateId)!.subscriptions.add(userId);
+    sendSnapshot(stateId, userId);
   }
   unsubscribeUser(stateId: StateId, userId: UserId) {
     if (!stateInfo.has(stateId)) {
@@ -145,13 +134,12 @@ class Store {
     const { state, rng, subscriptions, pendingUpdates } = stateInfo.get(stateId)!;
     const reader = SmartBuffer.fromBuffer(data);
     const [method, msgId, argsBuffer] = [reader.readUInt8(), reader.readUInt32LE(), reader.readBuffer()];
-    const user = subscriptions.get(userId)!;
     const time = Date.now();
-    const response = impl.getResult(state, user, method, ctx(rng, time), argsBuffer);
+    const response = impl.getResult(state, userId, method, ctx(rng, time), argsBuffer);
     if (response !== undefined) {
       if (impl.changed()) {
         changedStates.add(stateId);
-        pendingUpdates.push({ user, time, method, argsBuffer });
+        pendingUpdates.push({ userId, time, method, argsBuffer });
         log.append(
           stateId,
           time,
@@ -182,32 +170,23 @@ const coordinator = await register(new Store());
 function loadState(stateId: StateId) {
   try {
     const rows = log.load(stateId);
-    const users: Map<UserId, UserData> = new Map();
 
     const { time, record } = rows[0];
     const reader = SmartBuffer.fromBuffer(record);
     const seed = reader.readBigUInt64LE();
-    const userBuffer = reader.readBuffer(reader.readUInt32LE());
+    const userId = reader.readString(reader.readUInt32LE());
     const argsBuffer = reader.readBuffer(reader.readUInt32LE());
-    const user = decode(userBuffer) as UserData;
-    users.set(user.id, user);
     const rng = seedrandom(seed.toString(36));
     const prevRng = seedrandom(seed.toString(36));
-    const state = impl.initialize(user, ctx(rng, time), argsBuffer);
-    const prevState = impl.initialize(user, ctx(prevRng, time), argsBuffer);
+    const state = impl.initialize(userId, ctx(rng, time), argsBuffer);
+    const prevState = impl.initialize(userId, ctx(prevRng, time), argsBuffer);
 
     for (let i = 1; i < rows.length; i++) {
       const { time, record } = rows[i];
       const reader = SmartBuffer.fromBuffer(record);
       const method = reader.readUInt8();
-      if (method === 0xff) {
-        const userBuffer = reader.readBuffer(reader.readUInt32LE());
-        const user = decode(userBuffer) as UserData;
-        users.set(user.id, user);
-        continue;
-      }
       {{#if tick}}
-      if (method === 0xfe) {
+      if (method === 0xff) {
         const timeDelta = reader.readUInt32LE();
         impl.onTick(state, ctx(rng, time), timeDelta / 1000);
         impl.onTick(prevState, ctx(prevRng, time), timeDelta / 1000);
@@ -216,8 +195,8 @@ function loadState(stateId: StateId) {
       {{/if}}
       const userId = reader.readString(reader.readUInt32LE());
       const argsBuffer = reader.readBuffer(reader.readUInt32LE());
-      impl.getResult(state, users.get(userId)!, method, ctx(rng, time), argsBuffer);
-      impl.getResult(prevState, users.get(userId)!, method, ctx(prevRng, time), argsBuffer);
+      impl.getResult(state, userId, method, ctx(rng, time), argsBuffer);
+      impl.getResult(prevState, userId, method, ctx(prevRng, time), argsBuffer);
     }
 
     return { state, rng, prevState, prevRng };
@@ -226,18 +205,18 @@ function loadState(stateId: StateId) {
   }
 }
 
-function sendSnapshot(stateId: StateId, user: UserData) {
+function sendSnapshot(stateId: StateId, userId: UserId) {
   const { state } = stateInfo.get(stateId)!;
-  const userState = impl.getUserState(state, user);
+  const userState = impl.getUserState(state, userId);
   const buf = Buffer.from(UserState.encode(userState));
-  coordinator.onStateUpdate(stateId, user.id, buf);
+  coordinator.onStateUpdate(stateId, userId, buf);
 }
 
 function sendUpdates(stateId: StateId, responses: Map<UserId, Record<number, Response>>) {
   if (stateInfo.has(stateId)) {
     const { state, prevState, prevRng, subscriptions, pendingUpdates } = stateInfo.get(stateId)!;
-    subscriptions.forEach((user, userId) => {
-      const diff = computeDiff(impl.getUserState(state, user), impl.getUserState(prevState, user));
+    subscriptions.forEach((userId) => {
+      const diff = computeDiff(impl.getUserState(state, userId), impl.getUserState(prevState, userId));
       if (diff !== NO_DIFF) {
         const buf = Buffer.from(encodeStateUpdate(diff, responses.get(userId) ?? {}));
         coordinator.onStateUpdate(stateId, userId, buf);
@@ -245,16 +224,16 @@ function sendUpdates(stateId: StateId, responses: Map<UserId, Record<number, Res
     });
     pendingUpdates.forEach((update) => {
       {{#if tick}}
-      if ("user" in update) {
-        const { user, time, method, argsBuffer } = update;
-        impl.getResult(prevState, user, method, ctx(prevRng, time), argsBuffer);
+      if ("userId" in update) {
+        const { userId, time, method, argsBuffer } = update;
+        impl.getResult(prevState, userId, method, ctx(prevRng, time), argsBuffer);
       } else {
         const { time, timeDelta } = update;
         impl.onTick(prevState, ctx(prevRng, time), timeDelta / 1000);
       }
       {{else}}
-      const { user, time, method, argsBuffer } = update;
-      impl.getResult(prevState, user, method, ctx(prevRng, time), argsBuffer);
+      const { userId, time, method, argsBuffer } = update;
+      impl.getResult(prevState, userId, method, ctx(prevRng, time), argsBuffer);
       {{/if}}
     });
     stateInfo.get(stateId)!.pendingUpdates = [];

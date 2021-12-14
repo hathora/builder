@@ -1,3 +1,6 @@
+import axios from "axios";
+import { UserId } from "./types";
+
 export enum Method {
   {{#each methods}}
   {{#if (ne @key ../initialize)}}
@@ -37,3 +40,7 @@ export interface {{capitalize @key}}UserData {
 }
 {{/each}}
 export type UserData = {{#each auth}}{{capitalize @key}}UserData{{#unless @last}} | {{/unless}}{{/each}};
+
+export function lookupUser(userId: UserId): Promise<UserData> {
+  return axios.get<UserData>(`https://rtag.dev/users/${userId}`).then((res) => res.data);
+}
