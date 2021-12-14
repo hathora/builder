@@ -44,3 +44,18 @@ export type UserData = {{#each auth}}{{capitalize @key}}UserData{{#unless @last}
 export function lookupUser(userId: UserId): Promise<UserData> {
   return axios.get<UserData>(`https://rtag.dev/users/${userId}`).then((res) => res.data);
 }
+
+export function getUserDisplayName(user: UserData) {
+  switch (user.type) {
+    {{#each auth}}
+    case "{{@key}}":
+      {{#if (eq @key "anonymous")}}
+      return user.name;
+      {{else if (eq @key "google")}}
+      return user.name;
+      {{else if (eq @key "email")}}
+      return user.email;
+      {{/if}}
+    {{/each}}
+  }
+}
