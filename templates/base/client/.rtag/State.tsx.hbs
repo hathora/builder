@@ -126,16 +126,16 @@ function UserIdDisplay({ value }: { value: string }) {
         </span>
       </div>
       {!isCollapsed && (
-        <>
+        <div className="mt-1">
           <div className="kv-display">
             <span className="font-bold">UserId: </span>
-            {userData.id}
+            <StringDisplay value={userData.id} />
           </div>
           <div className="kv-display">
             <span className="font-bold">type: </span>
-            {userData.type}
+            <StringDisplay value={userData.type} />
           </div>
-        </>
+        </div>
       )}
     </div>
   );
