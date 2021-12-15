@@ -5,7 +5,7 @@ import { Direction, PlayerState } from "../.rtag/types";
 import { RtagConnection } from "../.rtag/client";
 import { StateBuffer } from "../stateBuffer";
 
-const BUFFER_TIME = 140;
+const BUFFER_TIME = 200;
 const WIDTH = 600;
 const HEIGHT = 400;
 const PADDLE_WIDTH = 8;
