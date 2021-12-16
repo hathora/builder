@@ -1,6 +1,6 @@
 import { Methods, Context } from "./.rtag/methods";
-import { UserData, Response } from "./.rtag/base";
-import { Direction, PlayerState, ICreateGameRequest, ISetDirectionRequest } from "./.rtag/types";
+import { Response } from "./.rtag/base";
+import { UserId, Direction, PlayerState, ICreateGameRequest, ISetDirectionRequest } from "./.rtag/types";
 
 const MAP_WIDTH = 600;
 const MAP_HEIGHT = 400;
@@ -16,10 +16,10 @@ type InternalState = {
 };
 
 export class Impl implements Methods<InternalState> {
-  createGame(user: UserData, ctx: Context, request: ICreateGameRequest): InternalState {
+  createGame(userId: UserId, ctx: Context, request: ICreateGameRequest): InternalState {
     return {
       playerA: {
-        id: user.id,
+        id: userId,
         direction: Direction.NONE,
         paddle: MAP_HEIGHT / 2,
         score: 0,
@@ -37,22 +37,22 @@ export class Impl implements Methods<InternalState> {
       updatedAt: 0,
     };
   }
-  setDirection(state: InternalState, user: UserData, ctx: Context, request: ISetDirectionRequest): Response {
-    if (state.playerA.id === user.id) {
+  setDirection(state: InternalState, userId: UserId, ctx: Context, request: ISetDirectionRequest): Response {
+    if (state.playerA.id === userId) {
       state.playerA.direction = request.direction;
       return Response.ok();
-    } else if (state.playerB.id === user.id) {
+    } else if (state.playerB.id === userId) {
       state.playerB.direction = request.direction;
       return Response.ok();
     } else if (state.playerB.id === undefined) {
-      state.playerB.id = user.id;
+      state.playerB.id = userId;
       state.playerB.direction = request.direction;
       return Response.ok();
     } else {
       return Response.error("Not in game");
     }
   }
-  getUserState(state: InternalState, user: UserData): PlayerState {
+  getUserState(state: InternalState, userId: UserId): PlayerState {
     return {
       playerA: state.playerA,
       playerB: state.playerB,

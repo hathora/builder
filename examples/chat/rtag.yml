@@ -1,13 +1,12 @@
 types:
-  Username: string
   Message:
     text: string
     sentAt: int
-    sentBy: Username
-    sentTo: Username?
+    sentBy: UserId
+    sentTo: UserId?
   RoomState:
     name: string
-    createdBy: Username
+    createdBy: UserId
     messages: Message[]
 
 methods:
@@ -17,7 +16,7 @@ methods:
     text: string
   sendPrivateMessage:
     text: string
-    to: Username
+    to: UserId
 
 auth:
   anonymous:

@@ -1,5 +1,4 @@
 types:
-  Username: string
   PlayerStatus:
     - WAITING
     - FOLDED
@@ -8,15 +7,15 @@ types:
     rank: string
     suit: string
   PlayerInfo:
-    name: Username
+    id: UserId
     chipCount: int
     chipsInPot: int
     cards: Card[]
     status: PlayerStatus
   PlayerState:
     players: PlayerInfo[]
-    dealer: Username
-    activePlayer: Username
+    dealer: UserId
+    activePlayer: UserId
     revealedCards: Card[]
 
 methods:

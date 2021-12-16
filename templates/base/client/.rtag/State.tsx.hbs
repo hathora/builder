@@ -1,7 +1,8 @@
-import React, { useRef, useLayoutEffect, useContext, useState } from "react";
-import { MinusSmIcon, PlusSmIcon } from "@heroicons/react/solid";
-import { RtagContext } from "./context";
+import React, { useRef, useLayoutEffect, useContext, useState, useEffect } from "react";
+import { MinusSmIcon, PlusSmIcon, UserCircleIcon } from "@heroicons/react/solid";
+import { getUserDisplayName, lookupUser, UserData } from "./base";
 import { RtagConnection } from "./client";
+import { RtagContext } from "./context";
 import {
   {{userState}} as UserState,
   {{#each types}}
@@ -80,6 +81,67 @@ function EnumDisplay(props: { value: number; enum: object }) {
     .filter(([_, value]) => typeof value === "number")
     .map(([label, _]) => label);
   return <span className="enum-display">{labels[props.value]}</span>;
+}
+
+function UserIdDisplay({ value }: { value: string }) {
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
+  const [userData, setUserData] = useState<UserData>();
+  useEffect(() => {
+    lookupUser(value).then(setUserData);
+  }, [value]);
+  if (userData === undefined) {
+    return (
+      <div className="p-1 m-1 bg-white border rounded object-display">
+        <span className="user-display flex items-center">
+          <UserCircleIcon className="inline flex-shrink-0 mr-1.5 h-5 w-5 text-gray-500" aria-hidden="true" />
+          {value}
+        </span>
+      </div>
+    );
+  }
+
+  let icon;
+  if (isCollapsed) {
+    icon = <PlusSmIcon className="w-3 h-3 fill-current" aria-hidden="true" />;
+  } else {
+    icon = <MinusSmIcon className="w-3 h-3 fill-current" aria-hidden="true" />;
+  }
+
+  return (
+    <div className="p-1 m-1 bg-white border rounded object-display">
+      <div className="flex justify-between items-center">
+        <span className="user-display flex items-center">
+          <UserCircleIcon
+            className="inline align-middle flex-shrink-0 mr-1.5 h-5 w-5 text-gray-500"
+            aria-hidden="true"
+          />
+          {getUserDisplayName(userData)}
+        </span>
+
+        <span className="align-middle mr-0.5">
+          <button
+            type="button"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="inline-flex items-center text-sm font-medium text-gray-700 bg-gray-100 border border-gray-700 rounded-md shadow-sm hover:bg-gray-200 hover:text-gray-900 hover:border-gray-900 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-indigo-500 disabled:opacity-50"
+          >
+            {icon}
+          </button>
+        </span>
+      </div>
+      {!isCollapsed && (
+        <div className="mt-1">
+          <div className="kv-display">
+            <span className="font-bold">UserId: </span>
+            <StringDisplay value={userData.id} />
+          </div>
+          <div className="kv-display">
+            <span className="font-bold">type: </span>
+            <StringDisplay value={userData.type} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function StringDisplay({ value }: { value: string }) {
@@ -252,6 +314,8 @@ export function State() {
 </OptionalDisplay>
 {{else if (eq type "enum")}}
 <EnumDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} enum={ {{typeString}} } />
+{{else if (eq typeString "UserId")}}
+<UserIdDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} />
 {{else if (eq type "string")}}
 <StringDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} />
 {{else if (eq type "int")}}

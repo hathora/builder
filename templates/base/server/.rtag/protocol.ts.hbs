@@ -1,8 +1,6 @@
 import net from "net";
 import retry from "retry";
-import { encode } from "@msgpack/msgpack";
 import { SmartBuffer } from "smart-buffer";
-import axios from "axios";
 
 type StateId = bigint;
 type UserId = string;
@@ -35,7 +33,7 @@ export function register(store: Store): Promise<CoordinatorClient> {
       socket.connect(7147, "rtag.dev", () => {
         socket.setKeepAlive(true, 30000);
         socket.write(
-          encode({
+          JSON.stringify({
             appSecret: process.env.APP_SECRET!,
             authInfo: {
 {{#each auth}}
@@ -100,9 +98,5 @@ class CoordinatorClient {
       .writeString(userId)
       .writeBuffer(data);
     this.socket.write(buf.insertUInt32LE(buf.length, 0).toBuffer());
-  }
-
-  public async lookupUser(userId: UserId) {
-    return (await axios.get<Buffer>(`https://rtag.dev/users/${userId}`, { responseType: "arraybuffer" })).data;
   }
 }

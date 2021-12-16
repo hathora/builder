@@ -1,11 +1,10 @@
 types:
-  Username: string
   Gesture:
     - ROCK
     - PAPER
     - SCISSOR
   PlayerInfo:
-    name: Username
+    id: UserId
     score: int
     gesture: Gesture?
   PlayerState:
