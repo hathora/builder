@@ -10,7 +10,7 @@ The top level keys in this file are `types`, `methods`, `auth`, `userState`, `in
 
 The `types` section is used to define the API data objects.
 
-Supported types include string, number, boolean, enum, optional, array, object, and union.
+Supported types include string, int, float, boolean, enum, optional, array, object, and union.
 
 Example:
 
