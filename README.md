@@ -1,12 +1,12 @@
-# rtag - realtime app generator
+# Hathora - multiplayer game framework
 
 ## Overview
 
-Rtag is a framework for building realtime applications with a focus on development experience.
+Hathora is a framework for building realtime applications with a focus on development experience.
 
 ### Features
 
-Rtag comes out of the box with the following features so that developers don't have to think about them:
+Hathora comes out of the box with the following features so that developers don't have to think about them:
 
 - Networking (state synchronization and RPC, efficient binary serialization)
 - Authentication
@@ -16,12 +16,12 @@ Rtag comes out of the box with the following features so that developers don't h
 
 ### Application spec
 
-The foundation of an rtag application is the `rtag.yml` file, which defines various aspects of the application's behavior. One of the primary components the developer includes in this file is a fully typed API, which lists the server methods as well as the client state tree.
+The foundation of an hathora application is the `rtag.yml` file, which defines various aspects of the application's behavior. One of the primary components the developer includes in this file is a fully typed API, which lists the server methods as well as the client state tree.
 
-From this specification, rtag automatically generates the following:
+From this specification, hathora automatically generates the following:
 
 - server side method stubs that set up the entire server code structure and just need to be filled in with the application's business logic
-- clients for frontends to communicate with the rtag server in a typesafe manner
+- clients for frontends to communicate with the hathora server in a typesafe manner
 - a web-based debug application that allows for testing backend logic right away without writing any frontend code
 
 ## Installation
@@ -30,10 +30,10 @@ From this specification, rtag automatically generates the following:
 
 - node v16.12.0+
 
-Install rtag from the npm registry:
+Install hathora from the npm registry:
 
 ```
-npm install -g rtag
+npm install -g hathora
 ```
 
 ## Example
@@ -73,7 +73,7 @@ initialize: createRoom
 error: string
 ```
 
-Next, run `rtag init` to initialize your project. Then run `rtag dev` to start the debug server. Visit http://localhost:3000 where you see the following Prototype UI view:
+Next, run `hathora init` to initialize your project. Then run `hathora dev` to start the debug server. Visit http://localhost:3000 where you see the following Prototype UI view:
 
 ![image](https://user-images.githubusercontent.com/5400947/134371999-eca307b9-4e28-4313-96c1-1f8cbcbddec3.png)
 
@@ -114,7 +114,7 @@ Finally, we can see our working application in action:
 
 ![image](https://user-images.githubusercontent.com/5400947/134372344-6b4ed46c-feed-4776-95f8-9d0499570b76.png)
 
-Here are some example apps built with rtag:
+Here are some example apps built with hathora:
 
 - [avalon](examples/avalon)
 - [chess](examples/chess)
@@ -127,6 +127,6 @@ Here are some example apps built with rtag:
 
 ## Additional resources
 
-For a high level overview of rtag concepts and goals, see [concepts](docs/concepts.md). For more details on how to implement an rtag application, check out the [reference docs](docs/reference.md).
+For a high level overview of hathora concepts and goals, see [concepts](docs/concepts.md). For more details on how to implement an hathora application, check out the [reference docs](docs/reference.md).
 
 If you have any questions/suggestions or want to report a bug, please feel free to file an issue or start a discussion on Github!

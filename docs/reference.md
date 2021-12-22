@@ -214,11 +214,11 @@ To enable this functionality, simply set the `tick` key in `rtag.yml` to an inte
 
 ## Client
 
-The rtag framework includes an automatically generated debug application that lets you interact with your application and test your backend logic without writing any frontend code. Furthermore, rtag provides ways to incrementally add custom presentation logic as you become ready for it.
+The hathora framework includes an automatically generated debug application that lets you interact with your application and test your backend logic without writing any frontend code. Furthermore, hathora provides ways to incrementally add custom presentation logic as you become ready for it.
 
 ### Plugins
 
-Plugins go inside the `client/plugins` directory. To create a plugin for type `Foo`, create a file named `Foo.ts` and rerun the `rtag` command. This will cause the debug app to render your plugin's component anywhere `Foo` shows up in the state tree (instead of the rendering the default json view).
+Plugins go inside the `client/plugins` directory. To create a plugin for type `Foo`, create a file named `Foo.ts` and rerun the `hathora` command. This will cause the debug app to render your plugin's component anywhere `Foo` shows up in the state tree (instead of the rendering the default json view).
 
 Your plugin must export a webcomponent (a class that extends `HTMLElement`). While you are free to write a native webcomponent without any dependencies, most popular frontend libraries have ways to create webcomponents. Some examples include:
 
@@ -230,7 +230,7 @@ Plugins receive the following props as input:
 
 - val -- this is the value you are rendering, it has the type of your filename
 - state -- this is the entire state tree, it has the type of `userState`
-- client -- this is the rtag client instance (so you can make method calls from within your plugin), with type `RtagClient`
+- client -- this is the hathora client instance (so you can make method calls from within your plugin), with type `RtagClient`
 
 Example (from uno, using Lit):
 
@@ -270,8 +270,8 @@ Which renders like this in the debug application:
 
 ### Fully custom frontend
 
-When you're ready to move away from the debug app, simply create an `index.html` file at the root of the `client` directory. This file now serves as the entry point to your frontend at http://localhost:4000, and can load code and other resources as needed. You are free to use any technologies you wish to build your frontend, just make sure to import the generated client to communicate with the rtag server.
+When you're ready to move away from the debug app, simply create an `index.html` file at the root of the `client` directory. This file now serves as the entry point to your frontend at http://localhost:4000, and can load code and other resources as needed. You are free to use any technologies you wish to build your frontend, just make sure to import the generated client to communicate with the hathora server.
 
-The `rtag` frontend tooling is built around [vite](https://vitejs.dev/), which generally creates for a pleasant development experience.
+The `hathora` frontend tooling is built around [vite](https://vitejs.dev/), which generally creates for a pleasant development experience.
 
-For an example of a fully custom frotend built using rtag, see https://github.com/knigam/hive.
+For an example of a fully custom frotend built using hathora, see https://github.com/knigam/hive.

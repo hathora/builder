@@ -1,5 +1,5 @@
 {
-  "name": "rtag",
+  "name": "hathora",
   "version": "0.3.5",
   "description": "Realtime app generator",
   "bin": "./cli.js",
@@ -38,7 +38,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hathora/rtag.git"
+    "url": "git+https://github.com/hathora/hathora.git"
   },
   "keywords": [
     "realtime",
@@ -49,7 +49,7 @@
   "author": "Harsh Pandey",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/hathora/rtag/issues"
+    "url": "https://github.com/hathora/hathora/issues"
   },
-  "homepage": "https://github.com/hathora/rtag#readme"
+  "homepage": "https://github.com/hathora/hathora#readme"
 }
