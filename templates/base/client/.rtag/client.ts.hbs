@@ -61,13 +61,12 @@ export class RtagClient {
   ): Promise<RtagConnection> {
     return new Promise((resolve, reject) => {
       const socket = this.initSocket(reject);
-      const conn = new RtagConnection(stateId, socket, (state) => {
-        resolve(conn);
-        setTimeout(() => onStateChange(state), 0);
-      });
       socket.onopen = () => {
         socket.send(token);
         socket.send(stateId);
+      };
+      socket.onmessage = () => {
+        resolve(new RtagConnection(stateId, socket, onStateChange));
       };
     });
   }

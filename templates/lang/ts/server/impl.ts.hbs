@@ -1,5 +1,5 @@
 import { Methods, Context } from "./.rtag/methods";
-import { UserData, Response } from "./.rtag/base";
+import { Response } from "./.rtag/base";
 import {
 {{#each types}}
   {{@key}},
@@ -12,17 +12,17 @@ import {
 type InternalState = {};
 
 export class Impl implements Methods<InternalState> {
-  {{initialize}}(user: UserData, ctx: Context, request: {{makeRequestName initialize}}): InternalState {
+  {{initialize}}(userId: UserId, ctx: Context, request: {{makeRequestName initialize}}): InternalState {
     return {};
   }
   {{#each methods}}
   {{#if (ne @key ../initialize)}}
-  {{@key}}(state: InternalState, user: UserData, ctx: Context, request: {{makeRequestName @key}}): Response {
+  {{@key}}(state: InternalState, userId: UserId, ctx: Context, request: {{makeRequestName @key}}): Response {
     return Response.error("Not implemented");
   }
   {{/if}}
   {{/each}}
-  getUserState(state: InternalState, user: UserData): {{userState}} {
+  getUserState(state: InternalState, userId: UserId): {{userState}} {
     return {
       {{#with (lookup types userState)}}
       {{#each properties}}

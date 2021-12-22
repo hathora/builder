@@ -1,3 +1,4 @@
+import onChange from "on-change";
 import { Context } from "./methods";
 import { Response, Method } from "./base";
 import {
@@ -15,70 +16,13 @@ setInterval(async () => {
 type State = ReturnType<typeof impl.{{initialize}}>;
 
 let changed = false;
-const PROXY_TARGET = Symbol("proxy-target");
-const handler: ProxyHandler<any> = {
-  get(target: any, property: string | symbol) {
-    if (property === PROXY_TARGET) {
-      return target;
-    }
-    const res = Reflect.get(target, property);
-    if (res === undefined || res === null) {
-      return res;
-    } else if (res.hasOwnProperty("_modCnt")) {
-      return new Proxy(res, {
-        set(target: any, property: string | symbol, value: any): boolean {
-          if (property === "_modCnt") {
-            changed = true;
-          }
-          return Reflect.set(target, property, value);
-        },
-      });
-    } else if ((typeof res === "object" || typeof res === "function") && property !== "constructor") {
-      return new Proxy(res, handler);
-    } else {
-      return res;
-    }
-  },
-  set(target: any, property: string | symbol, value: any): boolean {
-    const prevValue = (target[PROXY_TARGET] ?? target)[property];
-    if (!Object.is(prevValue, value)) {
-      changed = true;
-    }
-    return Reflect.set(target, property, value);
-  },
-  apply(target: Function, thisArg: any, args: any) {
-    if (
-      Array.isArray(thisArg) &&
-      ["push", "pop", "shift", "unshift", "copyWithin", "reverse", "sort", "splice", "flat", "fill"].includes(
-        target.name
-      )
-    ) {
-      changed = true;
-    } else if (thisArg instanceof Set && ["add", "delete", "clear"].includes(target.name)) {
-      changed = true;
-    } else if (thisArg instanceof Map && ["set", "delete", "clear"].includes(target.name)) {
-      changed = true;
-    }
-    const origThis = thisArg[PROXY_TARGET];
-    const res = Reflect.apply(target, thisArg instanceof Set || thisArg instanceof Map ? origThis : thisArg, args);
-    if (
-      res !== undefined &&
-      res !== null &&
-      (Object.getPrototypeOf(res) === Object.prototype ||
-        Array.isArray(res) ||
-        res instanceof Set ||
-        res instanceof Map)
-    ) {
-      return new Proxy(res, handler);
-    }
-    return res;
-  },
-};
 
 export const ImplWrapper = {
   initialize(userId: UserId, ctx: Context, argsBuffer: Buffer): State {
     const state = impl.{{initialize}}(userId, ctx, {{makeRequestName initialize}}.decode(argsBuffer));
-    return new Proxy(state, handler);
+    return onChange(state, () => {
+      changed = true;
+    });
   },
   getResult(state: State, userId: UserId, method: Method, ctx: Context, argsBuffer: Buffer): Response | undefined {
     switch (method) {
@@ -98,7 +42,7 @@ export const ImplWrapper = {
   },
   {{/if}}
   getUserState(state: State, userId: UserId) {
-    return impl.getUserState((state as any)[PROXY_TARGET], userId);
+    return impl.getUserState(onChange.target(state), userId);
   },
   changed(): boolean {
     const res = changed;

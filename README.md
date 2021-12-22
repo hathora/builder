@@ -38,7 +38,7 @@ npm install -g rtag
 
 ## Example
 
-The spec for a simple chat app:
+First, create a directory for your application and create a `rtag.yml` file inside the directory with the following contents:
 
 ```yml
 # rtag.yml
@@ -73,7 +73,7 @@ initialize: createRoom
 error: string
 ```
 
-After running `rtag init` and `rtag dev`, the following debug view is automatically generated:
+Next, run `rtag init` to initialize your project. Then run `rtag dev` to start the debug server. Visit http://localhost:3000 where you see the following Prototype UI view:
 
 ![image](https://user-images.githubusercontent.com/5400947/134371999-eca307b9-4e28-4313-96c1-1f8cbcbddec3.png)
 
