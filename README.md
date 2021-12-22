@@ -2,7 +2,7 @@
 
 ## Overview
 
-Hathora is a framework for building realtime applications with a focus on development experience.
+Hathora is a framework for building multiplayer games and other realtime applications with a focus on development experience.
 
 ### Features
 

@@ -1,7 +1,7 @@
 {
   "name": "hathora",
-  "version": "0.3.5",
-  "description": "Realtime app generator",
+  "version": "0.3.6",
+  "description": "Multiplayer game framework",
   "bin": "./cli.js",
   "files": [
     "cli.js",
