@@ -53,7 +53,7 @@ function patch{{@key}}(obj: {{@key}}, patch: DeepPartial<{{@key}}>) {
 
 {{else if (eq type "union")}}
 function patch{{@key}}(obj: {{@key}}, patch: DeepPartial<{{@key}}>) {
-  if (obj.type === patch.type) {
+  if (obj.type !== patch.type) {
     return patch as {{@key}};
   }
   {{#each options}}
