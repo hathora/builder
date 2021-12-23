@@ -10,7 +10,7 @@ The top level keys in this file are `types`, `methods`, `auth`, `userState`, `in
 
 The `types` section is used to define the API data objects.
 
-Supported types include string, int, float, boolean, enum, optional, array, object, and union.
+Supported types include string, int, float, boolean, enum, optional, array, object, and union. There is also a special `UserId` type available.
 
 Example:
 
@@ -21,6 +21,7 @@ types:
     - VAL1
     - VAL2
   MyObj1:
+    userId: UserId
     myString: string
     myInteger: int
     myDecimal: float
@@ -129,12 +130,11 @@ initialize: createGame
 // impl.ts
 
 import { Methods, Context } from "./.rtag/methods";
-import { UserData } from "./.rtag/base";
-import { Username, PlayerStatus, ICreateGameRequest } from "./.rtag/types";
+import { UserId, PlayerStatus, ICreateGameRequest } from "./.rtag/types";
 import { Cards } from "@pairjacks/poker-cards";
 
 type InternalPlayerInfo = {
-  name: Username;
+  id: UserId;
   chipCount: number;
   chipsInPot: number;
   cards: Cards;
@@ -152,10 +152,10 @@ type InternalState = {
 };
 
 export class Impl implements Methods<InternalState> {
-  createGame(user: UserData, ctx: Context, request: ICreateGameRequest): InternalState {
+  createGame(userId: UserId, ctx: Context, request: ICreateGameRequest): InternalState {
     return {
       players: [
-        { name: user.name, chipCount: request.startingChips, chipsInPot: 0, cards: [], status: PlayerStatus.WAITING },
+        { id: userId, chipCount: request.startingChips, chipsInPot: 0, cards: [], status: PlayerStatus.WAITING },
       ],
       dealerIdx: 0,
       activePlayerIdx: 0,
@@ -176,7 +176,7 @@ The server mutates state via the functions defined in the `methods` section of `
 Methods receive four arguments as input:
 
 1. `state`: the internal state describe above
-2. `user`: the data associated with the user who called the method
+2. `userId`: the id of the user who called the method
 3. `ctx`: a context object, which must be used for sources of nondeterminism (random numbers, current time, api calls)
 4. `request`: the input arguments to the method as defined in `rtag.yml`
 
@@ -184,23 +184,22 @@ Based on these inputs, the method can validate whether the action is permitted, 
 
 ### getUserState
 
-The `getUserState` function converts the internal state to the user state based on the user data.
+The `getUserState` function converts the internal state to the user state based on the userId.
 
 Example (poker game):
 
 ```ts
-  getUserState(state: InternalState, user: UserData): PlayerState {
+  getUserState(state: InternalState, userId: UserId): PlayerState {
     return {
       players: state.players.map((player) => {
-        const shouldReveal =
-          player.name === user.name || (isShowdown(state.players) && player.status === PlayerStatus.PLAYED);
+        const shouldReveal = player.id === userId || (showdown && player.status === PlayerStatus.PLAYED);
         return {
           ...player,
           cards: shouldReveal ? player.cards.map((card) => ({ rank: card[0], suit: card[1] })) : [],
         };
       }),
-      dealer: state.players[state.dealerIdx].name,
-      activePlayer: state.players[state.activePlayerIdx].name,
+      dealer: state.players[state.dealerIdx].id,
+      activePlayer: state.players[state.activePlayerIdx].id,
       revealedCards: state.revealedCards.map((card) => ({ rank: card[0], suit: card[1] })),
     };
   }

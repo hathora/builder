@@ -44,15 +44,14 @@ First, create a directory for your application and create a `rtag.yml` file insi
 # rtag.yml
 
 types:
-  Username: string
   Message:
     text: string
     sentAt: int
-    sentBy: Username
-    sentTo: Username?
+    sentBy: UserId
+    sentTo: UserId?
   RoomState:
     name: string
-    createdBy: Username
+    createdBy: UserId
     messages: Message[]
 
 methods:
@@ -61,8 +60,8 @@ methods:
   sendPublicMessage:
     text: string
   sendPrivateMessage:
-    to: Username
     text: string
+    to: UserId
 
 auth:
   anonymous:
@@ -75,33 +74,40 @@ error: string
 
 Next, run `hathora init` to initialize your project. Then run `hathora dev` to start the debug server. Visit http://localhost:3000 where you see the following Prototype UI view:
 
-![image](https://user-images.githubusercontent.com/5400947/134371999-eca307b9-4e28-4313-96c1-1f8cbcbddec3.png)
+![image](https://user-images.githubusercontent.com/5400947/147288712-f34b92d8-b86a-40c9-a7cc-0d7efcb545b5.png)
+
 
 We then fill in the methods in `server/impl.ts` with our desired implementation:
 
 ```ts
 import { Methods, Context } from "./.rtag/methods";
-import { UserData, Response } from "./.rtag/base";
-import { RoomState, ICreateRoomRequest, ISendPublicMessageRequest, ISendPrivateMessageRequest } from "./.rtag/types";
+import { Response } from "./.rtag/base";
+import {
+  UserId,
+  RoomState,
+  ICreateRoomRequest,
+  ISendPublicMessageRequest,
+  ISendPrivateMessageRequest,
+} from "./.rtag/types";
 
 export class Impl implements Methods<RoomState> {
-  createRoom(user: UserData, ctx: Context, request: ICreateRoomRequest): RoomState {
-    return { name: request.name, createdBy: user.name, messages: [] };
+  createRoom(userId: UserId, ctx: Context, request: ICreateRoomRequest): RoomState {
+    return { name: request.name, createdBy: userId, messages: [] };
   }
-  sendPublicMessage(state: RoomState, user: UserData, ctx: Context, request: ISendPublicMessageRequest): Response {
-    state.messages.push({ text: request.text, sentAt: ctx.time(), sentBy: user.name });
+  sendPublicMessage(state: RoomState, userId: UserId, ctx: Context, request: ISendPublicMessageRequest): Response {
+    state.messages.push({ text: request.text, sentAt: ctx.time(), sentBy: userId });
     return Response.ok();
   }
-  sendPrivateMessage(state: RoomState, user: UserData, ctx: Context, request: ISendPrivateMessageRequest): Response {
-    state.messages.push({ text: request.text, sentAt: ctx.time(), sentBy: user.name, sentTo: request.to });
+  sendPrivateMessage(state: RoomState, userId: UserId, ctx: Context, request: ISendPrivateMessageRequest): Response {
+    state.messages.push({ text: request.text, sentAt: ctx.time(), sentBy: userId, sentTo: request.to });
     return Response.ok();
   }
-  getUserState(state: RoomState, user: UserData): RoomState {
+  getUserState(state: RoomState, userId: UserId): RoomState {
     return {
       name: state.name,
       createdBy: state.createdBy,
       messages: state.messages.filter(
-        (msg) => msg.sentBy === user.name || msg.sentTo === user.name || msg.sentTo === undefined
+        (msg) => msg.sentBy === userId || msg.sentTo === userId || msg.sentTo === undefined
       ),
     };
   }
@@ -112,7 +118,7 @@ export class Impl implements Methods<RoomState> {
 
 Finally, we can see our working application in action:
 
-![image](https://user-images.githubusercontent.com/5400947/134372344-6b4ed46c-feed-4776-95f8-9d0499570b76.png)
+![image](https://user-images.githubusercontent.com/5400947/144970065-f7754d32-d80f-48fe-a350-71a77f803ac7.png)
 
 Here are some example apps built with hathora:
 
