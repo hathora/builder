@@ -6,7 +6,7 @@ import { join } from "path";
 import { pathToFileURL } from "url";
 import shelljs from "shelljs";
 import { v4 as uuidv4 } from "uuid";
-import { createServer, build, printHttpServerUrls } from "vite";
+import { createServer, build } from "vite";
 // @ts-ignore
 import ncc from "@vercel/ncc";
 import { generate } from "./generate";
@@ -71,7 +71,7 @@ async function startFrontend(root: string, port: number) {
     server: { host: "0.0.0.0", port },
   })
     .then((server) => server.listen())
-    .then((server) => printHttpServerUrls(server.httpServer!, server.config));
+    .then((server) => server.printUrls());
 }
 
 async function startFrontends() {
