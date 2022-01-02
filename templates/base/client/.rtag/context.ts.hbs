@@ -2,5 +2,5 @@ import React from "react";
 import { RtagConnection } from "./client";
 import { {{userState}} as UserState } from "./types";
 
-type RtagContext = { connection: RtagConnection; state: UserState } | undefined;
+type RtagContext = { connection: RtagConnection; state: UserState; updatedAt: number } | undefined;
 export const RtagContext = React.createContext<RtagContext>(undefined);

@@ -168,13 +168,14 @@ function PluginDisplay<T>({
   component: string;
   isCollapsible: boolean;
 }) {
-  const { state, connection } = useContext(RtagContext)!;
-  const ref = useRef<{ val: T; state: UserState; client: RtagConnection }>();
+  const { connection, state, updatedAt } = useContext(RtagContext)!;
+  const ref = useRef<{ val: T; client: RtagConnection; state: UserState; updatedAt: number }>();
   useLayoutEffect(() => {
     if (ref.current) {
       ref.current.val = value;
-      ref.current.state = state;
       ref.current.client = connection;
+      ref.current.state = state;
+      ref.current.updatedAt = updatedAt;
     }
   });
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);

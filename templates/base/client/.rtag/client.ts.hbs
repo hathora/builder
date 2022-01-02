@@ -16,6 +16,7 @@ import {
 const COORDINATOR_HOST = "rtag.dev";
 
 export type StateId = string;
+export type UpdateArgs = { state: UserState; updatedAt: number };
 
 export class RtagClient {
   public constructor(private appId: string) {}
@@ -40,7 +41,7 @@ export class RtagClient {
   public connectNew(
     token: string,
     request: {{makeRequestName initialize}},
-    onStateChange: (state: UserState) => void
+    onUpdate: ({ state, updatedAt }: UpdateArgs) => void
   ): Promise<RtagConnection> {
     return new Promise((resolve, reject) => {
       const socket = this.initSocket(reject);
@@ -49,7 +50,7 @@ export class RtagClient {
         socket.send({{makeRequestName initialize}}.encode(request));
       };
       socket.onmessage = ({ data }) => {
-        resolve(new RtagConnection(data as string, socket, onStateChange));
+        resolve(new RtagConnection(data as string, socket, onUpdate));
       };
     });
   }
@@ -57,7 +58,7 @@ export class RtagClient {
   public connectExisting(
     token: string,
     stateId: StateId,
-    onStateChange: (state: UserState) => void
+    onUpdate: ({ state, updatedAt }: UpdateArgs) => void
   ): Promise<RtagConnection> {
     return new Promise((resolve, reject) => {
       const socket = this.initSocket(reject);
@@ -66,7 +67,7 @@ export class RtagClient {
         socket.send(stateId);
       };
       socket.onmessage = () => {
-        resolve(new RtagConnection(stateId, socket, onStateChange));
+        resolve(new RtagConnection(stateId, socket, onUpdate));
       };
     });
   }
@@ -84,16 +85,20 @@ export class RtagConnection {
   private callbacks: Record<string, (response: Response) => void> = {};
   private state?: UserState = undefined;
 
-  public constructor(public stateId: StateId, private socket: WebSocket, onStateChange: (state: UserState) => void) {
+  public constructor(
+    public stateId: StateId,
+    private socket: WebSocket,
+    onUpdate: ({ state, updatedAt }: UpdateArgs) => void
+  ) {
     socket.onmessage = ({ data }) => {
       if (this.state === undefined) {
         this.state = UserState.decode(new Uint8Array(data as ArrayBuffer));
-        onStateChange(JSON.parse(JSON.stringify(this.state)));
+        onUpdate({ state: JSON.parse(JSON.stringify(this.state)), updatedAt: 0 });
       } else {
-        const { stateDiff, responses } = decodeStateUpdate(new Uint8Array(data as ArrayBuffer));
+        const { stateDiff, changedAt, responses } = decodeStateUpdate(new Uint8Array(data as ArrayBuffer));
         if (stateDiff !== undefined) {
           this.state = computePatch(this.state, stateDiff);
-          onStateChange(JSON.parse(JSON.stringify(this.state)));
+          onUpdate({ state: JSON.parse(JSON.stringify(this.state)), updatedAt: changedAt });
         }
         Object.entries(responses).forEach(([msgId, response]) => {
           if (msgId in this.callbacks) {

@@ -15,13 +15,13 @@ setInterval(async () => {
 
 type State = ReturnType<typeof impl.{{initialize}}>;
 
-let changed = false;
+let changedAt: number | undefined = undefined;
 
 export const ImplWrapper = {
   initialize(userId: UserId, ctx: Context, argsBuffer: Buffer): State {
     const state = impl.{{initialize}}(userId, ctx, {{makeRequestName initialize}}.decode(argsBuffer));
     return onChange(state, () => {
-      changed = true;
+      changedAt = Date.now();
     });
   },
   getResult(state: State, userId: UserId, method: Method, ctx: Context, argsBuffer: Buffer): Response | undefined {
@@ -32,8 +32,6 @@ export const ImplWrapper = {
         return impl.{{@key}}(state, userId, ctx, {{makeRequestName @key}}.decode(argsBuffer));
       {{/if}}
       {{/each}}
-      default:
-        return undefined;
     }
   },
   {{#if tick}}
@@ -44,9 +42,9 @@ export const ImplWrapper = {
   getUserState(state: State, userId: UserId) {
     return impl.getUserState(onChange.target(state), userId);
   },
-  changed(): boolean {
-    const res = changed;
-    changed = false;
+  changedAt(): number | undefined {
+    const res = changedAt;
+    changedAt = undefined;
     return res;
   },
 };
