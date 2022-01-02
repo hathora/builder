@@ -12,7 +12,6 @@ type InternalState = {
   playerA: { id: string; direction: Direction; paddle: number; score: number };
   playerB: { id?: string; direction: Direction; paddle: number; score: number };
   ball: { x: number; y: number; angle: number };
-  updatedAt: number;
 };
 
 export class Impl implements Methods<InternalState> {
@@ -34,7 +33,6 @@ export class Impl implements Methods<InternalState> {
         y: MAP_HEIGHT / 2,
         angle: ctx.rand() * 2 * Math.PI,
       },
-      updatedAt: 0,
     };
   }
   setDirection(state: InternalState, userId: UserId, ctx: Context, request: ISetDirectionRequest): Response {
@@ -57,19 +55,15 @@ export class Impl implements Methods<InternalState> {
       playerA: state.playerA,
       playerB: state.playerB,
       ball: state.ball,
-      updatedAt: state.updatedAt,
     };
   }
   onTick(state: InternalState, ctx: Context, timeDelta: number): void {
     if (state.playerA.direction !== Direction.NONE) {
       state.playerA.paddle += PADDLE_SPEED * timeDelta * (state.playerA.direction === Direction.DOWN ? 1 : -1);
-      state.updatedAt = ctx.time();
     }
     if (state.playerB.direction !== Direction.NONE) {
       state.playerB.paddle += PADDLE_SPEED * timeDelta * (state.playerB.direction === Direction.DOWN ? 1 : -1);
-      state.updatedAt = ctx.time();
     }
-
     if (state.playerB.id === undefined) {
       return;
     }
@@ -98,6 +92,5 @@ export class Impl implements Methods<InternalState> {
     if (state.ball.y < 0 || state.ball.y >= MAP_HEIGHT) {
       state.ball.angle = 2 * Math.PI - state.ball.angle;
     }
-    state.updatedAt = ctx.time();
   }
 }

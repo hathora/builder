@@ -305,9 +305,11 @@ parseBoolean(sb)
 
 export function encodeStateUpdate(
   stateDiff: DeepPartial<{{userState}}> | undefined,
+  changedAt: number,
   responses: Record<number, Response>
 ) {
   const buf = new Writer();
+  buf.writeUVarint(changedAt);
   writeOptional(buf, stateDiff, (x) => buf.writeBuffer({{userState}}.encodeDiff(x)));
   Object.entries(responses).forEach(([msgId, response]) => {
     buf.writeUInt32(Number(msgId));
@@ -318,9 +320,11 @@ export function encodeStateUpdate(
 }
 export function decodeStateUpdate(buf: ArrayBufferView | Reader): {
   stateDiff?: DeepPartial<{{userState}}>;
+  changedAt: number;
   responses: Record<number, Response>;
 } {
   const sb = ArrayBuffer.isView(buf) ? new Reader(buf) : buf;
+  const changedAt = sb.readUVarint();
   const stateDiff = parseOptional(sb, () => {{userState}}.decodeDiff(sb));
   const responses: Record<number, Response> = {};
   while (sb.remaining() > 0) {
@@ -328,7 +332,7 @@ export function decodeStateUpdate(buf: ArrayBufferView | Reader): {
     const maybeError = parseOptional(sb, () => parseString(sb));
     responses[msgId] = maybeError === undefined ? Response.ok() : Response.error(maybeError);
   }
-  return { stateDiff, responses };
+  return { stateDiff, changedAt, responses };
 }
 
 function writeUInt8(buf: Writer, x: number) {

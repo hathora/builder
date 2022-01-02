@@ -1,13 +1,15 @@
 import { PlayerState } from "./.rtag/types";
 
+type BufferEntry = { state: PlayerState; updatedAt: number };
+
 export class StateBuffer {
   private clientStartTime: number | undefined;
-  private buffer: PlayerState[] = [];
+  private buffer: BufferEntry[] = [];
 
   constructor(private restingState: PlayerState) {}
 
-  public enqueue(state: PlayerState) {
-    this.buffer.push(state);
+  public enqueue(state: PlayerState, updatedAt: number) {
+    this.buffer.push({ state, updatedAt });
   }
 
   public getInterpolatedState(now: number): PlayerState {
@@ -17,7 +19,7 @@ export class StateBuffer {
 
     if (this.buffer[this.buffer.length - 1].updatedAt <= now) {
       this.clientStartTime = undefined;
-      this.restingState = this.buffer[this.buffer.length - 1];
+      this.restingState = this.buffer[this.buffer.length - 1].state;
       this.buffer = [];
       return this.restingState;
     }
@@ -33,12 +35,16 @@ export class StateBuffer {
     if (this.clientStartTime === undefined) {
       this.clientStartTime = now;
     }
-    return lerp({ ...this.restingState, updatedAt: this.clientStartTime }, this.buffer[0], now);
+    return lerp({ state: this.restingState, updatedAt: this.clientStartTime }, this.buffer[0], now);
   }
 }
 
-function lerp(from: PlayerState, to: PlayerState, now: number): PlayerState {
+function lerp(from: BufferEntry, to: BufferEntry, now: number): PlayerState {
   const pctElapsed = (now - from.updatedAt) / (to.updatedAt - from.updatedAt);
+  return lerpState(from.state, to.state, pctElapsed);
+}
+
+function lerpState(from: PlayerState, to: PlayerState, pctElapsed: number): PlayerState {
   return {
     playerA: {
       paddle: from.playerA.paddle + (to.playerA.paddle - from.playerA.paddle) * pctElapsed,
@@ -49,7 +55,6 @@ function lerp(from: PlayerState, to: PlayerState, now: number): PlayerState {
       score: pctElapsed < 0.5 ? from.playerB.score : to.playerB.score,
     },
     ball: lerp2dEntity(from.ball, to.ball, pctElapsed),
-    updatedAt: now,
   };
 }
 

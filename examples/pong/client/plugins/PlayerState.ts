@@ -11,11 +11,15 @@ const PADDLE_WIDTH = 5;
 const PADDLE_HEIGHT = 50;
 const BALL_RADIUS = 10;
 
-export default class CardsComponent extends LitElement {
-  @property() val!: PlayerState;
-  @property() client!: RtagConnection;
+export default class StateComponent extends LitElement {
+  @property()
+  client!: RtagConnection;
+  @property()
+  val!: PlayerState;
+  @property()
+  updatedAt!: number;
 
-  buffer!: StateBuffer;
+  private buffer!: StateBuffer;
 
   render() {
     return html`<div style="display: flex; align-items: center;">
@@ -60,14 +64,16 @@ export default class CardsComponent extends LitElement {
       ctx.arc(state.ball.x, state.ball.y, BALL_RADIUS, 0, 2 * Math.PI);
       ctx.fill();
 
-      playerAScoreEl!.textContent = state.playerA.score.toString();
-      playerBScoreEl!.textContent = state.playerB.score.toString();
+      playerAScoreEl.textContent = state.playerA.score.toString();
+      playerBScoreEl.textContent = state.playerB.score.toString();
       requestAnimationFrame(draw);
     };
     requestAnimationFrame(draw);
   }
 
   updated() {
-    this.buffer.enqueue({ ...this.val, updatedAt: this.val.updatedAt + BUFFER_TIME });
+    if (this.updatedAt > 0) {
+      this.buffer.enqueue(this.val, this.updatedAt + BUFFER_TIME);
+    }
   }
 }
