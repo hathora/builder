@@ -1,18 +1,18 @@
-import { PlayerState } from "./.rtag/types";
+const BUFFER_TIME = 140;
 
-type BufferEntry = { state: PlayerState; updatedAt: number };
+type BufferEntry<T> = { state: T; updatedAt: number };
 
-export class StateBuffer {
+export class StateBuffer<T> {
   private clientStartTime: number | undefined;
-  private buffer: BufferEntry[] = [];
+  private buffer: BufferEntry<T>[] = [];
 
-  constructor(private restingState: PlayerState) {}
+  constructor(private restingState: T, private interpolate: (from: T, to: T, pctElapsed: number) => T) {}
 
-  public enqueue(state: PlayerState, updatedAt: number) {
-    this.buffer.push({ state, updatedAt });
+  public enqueue(state: T, updatedAt: number) {
+    this.buffer.push({ state, updatedAt: updatedAt + BUFFER_TIME });
   }
 
-  public getInterpolatedState(now: number): PlayerState {
+  public getInterpolatedState(now: number): T {
     if (this.buffer.length === 0) {
       return this.restingState;
     }
@@ -28,40 +28,18 @@ export class StateBuffer {
       if (this.buffer[i].updatedAt <= now) {
         this.clientStartTime = undefined;
         this.buffer.splice(0, i);
-        return lerp(this.buffer[0], this.buffer[1], now);
+        return this.lerp(this.buffer[0], this.buffer[1], now);
       }
     }
 
     if (this.clientStartTime === undefined) {
       this.clientStartTime = now;
     }
-    return lerp({ state: this.restingState, updatedAt: this.clientStartTime }, this.buffer[0], now);
+    return this.lerp({ state: this.restingState, updatedAt: this.clientStartTime }, this.buffer[0], now);
   }
-}
 
-function lerp(from: BufferEntry, to: BufferEntry, now: number): PlayerState {
-  const pctElapsed = (now - from.updatedAt) / (to.updatedAt - from.updatedAt);
-  return lerpState(from.state, to.state, pctElapsed);
-}
-
-function lerpState(from: PlayerState, to: PlayerState, pctElapsed: number): PlayerState {
-  return {
-    playerA: {
-      paddle: from.playerA.paddle + (to.playerA.paddle - from.playerA.paddle) * pctElapsed,
-      score: pctElapsed < 0.5 ? from.playerA.score : to.playerA.score,
-    },
-    playerB: {
-      paddle: from.playerB.paddle + (to.playerB.paddle - from.playerB.paddle) * pctElapsed,
-      score: pctElapsed < 0.5 ? from.playerB.score : to.playerB.score,
-    },
-    ball: lerp2dEntity(from.ball, to.ball, pctElapsed),
-  };
-}
-
-function lerp2dEntity<T extends { x: number; y: number }>(from: T, to: T, pctElapsed: number): T {
-  return {
-    ...from,
-    x: from.x + (to.x - from.x) * pctElapsed,
-    y: from.y + (to.y - from.y) * pctElapsed,
-  };
+  private lerp(from: BufferEntry<T>, to: BufferEntry<T>, now: number): T {
+    const pctElapsed = (now - from.updatedAt) / (to.updatedAt - from.updatedAt);
+    return this.interpolate(from.state, to.state, pctElapsed);
+  }
 }

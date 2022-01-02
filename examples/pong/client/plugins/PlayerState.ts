@@ -4,7 +4,6 @@ import { Direction, PlayerState } from "../.rtag/types";
 import { RtagConnection } from "../.rtag/client";
 import { StateBuffer } from "../stateBuffer";
 
-const BUFFER_TIME = 140;
 const WIDTH = 600;
 const HEIGHT = 400;
 const PADDLE_WIDTH = 5;
@@ -19,7 +18,7 @@ export default class StateComponent extends LitElement {
   @property()
   updatedAt!: number;
 
-  private buffer!: StateBuffer;
+  private buffer!: StateBuffer<PlayerState>;
 
   render() {
     return html`<div style="display: flex; align-items: center;">
@@ -30,7 +29,7 @@ export default class StateComponent extends LitElement {
   }
 
   firstUpdated() {
-    this.buffer = new StateBuffer(this.val);
+    this.buffer = new StateBuffer(this.val, lerpState);
     const ctx = this.renderRoot.querySelector("canvas")!.getContext("2d")!;
     const playerAScoreEl = this.renderRoot.querySelector("div#playerAScore")!;
     const playerBScoreEl = this.renderRoot.querySelector("div#playerBScore")!;
@@ -73,7 +72,29 @@ export default class StateComponent extends LitElement {
 
   updated() {
     if (this.updatedAt > 0) {
-      this.buffer.enqueue(this.val, this.updatedAt + BUFFER_TIME);
+      this.buffer.enqueue(this.val, this.updatedAt);
     }
   }
+}
+
+function lerpState(from: PlayerState, to: PlayerState, pctElapsed: number): PlayerState {
+  return {
+    playerA: {
+      paddle: from.playerA.paddle + (to.playerA.paddle - from.playerA.paddle) * pctElapsed,
+      score: pctElapsed < 0.5 ? from.playerA.score : to.playerA.score,
+    },
+    playerB: {
+      paddle: from.playerB.paddle + (to.playerB.paddle - from.playerB.paddle) * pctElapsed,
+      score: pctElapsed < 0.5 ? from.playerB.score : to.playerB.score,
+    },
+    ball: lerp2dEntity(from.ball, to.ball, pctElapsed),
+  };
+}
+
+function lerp2dEntity<T extends { x: number; y: number }>(from: T, to: T, pctElapsed: number): T {
+  return {
+    ...from,
+    x: from.x + (to.x - from.x) * pctElapsed,
+    y: from.y + (to.y - from.y) * pctElapsed,
+  };
 }
