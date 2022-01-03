@@ -1,6 +1,6 @@
 import { Methods, Context } from "./.rtag/methods";
 import { Response } from "./.rtag/base";
-import { UserId, Direction, PlayerState, ICreateGameRequest, ISetDirectionRequest } from "./.rtag/types";
+import { UserId, Direction, PlayerState, ICreateGameRequest, ISetDirectionRequest, Player, Point } from "./.rtag/types";
 
 const MAP_WIDTH = 600;
 const MAP_HEIGHT = 400;
@@ -17,22 +17,9 @@ type InternalState = {
 export class Impl implements Methods<InternalState> {
   createGame(userId: UserId, ctx: Context, request: ICreateGameRequest): InternalState {
     return {
-      playerA: {
-        id: userId,
-        direction: Direction.NONE,
-        paddle: MAP_HEIGHT / 2,
-        score: 0,
-      },
-      playerB: {
-        direction: Direction.NONE,
-        paddle: MAP_HEIGHT / 2,
-        score: 0,
-      },
-      ball: {
-        x: MAP_WIDTH / 2,
-        y: MAP_HEIGHT / 2,
-        angle: ctx.rand() * 2 * Math.PI,
-      },
+      playerA: { id: userId, direction: Direction.NONE, paddle: MAP_HEIGHT / 2, score: 0 },
+      playerB: { direction: Direction.NONE, paddle: MAP_HEIGHT / 2, score: 0 },
+      ball: { x: MAP_WIDTH / 2, y: MAP_HEIGHT / 2, angle: ctx.rand() * 2 * Math.PI },
     };
   }
   setDirection(state: InternalState, userId: UserId, ctx: Context, request: ISetDirectionRequest): Response {
@@ -51,39 +38,25 @@ export class Impl implements Methods<InternalState> {
     }
   }
   getUserState(state: InternalState, userId: UserId): PlayerState {
-    return {
-      playerA: state.playerA,
-      playerB: state.playerB,
-      ball: state.ball,
-    };
+    return state;
   }
   onTick(state: InternalState, ctx: Context, timeDelta: number): void {
-    if (state.playerA.direction !== Direction.NONE) {
-      state.playerA.paddle += PADDLE_SPEED * timeDelta * (state.playerA.direction === Direction.DOWN ? 1 : -1);
-    }
-    if (state.playerB.direction !== Direction.NONE) {
-      state.playerB.paddle += PADDLE_SPEED * timeDelta * (state.playerB.direction === Direction.DOWN ? 1 : -1);
-    }
+    movePaddle(state.playerA, PADDLE_SPEED * timeDelta);
+    movePaddle(state.playerB, PADDLE_SPEED * timeDelta);
     if (state.playerB.id === undefined) {
       return;
     }
     state.ball.x += Math.cos(state.ball.angle) * BALL_SPEED * timeDelta;
     state.ball.y += Math.sin(state.ball.angle) * BALL_SPEED * timeDelta;
     if (state.ball.x < 0) {
-      if (
-        state.ball.y < state.playerA.paddle - PADDLE_HEIGHT / 2 ||
-        state.ball.y > state.playerA.paddle + PADDLE_HEIGHT / 2
-      ) {
+      if (!verticallyIntersects(state.ball, state.playerA)) {
         state.playerB.score++;
       }
       state.ball.x = 0;
       state.ball.angle = Math.PI - state.ball.angle;
     }
     if (state.ball.x >= MAP_WIDTH) {
-      if (
-        state.ball.y < state.playerB.paddle - PADDLE_HEIGHT / 2 ||
-        state.ball.y > state.playerB.paddle + PADDLE_HEIGHT / 2
-      ) {
+      if (!verticallyIntersects(state.ball, state.playerB)) {
         state.playerA.score++;
       }
       state.ball.x = MAP_WIDTH - 1;
@@ -93,4 +66,12 @@ export class Impl implements Methods<InternalState> {
       state.ball.angle = 2 * Math.PI - state.ball.angle;
     }
   }
+}
+
+function movePaddle(player: { direction: Direction; paddle: number }, speed: number) {
+  player.paddle += speed * (player.direction === Direction.NONE ? 0 : player.direction === Direction.UP ? -1 : 1);
+}
+
+function verticallyIntersects(ball: Point, player: Player) {
+  return ball.y >= player.paddle - PADDLE_HEIGHT / 2 && ball.y <= player.paddle + PADDLE_HEIGHT / 2;
 }
