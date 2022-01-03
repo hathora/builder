@@ -8,7 +8,7 @@ import { GoogleLogin } from "react-google-login";
 {{/if}}
 import { RtagClient, RtagConnection, UpdateArgs } from "./client";
 import { {{makeRequestName initialize}} } from "./types";
-import { getUserDisplayName } from "./base";
+import { getUserDisplayName, UserData } from "./base";
 import { RtagContext } from "./context";
 import { Forms, InitializeForm } from "./Forms";
 import { State } from "./State";
@@ -30,11 +30,12 @@ function App() {
     }
   }, [location]);
 
+  const user = token !== undefined ? RtagClient.getUserFromToken(token) : undefined;
   return (
     <>
-      <NavBar token={token} />
+      <NavBar user={user} />
       <div id="app" className="py-6 sm:px-6 lg:px-8">
-        {token === undefined ? (
+        {token === undefined || user === undefined ? (
           <Login setToken={setToken} />
         ) : (
           <Routes>
@@ -43,6 +44,7 @@ function App() {
               element={
                 <Main
                   connection={connection}
+                  user={user}
                   updateArgs={updateArgs}
                   onConnect={(stateId) =>
                     client
@@ -84,9 +86,8 @@ function App() {
   );
 }
 
-function NavBar({ token }: { token?: string }) {
+function NavBar({ user }: { user?: UserData }) {
   const navigate = useNavigate();
-  const user = token !== undefined ? RtagClient.getUserFromToken(token) : undefined;
   return (
     <div className="bg-indigo-500">
       <div className="flex items-center justify-between h-16 px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -199,11 +200,12 @@ function Home({ onConnect }: { onConnect: (request: {{makeRequestName initialize
 
 type MainProps = {
   connection: RtagConnection | undefined;
+  user: UserData;
   updateArgs: UpdateArgs | undefined;
   onConnect: (stateId: string) => void;
   onDisconnect: () => void;
 };
-function Main({ connection, updateArgs, onConnect, onDisconnect }: MainProps) {
+function Main({ connection, user, updateArgs, onConnect, onDisconnect }: MainProps) {
   const { stateId } = useParams();
   const [openMethods, setOpenMethods] = useState(false);
   useEffect(() => {
@@ -218,7 +220,7 @@ function Main({ connection, updateArgs, onConnect, onDisconnect }: MainProps) {
   }
 
   return (
-    <RtagContext.Provider value=\{{ connection, ...updateArgs }}>
+    <RtagContext.Provider value=\{{ connection, user, ...updateArgs }}>
       <div className="fixed top-24 right-6 lg:right-8">
         <span className="sm:ml-3">
           <button
