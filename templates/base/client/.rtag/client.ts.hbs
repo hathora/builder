@@ -41,10 +41,11 @@ export class RtagClient {
   public connectNew(
     token: string,
     request: {{makeRequestName initialize}},
-    onUpdate: ({ state, updatedAt }: UpdateArgs) => void
+    onUpdate: (updateArgs: UpdateArgs) => void,
+    onConnectionFailure: (error: string) => void
   ): Promise<RtagConnection> {
-    return new Promise((resolve, reject) => {
-      const socket = this.initSocket(reject);
+    return new Promise((resolve) => {
+      const socket = this.initSocket(onConnectionFailure);
       socket.onopen = () => {
         socket.send(token);
         socket.send({{makeRequestName initialize}}.encode(request));
@@ -58,10 +59,11 @@ export class RtagClient {
   public connectExisting(
     token: string,
     stateId: StateId,
-    onUpdate: ({ state, updatedAt }: UpdateArgs) => void
+    onUpdate: (updateArgs: UpdateArgs) => void,
+    onConnectionFailure: (error: string) => void
   ): Promise<RtagConnection> {
-    return new Promise((resolve, reject) => {
-      const socket = this.initSocket(reject);
+    return new Promise((resolve) => {
+      const socket = this.initSocket(onConnectionFailure);
       socket.onopen = () => {
         socket.send(token);
         socket.send(stateId);
@@ -85,11 +87,7 @@ export class RtagConnection {
   private callbacks: Record<string, (response: Response) => void> = {};
   private state?: UserState = undefined;
 
-  public constructor(
-    public stateId: StateId,
-    private socket: WebSocket,
-    onUpdate: ({ state, updatedAt }: UpdateArgs) => void
-  ) {
+  public constructor(public stateId: StateId, private socket: WebSocket, onUpdate: (updateArgs: UpdateArgs) => void) {
     socket.onmessage = ({ data }) => {
       if (this.state === undefined) {
         this.state = UserState.decode(new Uint8Array(data as ArrayBuffer));
@@ -119,6 +117,7 @@ export class RtagConnection {
   {{/if}}
   {{/each}}
   public disconnect(): void {
+    this.socket.onclose = () => {};
     this.socket.close();
   }
 

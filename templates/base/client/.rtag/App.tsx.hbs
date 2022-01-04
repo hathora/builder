@@ -16,9 +16,10 @@ import { State } from "./State";
 const client = new RtagClient(import.meta.env.VITE_APP_ID);
 
 function App() {
+  const [token, setToken] = useState<string | undefined>(sessionStorage.getItem("token") ?? undefined);
   const [connection, setConnection] = useState<RtagConnection>();
   const [updateArgs, setUpdateArgs] = useState<UpdateArgs>();
-  const [token, setToken] = useState<string | undefined>(sessionStorage.getItem("token") ?? undefined);
+  const [connectionError, setConnectionError] = useState<string>();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -43,20 +44,19 @@ function App() {
               path="/state/:stateId"
               element={
                 <Main
-                  connection={connection}
                   user={user}
+                  connection={connection}
                   updateArgs={updateArgs}
+                  connectionError={connectionError}
                   onConnect={(stateId) =>
-                    client
-                      .connectExisting(token, stateId, setUpdateArgs)
-                      .then((conn) => setConnection(conn))
-                      .catch((e) => toast.error("Connection error: " + e.reason))
+                    client.connectExisting(token, stateId, setUpdateArgs, setConnectionError).then(setConnection)
                   }
                   onDisconnect={() => {
                     if (connection !== undefined) {
                       connection.disconnect();
                       setConnection(undefined);
                       setUpdateArgs(undefined);
+                      setConnectionError(undefined);
                     }
                   }}
                 />
@@ -67,13 +67,10 @@ function App() {
               element={
                 <Home
                   onConnect={(request) =>
-                    client
-                      .connectNew(token, request, setUpdateArgs)
-                      .then((conn) => {
-                        setConnection(conn);
-                        navigate(`/state/${conn.stateId}`);
-                      })
-                      .catch((e) => toast.error("Connection error: " + e.reason))
+                    client.connectNew(token, request, setUpdateArgs, setConnectionError).then((conn) => {
+                      setConnection(conn);
+                      navigate(`/state/${conn.stateId}`);
+                    })
                   }
                 />
               }
@@ -199,13 +196,14 @@ function Home({ onConnect }: { onConnect: (request: {{makeRequestName initialize
 }
 
 type MainProps = {
-  connection: RtagConnection | undefined;
   user: UserData;
+  connection: RtagConnection | undefined;
   updateArgs: UpdateArgs | undefined;
+  connectionError: string | undefined;
   onConnect: (stateId: string) => void;
   onDisconnect: () => void;
 };
-function Main({ connection, user, updateArgs, onConnect, onDisconnect }: MainProps) {
+function Main({ user, connection, connectionError, updateArgs, onConnect, onDisconnect }: MainProps) {
   const { stateId } = useParams();
   const [openMethods, setOpenMethods] = useState(false);
   useEffect(() => {
@@ -215,12 +213,16 @@ function Main({ connection, user, updateArgs, onConnect, onDisconnect }: MainPro
     return onDisconnect;
   }, [connection]);
 
-  if (updateArgs === undefined || connection === undefined) {
+  if (connectionError !== undefined) {
+    return <div>Connection error: {connectionError}</div>;
+  }
+
+  if (connection === undefined || updateArgs === undefined) {
     return <div>Loading...</div>;
   }
 
   return (
-    <RtagContext.Provider value=\{{ connection, user, ...updateArgs }}>
+    <RtagContext.Provider value=\{{ user, connection, ...updateArgs }}>
       <div className="fixed top-24 right-6 lg:right-8">
         <span className="sm:ml-3">
           <button
