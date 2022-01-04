@@ -43,17 +43,13 @@ export class RtagClient {
     request: {{makeRequestName initialize}},
     onUpdate: (updateArgs: UpdateArgs) => void,
     onConnectionFailure: (error: string) => void
-  ): Promise<RtagConnection> {
-    return new Promise((resolve) => {
-      const socket = this.initSocket(onConnectionFailure);
-      socket.onopen = () => {
-        socket.send(token);
-        socket.send({{makeRequestName initialize}}.encode(request));
-      };
-      socket.onmessage = ({ data }) => {
-        resolve(new RtagConnection(data as string, socket, onUpdate));
-      };
-    });
+  ): RtagConnection {
+    const socket = this.initSocket(onConnectionFailure);
+    socket.onopen = () => {
+      socket.send(token);
+      socket.send({{makeRequestName initialize}}.encode(request));
+    };
+    return new RtagConnection(socket, onUpdate);
   }
 
   public connectExisting(
@@ -61,17 +57,13 @@ export class RtagClient {
     stateId: StateId,
     onUpdate: (updateArgs: UpdateArgs) => void,
     onConnectionFailure: (error: string) => void
-  ): Promise<RtagConnection> {
-    return new Promise((resolve) => {
-      const socket = this.initSocket(onConnectionFailure);
-      socket.onopen = () => {
-        socket.send(token);
-        socket.send(stateId);
-      };
-      socket.onmessage = () => {
-        resolve(new RtagConnection(stateId, socket, onUpdate));
-      };
-    });
+  ): RtagConnection {
+    const socket = this.initSocket(onConnectionFailure);
+    socket.onopen = () => {
+      socket.send(token);
+      socket.send(stateId);
+    };
+    return new RtagConnection(socket, onUpdate, stateId);
   }
 
   private initSocket(onConnectionFailure: (error: string) => void) {
@@ -86,25 +78,36 @@ export class RtagClient {
 export class RtagConnection {
   private callbacks: Record<string, (response: Response) => void> = {};
   private state?: UserState = undefined;
+  public stateId: Promise<StateId>;
 
-  public constructor(public stateId: StateId, private socket: WebSocket, onUpdate: (updateArgs: UpdateArgs) => void) {
+  public constructor(private socket: WebSocket, onUpdate: (updateArgs: UpdateArgs) => void, stateId?: string) {
+    let stateIdResolve: ((sId: StateId) => void) | undefined = undefined;
+    this.stateId =
+      stateId !== undefined ? Promise.resolve(stateId) : new Promise<StateId>((resolve) => (stateIdResolve = resolve));
+
     socket.onmessage = ({ data }) => {
+      if (stateIdResolve !== undefined && typeof data === "string") {
+        stateIdResolve(data);
+        return;
+      }
+
       if (this.state === undefined) {
         this.state = UserState.decode(new Uint8Array(data as ArrayBuffer));
         onUpdate({ state: JSON.parse(JSON.stringify(this.state)), updatedAt: 0 });
-      } else {
-        const { stateDiff, changedAt, responses } = decodeStateUpdate(new Uint8Array(data as ArrayBuffer));
-        if (stateDiff !== undefined) {
-          this.state = computePatch(this.state, stateDiff);
-          onUpdate({ state: JSON.parse(JSON.stringify(this.state)), updatedAt: changedAt });
-        }
-        Object.entries(responses).forEach(([msgId, response]) => {
-          if (msgId in this.callbacks) {
-            this.callbacks[msgId](response);
-            delete this.callbacks[msgId];
-          }
-        });
+        return;
       }
+
+      const { stateDiff, changedAt, responses } = decodeStateUpdate(new Uint8Array(data as ArrayBuffer));
+      if (stateDiff !== undefined) {
+        this.state = computePatch(this.state, stateDiff);
+        onUpdate({ state: JSON.parse(JSON.stringify(this.state)), updatedAt: changedAt });
+      }
+      Object.entries(responses).forEach(([msgId, response]) => {
+        if (msgId in this.callbacks) {
+          this.callbacks[msgId](response);
+          delete this.callbacks[msgId];
+        }
+      });
     };
   }
 
