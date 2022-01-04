@@ -67,9 +67,9 @@ function App() {
               element={
                 <Home
                   onConnect={async (request) => {
-                    const conn = client.connectNew(token, request, setUpdateArgs, setConnectionError);
+                    const conn = await client.connectNew(token, request, setUpdateArgs, setConnectionError);
                     setConnection(conn);
-                    navigate(`/state/${await conn.stateId}`);
+                    navigate(`/state/${conn.stateId}`);
                   }}
                 />
               }
