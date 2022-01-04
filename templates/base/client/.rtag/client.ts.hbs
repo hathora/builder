@@ -74,11 +74,11 @@ export class RtagClient {
     });
   }
 
-  private initSocket(reject: (reason?: any) => void) {
+  private initSocket(onConnectionFailure: (error: string) => void) {
     const socket = new WebSocket(`wss://${COORDINATOR_HOST}/${this.appId}`);
     socket.binaryType = "arraybuffer";
-    socket.onerror = reject;
-    socket.onclose = reject;
+    socket.onerror = (e) => onConnectionFailure(e.message);
+    socket.onclose = (e) => onConnectionFailure(e.reason);
     return socket;
   }
 }
