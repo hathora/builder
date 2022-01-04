@@ -41,42 +41,38 @@ export class RtagClient {
   public connectNew(
     token: string,
     request: {{makeRequestName initialize}},
-    onUpdate: ({ state, updatedAt }: UpdateArgs) => void
+    onUpdate: (updateArgs: UpdateArgs) => void,
+    onConnectionFailure: (error: string) => void
   ): Promise<RtagConnection> {
-    return new Promise((resolve, reject) => {
-      const socket = this.initSocket(reject);
+    return new Promise((resolve) => {
+      const socket = this.initSocket(onConnectionFailure);
       socket.onopen = () => {
         socket.send(token);
         socket.send({{makeRequestName initialize}}.encode(request));
       };
-      socket.onmessage = ({ data }) => {
-        resolve(new RtagConnection(data as string, socket, onUpdate));
-      };
+      socket.onmessage = ({ data }) => resolve(new RtagConnection(data as StateId, socket, onUpdate));
     });
   }
 
   public connectExisting(
     token: string,
     stateId: StateId,
-    onUpdate: ({ state, updatedAt }: UpdateArgs) => void
-  ): Promise<RtagConnection> {
-    return new Promise((resolve, reject) => {
-      const socket = this.initSocket(reject);
-      socket.onopen = () => {
-        socket.send(token);
-        socket.send(stateId);
-      };
-      socket.onmessage = () => {
-        resolve(new RtagConnection(stateId, socket, onUpdate));
-      };
-    });
+    onUpdate: (updateArgs: UpdateArgs) => void,
+    onConnectionFailure: (error: string) => void
+  ): RtagConnection {
+    const socket = this.initSocket(onConnectionFailure);
+    socket.onopen = () => {
+      socket.send(token);
+      socket.send(stateId);
+    };
+    return new RtagConnection(stateId, socket, onUpdate);
   }
 
-  private initSocket(reject: (reason?: any) => void) {
+  private initSocket(onConnectionFailure: (error: string) => void) {
     const socket = new WebSocket(`wss://${COORDINATOR_HOST}/${this.appId}`);
     socket.binaryType = "arraybuffer";
-    socket.onerror = reject;
-    socket.onclose = reject;
+    socket.onerror = (e) => onConnectionFailure(e.message);
+    socket.onclose = (e) => onConnectionFailure(e.reason);
     return socket;
   }
 }
@@ -85,28 +81,24 @@ export class RtagConnection {
   private callbacks: Record<string, (response: Response) => void> = {};
   private state?: UserState = undefined;
 
-  public constructor(
-    public stateId: StateId,
-    private socket: WebSocket,
-    onUpdate: ({ state, updatedAt }: UpdateArgs) => void
-  ) {
+  public constructor(public stateId: StateId, private socket: WebSocket, onUpdate: (updateArgs: UpdateArgs) => void) {
     socket.onmessage = ({ data }) => {
       if (this.state === undefined) {
         this.state = UserState.decode(new Uint8Array(data as ArrayBuffer));
         onUpdate({ state: JSON.parse(JSON.stringify(this.state)), updatedAt: 0 });
-      } else {
-        const { stateDiff, changedAt, responses } = decodeStateUpdate(new Uint8Array(data as ArrayBuffer));
-        if (stateDiff !== undefined) {
-          this.state = computePatch(this.state, stateDiff);
-          onUpdate({ state: JSON.parse(JSON.stringify(this.state)), updatedAt: changedAt });
-        }
-        Object.entries(responses).forEach(([msgId, response]) => {
-          if (msgId in this.callbacks) {
-            this.callbacks[msgId](response);
-            delete this.callbacks[msgId];
-          }
-        });
+        return;
       }
+      const { stateDiff, changedAt, responses } = decodeStateUpdate(new Uint8Array(data as ArrayBuffer));
+      if (stateDiff !== undefined) {
+        this.state = computePatch(this.state, stateDiff);
+        onUpdate({ state: JSON.parse(JSON.stringify(this.state)), updatedAt: changedAt });
+      }
+      Object.entries(responses).forEach(([msgId, response]) => {
+        if (msgId in this.callbacks) {
+          this.callbacks[msgId](response);
+          delete this.callbacks[msgId];
+        }
+      });
     };
   }
 
@@ -119,6 +111,7 @@ export class RtagConnection {
   {{/if}}
   {{/each}}
   public disconnect(): void {
+    this.socket.onclose = () => {};
     this.socket.close();
   }
 
