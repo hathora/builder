@@ -19,6 +19,7 @@
     "handlebars": "4.7.7",
     "hot-esm": "1.2.2",
     "js-yaml": "4.1.0",
+    "resolve": "1.20.0",
     "shelljs": "0.8.4",
     "ts-node": "10.4.0",
     "uuid": "8.3.2",
