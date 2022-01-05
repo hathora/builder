@@ -19,7 +19,7 @@ function App() {
   const [token, setToken] = useState<string | undefined>(sessionStorage.getItem("token") ?? undefined);
   const [connection, setConnection] = useState<RtagConnection>();
   const [updateArgs, setUpdateArgs] = useState<UpdateArgs>();
-  const [connectionError, setConnectionError] = useState<string>();
+  const [connectionError, setConnectionError] = useState<ConnectionFailure | undefined>();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -198,7 +198,7 @@ type MainProps = {
   user: UserData;
   connection: RtagConnection | undefined;
   updateArgs: UpdateArgs | undefined;
-  connectionError: string | undefined;
+  connectionError: ConnectionFailure | undefined;
   onConnect: (stateId: string) => void;
   onDisconnect: () => void;
 };
@@ -213,7 +213,7 @@ function Main({ user, connection, connectionError, updateArgs, onConnect, onDisc
   }, [connection]);
 
   if (connectionError !== undefined) {
-    return <div>Connection error: {connectionError}</div>;
+    return <div>Connection error: {connectionError.error}</div>;
   }
 
   if (connection === undefined || updateArgs === undefined) {

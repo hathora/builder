@@ -4,7 +4,7 @@ import getRandomValues from "get-random-values";
 import axios from "axios";
 import jwtDecode from "jwt-decode";
 import { UserData, Response, Method } from "./base";
-import { ConnectionFailureReason } from "./failures";
+import { ConnectionFailure, transformCoordinatorFailure } from "./failures";
 import { computePatch } from "./patch";
 import {
   decodeStateUpdate,
@@ -43,7 +43,7 @@ export class RtagClient {
     token: string,
     request: {{makeRequestName initialize}},
     onUpdate: (updateArgs: UpdateArgs) => void,
-    onConnectionFailure: (failureReason: ConnectionFailureReason) => void
+    onConnectionFailure: (failureReason: ConnectionFailure) => void
   ): Promise<RtagConnection> {
     return new Promise((resolve) => {
       const socket = this.initSocket(onConnectionFailure);
@@ -59,7 +59,7 @@ export class RtagClient {
     token: string,
     stateId: StateId,
     onUpdate: (updateArgs: UpdateArgs) => void,
-    onConnectionFailure: (failureReason: ConnectionFailureReason) => void
+    onConnectionFailure: (failureReason: ConnectionFailure) => void
   ): RtagConnection {
     const socket = this.initSocket(onConnectionFailure);
     socket.onopen = () => {
@@ -69,27 +69,10 @@ export class RtagClient {
     return new RtagConnection(stateId, socket, onUpdate);
   }
 
-  private initSocket(onConnectionFailure: (failureReason: ConnectionFailureReason) => void) {
+  private initSocket(onConnectionFailure: (failureReason: ConnectionFailure) => void) {
     const socket = new WebSocket(`wss://${COORDINATOR_HOST}/${this.appId}`);
     socket.binaryType = "arraybuffer";
-    socket.onclose = (e) => {
-      switch (e.code) {
-        case 4000:
-          onConnectionFailure(ConnectionFailureReason.stateNotFound());
-          break;
-        case 4001:
-          onConnectionFailure(ConnectionFailureReason.noAvailableStores());
-          break;
-        case 4002:
-          onConnectionFailure(ConnectionFailureReason.invalidUserData());
-          break;
-        case 4003:
-          onConnectionFailure(ConnectionFailureReason.invalidStateId());
-          break;
-        default:
-          onConnectionFailure(ConnectionFailureReason.genericFailure(e.reason));
-      }
-    };
+    socket.onclose = (e) => onConnectionFailure(transformCoordinatorFailure(e));
     return socket;
   }
 }
