@@ -1,0 +1,53 @@
+export interface ConnectionFailureReason {
+  code: number;
+  error: string;
+}
+
+export const ConnectionFailureReason: { 
+  stateNotFound: () => ConnectionFailureReason; 
+  noAvailableStores: () => ConnectionFailureReason;
+  invalidUserData: () => ConnectionFailureReason;
+  invalidStateId: () => ConnectionFailureReason;
+  genericFailure: (error: string) => ConnectionFailureReason;
+} = {
+  stateNotFound: () => ({
+    code: 404,
+    error: "State not found"
+  }),
+  noAvailableStores: () => ({
+    code: 503,
+    error: "No available stores"
+  }),
+  invalidUserData: () => ({
+    code: 403,
+    error: "Invalid user data"
+  }),
+  invalidStateId: () => ({
+    code: 400,
+    error: "Invalid state id"
+  }),
+  genericFailure: (error: string) => ({
+    code: 500,
+    error: error
+  }),
+};
+
+export const isStateNotFoundFailure = (failure: ConnectionFailureReason) => {
+  return failure.code === ConnectionFailureReason.stateNotFound().code;
+}
+
+export const isNoAvailableStores = (failure: ConnectionFailureReason) => {
+  return failure.code === ConnectionFailureReason.noAvailableStores().code;
+}
+
+export const isInvalidUserData = (failure: ConnectionFailureReason) => {
+  return failure.code === ConnectionFailureReason.invalidUserData().code;
+}
+
+export const isInvalidStateId = (failure: ConnectionFailureReason) => {
+  return failure.code === ConnectionFailureReason.invalidStateId().code;
+}
+
+export const isGenericFailure = (failure: ConnectionFailureReason) => {
+  return failure.code === ConnectionFailureReason.genericFailure(failure.error).code;
+}
