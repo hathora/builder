@@ -12,6 +12,7 @@ import { getUserDisplayName, UserData } from "./base";
 import { RtagContext } from "./context";
 import { Forms, InitializeForm } from "./Forms";
 import { State } from "./State";
+import { ConnectionFailure } from "./failures";
 
 const client = new RtagClient(import.meta.env.VITE_APP_ID);
 
@@ -19,7 +20,7 @@ function App() {
   const [token, setToken] = useState<string | undefined>(sessionStorage.getItem("token") ?? undefined);
   const [connection, setConnection] = useState<RtagConnection>();
   const [updateArgs, setUpdateArgs] = useState<UpdateArgs>();
-  const [connectionError, setConnectionError] = useState<ConnectionFailure | undefined>();
+  const [connectionError, setConnectionError] = useState<ConnectionFailure>();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -213,7 +214,7 @@ function Main({ user, connection, connectionError, updateArgs, onConnect, onDisc
   }, [connection]);
 
   if (connectionError !== undefined) {
-    return <div>Connection error: {connectionError.error}</div>;
+    return <div>Connection error: {connectionError.message}</div>;
   }
 
   if (connection === undefined || updateArgs === undefined) {

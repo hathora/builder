@@ -1,73 +1,42 @@
-import WebSocket from "isomorphic-ws";
-
 enum ConnectionFailureType {
-  STATE_NOT_FOUND,
-  NO_AVAILABLE_STORES,
-  INVALID_USER_DATA,
-  INVALID_STATE_ID,
-  GENERIC_FAILURE,
+  STATE_NOT_FOUND = "STATE_NOT_FOUND",
+  NO_AVAILABLE_STORES = "NO_AVAILABLE_STORES",
+  INVALID_USER_DATA = "INVALID_USER_DATA",
+  INVALID_STATE_ID = "INVALID_STATE_ID",
+  GENERIC_FAILURE = "GENERIC_FAILURE",
 }
 
 export interface ConnectionFailure {
   type: ConnectionFailureType,
-  error: string;
+  message: string;
 }
-
-export const ConnectionFailure: { 
-  stateNotFound: () => ConnectionFailure; 
-  noAvailableStores: () => ConnectionFailure;
-  invalidUserData: () => ConnectionFailure;
-  invalidStateId: () => ConnectionFailure;
-  genericFailure: (error: string) => ConnectionFailure;
-} = {
-  stateNotFound: () => ({
-    type: ConnectionFailureType.STATE_NOT_FOUND,
-    error: "State not found"
-  }),
-  noAvailableStores: () => ({
-    type: ConnectionFailureType.NO_AVAILABLE_STORES,
-    error: "No available stores"
-  }),
-  invalidUserData: () => ({
-    type: ConnectionFailureType.INVALID_USER_DATA,
-    error: "Invalid user data"
-  }),
-  invalidStateId: () => ({
-    type: ConnectionFailureType.INVALID_STATE_ID,
-    error: "Invalid state id"
-  }),
-  genericFailure: (error: string) => ({
-    type: ConnectionFailureType.GENERIC_FAILURE,
-    error: error
-  }),
-};
 
 export const transformCoordinatorFailure = (e: {code: number, reason: string}): ConnectionFailure  => {
   switch (e.code) {
     case 4000:
       return({
         type: ConnectionFailureType.STATE_NOT_FOUND,
-        error: "State not found"
+        message: e.reason
       });
     case 4001:
       return({
         type: ConnectionFailureType.NO_AVAILABLE_STORES,
-        error: "No available stores"
+        message: e.reason
       });
     case 4002:
       return({
         type: ConnectionFailureType.INVALID_USER_DATA,
-        error: "Invalid user data"
+        message: e.reason
       });
     case 4003:
       return({
         type: ConnectionFailureType.INVALID_STATE_ID,
-        error: "Invalid state id"
+        message: e.reason
       });
     default:
       return({
         type: ConnectionFailureType.GENERIC_FAILURE,
-        error: e.reason
+        message: e.reason
       });
   }
 }
