@@ -43,7 +43,7 @@ export class RtagClient {
     token: string,
     request: {{makeRequestName initialize}},
     onUpdate: (updateArgs: UpdateArgs) => void,
-    onConnectionFailure: (failureReason: ConnectionFailure) => void
+    onConnectionFailure: (failure: ConnectionFailure) => void
   ): Promise<RtagConnection> {
     return new Promise((resolve) => {
       const socket = this.initSocket(onConnectionFailure);
@@ -59,7 +59,7 @@ export class RtagClient {
     token: string,
     stateId: StateId,
     onUpdate: (updateArgs: UpdateArgs) => void,
-    onConnectionFailure: (failureReason: ConnectionFailure) => void
+    onConnectionFailure: (failure: ConnectionFailure) => void
   ): RtagConnection {
     const socket = this.initSocket(onConnectionFailure);
     socket.onopen = () => {
@@ -69,7 +69,7 @@ export class RtagClient {
     return new RtagConnection(stateId, socket, onUpdate);
   }
 
-  private initSocket(onConnectionFailure: (failureReason: ConnectionFailure) => void) {
+  private initSocket(onConnectionFailure: (failure: ConnectionFailure) => void) {
     const socket = new WebSocket(`wss://${COORDINATOR_HOST}/${this.appId}`);
     socket.binaryType = "arraybuffer";
     socket.onclose = (e) => onConnectionFailure(transformCoordinatorFailure(e));
