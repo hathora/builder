@@ -1,4 +1,4 @@
-import { LitElement, html } from "lit";
+import { LitElement, html, css } from "lit";
 import { property } from "lit/decorators.js";
 import { Board, Color, Piece, PieceType, PlayerState } from "../.rtag/types";
 import { RtagConnection } from "../.rtag/client";
@@ -9,11 +9,17 @@ export default class BoardEl extends LitElement {
   @property() state!: PlayerState;
   @property() client!: RtagConnection;
 
+  static styles = css`
+    .board-plugin {
+      max-width: 400px;
+    }
+  `;
+
   render() {
-    return html`<chess-board
+    return html`<div class="board-plugin"><chess-board
       draggable-pieces
       orientation=${this.state.color === Color.BLACK ? "black" : "white"}
-    ></chess-board>`;
+    ></chess-board></div>`;
   }
 
   firstUpdated() {

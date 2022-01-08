@@ -27,7 +27,9 @@ function KVDisplay(props: { label: string; children: JSX.Element }) {
 }
 
 function ArrayDisplay<T>(props: { value: T[]; children: (value: T) => JSX.Element }) {
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(props.value && props.value.length > 7 ? true : false);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(props.value &&
+    ((typeof props.value[0] === "object" && props.value.length > 7) ||
+    props.value.length > 4) ? true : false);
 
   let icon;
   if (isCollapsed) {
@@ -51,15 +53,15 @@ function ArrayDisplay<T>(props: { value: T[]; children: (value: T) => JSX.Elemen
       [
       {props.value && props.value.length > 0 && (
         <>
-          <span className="text-sm italic text-gray-500">
+          {!isCollapsed && (<br />)}
+          <span className="ml-3 text-sm italic text-gray-500">
             {props.value.length} {props.value.length === 1 ? "item" : "items"}
           </span>
           {!isCollapsed && (
-            <div className={`flex flex-row overflow-x-auto`}>
+            <div className={`p-1 m-1 bg-gray-100 border rounded flex ${typeof props.value[0] === "object" ? "flex-row overflow-x-auto" : "flex-col array-max-height overflow-y-auto"}`}>
               {props.value.map((val, i) => (
-                <div className={`array-item ${typeof props.value[0] === "object" ? "" : "pl-2"}`} key={i}>
+                <div className={`${typeof props.value[0] === "object" ? "array-item-object" : "array-item pl-2"}`} key={i}>
                   {props.children(val)}
-                  {typeof props.value[0] !== "object" && (<span>,</span>)}
                 </div>
               ))}
             </div>
@@ -73,7 +75,10 @@ function ArrayDisplay<T>(props: { value: T[]; children: (value: T) => JSX.Elemen
 }
 
 function OptionalDisplay<T>(props: { value: T | undefined; children: (value: T) => JSX.Element }) {
-  return <span className="optional-display">{props.value !== undefined ? props.children(props.value) : ""}</span>;
+  if (props.value === undefined) {
+    return <span className="text-sm italic text-gray-500">none</span>
+  }
+  return <span className="optional-display">{props.children(props.value)}</span>;
 }
 
 function EnumDisplay(props: { value: number; enum: object }) {

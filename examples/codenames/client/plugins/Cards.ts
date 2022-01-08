@@ -4,6 +4,19 @@ import { styleMap } from "lit/directives/style-map.js";
 import { Card, Cards, Color } from "../.rtag/types";
 import { RtagConnection } from "../.rtag/client";
 
+let DISPLAY_COLORS: {[index: string]:string} = {
+  RED: '#c55f5f',
+  BLUE: '#5a7ab6',
+  BLACK: '#292a2d',
+  YELLOW: '#c9a46e',
+}
+let REVEALED_COLORS: {[index: string]:string} = {
+  RED: '#c78686',
+  BLUE: '#768db7',
+  BLACK: '#5a5b62',
+  YELLOW: '#c9b394',
+}
+
 export default class CardsComponent extends LitElement {
   @property() val!: Cards;
   @property() client!: RtagConnection;
@@ -13,13 +26,14 @@ export default class CardsComponent extends LitElement {
   }
 
   renderCard(card: Card) {
-    const cardColor = card.color !== undefined ? Color[card.color].toLowerCase() : "grey";
+    const cardColor = card.color !== undefined ? DISPLAY_COLORS[Color[card.color]] : "#e1e4ec";
+    const revealedCardColor = card.color !== undefined ? REVEALED_COLORS[Color[card.color]] : "#e1e4ec";
     return html`<div
       class="grid-item"
       style=${styleMap({
-        outline: "3px solid " + (card.selectedBy !== undefined ? Color[card.selectedBy].toLowerCase() : cardColor),
-        border: "5px solid " + (card.selectedBy !== undefined ? "black" : cardColor),
-        backgroundColor: cardColor,
+        outline: "3px solid " + (card.selectedBy !== undefined ? DISPLAY_COLORS[Color[card.selectedBy]] : cardColor),
+        backgroundColor: (card.selectedBy !== undefined ? revealedCardColor : cardColor),
+        color: card.color !== undefined && Color[card.color] === 'BLACK' ? "#cbd4e3" : "#20262f"
       })}
       @click="${async () => {
         const res = await this.client.selectCard({ word: card.word });
@@ -37,15 +51,21 @@ export default class CardsComponent extends LitElement {
       .grid-container {
         display: grid;
         grid-template-columns: auto auto auto auto auto;
+        max-width: 675px;
       }
       .grid-item {
         margin: 10px;
         font-weight: 900;
         width: 115px;
         height: 65px;
-        lineheight: 75px;
-        textalign: center;
+        line-height: 65px;
+        text-align: center;
         cursor: pointer;
+        border-radius: 2px;
+        box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+      }
+      .grid-item:hover {
+        box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
       }
     `;
   }

@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "type": "module",
   "dependencies": {
+    "@fontsource/patua-one": "^4.5.0",
     "lit": "^2.0.2"
   },
   "devDependencies": {
