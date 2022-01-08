@@ -20,24 +20,31 @@ export default class CardsComponent extends LitElement {
   buffer!: StateBuffer;
 
   static get styles() {
-    const mainColor = 'red';
-
     return css`
       .game-main {
         font-family: "Press Start 2P", sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .score {
+        font-size: 24px;
+        flex: 3;
+        text-align: center;
       }
     `;
   }
 
   render() {
-    return html`<div class="game-main" style="display: flex; flex-direction:column; align-items: center;">
+    return html`<div class="game-main">
       <div style="width: ${WIDTH}px; padding: 1.5rem; display: flex; justify-content: space-around;">
-        <div id="playerAScore" style="font-size: 24px; flex: 3; text-align: center;"></div>
-        <div id="playerBScore" style="font-size: 24px; flex: 3; text-align: center;"></div>
+        <div id="playerAScore" class="score"></div>
+        <div id="playerBScore" class="score"></div>
       </div>
-
       <div style="padding: .5rem; background-color: black;">
-        <div style="padding: .3rem; border: 5px dashed white; background-color: black; display: flex; align-items: center">
+        <div
+          style="padding: .3rem; border: 5px dashed white; background-color: black; display: flex; align-items: center"
+        >
           <canvas width="${WIDTH}" height="${HEIGHT}"></canvas>
         </div>
       </div>
@@ -75,7 +82,7 @@ export default class CardsComponent extends LitElement {
 
       // Draw midline
       ctx.fillStyle = "grey";
-      ctx.fillRect((WIDTH/2) - (MIDLINE_WIDTH/2), 0, MIDLINE_WIDTH, HEIGHT * 2);
+      ctx.fillRect(WIDTH / 2 - MIDLINE_WIDTH / 2, 0, MIDLINE_WIDTH, HEIGHT * 2);
 
       // Draw paddles
       ctx.fillStyle = "white";
@@ -83,10 +90,10 @@ export default class CardsComponent extends LitElement {
       ctx.fillRect(WIDTH - PADDLE_WIDTH, state.playerB.paddle - PADDLE_HEIGHT / 2, PADDLE_WIDTH, PADDLE_HEIGHT);
 
       // Draw ball
-      ctx.fillRect(state.ball.x - (BALL_RADIUS/2), state.ball.y, BALL_RADIUS, BALL_RADIUS);
+      ctx.fillRect(state.ball.x - BALL_RADIUS / 2, state.ball.y, BALL_RADIUS, BALL_RADIUS);
 
-      playerAScoreEl!.textContent = state.playerA.score.toString();
-      playerBScoreEl!.textContent = state.playerB.score.toString();
+      playerAScoreEl.textContent = state.playerA.score.toString();
+      playerBScoreEl.textContent = state.playerB.score.toString();
       requestAnimationFrame(draw);
     };
     requestAnimationFrame(draw);
