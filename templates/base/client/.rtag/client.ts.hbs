@@ -80,6 +80,7 @@ export class RtagClient {
 export class RtagConnection {
   private callbacks: Record<string, (response: Response) => void> = {};
   private state?: UserState = undefined;
+  private changedAt = 0;
 
   public constructor(public stateId: StateId, private socket: WebSocket, onUpdate: (updateArgs: UpdateArgs) => void) {
     socket.onmessage = ({ data }) => {
@@ -88,10 +89,11 @@ export class RtagConnection {
         onUpdate({ state: JSON.parse(JSON.stringify(this.state)), updatedAt: 0 });
         return;
       }
-      const { stateDiff, changedAt, responses } = decodeStateUpdate(new Uint8Array(data as ArrayBuffer));
+      const { stateDiff, changedAtDiff, responses } = decodeStateUpdate(new Uint8Array(data as ArrayBuffer));
+      this.changedAt += changedAtDiff;
       if (stateDiff !== undefined) {
         this.state = computePatch(this.state, stateDiff);
-        onUpdate({ state: JSON.parse(JSON.stringify(this.state)), updatedAt: changedAt });
+        onUpdate({ state: JSON.parse(JSON.stringify(this.state)), updatedAt: this.changedAt });
       }
       Object.entries(responses).forEach(([msgId, response]) => {
         if (msgId in this.callbacks) {
