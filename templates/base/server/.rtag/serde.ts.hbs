@@ -19,7 +19,7 @@ export class BitString {
 
 export class Writer {
   private pos = 0;
-  private view = new DataView(new ArrayBuffer(1024));
+  private view = new DataView(new ArrayBuffer(64));
   private bytes = new Uint8Array(this.view.buffer);
 
   public writeUInt8(val: number) {

@@ -197,7 +197,7 @@ function sendSnapshot(stateId: StateId, userId: UserId) {
 function sendUpdates(stateId: StateId, changedAt: number, responses: Map<UserId, Record<number, Response>>) {
   if (stateInfo.has(stateId)) {
     const { state, subscriptions } = stateInfo.get(stateId)!;
-    subscriptions.forEach((userId) => {
+    for (const userId of subscriptions) {
       const { state: prevState, changedAt: prevChangedAt } = userStateInfo.get(stateId)!.get(userId)!;
       const currState = impl.getUserState(state, userId);
       const diff = computeDiff(currState, prevState);
@@ -206,7 +206,7 @@ function sendUpdates(stateId: StateId, changedAt: number, responses: Map<UserId,
       );
       coordinator.onStateUpdate(stateId, userId, buf);
       userStateInfo.get(stateId)!.set(userId, { state: JSON.parse(JSON.stringify(currState)), changedAt });
-    });
+    }
   }
 }
 
