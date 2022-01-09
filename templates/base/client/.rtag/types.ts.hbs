@@ -116,7 +116,7 @@ export const {{@key}} = {
     }
     {{/each}}
     const writer = new Writer();
-    writer.writeUVarint(tracker.getBits());
+    writer.writeBitSet(tracker.bits);
     writer.writeBuffer(buf.toBuffer());
     return writer.toBuffer();
   },
@@ -130,7 +130,7 @@ export const {{@key}} = {
   },
   decodeDiff(buf: ArrayBufferView | Reader): DeepPartial<{{@key}}> {
     const sb = ArrayBuffer.isView(buf) ? new Reader(buf) : buf;
-    const tracker = new BitString(sb.readUVarint());
+    const tracker = new BitString(sb.readBitset());
     return {
       {{#each properties}}
       {{@key}}: tracker.pop() === 1 ? {{> renderDecodeDiffArg}} : NO_DIFF,
@@ -372,7 +372,7 @@ function writeArrayDiff<T>(buf: Writer, x: (T | typeof NO_DIFF)[], innerWrite: (
       innerWrite(tmp, val);
     }
   });
-  buf.writeUVarint(tracker.getBits());
+  buf.writeBitSet(tracker.bits);
   buf.writeBuffer(tmp.toBuffer());
 }
 
@@ -403,7 +403,7 @@ function parseArray<T>(buf: Reader, innerParse: () => T): T[] {
   return arr;
 }
 function parseArrayDiff<T>(buf: Reader, innerParse: () => T): (T | typeof NO_DIFF)[] {
-  const tracker = new BitString(buf.readUVarint());
+  const tracker = new BitString(buf.readBitset());
   const len = buf.readUVarint();
   const arr = [];
   for (let i = 0; i < len; i++) {

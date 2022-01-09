@@ -1,3 +1,4 @@
+import BitSet from "bitset";
 import * as utf8 from "utf8-buffer";
 import utf8Size from "utf8-buffer-size";
 const { pack, unpack } = (utf8 as any).default ?? utf8;
@@ -5,25 +6,14 @@ const { pack, unpack } = (utf8 as any).default ?? utf8;
 export class BitString {
   private pos = 0;
 
-  public constructor(private bits: number = 0) {
-    this.bits = bits;
-  }
+  public constructor(public bits: BitSet = new BitSet()) {}
 
   public push(val: 0 | 1) {
-    if (val === 1) {
-      this.bits |= 1 << this.pos;
-    }
-    this.pos++;
+    this.bits.set(this.pos++, val);
   }
 
   public pop() {
-    const val = (this.bits >>> this.pos) & 1;
-    this.pos++;
-    return val;
-  }
-
-  public getBits() {
-    return this.bits;
+    return this.bits.get(this.pos++);
   }
 }
 
@@ -96,6 +86,23 @@ export class Writer {
     this.ensureSize(4);
     this.view.setFloat32(this.pos, val, true);
     this.pos += 4;
+  }
+
+  public writeBitSet(bitset: BitSet) {
+    if (bitset.isEmpty()) {
+      this.writeUInt8(0);
+      return;
+    }
+    const msb = bitset.msb();
+    for (let i = Math.floor(msb / 7); i >= 0; i--) {
+      const slice = bitset.slice(i * 7, (i + 1) * 7 - 1);
+      const str = slice.toString().padStart(7, "0");
+      if (i === 0) {
+        this.writeUInt8(parseInt(str, 2));
+      } else {
+        this.writeUInt8(parseInt("1" + str, 2));
+      }
+    }
   }
 
   public writeString(val: string) {
@@ -173,6 +180,21 @@ export class Reader {
     const val = this.view.getFloat32(this.pos, true);
     this.pos += 4;
     return val;
+  }
+
+  public readBitset() {
+    let str = "";
+    while (true) {
+      const byte = this.readUInt8();
+      for (let i = 6; i >= 0; i--) {
+        const bit = ((byte >> i) & 1) as 0 | 1;
+        str += bit;
+      }
+      if (byte < 0x80) {
+        break;
+      }
+    }
+    return new BitSet(str);
   }
 
   public readString() {
