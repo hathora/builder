@@ -102,6 +102,8 @@ class Store {
     const subscribers = stateInfo.get(stateId)!.subscriptions;
     if (subscribers.size > 1) {
       subscribers.delete(userId);
+      userResponses.get(stateId)?.delete(userId);
+      userStateInfo.get(stateId)?.delete(userId);
     } else {
       stateInfo.delete(stateId);
       changedStates.delete(stateId);
