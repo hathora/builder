@@ -3,21 +3,21 @@ import utf8Size from "utf8-buffer-size";
 const { pack, unpack } = (utf8 as any).default ?? utf8;
 
 export class BitString {
-  public bytes: number[] = [];
+  public bytes: number[] = [0];
   private pos = 0;
 
   public push(val: 0 | 1) {
-    if (this.pos === 8 || this.bytes.length === 0) {
-      this.bytes.push(0);
+    if (this.pos === 7) {
+      this.bytes.push(0x80);
       this.pos = 0;
     }
-    this.bytes[this.bytes.length - 1] |= val << this.pos % 8;
+    this.bytes[this.bytes.length - 1] |= val << this.pos;
     this.pos++;
   }
 
   public pop() {
-    const bytesIdx = Math.floor(this.pos / 8);
-    const bit = ((this.bytes[bytesIdx] >> this.pos % 8) & 1) as 0 | 1;
+    const bytesIdx = Math.floor(this.pos / 7);
+    const bit = ((this.bytes[bytesIdx] >> this.pos % 7) & 1) as 0 | 1;
     this.pos++;
     return bit;
   }
@@ -95,10 +95,10 @@ export class Writer {
   }
 
   public writeBitString(bitstring: BitString) {
-    while (bitstring.bytes[bitstring.bytes.length - 1] === 0) {
+    while (bitstring.bytes[bitstring.bytes.length - 1] === 0x80) {
       bitstring.bytes.pop();
     }
-    this.writeBuffer(new Uint8Array(bitstring.bytes));
+    this.writeBuffer(new Uint8Array(bitstring.bytes.reverse()));
   }
 
   public writeString(val: string) {
@@ -188,7 +188,7 @@ export class Reader {
       }
     }
     const bitstring = new BitString();
-    bitstring.bytes = bytes;
+    bitstring.bytes = bytes.reverse();
     return bitstring;
   }
 
