@@ -2,27 +2,6 @@ import * as utf8 from "utf8-buffer";
 import utf8Size from "utf8-buffer-size";
 const { pack, unpack } = (utf8 as any).default ?? utf8;
 
-export class BitString {
-  public bytes: number[] = [0];
-  private pos = 0;
-
-  public push(val: 0 | 1) {
-    if (this.pos === 7) {
-      this.bytes.push(0x80);
-      this.pos = 0;
-    }
-    this.bytes[this.bytes.length - 1] |= val << this.pos;
-    this.pos++;
-  }
-
-  public pop() {
-    const bytesIdx = Math.floor(this.pos / 7);
-    const bit = ((this.bytes[bytesIdx] >> this.pos % 7) & 1) as 0 | 1;
-    this.pos++;
-    return bit;
-  }
-}
-
 export class Writer {
   private pos = 0;
   private view = new DataView(new ArrayBuffer(64));
@@ -94,11 +73,17 @@ export class Writer {
     this.pos += 4;
   }
 
-  public writeBitString(bitstring: BitString) {
-    while (bitstring.bytes[bitstring.bytes.length - 1] === 0x80) {
-      bitstring.bytes.pop();
+  public writeBits(bits: boolean[]) {
+    for (let i = 0; i < bits.length; i += 8) {
+      let byte = 0;
+      for (let j = 0; j < 8; j++) {
+        if (i + j == bits.length) {
+          break;
+        }
+        byte |= (bits[i + j] ? 1 : 0) << j;
+      }
+      this.writeUInt8(byte);
     }
-    this.writeBuffer(new Uint8Array(bitstring.bytes.reverse()));
   }
 
   public writeString(val: string) {
@@ -178,18 +163,17 @@ export class Reader {
     return val;
   }
 
-  public readBitString() {
-    const bytes = [];
-    while (true) {
-      const byte = this.readUInt8();
-      bytes.push(byte & 0x7f);
-      if (byte < 0x80) {
-        break;
+  public readBits(numBits: number) {
+    const numBytes = Math.ceil(numBits / 8);
+    const bytes = this.bytes.slice(this.pos, this.pos + numBytes);
+    const bits: boolean[] = [];
+    for (const byte of bytes) {
+      for (let i = 0; i < 8 && bits.length < numBits; i++) {
+        bits.push(((byte >> i) & 1) === 1);
       }
     }
-    const bitstring = new BitString();
-    bitstring.bytes = bytes.reverse();
-    return bitstring;
+    this.pos += numBytes;
+    return bits;
   }
 
   public readString() {

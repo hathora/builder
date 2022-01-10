@@ -6,6 +6,7 @@ registerHelper("concat", (...arr) => arr.splice(0, arr.length - 1).join(""));
 registerHelper("eq", (a, b) => a === b);
 registerHelper("ne", (a, b) => a !== b);
 registerHelper("stringify", JSON.stringify);
+registerHelper("len", (x) => (Array.isArray(x) ? x.length : Object.keys(x).length));
 registerHelper("isArray", Array.isArray);
 registerHelper("isObject", (x) => typeof x === "object");
 registerHelper("capitalize", capitalize);

@@ -1,5 +1,5 @@
 import { Response } from "./base";
-import { Writer, Reader, BitString } from "./serde";
+import { Writer, Reader } from "./serde";
 
 export const NO_DIFF = Symbol("NODIFF");
 export type DeepPartial<T> = T extends string | number | boolean | undefined
@@ -108,11 +108,11 @@ export const {{@key}} = {
   },
   encodeDiff(obj: DeepPartial<{{@key}}>) {
     const buf = new Writer();
-    const tracker = new BitString();
+    const tracker: boolean[] = [];
     {{#each properties}}
-    tracker.push(obj.{{@key}} === NO_DIFF ? 0 : 1);
+    tracker.push(obj.{{@key}} !== NO_DIFF);
     {{/each}}
-    buf.writeBitString(tracker);
+    buf.writeBits(tracker);
     {{#each properties}}
     if (obj.{{@key}} !== NO_DIFF) {
       {{> renderEncodeDiffArg arg=@key}};
@@ -130,10 +130,10 @@ export const {{@key}} = {
   },
   decodeDiff(buf: ArrayBufferView | Reader): DeepPartial<{{@key}}> {
     const sb = ArrayBuffer.isView(buf) ? new Reader(buf) : buf;
-    const tracker = sb.readBitString();
+    const tracker = sb.readBits({{len properties}});
     return {
       {{#each properties}}
-      {{@key}}: tracker.pop() === 1 ? {{> renderDecodeDiffArg}} : NO_DIFF,
+      {{@key}}: tracker.shift() ? {{> renderDecodeDiffArg}} : NO_DIFF,
       {{/each}}
     };
   },
@@ -363,12 +363,12 @@ function writeArray<T>(buf: Writer, x: T[], innerWrite: (x: T) => void) {
   }
 }
 function writeArrayDiff<T>(buf: Writer, x: (T | typeof NO_DIFF)[], innerWrite: (x: T) => void) {
-  const tracker = new BitString();
-  x.forEach((val) => {
-    tracker.push(val === NO_DIFF ? 0 : 1);
-  });
-  buf.writeBitString(tracker);
   buf.writeUVarint(x.length);
+  const tracker: boolean[] = [];
+  x.forEach((val) => {
+    tracker.push(val !== NO_DIFF);
+  });
+  buf.writeBits(tracker);
   x.forEach((val) => {
     if (val !== NO_DIFF) {
       innerWrite(val);
@@ -403,11 +403,11 @@ function parseArray<T>(buf: Reader, innerParse: () => T): T[] {
   return arr;
 }
 function parseArrayDiff<T>(buf: Reader, innerParse: () => T): (T | typeof NO_DIFF)[] {
-  const tracker = buf.readBitString();
   const len = buf.readUVarint();
+  const tracker = buf.readBits(len);
   const arr = [];
   for (let i = 0; i < len; i++) {
-    if (tracker.pop() === 1) {
+    if (tracker.shift()) {
       arr.push(innerParse());
     } else {
       arr.push(NO_DIFF);
