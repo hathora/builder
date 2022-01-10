@@ -1,19 +1,25 @@
-import BitSet from "bitset";
 import * as utf8 from "utf8-buffer";
 import utf8Size from "utf8-buffer-size";
 const { pack, unpack } = (utf8 as any).default ?? utf8;
 
 export class BitString {
+  public bytes: number[] = [];
   private pos = 0;
 
-  public constructor(public bits: BitSet = new BitSet()) {}
-
   public push(val: 0 | 1) {
-    this.bits.set(this.pos++, val);
+    if (this.pos === 8 || this.bytes.length === 0) {
+      this.bytes.push(0);
+      this.pos = 0;
+    }
+    this.bytes[this.bytes.length - 1] |= val << this.pos % 8;
+    this.pos++;
   }
 
   public pop() {
-    return this.bits.get(this.pos++);
+    const bytesIdx = Math.floor(this.pos / 8);
+    const bit = ((this.bytes[bytesIdx] >> this.pos % 8) & 1) as 0 | 1;
+    this.pos++;
+    return bit;
   }
 }
 
@@ -88,21 +94,11 @@ export class Writer {
     this.pos += 4;
   }
 
-  public writeBitSet(bitset: BitSet) {
-    if (bitset.isEmpty()) {
-      this.writeUInt8(0);
-      return;
+  public writeBitString(bitstring: BitString) {
+    while (bitstring.bytes[bitstring.bytes.length - 1] === 0) {
+      bitstring.bytes.pop();
     }
-    const msb = bitset.msb();
-    for (let i = Math.floor(msb / 7); i >= 0; i--) {
-      const slice = bitset.slice(i * 7, (i + 1) * 7 - 1);
-      const str = slice.toString().padStart(7, "0");
-      if (i === 0) {
-        this.writeUInt8(parseInt(str, 2));
-      } else {
-        this.writeUInt8(parseInt("1" + str, 2));
-      }
-    }
+    this.writeBuffer(new Uint8Array(bitstring.bytes));
   }
 
   public writeString(val: string) {
@@ -182,19 +178,18 @@ export class Reader {
     return val;
   }
 
-  public readBitset() {
-    let str = "";
+  public readBitString() {
+    const bytes = [];
     while (true) {
       const byte = this.readUInt8();
-      for (let i = 6; i >= 0; i--) {
-        const bit = ((byte >> i) & 1) as 0 | 1;
-        str += bit;
-      }
+      bytes.push(byte & 0x7f);
       if (byte < 0x80) {
         break;
       }
     }
-    return new BitSet(str);
+    const bitstring = new BitString();
+    bitstring.bytes = bytes;
+    return bitstring;
   }
 
   public readString() {
