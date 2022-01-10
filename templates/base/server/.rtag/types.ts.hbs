@@ -111,14 +111,14 @@ export const {{@key}} = {
     const tracker = new BitString();
     {{#each properties}}
     tracker.push(obj.{{@key}} === NO_DIFF ? 0 : 1);
+    {{/each}}
+    buf.writeBitString(tracker);
+    {{#each properties}}
     if (obj.{{@key}} !== NO_DIFF) {
       {{> renderEncodeDiffArg arg=@key}};
     }
     {{/each}}
-    const writer = new Writer();
-    writer.writeBitString(tracker);
-    writer.writeBuffer(buf.toBuffer());
-    return writer.toBuffer();
+    return buf.toBuffer();
   },
   decode(buf: ArrayBufferView | Reader): {{@key}} {
     const sb = ArrayBuffer.isView(buf) ? new Reader(buf) : buf;
@@ -222,7 +222,7 @@ undefined
 {{#if (eq type "optional")}}
 writeOptional(buf, obj.{{arg}}, (x) => {{> renderEncodeArg item}})
 {{~else if (eq type "array")}}
-writeArray(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}}, (buf, x) => {{> renderEncodeArg items}})
+writeArray(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}}, (x) => {{> renderEncodeArg items}})
 {{~else if (eq type "enum")}}
 writeUInt8(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}})
 {{~else if (eq type "int")}}
@@ -243,7 +243,7 @@ buf.writeBuffer({{typeString}}.encode({{#if arg}}obj.{{arg}}{{else}}x{{/if}}))
 {{#if (eq type "optional")}}
 writeOptional(buf, obj.{{arg}}, (x) => {{> renderEncodeDiffArg item}})
 {{~else if (eq type "array")}}
-writeArrayDiff(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}}, (buf, x) => {{> renderEncodeDiffArg items}})
+writeArrayDiff(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}}, (x) => {{> renderEncodeDiffArg items}})
 {{~else if (eq type "enum")}}
 writeUInt8(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}})
 {{~else if (eq type "int")}}
@@ -356,24 +356,24 @@ function writeOptional<T>(buf: Writer, x: T | undefined, innerWrite: (x: T) => v
     innerWrite(x);
   }
 }
-function writeArray<T>(buf: Writer, x: T[], innerWrite: (buf: Writer, x: T) => void) {
+function writeArray<T>(buf: Writer, x: T[], innerWrite: (x: T) => void) {
   buf.writeUVarint(x.length);
   for (let i = 0; i < x.length; i++) {
-    innerWrite(buf, x[i]);
+    innerWrite(x[i]);
   }
 }
-function writeArrayDiff<T>(buf: Writer, x: (T | typeof NO_DIFF)[], innerWrite: (buf: Writer, x: T) => void) {
-  const tmp = new Writer();
+function writeArrayDiff<T>(buf: Writer, x: (T | typeof NO_DIFF)[], innerWrite: (x: T) => void) {
   const tracker = new BitString();
-  tmp.writeUVarint(x.length);
   x.forEach((val) => {
     tracker.push(val === NO_DIFF ? 0 : 1);
-    if (val !== NO_DIFF) {
-      innerWrite(tmp, val);
-    }
   });
   buf.writeBitString(tracker);
-  buf.writeBuffer(tmp.toBuffer());
+  buf.writeUVarint(x.length);
+  x.forEach((val) => {
+    if (val !== NO_DIFF) {
+      innerWrite(val);
+    }
+  });
 }
 
 function parseUInt8(buf: Reader): number {
