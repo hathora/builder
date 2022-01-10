@@ -1,4 +1,5 @@
 import React, { useRef, useLayoutEffect, useContext, useState, useEffect } from "react";
+import { toast } from "react-toastify";
 import { MinusSmIcon, PlusSmIcon, UserCircleIcon } from "@heroicons/react/solid";
 import { getUserDisplayName, lookupUser, UserData } from "./base";
 import { RtagConnection } from "./client";
@@ -174,13 +175,20 @@ function PluginDisplay<T>({
   component: string;
   isCollapsible: boolean;
 }) {
-  const { state, connection } = useContext(RtagContext)!;
-  const ref = useRef<{ val: T; state: UserState; client: RtagConnection }>();
+  const { connection, user, state, updatedAt } = useContext(RtagContext)!;
+  const ref = useRef<{ val: T; client: RtagConnection; user: UserData; state: UserState; updatedAt: number }>();
+  const displayError = (e: CustomEvent) => toast.error(e.detail);
   useLayoutEffect(() => {
     if (ref.current) {
       ref.current.val = value;
-      ref.current.state = state;
       ref.current.client = connection;
+      ref.current.user = user;
+      ref.current.state = state;
+      ref.current.updatedAt = updatedAt;
+      (ref.current as any).addEventListener("error", displayError);
+      return () => {
+        (ref.current as any).removeEventListener("error", displayError);
+      };
     }
   });
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);

@@ -6,27 +6,14 @@ import "dotenv/config";
 import { register } from "./protocol";
 import LogStore from "./logstore";
 import { ImplWrapper as impl } from "./wrapper";
-import { Response, Method } from "./base";
+import { Response } from "./base";
 import { UserId, encodeStateUpdate, NO_DIFF, {{userState}} as UserState } from "./types";
 import { computeDiff } from "./diff";
 
 type StateId = bigint;
 type State = ReturnType<typeof impl.initialize>;
-{{#if tick}}
-type PendingUpdate =
-  | { userId: UserId; time: number; method: Method; argsBuffer: Buffer }
-  | { time: number; timeDelta: number };
-{{else}}
-type PendingUpdate = { userId: UserId; time: number; method: Method; argsBuffer: Buffer };
-{{/if}}
-type StateInfo = {
-  state: State;
-  rng: ReturnType<seedrandom>;
-  prevState: State;
-  prevRng: ReturnType<seedrandom>;
-  subscriptions: Set<UserId>;
-  pendingUpdates: PendingUpdate[];
-};
+type StateInfo = { state: State; rng: ReturnType<seedrandom>; subscriptions: Set<UserId> };
+type UserStateInfo = { state: UserState; changedAt: number };
 
 const dataDir = process.env.DATA_DIR!;
 if (!existsSync(dataDir)) {
@@ -34,14 +21,15 @@ if (!existsSync(dataDir)) {
 }
 const log = new LogStore(dataDir);
 const stateInfo: Map<StateId, StateInfo> = new Map();
-const changedStates: Set<StateId> = new Set();
+const changedStates: Map<StateId, number> = new Map();
 const userResponses: Map<StateId, Map<UserId, Record<number, Response>>> = new Map();
+const userStateInfo: Map<StateId, Map<UserId, UserStateInfo>> = new Map();
 
 class Store {
   constructor() {
     setInterval(() => {
-      changedStates.forEach((stateId) => {
-        sendUpdates(stateId, userResponses.get(stateId) ?? new Map());
+      changedStates.forEach((changedAt, stateId) => {
+        sendUpdates(stateId, changedAt, userResponses.get(stateId) ?? new Map());
         userResponses.delete(stateId);
       });
       userResponses.forEach((responses, stateId) => sendResponses(stateId, responses));
@@ -53,12 +41,12 @@ class Store {
     let prevUpdateTime = Date.now();
     setInterval(() => {
       const currTime = Date.now();
-      stateInfo.forEach(({ state, rng, pendingUpdates }, stateId) => {
+      stateInfo.forEach(({ state, rng }, stateId) => {
         const timeDelta = currTime - prevUpdateTime;
         impl.onTick(state, ctx(rng, currTime), timeDelta / 1000);
-        if (impl.changed()) {
-          changedStates.add(stateId);
-          pendingUpdates.push({ time: currTime, timeDelta });
+        const changedAt = impl.changedAt();
+        if (changedAt !== undefined) {
+          changedStates.set(stateId, changedAt);
           log.append(stateId, currTime, new SmartBuffer().writeUInt8(0xff).writeUInt32LE(timeDelta).toBuffer());
         }
       });
@@ -71,16 +59,12 @@ class Store {
     const time = Date.now();
     const rng = seedrandom(seed.toString(36));
     const state = impl.initialize(userId, ctx(rng, time), argsBuffer);
-    const prevRng = seedrandom(seed.toString(36));
-    const prevState = impl.initialize(userId, ctx(prevRng, time), argsBuffer);
     stateInfo.set(stateId, {
       state,
       rng,
-      prevState,
-      prevRng,
       subscriptions: new Set([userId]),
-      pendingUpdates: [],
     });
+    userStateInfo.set(stateId, new Map());
     sendSnapshot(stateId, userId);
     log.append(
       stateId,
@@ -103,12 +87,10 @@ class Store {
       }
       stateInfo.set(stateId, {
         state: loaded.state,
-        prevState: loaded.prevState,
         rng: loaded.rng,
-        prevRng: loaded.prevRng,
         subscriptions: new Set(),
-        pendingUpdates: [],
       });
+      userStateInfo.set(stateId, new Map());
     }
     stateInfo.get(stateId)!.subscriptions.add(userId);
     sendSnapshot(stateId, userId);
@@ -120,10 +102,13 @@ class Store {
     const subscribers = stateInfo.get(stateId)!.subscriptions;
     if (subscribers.size > 1) {
       subscribers.delete(userId);
+      userResponses.get(stateId)?.delete(userId);
+      userStateInfo.get(stateId)?.delete(userId);
     } else {
       stateInfo.delete(stateId);
       changedStates.delete(stateId);
       userResponses.delete(stateId);
+      userStateInfo.delete(stateId);
       log.unload(stateId);
     }
   }
@@ -131,15 +116,15 @@ class Store {
     if (!stateInfo.has(stateId)) {
       return;
     }
-    const { state, rng, subscriptions, pendingUpdates } = stateInfo.get(stateId)!;
+    const { state, rng } = stateInfo.get(stateId)!;
     const reader = SmartBuffer.fromBuffer(data);
     const [method, msgId, argsBuffer] = [reader.readUInt8(), reader.readUInt32LE(), reader.readBuffer()];
     const time = Date.now();
     const response = impl.getResult(state, userId, method, ctx(rng, time), argsBuffer);
     if (response !== undefined) {
-      if (impl.changed()) {
-        changedStates.add(stateId);
-        pendingUpdates.push({ userId, time, method, argsBuffer });
+      const changedAt = impl.changedAt();
+      if (changedAt !== undefined) {
+        changedStates.set(stateId, changedAt);
         log.append(
           stateId,
           time,
@@ -177,9 +162,7 @@ function loadState(stateId: StateId) {
     const userId = reader.readString(reader.readUInt32LE());
     const argsBuffer = reader.readBuffer(reader.readUInt32LE());
     const rng = seedrandom(seed.toString(36));
-    const prevRng = seedrandom(seed.toString(36));
     const state = impl.initialize(userId, ctx(rng, time), argsBuffer);
-    const prevState = impl.initialize(userId, ctx(prevRng, time), argsBuffer);
 
     for (let i = 1; i < rows.length; i++) {
       const { time, record } = rows[i];
@@ -189,17 +172,15 @@ function loadState(stateId: StateId) {
       if (method === 0xff) {
         const timeDelta = reader.readUInt32LE();
         impl.onTick(state, ctx(rng, time), timeDelta / 1000);
-        impl.onTick(prevState, ctx(prevRng, time), timeDelta / 1000);
         continue;
       }
       {{/if}}
       const userId = reader.readString(reader.readUInt32LE());
       const argsBuffer = reader.readBuffer(reader.readUInt32LE());
       impl.getResult(state, userId, method, ctx(rng, time), argsBuffer);
-      impl.getResult(prevState, userId, method, ctx(prevRng, time), argsBuffer);
     }
 
-    return { state, rng, prevState, prevRng };
+    return { state, rng };
   } catch (e) {
     console.error("Unable to load state", stateId.toString(36), e);
   }
@@ -208,41 +189,30 @@ function loadState(stateId: StateId) {
 function sendSnapshot(stateId: StateId, userId: UserId) {
   const { state } = stateInfo.get(stateId)!;
   const userState = impl.getUserState(state, userId);
+  userStateInfo.get(stateId)!.set(userId, { state: JSON.parse(JSON.stringify(userState)), changedAt: 0 });
   const buf = Buffer.from(UserState.encode(userState));
   coordinator.onStateUpdate(stateId, userId, buf);
 }
 
-function sendUpdates(stateId: StateId, responses: Map<UserId, Record<number, Response>>) {
+function sendUpdates(stateId: StateId, changedAt: number, responses: Map<UserId, Record<number, Response>>) {
   if (stateInfo.has(stateId)) {
-    const { state, prevState, prevRng, subscriptions, pendingUpdates } = stateInfo.get(stateId)!;
-    subscriptions.forEach((userId) => {
-      const diff = computeDiff(impl.getUserState(state, userId), impl.getUserState(prevState, userId));
-      if (diff !== NO_DIFF) {
-        const buf = Buffer.from(encodeStateUpdate(diff, responses.get(userId) ?? {}));
-        coordinator.onStateUpdate(stateId, userId, buf);
-      }
-    });
-    pendingUpdates.forEach((update) => {
-      {{#if tick}}
-      if ("userId" in update) {
-        const { userId, time, method, argsBuffer } = update;
-        impl.getResult(prevState, userId, method, ctx(prevRng, time), argsBuffer);
-      } else {
-        const { time, timeDelta } = update;
-        impl.onTick(prevState, ctx(prevRng, time), timeDelta / 1000);
-      }
-      {{else}}
-      const { userId, time, method, argsBuffer } = update;
-      impl.getResult(prevState, userId, method, ctx(prevRng, time), argsBuffer);
-      {{/if}}
-    });
-    stateInfo.get(stateId)!.pendingUpdates = [];
+    const { state, subscriptions } = stateInfo.get(stateId)!;
+    for (const userId of subscriptions) {
+      const { state: prevState, changedAt: prevChangedAt } = userStateInfo.get(stateId)!.get(userId)!;
+      const currState = impl.getUserState(state, userId);
+      const diff = computeDiff(currState, prevState);
+      const buf = Buffer.from(
+        encodeStateUpdate(diff !== NO_DIFF ? diff : undefined, changedAt - prevChangedAt, responses.get(userId) ?? {})
+      );
+      coordinator.onStateUpdate(stateId, userId, buf);
+      userStateInfo.get(stateId)!.set(userId, { state: JSON.parse(JSON.stringify(currState)), changedAt });
+    }
   }
 }
 
 function sendResponses(stateId: StateId, responses: Map<UserId, Record<number, Response>>) {
   responses.forEach((response, userId) => {
-    const buf = Buffer.from(encodeStateUpdate(undefined, response));
+    const buf = Buffer.from(encodeStateUpdate(undefined, 0, response));
     coordinator.onStateUpdate(stateId, userId, buf);
   });
 }

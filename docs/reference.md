@@ -10,7 +10,7 @@ The top level keys in this file are `types`, `methods`, `auth`, `userState`, `in
 
 The `types` section is used to define the API data objects.
 
-Supported types include string, int, float, boolean, enum, optional, array, object, and union.
+Supported types include string, int, float, boolean, enum, optional, array, object, and union. There is also a special `UserId` type available.
 
 Example:
 
@@ -21,6 +21,7 @@ types:
     - VAL1
     - VAL2
   MyObj1:
+    userId: UserId
     myString: string
     myInteger: int
     myDecimal: float
@@ -129,12 +130,11 @@ initialize: createGame
 // impl.ts
 
 import { Methods, Context } from "./.rtag/methods";
-import { UserData } from "./.rtag/base";
-import { Username, PlayerStatus, ICreateGameRequest } from "./.rtag/types";
+import { UserId, PlayerStatus, ICreateGameRequest } from "./.rtag/types";
 import { Cards } from "@pairjacks/poker-cards";
 
 type InternalPlayerInfo = {
-  name: Username;
+  id: UserId;
   chipCount: number;
   chipsInPot: number;
   cards: Cards;
@@ -152,10 +152,10 @@ type InternalState = {
 };
 
 export class Impl implements Methods<InternalState> {
-  createGame(user: UserData, ctx: Context, request: ICreateGameRequest): InternalState {
+  createGame(userId: UserId, ctx: Context, request: ICreateGameRequest): InternalState {
     return {
       players: [
-        { name: user.name, chipCount: request.startingChips, chipsInPot: 0, cards: [], status: PlayerStatus.WAITING },
+        { id: userId, chipCount: request.startingChips, chipsInPot: 0, cards: [], status: PlayerStatus.WAITING },
       ],
       dealerIdx: 0,
       activePlayerIdx: 0,
@@ -176,7 +176,7 @@ The server mutates state via the functions defined in the `methods` section of `
 Methods receive four arguments as input:
 
 1. `state`: the internal state describe above
-2. `user`: the data associated with the user who called the method
+2. `userId`: the id of the user who called the method
 3. `ctx`: a context object, which must be used for sources of nondeterminism (random numbers, current time, api calls)
 4. `request`: the input arguments to the method as defined in `rtag.yml`
 
@@ -184,23 +184,22 @@ Based on these inputs, the method can validate whether the action is permitted, 
 
 ### getUserState
 
-The `getUserState` function converts the internal state to the user state based on the user data.
+The `getUserState` function converts the internal state to the user state based on the userId.
 
 Example (poker game):
 
 ```ts
-  getUserState(state: InternalState, user: UserData): PlayerState {
+  getUserState(state: InternalState, userId: UserId): PlayerState {
     return {
       players: state.players.map((player) => {
-        const shouldReveal =
-          player.name === user.name || (isShowdown(state.players) && player.status === PlayerStatus.PLAYED);
+        const shouldReveal = player.id === userId || (showdown && player.status === PlayerStatus.PLAYED);
         return {
           ...player,
           cards: shouldReveal ? player.cards.map((card) => ({ rank: card[0], suit: card[1] })) : [],
         };
       }),
-      dealer: state.players[state.dealerIdx].name,
-      activePlayer: state.players[state.activePlayerIdx].name,
+      dealer: state.players[state.dealerIdx].id,
+      activePlayer: state.players[state.activePlayerIdx].id,
       revealedCards: state.revealedCards.map((card) => ({ rank: card[0], suit: card[1] })),
     };
   }
@@ -214,11 +213,11 @@ To enable this functionality, simply set the `tick` key in `rtag.yml` to an inte
 
 ## Client
 
-The rtag framework includes an automatically generated debug application that lets you interact with your application and test your backend logic without writing any frontend code. Furthermore, rtag provides ways to incrementally add custom presentation logic as you become ready for it.
+The hathora framework includes an automatically generated debug application that lets you interact with your application and test your backend logic without writing any frontend code. Furthermore, hathora provides ways to incrementally add custom presentation logic as you become ready for it.
 
 ### Plugins
 
-Plugins go inside the `client/plugins` directory. To create a plugin for type `Foo`, create a file named `Foo.ts` and rerun the `rtag` command. This will cause the debug app to render your plugin's component anywhere `Foo` shows up in the state tree (instead of the rendering the default json view).
+Plugins go inside the `client/plugins` directory. To create a plugin for type `Foo`, create a file named `Foo.ts` and rerun the `hathora` command. This will cause the debug app to render your plugin's component anywhere `Foo` shows up in the state tree (instead of the rendering the default json view).
 
 Your plugin must export a webcomponent (a class that extends `HTMLElement`). While you are free to write a native webcomponent without any dependencies, most popular frontend libraries have ways to create webcomponents. Some examples include:
 
@@ -230,7 +229,7 @@ Plugins receive the following props as input:
 
 - val -- this is the value you are rendering, it has the type of your filename
 - state -- this is the entire state tree, it has the type of `userState`
-- client -- this is the rtag client instance (so you can make method calls from within your plugin), with type `RtagClient`
+- client -- this is the hathora client instance (so you can make method calls from within your plugin), with type `RtagClient`
 
 Example (from uno, using Lit):
 
@@ -270,8 +269,8 @@ Which renders like this in the debug application:
 
 ### Fully custom frontend
 
-When you're ready to move away from the debug app, simply create an `index.html` file at the root of the `client` directory. This file now serves as the entry point to your frontend at http://localhost:4000, and can load code and other resources as needed. You are free to use any technologies you wish to build your frontend, just make sure to import the generated client to communicate with the rtag server.
+When you're ready to move away from the debug app, simply create an `index.html` file at the root of the `client` directory. This file now serves as the entry point to your frontend at http://localhost:4000, and can load code and other resources as needed. You are free to use any technologies you wish to build your frontend, just make sure to import the generated client to communicate with the hathora server.
 
-The `rtag` frontend tooling is built around [vite](https://vitejs.dev/), which generally creates for a pleasant development experience.
+The `hathora` frontend tooling is built around [vite](https://vitejs.dev/), which generally creates for a pleasant development experience.
 
-For an example of a fully custom frotend built using rtag, see https://github.com/knigam/hive.
+For an example of a fully custom frotend built using hathora, see https://github.com/knigam/hive.

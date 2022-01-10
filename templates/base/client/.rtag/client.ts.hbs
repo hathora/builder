@@ -4,6 +4,7 @@ import getRandomValues from "get-random-values";
 import axios from "axios";
 import jwtDecode from "jwt-decode";
 import { UserData, Response, Method } from "./base";
+import { ConnectionFailure, transformCoordinatorFailure } from "./failures";
 import { computePatch } from "./patch";
 import {
   decodeStateUpdate,
@@ -16,6 +17,7 @@ import {
 const COORDINATOR_HOST = "rtag.dev";
 
 export type StateId = string;
+export type UpdateArgs = { state: UserState; updatedAt: number };
 
 export class RtagClient {
   public constructor(private appId: string) {}
@@ -40,42 +42,37 @@ export class RtagClient {
   public connectNew(
     token: string,
     request: {{makeRequestName initialize}},
-    onStateChange: (state: UserState) => void
+    onUpdate: (updateArgs: UpdateArgs) => void,
+    onConnectionFailure: (failure: ConnectionFailure) => void
   ): Promise<RtagConnection> {
-    return new Promise((resolve, reject) => {
-      const socket = this.initSocket(reject);
+    return new Promise((resolve) => {
+      const socket = this.initSocket(onConnectionFailure);
       socket.onopen = () => {
         socket.send(token);
         socket.send({{makeRequestName initialize}}.encode(request));
       };
-      socket.onmessage = ({ data }) => {
-        resolve(new RtagConnection(data as string, socket, onStateChange));
-      };
+      socket.onmessage = ({ data }) => resolve(new RtagConnection(data as StateId, socket, onUpdate));
     });
   }
 
   public connectExisting(
     token: string,
     stateId: StateId,
-    onStateChange: (state: UserState) => void
-  ): Promise<RtagConnection> {
-    return new Promise((resolve, reject) => {
-      const socket = this.initSocket(reject);
-      socket.onopen = () => {
-        socket.send(token);
-        socket.send(stateId);
-      };
-      socket.onmessage = () => {
-        resolve(new RtagConnection(stateId, socket, onStateChange));
-      };
-    });
+    onUpdate: (updateArgs: UpdateArgs) => void,
+    onConnectionFailure: (failure: ConnectionFailure) => void
+  ): RtagConnection {
+    const socket = this.initSocket(onConnectionFailure);
+    socket.onopen = () => {
+      socket.send(token);
+      socket.send(stateId);
+    };
+    return new RtagConnection(stateId, socket, onUpdate);
   }
 
-  private initSocket(reject: (reason?: any) => void) {
+  private initSocket(onConnectionFailure: (failure: ConnectionFailure) => void) {
     const socket = new WebSocket(`wss://${COORDINATOR_HOST}/${this.appId}`);
     socket.binaryType = "arraybuffer";
-    socket.onerror = reject;
-    socket.onclose = reject;
+    socket.onclose = (e) => onConnectionFailure(transformCoordinatorFailure(e));
     return socket;
   }
 }
@@ -83,25 +80,27 @@ export class RtagClient {
 export class RtagConnection {
   private callbacks: Record<string, (response: Response) => void> = {};
   private state?: UserState = undefined;
+  private changedAt = 0;
 
-  public constructor(public stateId: StateId, private socket: WebSocket, onStateChange: (state: UserState) => void) {
+  public constructor(public stateId: StateId, private socket: WebSocket, onUpdate: (updateArgs: UpdateArgs) => void) {
     socket.onmessage = ({ data }) => {
       if (this.state === undefined) {
         this.state = UserState.decode(new Uint8Array(data as ArrayBuffer));
-        onStateChange(JSON.parse(JSON.stringify(this.state)));
-      } else {
-        const { stateDiff, responses } = decodeStateUpdate(new Uint8Array(data as ArrayBuffer));
-        if (stateDiff !== undefined) {
-          this.state = computePatch(this.state, stateDiff);
-          onStateChange(JSON.parse(JSON.stringify(this.state)));
-        }
-        Object.entries(responses).forEach(([msgId, response]) => {
-          if (msgId in this.callbacks) {
-            this.callbacks[msgId](response);
-            delete this.callbacks[msgId];
-          }
-        });
+        onUpdate({ state: JSON.parse(JSON.stringify(this.state)), updatedAt: 0 });
+        return;
       }
+      const { stateDiff, changedAtDiff, responses } = decodeStateUpdate(new Uint8Array(data as ArrayBuffer));
+      this.changedAt += changedAtDiff;
+      if (stateDiff !== undefined) {
+        this.state = computePatch(this.state, stateDiff);
+        onUpdate({ state: JSON.parse(JSON.stringify(this.state)), updatedAt: this.changedAt });
+      }
+      Object.entries(responses).forEach(([msgId, response]) => {
+        if (msgId in this.callbacks) {
+          this.callbacks[msgId](response);
+          delete this.callbacks[msgId];
+        }
+      });
     };
   }
 
@@ -114,6 +113,7 @@ export class RtagConnection {
   {{/if}}
   {{/each}}
   public disconnect(): void {
+    this.socket.onclose = () => {};
     this.socket.close();
   }
 

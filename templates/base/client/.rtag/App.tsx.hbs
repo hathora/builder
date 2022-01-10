@@ -6,19 +6,21 @@ import { LightningBoltIcon, UserCircleIcon } from "@heroicons/react/solid";
 {{#if auth.google}}
 import { GoogleLogin } from "react-google-login";
 {{/if}}
-import { RtagClient, RtagConnection } from "./client";
-import { {{makeRequestName initialize}}, {{userState}} as UserState } from "./types";
-import { getUserDisplayName } from "./base";
+import { RtagClient, RtagConnection, UpdateArgs } from "./client";
+import { {{makeRequestName initialize}} } from "./types";
+import { getUserDisplayName, UserData } from "./base";
 import { RtagContext } from "./context";
 import { Forms, InitializeForm } from "./Forms";
 import { State } from "./State";
+import { ConnectionFailure } from "./failures";
 
 const client = new RtagClient(import.meta.env.VITE_APP_ID);
 
 function App() {
-  const [connection, setConnection] = useState<RtagConnection>();
-  const [state, setState] = useState<UserState>();
   const [token, setToken] = useState<string | undefined>(sessionStorage.getItem("token") ?? undefined);
+  const [connection, setConnection] = useState<RtagConnection>();
+  const [updateArgs, setUpdateArgs] = useState<UpdateArgs>();
+  const [connectionError, setConnectionError] = useState<ConnectionFailure>();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -30,11 +32,12 @@ function App() {
     }
   }, [location]);
 
+  const user = token !== undefined ? RtagClient.getUserFromToken(token) : undefined;
   return (
     <>
-      <NavBar token={token} />
+      <NavBar user={user} />
       <div id="app" className="py-6 sm:px-6 lg:px-8">
-        {token === undefined ? (
+        {token === undefined || user === undefined ? (
           <Login setToken={setToken} />
         ) : (
           <Routes>
@@ -42,19 +45,19 @@ function App() {
               path="/state/:stateId"
               element={
                 <Main
-                  state={state}
+                  user={user}
                   connection={connection}
+                  updateArgs={updateArgs}
+                  connectionError={connectionError}
                   onConnect={(stateId) =>
-                    client
-                      .connectExisting(token, stateId, setState)
-                      .then((conn) => setConnection(conn))
-                      .catch((e) => toast.error("Connection error: " + e.reason))
+                    setConnection(client.connectExisting(token, stateId, setUpdateArgs, setConnectionError))
                   }
                   onDisconnect={() => {
                     if (connection !== undefined) {
                       connection.disconnect();
                       setConnection(undefined);
-                      setState(undefined);
+                      setUpdateArgs(undefined);
+                      setConnectionError(undefined);
                     }
                   }}
                 />
@@ -64,15 +67,11 @@ function App() {
               path="/"
               element={
                 <Home
-                  onConnect={(request) =>
-                    client
-                      .connectNew(token, request, setState)
-                      .then((conn) => {
-                        setConnection(conn);
-                        navigate(`/state/${conn.stateId}`);
-                      })
-                      .catch((e) => toast.error("Connection error: " + e.reason))
-                  }
+                  onConnect={async (request) => {
+                    const conn = await client.connectNew(token, request, setUpdateArgs, setConnectionError);
+                    setConnection(conn);
+                    navigate(`/state/${conn.stateId}`);
+                  }}
                 />
               }
             />
@@ -84,9 +83,8 @@ function App() {
   );
 }
 
-function NavBar({ token }: { token?: string }) {
+function NavBar({ user }: { user?: UserData }) {
   const navigate = useNavigate();
-  const user = token !== undefined ? RtagClient.getUserFromToken(token) : undefined;
   return (
     <div className="bg-indigo-500">
       <div className="flex items-center justify-between h-16 px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -198,12 +196,14 @@ function Home({ onConnect }: { onConnect: (request: {{makeRequestName initialize
 }
 
 type MainProps = {
-  state: UserState | undefined;
+  user: UserData;
   connection: RtagConnection | undefined;
+  updateArgs: UpdateArgs | undefined;
+  connectionError: ConnectionFailure | undefined;
   onConnect: (stateId: string) => void;
   onDisconnect: () => void;
 };
-function Main({ state, connection, onConnect, onDisconnect }: MainProps) {
+function Main({ user, connection, connectionError, updateArgs, onConnect, onDisconnect }: MainProps) {
   const { stateId } = useParams();
   const [openMethods, setOpenMethods] = useState(false);
   useEffect(() => {
@@ -213,12 +213,16 @@ function Main({ state, connection, onConnect, onDisconnect }: MainProps) {
     return onDisconnect;
   }, [connection]);
 
-  if (state === undefined || connection === undefined) {
+  if (connectionError !== undefined) {
+    return <div>Connection error: {connectionError.message}</div>;
+  }
+
+  if (connection === undefined || updateArgs === undefined) {
     return <div>Loading...</div>;
   }
 
   return (
-    <RtagContext.Provider value=\{{ connection, state }}>
+    <RtagContext.Provider value=\{{ user, connection, ...updateArgs }}>
       <div className="fixed top-24 right-6 lg:right-8">
         <span className="sm:ml-3">
           <button

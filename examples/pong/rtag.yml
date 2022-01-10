@@ -13,7 +13,6 @@ types:
     playerA: Player
     playerB: Player
     ball: Point
-    updatedAt: int
 
 methods:
   createGame:

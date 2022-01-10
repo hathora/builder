@@ -1,7 +1,7 @@
 {
-  "name": "rtag",
-  "version": "0.3.5",
-  "description": "Realtime app generator",
+  "name": "hathora",
+  "version": "0.3.14",
+  "description": "Multiplayer game framework",
   "bin": "./cli.js",
   "files": [
     "cli.js",
@@ -19,6 +19,7 @@
     "handlebars": "4.7.7",
     "hot-esm": "1.2.2",
     "js-yaml": "4.1.0",
+    "resolve": "1.20.0",
     "shelljs": "0.8.4",
     "ts-node": "10.4.0",
     "uuid": "8.3.2",
@@ -38,7 +39,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hathora/rtag.git"
+    "url": "git+https://github.com/hathora/hathora.git"
   },
   "keywords": [
     "realtime",
@@ -49,7 +50,7 @@
   "author": "Harsh Pandey",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/hathora/rtag/issues"
+    "url": "https://github.com/hathora/hathora/issues"
   },
-  "homepage": "https://github.com/hathora/rtag#readme"
+  "homepage": "https://github.com/hathora/hathora#readme"
 }
