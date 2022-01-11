@@ -86,7 +86,10 @@ function EnumDisplay(props: { value: number; enum: object }) {
   const labels = Object.entries(props.enum)
     .filter(([_, value]) => typeof value === "number")
     .map(([label, _]) => label);
-  return <span className="enum-display">{labels[props.value]}</span>;
+  return <span className="enum-display" onDoubleClick={() => {
+      navigator.clipboard.writeText(labels[props.value]);
+      toast(`Copied "${labels[props.value]}" to clipboard`);
+    }}>{labels[props.value]}</span>;
 }
 
 function UserIdDisplay({ value }: { value: string }) {
@@ -116,7 +119,10 @@ function UserIdDisplay({ value }: { value: string }) {
   return (
     <div className="p-1 m-1 bg-white border rounded object-display">
       <div className="flex justify-between items-center">
-        <span className="user-display flex items-center">
+        <span className="user-display flex items-center" onDoubleClick={() => {
+          navigator.clipboard.writeText(getUserDisplayName(userData));
+          toast(`Copied "${getUserDisplayName(userData)}" to clipboard`);
+        }}>
           <UserCircleIcon
             className="inline align-middle flex-shrink-0 mr-1.5 h-5 w-5 text-gray-500"
             aria-hidden="true"
@@ -151,19 +157,31 @@ function UserIdDisplay({ value }: { value: string }) {
 }
 
 function StringDisplay({ value }: { value: string }) {
-  return <span className="string-display">"{value}"</span>;
+  return <span className="string-display" onDoubleClick={() => {
+          navigator.clipboard.writeText(value);
+          toast(`Copied "${value}" to clipboard`);
+        }}>"{value}"</span>;
 }
 
 function IntDisplay({ value }: { value: number }) {
-  return <span className="int-display">{value}</span>;
+  return <span className="int-display" onDoubleClick={() => {
+          navigator.clipboard.writeText(value);
+          toast(`Copied "${value}" to clipboard`);
+        }}>{value}</span>;
 }
 
 function FloatDisplay({ value }: { value: number }) {
-  return <span className="float-display">{value}</span>;
+  return <span className="float-display" onDoubleClick={() => {
+          navigator.clipboard.writeText(value);
+          toast(`Copied "${value}" to clipboard`);
+        }}>{value}</span>;
 }
 
 function BooleanDisplay({ value }: { value: boolean }) {
-  return <span className="boolean-display">{value ? "true" : "false"}</span>;
+  return <span className="boolean-display" onDoubleClick={() => {
+          navigator.clipboard.writeText(value);
+          toast(`Copied "${value}" to clipboard`);
+        }}>{value ? "true" : "false"}</span>;
 }
 
 function PluginDisplay<T>({
