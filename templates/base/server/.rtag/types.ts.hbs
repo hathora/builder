@@ -43,12 +43,12 @@ export const {{makeRequestName @key}} = {
       {{/each}}
     };
   },
-  encode(obj: {{makeRequestName @key}}) {
-    const buf = new Writer();
+  encode(obj: {{makeRequestName @key}}, writer?: Writer) {
+    const buf = writer ?? new Writer();
     {{#each properties}}
     {{> renderEncodeArg arg=@key}};
     {{/each}}
-    return buf.toBuffer();
+    return buf;
   },
   decode(buf: ArrayBufferView | Reader): {{makeRequestName @key}} {
     const sb = ArrayBuffer.isView(buf) ? new Reader(buf) : buf;
@@ -99,15 +99,15 @@ export const {{@key}} = {
       {{/each}}
     };
   },
-  encode(obj: {{@key}}) {
-    const buf = new Writer();
+  encode(obj: {{@key}}, writer?: Writer) {
+    const buf = writer ?? new Writer();
     {{#each properties}}
     {{> renderEncodeArg arg=@key}};
     {{/each}}
-    return buf.toBuffer();
+    return buf;
   },
-  encodeDiff(obj: DeepPartial<{{@key}}>) {
-    const buf = new Writer();
+  encodeDiff(obj: DeepPartial<{{@key}}>, writer?: Writer) {
+    const buf = writer ?? new Writer();
     const tracker: boolean[] = [];
     {{#each properties}}
     tracker.push(obj.{{@key}} !== NO_DIFF);
@@ -118,7 +118,7 @@ export const {{@key}} = {
       {{> renderEncodeDiffArg arg=@key}};
     }
     {{/each}}
-    return buf.toBuffer();
+    return buf;
   },
   decode(buf: ArrayBufferView | Reader): {{@key}} {
     const sb = ArrayBuffer.isView(buf) ? new Reader(buf) : buf;
@@ -143,8 +143,8 @@ export const {{@key}} = {
   values() {
     return [{{#each options}}"{{@key}}"{{#unless @last}}, {{/unless}}{{/each}}];
   },
-  encode(obj: {{@key}}) {
-    const buf = new Writer();
+  encode(obj: {{@key}}, writer?: Writer) {
+    const buf = writer ?? new Writer();
     {{#each options}}
     {{#unless @first}}else {{/unless}}if (obj.type === "{{@key}}") {
       writeUInt8(buf, {{@index}});
@@ -152,10 +152,10 @@ export const {{@key}} = {
       {{> renderEncodeArg}};
     }
     {{/each}}
-    return buf.toBuffer();
+    return buf;
   },
-  encodeDiff(obj: DeepPartial<{{@key}}>) {
-    const buf = new Writer();
+  encodeDiff(obj: DeepPartial<{{@key}}>, writer?: Writer) {
+    const buf = writer ?? new Writer();
     {{#each options}}
     {{#unless @first}}else {{/unless}}if (obj.type === "{{@key}}") {
       writeUInt8(buf, {{@index}});
@@ -166,7 +166,7 @@ export const {{@key}} = {
       }
     }
     {{/each}}
-    return buf.toBuffer();
+    return buf;
   },
   decode(buf: ArrayBufferView | Reader): {{@key}} {
     const sb = ArrayBuffer.isView(buf) ? new Reader(buf) : buf;
@@ -236,7 +236,7 @@ writeBoolean(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}})
 {{~else if (eq type "plugin")}}
 {{> renderEncodeArg item arg=arg}}
 {{~else}}
-buf.writeBuffer({{typeString}}.encode({{#if arg}}obj.{{arg}}{{else}}x{{/if}}))
+{{typeString}}.encode({{#if arg}}obj.{{arg}}{{else}}x{{/if}}, buf)
 {{~/if}}
 {{/inline}}
 {{#*inline "renderEncodeDiffArg"}}
@@ -257,7 +257,7 @@ writeBoolean(buf, {{#if arg}}obj.{{arg}}{{else}}x{{/if}})
 {{~else if (eq type "plugin")}}
 {{> renderEncodeDiffArg item arg=arg}}
 {{~else}}
-buf.writeBuffer({{typeString}}.encodeDiff({{#if arg}}obj.{{arg}}{{else}}x{{/if}}))
+{{typeString}}.encodeDiff({{#if arg}}obj.{{arg}}{{else}}x{{/if}}, buf)
 {{~/if}}
 {{/inline}}
 {{#*inline "renderDecodeArg"}}
@@ -310,7 +310,7 @@ export function encodeStateUpdate(
 ) {
   const buf = new Writer();
   buf.writeUVarint(changedAtDiff);
-  writeOptional(buf, stateDiff, (x) => buf.writeBuffer({{userState}}.encodeDiff(x)));
+  writeOptional(buf, stateDiff, (x) => {{userState}}.encodeDiff(x, buf));
   Object.entries(responses).forEach(([msgId, response]) => {
     buf.writeUInt32(Number(msgId));
     const maybeError = response.type === "error" ? response.error : undefined;
