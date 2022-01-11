@@ -9,6 +9,7 @@ import { ImplWrapper as impl } from "./wrapper";
 import { Response } from "./base";
 import { UserId, encodeStateUpdate, NO_DIFF, {{userState}} as UserState } from "./types";
 import { computeDiff } from "./diff";
+import { Writer } from "./serde";
 
 type StateId = bigint;
 type State = ReturnType<typeof impl.initialize>;
@@ -190,7 +191,7 @@ function sendSnapshot(stateId: StateId, userId: UserId) {
   const { state } = stateInfo.get(stateId)!;
   const userState = impl.getUserState(state, userId);
   userStateInfo.get(stateId)!.set(userId, { state: JSON.parse(JSON.stringify(userState)), changedAt: 0 });
-  const buf = Buffer.from(UserState.encode(userState));
+  const buf = Buffer.from(UserState.encode(userState).toBuffer());
   coordinator.onStateUpdate(stateId, userId, buf);
 }
 
