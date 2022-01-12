@@ -1,4 +1,4 @@
-import { LitElement, html, css } from "lit";
+import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
 import { Card } from "../.rtag/types";
 import "playing-card";
@@ -20,22 +20,13 @@ const rankConversion: Record<string, string> = {
 };
 
 export default class CardComponent extends LitElement {
-  @property()
-  val: Card | undefined;
-
-
-
+  @property() val!: Card;
 
   render() {
-    return html`<playing-card class="playing-card" rank="${rankConversion[this.val!.rank]}" suit="${this.val!.suit[0]}"></playing-card>`;
-  }
-
-  static get styles() {
-    return css`
-      .playing-card {
-        box-shadow: rgba(72, 72, 72, 0.41) 0px 0px 2px 1px;
-        max-width: 150px;
-      }
-    `;
+    return html`<playing-card
+      style="box-shadow: rgba(72, 72, 72, 0.41) 0px 0px 2px 1px; max-width: 150px;"
+      rank="${rankConversion[this.val.rank]}"
+      suit="${this.val.suit[0]}"
+    ></playing-card>`;
   }
 }

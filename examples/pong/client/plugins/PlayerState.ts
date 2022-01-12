@@ -13,12 +13,9 @@ const MIDLINE_WIDTH = 4;
 const BALL_RADIUS = 10;
 
 export default class StateComponent extends LitElement {
-  @property()
-  client!: RtagConnection;
-  @property()
-  val!: PlayerState;
-  @property()
-  updatedAt!: number;
+  @property() client!: RtagConnection;
+  @property() val!: PlayerState;
+  @property() updatedAt!: number;
 
   private buffer!: StateBuffer<PlayerState>;
 

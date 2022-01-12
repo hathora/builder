@@ -5,12 +5,12 @@ import { styleMap } from "lit/directives/style-map.js";
 import { Card, Color } from "../.rtag/types";
 import { RtagConnection } from "../.rtag/client";
 
-let DISPLAY_COLORS: {[index: string]:string} = {
-  RED: '#e16c6c',
-  BLUE: '#6c91d9',
-  GREEN: '#70bd56',
-  YELLOW: '#fcda49',
-}
+let DISPLAY_COLORS = {
+  [Color.RED]: "#e16c6c",
+  [Color.BLUE]: "#6c91d9",
+  [Color.GREEN]: "#70bd56",
+  [Color.YELLOW]: "#fcda49",
+};
 
 export default class CardComponent extends LitElement {
   @property() val!: Card;
@@ -40,7 +40,7 @@ export default class CardComponent extends LitElement {
         color: "white",
         textShadow: "1px 2px #000000",
         boxShadow: "2px 2px 0px 0px black",
-        backgroundColor: DISPLAY_COLORS[Color[this.val.color]],
+        backgroundColor: DISPLAY_COLORS[this.val.color],
       })}
       @click="${async () => {
         const res = await this.client.playCard({ card: this.val });
