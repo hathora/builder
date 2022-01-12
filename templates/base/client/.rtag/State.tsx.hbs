@@ -29,8 +29,7 @@ function KVDisplay(props: { label: string; children: JSX.Element }) {
 
 function ArrayDisplay<T>(props: { value: T[]; children: (value: T) => JSX.Element }) {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(props.value &&
-    ((typeof props.value[0] === "object" && props.value.length > 7) ||
-    props.value.length > 4) ? true : false);
+    ((typeof props.value[0] === "object" && props.value.length > 7) || props.value.length > 4));
 
   let icon;
   if (isCollapsed) {
