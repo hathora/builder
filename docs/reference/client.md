@@ -2,7 +2,7 @@
 
 The hathora framework includes an automatically generated debug application that lets you interact with your application and test your backend logic without writing any frontend code. Furthermore, hathora provides ways to incrementally add custom presentation logic as you become ready for it.
 
-### Plugins
+## Plugins
 
 Plugins go inside the `client/plugins` directory. To create a plugin for type `Foo`, create a file named `Foo.ts` and rerun the `hathora` command. This will cause the debug app to render your plugin's component anywhere `Foo` shows up in the state tree (instead of the rendering the default json view).
 
@@ -54,7 +54,7 @@ export default class CardComponent extends LitElement {
 Which renders like this in the debug application:
 ![image](https://user-images.githubusercontent.com/5400947/134374863-612fb496-bb48-40c9-bbdc-ed4257565aea.png)
 
-### Fully custom frontend
+## Fully custom frontend
 
 When you're ready to move away from the debug app, simply create an `index.html` file at the root of the `client` directory. This file now serves as the entry point to your frontend at http://localhost:4000, and can load code and other resources as needed. You are free to use any technologies you wish to build your frontend, just make sure to import the generated client to communicate with the hathora server.
 

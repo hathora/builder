@@ -2,7 +2,7 @@
 
 At the core of a Hathora application is the `rtag.yml` file. This file is where the API is defined which governs the communication between client and server. The `types` section is used to define the client data model is the `methods` section is used to define the server side functions and their associated rpc calls.
 
-By leveraging this rich declarative format along with its code generation system, Hathora is able to provide useful functionality out of the box before the user even begins to implement their business logic. This functionality includes:
+By leveraging this rich declarative format along with its code generation system, Hathora is able to provide the following useful functionality out of the box:
 
 1. typesafe clients with the data types and rpc calls built in
 2. the server interface with method stubs to be implemented
@@ -13,6 +13,8 @@ Together, these components facilitate a programming style we like to call "type 
 Let's examine these components based on the following `rtag.yml` snippet example:
 
 ```yml
+# rtag.yml
+
 types:
   GameStatus:
     - LOBBY
@@ -34,16 +36,17 @@ methods:
   createGame:
   moveTowards:
     location: Point
-  attack:
+  sendMessage:
     user: UserId
+    message: string
 ```
 
-### Typesafe clients
+## Typesafe clients
 
 The following will be generated inside `types.ts` in both the client and server:
 
 ```ts
-// .rtag/types.ts
+// .rtag/types.ts (generated)
 
 export enum GameStatus {
   LOBBY,
@@ -69,7 +72,7 @@ export type GameState = {
 And `client.ts` will have rpcs which can be consumed in user code in the following manner:
 
 ```ts
-// .rtag/client.ts
+// user client code
 
 import { RtagConnection } from "./.rtag/client";
 
@@ -83,31 +86,46 @@ const someUserId = getUserId(/* ... */);
 connection.sendMessage({ userId: someUserId, message: "Hello!" });
 ```
 
-### Server interface
+## Server interface
 
 The following server interface will be generated in `methods.ts`:
 
 ```ts
-// .rtag/methods.ts
+// .rtag/methods.ts (generated)
 
 import { Response } from "./base";
-import { UserId, GameState, ICreateGameRequest, IMoveTowardsRequest, IAttackRequest } from "./types";
+import { UserId, GameState, ICreateGameRequest, IMoveTowardsRequest, ISendMessageRequest } from "./types";
 
 export interface Methods<T> {
   createGame(userId: UserId, ctx: Context, request: ICreateGameRequest): T;
   moveTowards(state: T, userId: UserId, ctx: Context, request: IMoveTowardsRequest): Response;
-  attack(state: T, userId: UserId, ctx: Context, request: IAttackRequest): Response;
+  sendMessage(state: T, userId: UserId, ctx: Context, request: ISendMessageRequest): Response;
   getUserState(state: T, userId: UserId): GameState;
 }
 ```
 
+And must implement this interface in the server:
+
 ```ts
 // impl.ts
 
-TODO
+export class Impl implements Methods<InternalState> {
+  createGame(userId: UserId, ctx: Context, request: ICreateGameRequest): InternalState {
+    // business logic
+  }
+  moveTowards(state: InternalState, userId: UserId, ctx: Context, request: IMoveTowardsRequest): Response {
+    // business logic
+  }
+  sendMessage(state: InternalState, userId: UserId, ctx: Context, request: ISendMessageRequest): Response {
+    // business logic
+  }
+  getUserState(state: InternalState, userId: UserId): GameState {
+    // business logic
+  }
+}
 ```
 
-### Prototype UI
+## Prototype UI
 
 The generated client and server components are sufficient to build out the required business logic for your app. However, starting a new project from scratch can be daunting as you have to implement the backend and frontend together in order to observe functionality.
 

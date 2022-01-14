@@ -1,6 +1,5 @@
 - Getting started
 
-  - [Overview](getting-started/overview.md)
   - [Tutorial](getting-started/tutorial.md)
   - [Showcase](getting-started/showcase.md)
 
@@ -13,6 +12,6 @@
 
 - Reference
 
-  - [Rtag.yml](reference/rtag-yml.md)
+  - [rtag.yml](reference/rtag-yml.md)
   - [Server](reference/server.md)
   - [Client](reference/client.md)

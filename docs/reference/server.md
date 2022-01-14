@@ -6,7 +6,7 @@ The server has three responsibilities:
 2. Mutating the internal state via methods and/or `onTick`
 3. Deriving the appropriate `userState` per user from the internal state
 
-### Internal State
+## Internal State
 
 For each stateId, the backend maintains an internal representation of the state in memory inside the server. The internal state type is passed into the `Methods` interface as a parameter so that it can enforce the correct class structure. The server entrypoint must export a class conforming to this `Methods` interface.
 
@@ -76,7 +76,7 @@ export class Impl implements Methods<InternalState> {
 }
 ```
 
-### Mutation
+## Mutation
 
 The server mutates state via the functions defined in the `methods` section of `rtag.yml` or via the special `onTick` function.
 
@@ -89,7 +89,7 @@ Methods receive four arguments as input:
 
 Based on these inputs, the method can validate whether the action is permitted, returning an error response if not. Otherwise, the method can mutate `state` as desired and return a success response. Any mutations that occur will ultimately be reflected in the client state via the `getUserState` function.
 
-### getUserState
+## getUserState
 
 The `getUserState` function converts the internal state to the user state based on the userId.
 
@@ -112,7 +112,7 @@ Example (poker game):
   }
 ```
 
-### onTick
+## onTick
 
 Sometimes apps may want some way to execute logic in the backend at a fixed interval outside of user called methods. Common use cases for this include running simulations (e.g. physics simulations in games), sending notifications, or updating clocks/timers.
 
