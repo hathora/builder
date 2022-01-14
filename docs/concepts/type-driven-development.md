@@ -78,12 +78,9 @@ const connection: RtagConnection = getConnection(/* ... */);
 document.addEventListener("click", (e: MouseEvent) => {
   connection.moveTowards({ x: e.clientX, y: e.clientY });
 });
-<<<<<<< Updated upstream
-=======
 
 const someUserId = getUserId(/* ... */);
 connection.sendMessage({ userId: someUserId, message: "Hello!" });
->>>>>>> Stashed changes
 ```
 
 ### Server interface
