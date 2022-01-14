@@ -78,6 +78,12 @@ const connection: RtagConnection = getConnection(/* ... */);
 document.addEventListener("click", (e: MouseEvent) => {
   connection.moveTowards({ x: e.clientX, y: e.clientY });
 });
+<<<<<<< Updated upstream
+=======
+
+const someUserId = getUserId(/* ... */);
+connection.sendMessage({ userId: someUserId, message: "Hello!" });
+>>>>>>> Stashed changes
 ```
 
 ### Server interface
@@ -98,11 +104,17 @@ export interface Methods<T> {
 }
 ```
 
+```ts
+// impl.ts
+
+TODO
+```
+
 ### Prototype UI
 
 The generated client and server components are sufficient to build out the required business logic for your app. However, starting a new project from scratch can be daunting as you have to implement the backend and frontend together in order to observe functionality.
 
-Hathora makes this process easier by generating a "Prototype UI" for you out of the box, based entirely off of the `rtag.yml` definition. This allows you immediately test out backend functionality without writing any frontend code. Over time, you can implement custom renderers for the Prototype UI, and once you are ready it's easy to move to a fully custom frontend.
+Hathora makes this process easier by generating a "Prototype UI" for you out of the box, based entirely off of the `rtag.yml` definition. This allows you to immediately test out backend functionality without writing any frontend code. Over time, you can implement custom renderers (plugins) for the Prototype UI, and once you are ready it's easy to move to a fully custom frontend.
 
 Here is an example Prototype UI view based on the example `rtag.yml` we have been working with:
 
