@@ -1,10 +1,10 @@
 # Hathora
 
-Hathora is a framework for building multiplayer games and other realtime applications with a focus on development experience.
+> A multiplayer game framework
 
-### Features
+## Features
 
-Hathora comes out of the box with the following features so that developers don't have to think about them:
+Hathora comes with the following features out of the box:
 
 - Networking (state synchronization and RPC, efficient binary serialization)
 - Authentication
@@ -12,7 +12,7 @@ Hathora comes out of the box with the following features so that developers don'
 - Declarative API format with client generation
 - Development server with hot reloading and built in debug UI
 
-### Installation
+## Installation
 
 Requirements:
 
