@@ -1,16 +1,14 @@
 # Type driven development
 
-At the core of a Hathora application is the `rtag.yml` file. This file is where the API is defined which governs the communication between client and server. The `types` section is used to define the client data model is the `methods` section is used to define the server side functions and their associated rpc calls.
+At the core of a Hathora application is the `rtag.yml` file. This file is where the API is defined which governs the communication between client and server. The `types` section is used to define the client data model and the `methods` section is used to define the server side functions and their associated api calls.
 
-By leveraging this rich declarative format along with its code generation system, Hathora is able to provide the following useful functionality out of the box:
+By leveraging this rich declarative format along with its code generation system, Hathora facilitates a programming style we like to call "type driven development", as everything done in the framework is powered by the data types you define. From the `rtag.yml` file, Hathora automatically generates the following components out of the box:
 
-1. typesafe clients with the data types and rpc calls built in
+1. typesafe clients with the data types and api calls built in
 2. the server interface with method stubs to be implemented
 3. a prototype UI which allows for fast iteration and testing
 
-Together, these components facilitate a programming style we like to call "type driven development", similar to the popular "test driven development" (TDD) paradigm.
-
-Let's examine these components based on the following `rtag.yml` snippet example:
+Let's examine each these components based on the following example `rtag.yml` snippet:
 
 ```yml
 # rtag.yml
@@ -69,10 +67,10 @@ export type GameState = {
 };
 ```
 
-And `client.ts` will have rpcs which can be consumed in user code in the following manner:
+And `client.ts` will have api calls generated which can be consumed in user code in the following manner:
 
 ```ts
-// user client code
+// example user code
 
 import { RtagConnection } from "./.rtag/client";
 
@@ -104,23 +102,29 @@ export interface Methods<T> {
 }
 ```
 
-And must implement this interface in the server:
+And you must implement this interface in the server:
 
 ```ts
-// impl.ts
+// impl.ts (user code)
+
+import { Methods, Context } from "./.rtag/methods";
+import { Response } from "./.rtag/base";
+import { UserId, ICreateGameRequest, IMoveTowardsRequest, ISendMessageRequest, GameState } from "./.rtag/types";
+
+type InternalState = // ...
 
 export class Impl implements Methods<InternalState> {
   createGame(userId: UserId, ctx: Context, request: ICreateGameRequest): InternalState {
-    // business logic
+    // ...
   }
   moveTowards(state: InternalState, userId: UserId, ctx: Context, request: IMoveTowardsRequest): Response {
-    // business logic
+    // ...
   }
   sendMessage(state: InternalState, userId: UserId, ctx: Context, request: ISendMessageRequest): Response {
-    // business logic
+    // ...
   }
   getUserState(state: InternalState, userId: UserId): GameState {
-    // business logic
+    // ...
   }
 }
 ```
