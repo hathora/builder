@@ -4,7 +4,7 @@ import { UserId, Direction, PlayerState, ICreateGameRequest, ISetDirectionReques
 
 const MAP_WIDTH = 600;
 const MAP_HEIGHT = 400;
-const PADDLE_HEIGHT = 50;
+const PADDLE_HEIGHT = 60;
 const PADDLE_SPEED = 100;
 const BALL_SPEED = 250;
 

@@ -10,10 +10,9 @@ export default class BoardEl extends LitElement {
   @property() client!: RtagConnection;
 
   render() {
-    return html`<chess-board
-      draggable-pieces
-      orientation=${this.state.color === Color.BLACK ? "black" : "white"}
-    ></chess-board>`;
+    return html`<div style="max-width: 400px">
+      <chess-board draggable-pieces orientation=${this.state.color === Color.BLACK ? "black" : "white"}></chess-board>
+    </div>`;
   }
 
   firstUpdated() {

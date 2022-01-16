@@ -1,4 +1,4 @@
-import { LitElement, html } from "lit";
+import { LitElement, html, css } from "lit";
 import { property } from "lit/decorators.js";
 import { Direction, PlayerState } from "../.rtag/types";
 import { RtagConnection } from "../.rtag/client";
@@ -6,25 +6,47 @@ import { StateBuffer } from "../stateBuffer";
 
 const WIDTH = 600;
 const HEIGHT = 400;
-const PADDLE_WIDTH = 5;
-const PADDLE_HEIGHT = 50;
+const PADDLE_WIDTH = 8;
+const PADDLE_HEIGHT = 60;
+const MIDLINE_WIDTH = 4;
 const BALL_RADIUS = 10;
 
 export default class StateComponent extends LitElement {
-  @property()
-  client!: RtagConnection;
-  @property()
-  val!: PlayerState;
-  @property()
-  updatedAt!: number;
+  @property() client!: RtagConnection;
+  @property() val!: PlayerState;
+  @property() updatedAt!: number;
 
   private buffer!: StateBuffer<PlayerState>;
 
+  static get styles() {
+    return css`
+      .game-main {
+        font-family: "Press Start 2P", sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .score {
+        font-size: 24px;
+        flex: 3;
+        text-align: center;
+      }
+    `;
+  }
+
   render() {
-    return html`<div style="display: flex; align-items: center;">
-      <div id="playerAScore" style="flex: 3; text-align: center;"></div>
-      <canvas width="${WIDTH}" height="${HEIGHT}"></canvas>
-      <div id="playerBScore" style="flex: 3; text-align: center;"></div>
+    return html`<div class="game-main">
+      <div style="width: ${WIDTH}px; padding: 1.5rem; display: flex; justify-content: space-around;">
+        <div id="playerAScore" class="score"></div>
+        <div id="playerBScore" class="score"></div>
+      </div>
+      <div style="padding: .5rem; background-color: black;">
+        <div
+          style="padding: .3rem; border: 5px dashed white; background-color: black; display: flex; align-items: center"
+        >
+          <canvas width="${WIDTH}" height="${HEIGHT}"></canvas>
+        </div>
+      </div>
     </div>`;
   }
 
@@ -53,15 +75,21 @@ export default class StateComponent extends LitElement {
     const draw = () => {
       const state = this.buffer.getInterpolatedState(Date.now());
 
+      // Draw background
       ctx.fillStyle = "black";
       ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
-      ctx.fillStyle = "blue";
+      // Draw midline
+      ctx.fillStyle = "grey";
+      ctx.fillRect(WIDTH / 2 - MIDLINE_WIDTH / 2, 0, MIDLINE_WIDTH, HEIGHT * 2);
+
+      // Draw paddles
+      ctx.fillStyle = "white";
       ctx.fillRect(0, state.playerA.paddle - PADDLE_HEIGHT / 2, PADDLE_WIDTH, PADDLE_HEIGHT);
       ctx.fillRect(WIDTH - PADDLE_WIDTH, state.playerB.paddle - PADDLE_HEIGHT / 2, PADDLE_WIDTH, PADDLE_HEIGHT);
-      ctx.beginPath();
-      ctx.arc(state.ball.x, state.ball.y, BALL_RADIUS, 0, 2 * Math.PI);
-      ctx.fill();
+
+      // Draw ball
+      ctx.fillRect(state.ball.x - BALL_RADIUS / 2, state.ball.y, BALL_RADIUS, BALL_RADIUS);
 
       playerAScoreEl.textContent = state.playerA.score.toString();
       playerBScoreEl.textContent = state.playerB.score.toString();
