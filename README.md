@@ -2,125 +2,43 @@
 
 ## Overview
 
-Hathora is a framework for building multiplayer games and other realtime applications with a focus on development experience.
+Hathora is a framework for building multiplayer games and other realtime applications.
 
-### Features
+## Documentation
 
-Hathora comes out of the box with the following features so that developers don't have to think about them:
+Visit https://docs.hathora.dev
 
-- Networking (state synchronization and RPC, efficient binary serialization)
-- Authentication
-- Automatic persistence
-- Declarative API format with client generation
-- Development server with hot reloading and built in debug UI
+## Quick start
 
-### Application spec
+First, make sure you have node v16.12.0+ installed.
 
-The foundation of an hathora application is the `rtag.yml` file, which defines various aspects of the application's behavior. One of the primary components the developer includes in this file is a fully typed API, which lists the server methods as well as the client state tree.
+Then install the hathora cli from the npm registry:
 
-From this specification, hathora automatically generates the following:
-
-- server side method stubs that set up the entire server code structure and just need to be filled in with the application's business logic
-- clients for frontends to communicate with the hathora server in a typesafe manner
-- a web-based debug application that allows for testing backend logic right away without writing any frontend code
-
-## Installation
-
-#### Requirements
-
-- node v16.12.0+
-
-Install hathora from the npm registry:
-
-```
+```sh
 npm install -g hathora
 ```
 
-## Example
+Clone an example hathora game:
 
-First, create a directory for your application and create a `rtag.yml` file inside the directory with the following contents:
-
-```yml
-# rtag.yml
-
-types:
-  Message:
-    text: string
-    sentAt: int
-    sentBy: UserId
-    sentTo: UserId?
-  RoomState:
-    name: string
-    createdBy: UserId
-    messages: Message[]
-
-methods:
-  createRoom:
-    name: string
-  sendPublicMessage:
-    text: string
-  sendPrivateMessage:
-    text: string
-    to: UserId
-
-auth:
-  anonymous:
-    separator: "-"
-
-userState: RoomState
-initialize: createRoom
-error: string
+```sh
+git clone https://github.com/hpx7/ship-battle.git
 ```
 
-Next, run `hathora init` to initialize your project. Then run `hathora dev` to start the debug server. Visit http://localhost:3000 where you see the following Prototype UI view:
+Inside the `ship-battle` directory, start the Hathora dev server:
 
-![image](https://user-images.githubusercontent.com/5400947/147288712-f34b92d8-b86a-40c9-a7cc-0d7efcb545b5.png)
-
-
-We then fill in the methods in `server/impl.ts` with our desired implementation:
-
-```ts
-import { Methods, Context } from "./.rtag/methods";
-import { Response } from "./.rtag/base";
-import {
-  UserId,
-  RoomState,
-  ICreateRoomRequest,
-  ISendPublicMessageRequest,
-  ISendPrivateMessageRequest,
-} from "./.rtag/types";
-
-export class Impl implements Methods<RoomState> {
-  createRoom(userId: UserId, ctx: Context, request: ICreateRoomRequest): RoomState {
-    return { name: request.name, createdBy: userId, messages: [] };
-  }
-  sendPublicMessage(state: RoomState, userId: UserId, ctx: Context, request: ISendPublicMessageRequest): Response {
-    state.messages.push({ text: request.text, sentAt: ctx.time(), sentBy: userId });
-    return Response.ok();
-  }
-  sendPrivateMessage(state: RoomState, userId: UserId, ctx: Context, request: ISendPrivateMessageRequest): Response {
-    state.messages.push({ text: request.text, sentAt: ctx.time(), sentBy: userId, sentTo: request.to });
-    return Response.ok();
-  }
-  getUserState(state: RoomState, userId: UserId): RoomState {
-    return {
-      name: state.name,
-      createdBy: state.createdBy,
-      messages: state.messages.filter(
-        (msg) => msg.sentBy === userId || msg.sentTo === userId || msg.sentTo === undefined
-      ),
-    };
-  }
-}
+```sh
+hathora dev
 ```
 
-> Note that currently, the only backend language supported is typescript. More language support is planned for the future.
+Finally, visit http://localhost:3000 to see the game in action:
 
-Finally, we can see our working application in action:
+> Instructions: Arrow keys to move, space bar to fire.
 
-![image](https://user-images.githubusercontent.com/5400947/144970065-f7754d32-d80f-48fe-a350-71a77f803ac7.png)
+![image](https://user-images.githubusercontent.com/5400947/149647035-91442df6-73d6-4b55-ae30-f3862e8b5c8b.png)
 
-Here are some example apps built with hathora:
+## Examples
+
+Here are some other example apps built with hathora:
 
 - [avalon](examples/avalon)
 - [chess](examples/chess)
@@ -128,11 +46,30 @@ Here are some example apps built with hathora:
 - [poker](examples/poker)
 - [rock-paper-scissor](examples/rock-paper-scissor)
 - [uno](examples/uno)
-- [ship-battle](https://github.com/hpx7/ship-battle)
 - [hive](https://github.com/knigam/hive)
 
-## Additional resources
+## Community
 
-For a high level overview of hathora concepts and goals, see [concepts](docs/concepts.md). For more details on how to implement an hathora application, check out the [reference docs](docs/reference.md).
+Discord: https://discord.gg/VWXYtBX4
 
-If you have any questions/suggestions or want to report a bug, please feel free to file an issue or start a discussion on Github!
+Reddit: https://www.reddit.com/r/hathora/
+
+## Contributing
+
+To contribute to Hathora, first clone the repo:
+
+```sh
+https://github.com/hathora/hathora
+```
+
+Make sure you have `ts-node` installed globally:
+
+```sh
+npm install -g ts-node
+```
+
+You can now invoke your local hathora cli as follows:
+
+```
+ts-node /path/to/hathora/cli.ts dev
+```
