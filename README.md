@@ -36,6 +36,8 @@ Finally, visit http://localhost:3000 to see the game in action:
 
 ![image](https://user-images.githubusercontent.com/5400947/149647035-91442df6-73d6-4b55-ae30-f3862e8b5c8b.png)
 
+For a deeper introduction, take a look at the [tutorial](https://docs.hathora.dev/#/getting-started/tutorial).
+
 ## Examples
 
 Here are some other example apps built with hathora:
