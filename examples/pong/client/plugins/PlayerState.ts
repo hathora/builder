@@ -1,4 +1,3 @@
-import "@fontsource/press-start-2p";
 import { LitElement, html, css } from "lit";
 import { property } from "lit/decorators.js";
 import { Direction, PlayerState } from "../.rtag/types";
