@@ -1,3 +1,3 @@
-https://rtag-pong.surge.sh/
+https://hathora-pong.surge.sh/
 
-![image](https://user-images.githubusercontent.com/5400947/145269874-f86abfc6-230a-4b72-95cb-cf33831cc190.png)
+![image](https://user-images.githubusercontent.com/5400947/149680558-a99c9a88-f58f-40cb-972d-be167eb378cf.png)

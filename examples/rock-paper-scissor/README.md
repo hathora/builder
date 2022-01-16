@@ -1,3 +1,3 @@
-https://rtag-rock-paper-scissor.surge.sh/
+https://hathora-rock-paper-scissor.surge.sh/
 
-![image](https://user-images.githubusercontent.com/5400947/144972522-8c14be09-3765-4449-96f3-756f4b42ed13.png)
+![image](https://user-images.githubusercontent.com/5400947/149680601-94147d1e-61ae-4206-9bf3-ce18ac4e2c66.png)

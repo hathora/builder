@@ -1,3 +1,3 @@
-https://rtag-poker.surge.sh/
+https://hathora-poker.surge.sh/
 
-![image](https://user-images.githubusercontent.com/5400947/144972016-856335e9-5ab6-4eb0-bec8-0f198cbe29f2.png)
+![image](https://user-images.githubusercontent.com/5400947/149680517-16f4fb56-9ec0-4afa-98e1-266d26d40cb5.png)

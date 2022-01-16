@@ -1,3 +1,3 @@
-https://rtag-chat.surge.sh/
+https://hathora-chat.surge.sh/
 
-![image](https://user-images.githubusercontent.com/5400947/144970065-f7754d32-d80f-48fe-a350-71a77f803ac7.png)
+![image](https://user-images.githubusercontent.com/5400947/149680221-98474638-e88c-47db-a3bd-8bca56a611aa.png)
