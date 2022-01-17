@@ -2,7 +2,7 @@ import { LitElement, html, css } from "lit";
 import { property } from "lit/decorators.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { Card, Cards, Color } from "../.hathora/types";
-import { RtagConnection } from "../.hathora/client";
+import { HathoraConnection } from "../.hathora/client";
 
 const DISPLAY_COLORS = {
   [Color.RED]: "#c55f5f",
@@ -19,7 +19,7 @@ const REVEALED_COLORS = {
 
 export default class CardsComponent extends LitElement {
   @property() val!: Cards;
-  @property() client!: RtagConnection;
+  @property() client!: HathoraConnection;
 
   render() {
     return html`<div class="grid-container">${this.val.map((card) => this.renderCard(card))}</div>`;

@@ -16,7 +16,7 @@ Plugins receive the following props as input:
 
 - val -- this is the value you are rendering, it has the type of your filename
 - state -- this is the entire state tree, it has the type of `userState`
-- client -- this is the hathora client instance (so you can make method calls from within your plugin), with type `RtagClient`
+- client -- this is the hathora client instance (so you can make method calls from within your plugin), with type `HathoraClient`
 
 Example (from uno, using Lit):
 
@@ -27,11 +27,11 @@ import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { Card, Color } from "../.hathora/types";
-import { RtagConnection } from "../.hathora/client";
+import { HathoraConnection } from "../.hathora/client";
 
 export default class CardComponent extends LitElement {
   @property() val!: Card;
-  @property() client!: RtagConnection;
+  @property() client!: HathoraConnection;
 
   render() {
     return html`<div

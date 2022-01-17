@@ -74,9 +74,9 @@ And `client.ts` will have api calls generated which can be consumed in user code
 ```ts
 // example user code
 
-import { RtagConnection } from "./.hathora/client";
+import { HathoraConnection } from "./.hathora/client";
 
-const connection: RtagConnection = getConnection(/* ... */);
+const connection: HathoraConnection = getConnection(/* ... */);
 
 document.addEventListener("click", (e: MouseEvent) => {
   connection.moveTowards({ x: e.clientX, y: e.clientY });

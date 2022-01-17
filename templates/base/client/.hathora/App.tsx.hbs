@@ -6,7 +6,7 @@ import { LightningBoltIcon, UserCircleIcon } from "@heroicons/react/solid";
 {{#if auth.google}}
 import { GoogleLogin } from "react-google-login";
 {{/if}}
-import { RtagClient, RtagConnection, UpdateArgs } from "./client";
+import { HathoraClient, HathoraConnection, UpdateArgs } from "./client";
 import { {{makeRequestName initialize}} } from "./types";
 import { getUserDisplayName, UserData } from "./base";
 import { RtagContext } from "./context";
@@ -14,11 +14,11 @@ import { Forms, InitializeForm } from "./Forms";
 import { State } from "./State";
 import { ConnectionFailure } from "./failures";
 
-const client = new RtagClient(import.meta.env.VITE_APP_ID);
+const client = new HathoraClient(import.meta.env.VITE_APP_ID);
 
 function App() {
   const [token, setToken] = useState<string | undefined>(sessionStorage.getItem("token") ?? undefined);
-  const [connection, setConnection] = useState<RtagConnection>();
+  const [connection, setConnection] = useState<HathoraConnection>();
   const [updateArgs, setUpdateArgs] = useState<UpdateArgs>();
   const [connectionError, setConnectionError] = useState<ConnectionFailure>();
   const location = useLocation();
@@ -32,7 +32,7 @@ function App() {
     }
   }, [location]);
 
-  const user = token !== undefined ? RtagClient.getUserFromToken(token) : undefined;
+  const user = token !== undefined ? HathoraClient.getUserFromToken(token) : undefined;
   return (
     <>
       <NavBar user={user} />
@@ -197,7 +197,7 @@ function Home({ onConnect }: { onConnect: (request: {{makeRequestName initialize
 
 type MainProps = {
   user: UserData;
-  connection: RtagConnection | undefined;
+  connection: HathoraConnection | undefined;
   updateArgs: UpdateArgs | undefined;
   connectionError: ConnectionFailure | undefined;
   onConnect: (stateId: string) => void;

@@ -1,13 +1,13 @@
 import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
 import { Board, Color, Piece, PieceType, PlayerState } from "../.hathora/types";
-import { RtagConnection } from "../.hathora/client";
+import { HathoraConnection } from "../.hathora/client";
 import "chessboard-element";
 
 export default class BoardEl extends LitElement {
   @property() val!: Board;
   @property() state!: PlayerState;
-  @property() client!: RtagConnection;
+  @property() client!: HathoraConnection;
 
   render() {
     return html`<div style="max-width: 400px">

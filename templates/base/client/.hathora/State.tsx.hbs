@@ -2,7 +2,7 @@ import React, { useRef, useLayoutEffect, useContext, useState, useEffect } from 
 import { toast } from "react-toastify";
 import { MinusSmIcon, PlusSmIcon, UserCircleIcon } from "@heroicons/react/solid";
 import { getUserDisplayName, lookupUser, UserData } from "./base";
-import { RtagConnection } from "./client";
+import { HathoraConnection } from "./client";
 import { RtagContext } from "./context";
 import {
   {{userState}} as UserState,
@@ -175,7 +175,7 @@ function PluginDisplay<T>({
   isCollapsible: boolean;
 }) {
   const { connection, user, state, updatedAt } = useContext(RtagContext)!;
-  const ref = useRef<{ val: T; client: RtagConnection; user: UserData; state: UserState; updatedAt: number }>();
+  const ref = useRef<{ val: T; client: HathoraConnection; user: UserData; state: UserState; updatedAt: number }>();
   const displayError = (e: CustomEvent) => toast.error(e.detail);
   useLayoutEffect(() => {
     if (ref.current) {

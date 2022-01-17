@@ -1,7 +1,7 @@
 import { LitElement, html, css } from "lit";
 import { property } from "lit/decorators.js";
 import { Direction, PlayerState } from "../.hathora/types";
-import { RtagConnection } from "../.hathora/client";
+import { HathoraConnection } from "../.hathora/client";
 import { StateBuffer } from "../stateBuffer";
 
 const WIDTH = 600;
@@ -12,7 +12,7 @@ const MIDLINE_WIDTH = 4;
 const BALL_RADIUS = 10;
 
 export default class StateComponent extends LitElement {
-  @property() client!: RtagConnection;
+  @property() client!: HathoraConnection;
   @property() val!: PlayerState;
   @property() updatedAt!: number;
 

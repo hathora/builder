@@ -19,7 +19,7 @@ const COORDINATOR_HOST = "rtag.dev";
 export type StateId = string;
 export type UpdateArgs = { state: UserState; updatedAt: number };
 
-export class RtagClient {
+export class HathoraClient {
   public constructor(private appId: string) {}
 
   public static getUserFromToken(token: string): UserData {
@@ -44,14 +44,14 @@ export class RtagClient {
     request: {{makeRequestName initialize}},
     onUpdate: (updateArgs: UpdateArgs) => void,
     onConnectionFailure: (failure: ConnectionFailure) => void
-  ): Promise<RtagConnection> {
+  ): Promise<HathoraConnection> {
     return new Promise((resolve) => {
       const socket = this.initSocket(onConnectionFailure);
       socket.onopen = () => {
         socket.send(token);
         socket.send({{makeRequestName initialize}}.encode(request).toBuffer());
       };
-      socket.onmessage = ({ data }) => resolve(new RtagConnection(data as StateId, socket, onUpdate));
+      socket.onmessage = ({ data }) => resolve(new HathoraConnection(data as StateId, socket, onUpdate));
     });
   }
 
@@ -60,13 +60,13 @@ export class RtagClient {
     stateId: StateId,
     onUpdate: (updateArgs: UpdateArgs) => void,
     onConnectionFailure: (failure: ConnectionFailure) => void
-  ): RtagConnection {
+  ): HathoraConnection {
     const socket = this.initSocket(onConnectionFailure);
     socket.onopen = () => {
       socket.send(token);
       socket.send(stateId);
     };
-    return new RtagConnection(stateId, socket, onUpdate);
+    return new HathoraConnection(stateId, socket, onUpdate);
   }
 
   private initSocket(onConnectionFailure: (failure: ConnectionFailure) => void) {
@@ -77,7 +77,7 @@ export class RtagClient {
   }
 }
 
-export class RtagConnection {
+export class HathoraConnection {
   private callbacks: Record<string, (response: Response) => void> = {};
   private state?: UserState = undefined;
   private changedAt = 0;
