@@ -38,6 +38,8 @@ Next, run `hathora init` to initialize your project. Then run `hathora dev` to s
 
 ![image](https://user-images.githubusercontent.com/5400947/147288712-f34b92d8-b86a-40c9-a7cc-0d7efcb545b5.png)
 
+> If you plan on using git, this is also a good time to run `git init`
+
 We then fill in the methods in `server/impl.ts` with our desired implementation:
 
 ```ts
