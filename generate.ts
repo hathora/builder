@@ -5,7 +5,7 @@ import { z } from "zod";
 import { join, basename } from "path";
 
 const TypeArgs = z.union([z.string(), z.array(z.string()), z.record(z.string())]);
-const RtagConfig = z
+const HathoraConfig = z
   .object({
     types: z.record(TypeArgs),
     methods: z.record(z.nullable(z.record(z.string()))),
@@ -91,7 +91,7 @@ interface BooleanArg {
 }
 
 function getArgsInfo(
-  doc: z.infer<typeof RtagConfig>,
+  doc: z.infer<typeof HathoraConfig>,
   plugins: string[],
   args: z.infer<typeof TypeArgs>,
   alias: boolean,
@@ -148,7 +148,7 @@ function getArgsInfo(
   }
 }
 
-function enrichDoc(doc: z.infer<typeof RtagConfig>, plugins: string[], appName: string) {
+function enrichDoc(doc: z.infer<typeof HathoraConfig>, plugins: string[], appName: string) {
   doc.types["UserId"] = "string";
   return {
     ...doc,
@@ -174,7 +174,7 @@ function enrichDoc(doc: z.infer<typeof RtagConfig>, plugins: string[], appName: 
 
 export function generate(rootDir: string, templatesDir: string) {
   const clientDir = join(rootDir, "client");
-  const doc = RtagConfig.parse(load(readFileSync(join(rootDir, "rtag.yml"), "utf8")));
+  const doc = HathoraConfig.parse(load(readFileSync(join(rootDir, "hathora.yml"), "utf8")));
   if (!Object.keys(doc.types).includes(doc.userState)) {
     throw new Error("Invalid userState");
   }

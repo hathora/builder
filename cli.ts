@@ -13,12 +13,12 @@ import { generate } from "./generate";
 import "./helpers";
 
 function getProjectRoot(cwd: string): string {
-  if (existsSync(join(cwd, "rtag.yml"))) {
+  if (existsSync(join(cwd, "hathora.yml"))) {
     return cwd;
   }
   const parentDir = join(cwd, "..");
   if (parentDir === cwd) {
-    throw new Error("Doesn't appear to be inside an rtag project");
+    throw new Error("Doesn't appear to be inside a hathora project");
   }
   return getProjectRoot(parentDir);
 }
@@ -102,7 +102,7 @@ if (command === "init") {
   }
 } else if (command === "generate") {
   if (!existsSync(join(serverDir, "impl.ts"))) {
-    console.error("Missing impl.ts, make sure to run rtag init first");
+    console.error("Missing impl.ts, make sure to run hathora init first");
   } else {
     generate(rootDir, "templates/base");
   }
