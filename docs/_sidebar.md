@@ -12,6 +12,6 @@
 
 - Reference
 
-  - [rtag.yml](reference/rtag-yml.md)
+  - [hathora.yml](reference/hathora-yml.md)
   - [Server](reference/server.md)
   - [Client](reference/client.md)

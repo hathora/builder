@@ -6,7 +6,7 @@ Hathora applications consist of a collection of independent instances called "st
 
 An `InternalState` is the server side in-memory representation of state. It is created in your `initialize` method, mutated by your custom business logic inside your other methods, and is mapped to the `userState` via `getUserState()`.
 
-The `userState` is the client specific view of the data which is kept synchronized by the server. Its structure is defined inside `rtag.yml`.
+The `userState` is the client specific view of the data which is kept synchronized by the server. Its structure is defined inside `hathora.yml`.
 
 ## Data privacy
 

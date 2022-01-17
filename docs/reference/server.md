@@ -18,12 +18,12 @@ Note that in simple cases, the `userState` can be used as the type of internal s
 
 The internal state can be composed of any primitives and built in data structures of the language. Custom classes, whether user-defined or imported from a library, can also be used, but they need to utilize a `_modCount` property to allow for change detection (see [chess example](../examples/chess/server/impl.ts)).
 
-The internal state is first created via the method referenced by `initialize` in `rtag.yml`.
+The internal state is first created via the method referenced by `initialize` in `hathora.yml`.
 
 Example (poker game):
 
 ```yml
-# rtag.yml
+# hathora.yml
 
 methods:
   createGame:
@@ -78,14 +78,14 @@ export class Impl implements Methods<InternalState> {
 
 ## Mutation
 
-The server mutates state via the functions defined in the `methods` section of `rtag.yml` or via the special `onTick` function.
+The server mutates state via the functions defined in the `methods` section of `hathora.yml` or via the special `onTick` function.
 
 Methods receive four arguments as input:
 
 1. `state`: the internal state describe above
 2. `userId`: the id of the user who called the method
 3. `ctx`: a context object, which must be used for sources of nondeterminism (random numbers, current time, api calls)
-4. `request`: the input arguments to the method as defined in `rtag.yml`
+4. `request`: the input arguments to the method as defined in `hathora.yml`
 
 Based on these inputs, the method can validate whether the action is permitted, returning an error response if not. Otherwise, the method can mutate `state` as desired and return a success response. Any mutations that occur will ultimately be reflected in the client state via the `getUserState` function.
 
@@ -116,4 +116,4 @@ Example (poker game):
 
 Sometimes apps may want some way to execute logic in the backend at a fixed interval outside of user called methods. Common use cases for this include running simulations (e.g. physics simulations in games), sending notifications, or updating clocks/timers.
 
-To enable this functionality, simply set the `tick` key in `rtag.yml` to an integer (>= 50) representing the interval at which the server will call the `onTick` function. This will add an `onTick` function to the `Methods` interface. The `onTick` function takes the internal state, context object, and time delta (representing the milliseconds elapsed since the previous `onTick` invocation) as arguments. Any mutations that occur inside this function will be handled the same way as mutations inside the methods.
+To enable this functionality, simply set the `tick` key in `hathora.yml` to an integer (>= 50) representing the interval at which the server will call the `onTick` function. This will add an `onTick` function to the `Methods` interface. The `onTick` function takes the internal state, context object, and time delta (representing the milliseconds elapsed since the previous `onTick` invocation) as arguments. Any mutations that occur inside this function will be handled the same way as mutations inside the methods.

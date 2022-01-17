@@ -1,4 +1,4 @@
-# rtag.yml
+# hathora.yml
 
 ## types
 

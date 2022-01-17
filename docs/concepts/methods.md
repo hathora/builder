@@ -1,6 +1,6 @@
 # Methods
 
-Methods are the server side functions which contain the business logic for evolving the `InternalState` in a Hathora application. Their signatures are defined in `rtag.yml` and client calls invoke the methods.
+Methods are the server side functions which contain the business logic for evolving the `InternalState` in a Hathora application. Their signatures are defined in `hathora.yml` and client calls invoke the methods.
 
 ## Validation
 

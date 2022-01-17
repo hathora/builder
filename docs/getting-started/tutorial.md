@@ -1,9 +1,9 @@
 # Tutorial
 
-First, create a directory for your application and create a `rtag.yml` file inside the directory with the following contents:
+First, create a directory for your application and create a `hathora.yml` file inside the directory with the following contents:
 
 ```yml
-# rtag.yml
+# hathora.yml
 
 types:
   Message:
