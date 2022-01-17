@@ -3,7 +3,7 @@ import { toast } from "react-toastify";
 import { MinusSmIcon, PlusSmIcon, UserCircleIcon } from "@heroicons/react/solid";
 import { getUserDisplayName, lookupUser, UserData } from "./base";
 import { HathoraConnection } from "./client";
-import { RtagContext } from "./context";
+import { HathoraContext } from "./context";
 import {
   {{userState}} as UserState,
   {{#each types}}
@@ -174,7 +174,7 @@ function PluginDisplay<T>({
   component: string;
   isCollapsible: boolean;
 }) {
-  const { connection, user, state, updatedAt } = useContext(RtagContext)!;
+  const { connection, user, state, updatedAt } = useContext(HathoraContext)!;
   const ref = useRef<{ val: T; client: HathoraConnection; user: UserData; state: UserState; updatedAt: number }>();
   const displayError = (e: CustomEvent) => toast.error(e.detail);
   useLayoutEffect(() => {
@@ -298,7 +298,7 @@ function {{@key}}Display({ value }: { value: {{@key}} }) {
 {{/if}}
 {{/each}}
 export function State() {
-  const { state: value } = useContext(RtagContext)!;
+  const { state: value } = useContext(HathoraContext)!;
   return (
     <div className="w-full font-mono text-gray-700 state-display">
       {{> renderDisplay (lookup types userState) isCollapsible=false}}

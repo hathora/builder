@@ -3,5 +3,5 @@ import { UserData } from "./base";
 import { HathoraConnection } from "./client";
 import { {{userState}} as UserState } from "./types";
 
-type RtagContext = { connection: HathoraConnection; user: UserData; state: UserState; updatedAt: number } | undefined;
-export const RtagContext = React.createContext<RtagContext>(undefined);
+type HathoraContext = { connection: HathoraConnection; user: UserData; state: UserState; updatedAt: number } | undefined;
+export const HathoraContext = React.createContext<HathoraContext>(undefined);

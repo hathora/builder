@@ -3,7 +3,7 @@ import { toast } from "react-toastify";
 import { Dialog, Listbox, Switch, Transition } from "@headlessui/react";
 import { ArrowUpIcon, ArrowDownIcon, CheckIcon, PlusIcon, SelectorIcon, XIcon } from "@heroicons/react/outline";
 import { LightningBoltIcon } from "@heroicons/react/solid";
-import { RtagContext } from "./context";
+import { HathoraContext } from "./context";
 import { Response } from "./base";
 import {
   {{#each methods}}
@@ -276,7 +276,7 @@ export function InitializeForm({ submit }: { submit: (value: {{makeRequestName i
 }
 
 export function Forms({ open, setOpen }: { open: boolean; setOpen: (v: boolean) => void }) {
-  const { connection } = useContext(RtagContext)!;
+  const { connection } = useContext(HathoraContext)!;
   return (
     <Transition.Root show={open} as={Fragment}>
       <Dialog as="div" className="fixed inset-y-0 right-0 max-w-full pl-10 overflow-hidden" onClose={() => {}}>
