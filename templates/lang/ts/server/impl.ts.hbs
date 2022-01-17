@@ -1,5 +1,5 @@
-import { Methods, Context } from "./.rtag/methods";
-import { Response } from "./.rtag/base";
+import { Methods, Context } from "./.hathora/methods";
+import { Response } from "./.hathora/base";
 import {
 {{#each types}}
   {{@key}},
@@ -7,7 +7,7 @@ import {
 {{#each methods}}
   {{makeRequestName @key}},
 {{/each}}
-} from "./.rtag/types";
+} from "./.hathora/types";
 
 type InternalState = {};
 

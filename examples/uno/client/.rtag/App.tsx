@@ -1,0 +1,228 @@
+import React, { useEffect, useState } from "react";
+import ReactDOM from "react-dom";
+import { BrowserRouter, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
+import { ToastContainer, Zoom, toast } from "react-toastify";
+import { LightningBoltIcon, UserCircleIcon } from "@heroicons/react/solid";
+import { RtagClient, RtagConnection, UpdateArgs } from "./client";
+import { ICreateGameRequest } from "./types";
+import { getUserDisplayName, UserData } from "./base";
+import { RtagContext } from "./context";
+import { Forms, InitializeForm } from "./Forms";
+import { State } from "./State";
+import { ConnectionFailure } from "./failures";
+
+const client = new RtagClient(import.meta.env.VITE_APP_ID);
+
+function App() {
+  const [token, setToken] = useState<string | undefined>(sessionStorage.getItem("token") ?? undefined);
+  const [connection, setConnection] = useState<RtagConnection>();
+  const [updateArgs, setUpdateArgs] = useState<UpdateArgs>();
+  const [connectionError, setConnectionError] = useState<ConnectionFailure>();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (location.hash.length > 0) {
+      sessionStorage.setItem("token", location.hash.substring(1));
+      setToken(location.hash.substring(1));
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location]);
+
+  const user = token !== undefined ? RtagClient.getUserFromToken(token) : undefined;
+  return (
+    <>
+      <NavBar user={user} />
+      <div id="app" className="py-6 sm:px-6 lg:px-8">
+        {token === undefined || user === undefined ? (
+          <Login setToken={setToken} />
+        ) : (
+          <Routes>
+            <Route
+              path="/state/:stateId"
+              element={
+                <Main
+                  user={user}
+                  connection={connection}
+                  updateArgs={updateArgs}
+                  connectionError={connectionError}
+                  onConnect={(stateId) =>
+                    setConnection(client.connectExisting(token, stateId, setUpdateArgs, setConnectionError))
+                  }
+                  onDisconnect={() => {
+                    if (connection !== undefined) {
+                      connection.disconnect();
+                      setConnection(undefined);
+                      setUpdateArgs(undefined);
+                      setConnectionError(undefined);
+                    }
+                  }}
+                />
+              }
+            />
+            <Route
+              path="/"
+              element={
+                <Home
+                  onConnect={async (request) => {
+                    const conn = await client.connectNew(token, request, setUpdateArgs, setConnectionError);
+                    setConnection(conn);
+                    navigate(`/state/${conn.stateId}`);
+                  }}
+                />
+              }
+            />
+            <Route path="*" element={<div>Not Found</div>} />
+          </Routes>
+        )}
+      </div>
+    </>
+  );
+}
+
+function NavBar({ user }: { user?: UserData }) {
+  const navigate = useNavigate();
+  return (
+    <div className="bg-indigo-500">
+      <div className="flex items-center justify-between h-16 px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+        <div className="flex items-center">
+          <div className="flex-shrink-0 cursor-pointer" onClick={() => navigate(`/`)}>
+            <img
+              className="w-10 h-10"
+              src="https://i.ibb.co/sQMmTTq/hathora-hammer-logo-light.png"
+              alt="hathora-hammer-logo"
+            />
+          </div>
+          <div className="flex items-center flex-shrink-0 cursor-pointer" onClick={() => navigate(`/`)}>
+            <span className="mt-1 ml-3 text-2xl font-semibold text-white uppercase font-display">uno</span>
+          </div>
+          {user && (
+            <div className="block">
+              <div className="flex items-baseline ml-10 space-x-4">
+                <span className="px-3 py-2 text-xs font-medium text-gray-200 bg-indigo-700 rounded-md md:text-sm">
+                  <UserCircleIcon className="inline flex-shrink-0 mr-1.5 h-5 w-5 text-gray-200" aria-hidden="true" />
+                  {getUserDisplayName(user)}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Login({ setToken }: { setToken: (token: string) => void }) {
+  return (
+    <div className="flex flex-col w-full md:justify-center">
+      <div className="w-6/12 m-auto">
+        <h2 className="text-base text-xl font-semibold text-gray-900">Login</h2>
+        <div className="flex flex-col mt-2">
+          <div className="w-6/12 mb-4">
+            <button
+              type="button"
+              onClick={() =>
+                client
+                  .loginAnonymous()
+                  .then((token) => {
+                    sessionStorage.setItem("token", token);
+                    setToken(token);
+                  })
+                  .catch((e) => toast.error("Authentication error: " + e.reason))
+              }
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Login (Anonymous)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Home({ onConnect }: { onConnect: (request: ICreateGameRequest) => void }) {
+  const [stateId, setStateId] = useState<string>("");
+  const navigate = useNavigate();
+  return (
+    <div className="flex flex-col w-full md:justify-center">
+      <div className="w-6/12 m-auto">
+        <h2 className="text-base text-xl font-semibold text-gray-900">Home</h2>
+        <div className="flex flex-col mt-2">
+          <div className="w-6/12 mb-4">
+            <InitializeForm submit={onConnect} />
+          </div>
+          <div className="w-6/12">
+            <input
+              type="text"
+              value={stateId}
+              onChange={(e) => setStateId(e.target.value)}
+              className="block w-full mb-2 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            />
+            <button
+              type="button"
+              onClick={() => navigate(`/state/${stateId}`)}
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Join Existing
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+type MainProps = {
+  user: UserData;
+  connection: RtagConnection | undefined;
+  updateArgs: UpdateArgs | undefined;
+  connectionError: ConnectionFailure | undefined;
+  onConnect: (stateId: string) => void;
+  onDisconnect: () => void;
+};
+function Main({ user, connection, connectionError, updateArgs, onConnect, onDisconnect }: MainProps) {
+  const { stateId } = useParams();
+  const [openMethods, setOpenMethods] = useState(false);
+  useEffect(() => {
+    if (connection === undefined) {
+      onConnect(stateId!);
+    }
+    return onDisconnect;
+  }, [connection]);
+
+  if (connectionError !== undefined) {
+    return <div>Connection error: {connectionError.message}</div>;
+  }
+
+  if (connection === undefined || updateArgs === undefined) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <RtagContext.Provider value={{ user, connection, ...updateArgs }}>
+      <div className="fixed top-24 right-6 lg:right-8">
+        <span className="sm:ml-3">
+          <button
+            type="button"
+            onClick={() => setOpenMethods(true)}
+            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            <LightningBoltIcon className="w-5 h-5 mr-2 -ml-1" aria-hidden="true" />
+            Methods
+          </button>
+        </span>
+      </div>
+      <State />
+      <Forms open={openMethods} setOpen={setOpenMethods} />
+    </RtagContext.Provider>
+  );
+}
+
+ReactDOM.render(
+  <BrowserRouter>
+    <App />
+    <ToastContainer position="top-center" autoClose={2000} transition={Zoom} hideProgressBar />
+  </BrowserRouter>,
+  document.getElementById("root")
+);

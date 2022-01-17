@@ -1,5 +1,5 @@
-import { Methods, Context } from "./.rtag/methods";
-import { Response } from "./.rtag/base";
+import { Methods, Context } from "./.hathora/methods";
+import { Response } from "./.hathora/base";
 import {
   UserId,
   GameStatus,
@@ -10,7 +10,7 @@ import {
   IStartGameRequest,
   IMovePieceRequest,
   PieceType,
-} from "./.rtag/types";
+} from "./.hathora/types";
 import { Chess, ChessInstance, Piece as ChessPiece, Square } from "chess.js";
 
 type InternalUser = {

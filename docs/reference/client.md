@@ -26,8 +26,8 @@ Example (from uno, using Lit):
 import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
 import { styleMap } from "lit/directives/style-map.js";
-import { Card, Color } from "../.rtag/types";
-import { RtagConnection } from "../.rtag/client";
+import { Card, Color } from "../.hathora/types";
+import { RtagConnection } from "../.hathora/client";
 
 export default class CardComponent extends LitElement {
   @property() val!: Card;

@@ -1,7 +1,7 @@
 import { LitElement, html, css } from "lit";
 import { property } from "lit/decorators.js";
-import { Direction, PlayerState } from "../.rtag/types";
-import { RtagConnection } from "../.rtag/client";
+import { Direction, PlayerState } from "../.hathora/types";
+import { RtagConnection } from "../.hathora/client";
 import { StateBuffer } from "../stateBuffer";
 
 const WIDTH = 600;
