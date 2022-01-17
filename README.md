@@ -21,7 +21,7 @@ npm install -g hathora
 Clone an example hathora game:
 
 ```sh
-git clone https://github.com/hpx7/ship-battle.git
+git clone https://github.com/hathora/ship-battle.git
 ```
 
 Inside the `ship-battle` directory, start the Hathora dev server:
@@ -30,7 +30,7 @@ Inside the `ship-battle` directory, start the Hathora dev server:
 hathora dev
 ```
 
-Finally, visit http://localhost:3000 to see the game in action:
+Finally, visit http://localhost:4000 to see the game in action:
 
 > Instructions: Arrow keys to move, space bar to fire.
 
