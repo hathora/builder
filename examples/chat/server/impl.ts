@@ -1,12 +1,12 @@
-import { Methods, Context } from "./.rtag/methods";
-import { Response } from "./.rtag/base";
+import { Methods, Context } from "./.hathora/methods";
+import { Response } from "./.hathora/base";
 import {
   UserId,
   RoomState,
   ICreateRoomRequest,
   ISendPublicMessageRequest,
   ISendPrivateMessageRequest,
-} from "./.rtag/types";
+} from "./.hathora/types";
 
 export class Impl implements Methods<RoomState> {
   createRoom(userId: UserId, ctx: Context, request: ICreateRoomRequest): RoomState {

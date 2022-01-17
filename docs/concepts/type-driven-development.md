@@ -46,7 +46,7 @@ methods:
 The following will be generated inside `types.ts` in both the client and server:
 
 ```ts
-// .rtag/types.ts (generated)
+// .hathora/types.ts (generated)
 
 export enum GameStatus {
   LOBBY,
@@ -74,7 +74,7 @@ And `client.ts` will have api calls generated which can be consumed in user code
 ```ts
 // example user code
 
-import { RtagConnection } from "./.rtag/client";
+import { RtagConnection } from "./.hathora/client";
 
 const connection: RtagConnection = getConnection(/* ... */);
 
@@ -91,7 +91,7 @@ connection.sendMessage({ userId: someUserId, message: "Hello!" });
 The following server interface will be generated in `methods.ts`:
 
 ```ts
-// .rtag/methods.ts (generated)
+// .hathora/methods.ts (generated)
 
 import { Response } from "./base";
 import { UserId, GameState, ICreateGameRequest, IMoveTowardsRequest, ISendMessageRequest } from "./types";
@@ -109,9 +109,9 @@ And you must implement this interface in the server:
 ```ts
 // impl.ts (user code)
 
-import { Methods, Context } from "./.rtag/methods";
-import { Response } from "./.rtag/base";
-import { UserId, ICreateGameRequest, IMoveTowardsRequest, ISendMessageRequest, GameState } from "./.rtag/types";
+import { Methods, Context } from "./.hathora/methods";
+import { Response } from "./.hathora/base";
+import { UserId, ICreateGameRequest, IMoveTowardsRequest, ISendMessageRequest, GameState } from "./.hathora/types";
 
 type InternalState = // ...
 

@@ -1,5 +1,5 @@
-import { Methods, Context } from "./.rtag/methods";
-import { Response } from "./.rtag/base";
+import { Methods, Context } from "./.hathora/methods";
+import { Response } from "./.hathora/base";
 import {
   UserId,
   PlayerState,
@@ -14,7 +14,7 @@ import {
   GameStatus,
   QuestAttempt,
   QuestStatus,
-} from "./.rtag/types";
+} from "./.hathora/types";
 import { shuffle } from "./utils";
 
 type InternalQuestAttempt = {

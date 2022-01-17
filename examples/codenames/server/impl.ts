@@ -1,5 +1,5 @@
-import { Methods, Context } from "./.rtag/methods";
-import { Response } from "./.rtag/base";
+import { Methods, Context } from "./.hathora/methods";
+import { Response } from "./.hathora/base";
 import {
   UserId,
   ICreateGameRequest,
@@ -14,7 +14,7 @@ import {
   PlayerInfo,
   GameStatus,
   TurnInfo,
-} from "./.rtag/types";
+} from "./.hathora/types";
 import { wordList } from "./words";
 import { shuffle } from "./utils";
 

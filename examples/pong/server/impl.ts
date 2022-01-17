@@ -1,6 +1,6 @@
-import { Methods, Context } from "./.rtag/methods";
-import { Response } from "./.rtag/base";
-import { UserId, Direction, PlayerState, ICreateGameRequest, ISetDirectionRequest, Player, Point } from "./.rtag/types";
+import { Methods, Context } from "./.hathora/methods";
+import { Response } from "./.hathora/base";
+import { UserId, Direction, PlayerState, ICreateGameRequest, ISetDirectionRequest, Player, Point } from "./.hathora/types";
 
 const MAP_WIDTH = 600;
 const MAP_HEIGHT = 400;

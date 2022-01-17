@@ -1,5 +1,5 @@
-import { Methods, Context } from "./.rtag/methods";
-import { Response } from "./.rtag/base";
+import { Methods, Context } from "./.hathora/methods";
+import { Response } from "./.hathora/base";
 import {
   UserId,
   PlayerState,
@@ -8,7 +8,7 @@ import {
   IChooseGestureRequest,
   INextRoundRequest,
   Gesture,
-} from "./.rtag/types";
+} from "./.hathora/types";
 
 export class Impl implements Methods<PlayerState> {
   createGame(userId: UserId, ctx: Context, request: ICreateGameRequest): PlayerState {

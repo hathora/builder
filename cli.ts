@@ -41,18 +41,18 @@ function npmInstall(dir: string) {
 
 function install() {
   npmInstall(clientDir);
-  npmInstall(join(clientDir, ".rtag"));
+  npmInstall(join(clientDir, ".hathora"));
   npmInstall(serverDir);
-  npmInstall(join(serverDir, ".rtag"));
+  npmInstall(join(serverDir, ".hathora"));
 }
 
 async function startServer() {
   shelljs.cd(serverDir);
-  process.env.DATA_DIR = join(serverDir, ".rtag/data");
+  process.env.DATA_DIR = join(serverDir, ".hathora/data");
   process.env.DOTENV_CONFIG_PATH = join(rootDir, ".env");
   process.env.NODE_LOADER_CONFIG = join(__dirname, "node-loader.config.mjs");
   const loaderPath = pathToFileURL(join(__dirname, "node_modules/@node-loader/core/lib/node-loader-core.js"));
-  const storePath = join(serverDir, ".rtag/store.ts");
+  const storePath = join(serverDir, ".hathora/store.ts");
   const cp = shelljs.exec(`node --loader ${loaderPath} --experimental-specifier-resolution=node ${storePath}`, {
     async: true,
   });
@@ -75,7 +75,7 @@ async function startFrontend(root: string, port: number) {
 }
 
 async function startFrontends() {
-  startFrontend(join(clientDir, ".rtag"), 3000);
+  startFrontend(join(clientDir, ".hathora"), 3000);
   if (existsSync(join(clientDir, "index.html"))) {
     startFrontend(clientDir, 4000);
   }
@@ -116,11 +116,11 @@ if (command === "init") {
 } else if (command === "build") {
   process.env.VITE_APP_ID = appId;
   build({
-    root: existsSync(join(clientDir, "index.html")) ? clientDir : join(clientDir, ".rtag"),
+    root: existsSync(join(clientDir, "index.html")) ? clientDir : join(clientDir, ".hathora"),
     publicDir: join(clientDir, "public"),
     build: { outDir: join(rootDir, "dist/client"), target: ["esnext"] },
   });
-  ncc(join(serverDir, ".rtag/store.ts")).then(
+  ncc(join(serverDir, ".hathora/store.ts")).then(
     ({ code, assets }: { code: string; assets: Record<string, { source: string | Buffer }> }) => {
       const outDir = join(rootDir, "dist/server");
       outputFileSync(join(outDir, "index.js"), code);

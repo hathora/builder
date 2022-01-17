@@ -1,7 +1,7 @@
 import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
-import { Board, Color, Piece, PieceType, PlayerState } from "../.rtag/types";
-import { RtagConnection } from "../.rtag/client";
+import { Board, Color, Piece, PieceType, PlayerState } from "../.hathora/types";
+import { RtagConnection } from "../.hathora/client";
 import "chessboard-element";
 
 export default class BoardEl extends LitElement {

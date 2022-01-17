@@ -41,15 +41,15 @@ Next, run `hathora init` to initialize your project. Then run `hathora dev` to s
 We then fill in the methods in `server/impl.ts` with our desired implementation:
 
 ```ts
-import { Methods, Context } from "./.rtag/methods";
-import { Response } from "./.rtag/base";
+import { Methods, Context } from "./.hathora/methods";
+import { Response } from "./.hathora/base";
 import {
   UserId,
   RoomState,
   ICreateRoomRequest,
   ISendPublicMessageRequest,
   ISendPrivateMessageRequest,
-} from "./.rtag/types";
+} from "./.hathora/types";
 
 export class Impl implements Methods<RoomState> {
   createRoom(userId: UserId, ctx: Context, request: ICreateRoomRequest): RoomState {
