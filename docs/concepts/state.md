@@ -24,4 +24,4 @@ It is important to note that there are no restrictions on how you define `Intern
 
 ## Persistence
 
-TODO
+Hathora automatically persists your `InternalState` by maintaining a transaction log of all method calls with their inputs. To load the state from disk, it simply replays all the method calls. This approach has the advantage is that your `InternalState` does not need to be serializable to enable persistence.
