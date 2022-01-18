@@ -46,7 +46,7 @@ initialize: createGame
 error: string
 ```
 
-This file defines the client data model and the server api endpoints for our application.
+This file defines the client data model and the server api endpoints for our application. For more information on this file format, see [here](/concepts/type-driven-development).
 
 To initialize our project structure run `hathora init`. You should see a `client` and `server` directory generated, along with a `.gitignore` and `.env` file. Inside both directories you will find a `.hathora` directory with framework generated code based on our `hathora.yml` file.
 
@@ -198,6 +198,8 @@ function shuffle<T>(randInt: (limit: number) => number, items: T[]) {
   return shuffled;
 }
 ```
+
+See [here](/concepts/methods) for more details about how server methods works.
 
 > The hathora dev server supports hot reloading of both backend and frontend, so you shouldn't need to restart the server when making edits.
 
