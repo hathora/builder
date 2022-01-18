@@ -2,7 +2,13 @@
 
 In this tutorial we will explore Hathora by learning to make a simplified version of [Uno](https://www.mattel.com/products/uno-gdj85).
 
-First, create a directory called `uno-tutorial` and create a `hathora.yml` file inside with the following contents:
+Before you begin, make sure you have nodejs and the hathora cli installed:
+
+```sh
+npm install -g hathora
+```
+
+To start, create a directory called `uno-tutorial` and create a `hathora.yml` file inside with the following contents:
 
 ```yml
 # hathora.yml
