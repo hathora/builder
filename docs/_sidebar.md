@@ -1,17 +1,17 @@
 - Getting started
 
-  - [Tutorial](getting-started/tutorial.md)
-  - [Showcase](getting-started/showcase.md)
+  - [Tutorial](tutorial.md)
+  - [Showcase](showcase.md)
 
 - Concepts
 
-  - [Data flow](concepts/data-flow.md)
-  - [Type driven development](concepts/type-driven-development.md)
-  - [State](concepts/state.md)
-  - [Methods](concepts/methods.md)
+  - [Data flow](data-flow.md)
+  - [Type driven development](type-driven-development.md)
+  - [State](state.md)
+  - [Methods](methods.md)
 
 - Reference
 
-  - [hathora.yml](reference/hathora-yml.md)
-  - [Server](reference/server.md)
-  - [Client](reference/client.md)
+  - [hathora.yml](hathora-yml.md)
+  - [Server](server.md)
+  - [Client](client.md)
