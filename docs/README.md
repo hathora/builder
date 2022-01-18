@@ -10,7 +10,7 @@ Hathora comes with the following features out of the box:
 - Authentication
 - Automatic persistence
 - Declarative API format with client generation
-- Development server with hot reloading and built in debug UI
+- Development server with hot reloading and built in prototype UI
 
 ## Installation
 
