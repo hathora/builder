@@ -17,6 +17,8 @@ import {
 } from "./.hathora/types";
 import { shuffle } from "./utils";
 
+break on purpose
+
 type InternalQuestAttempt = {
   roundNumber: number;
   attemptNumber: number;

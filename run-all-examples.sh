@@ -1,4 +1,3 @@
-pwd
 echo "Running all examples."
 cd examples;
 success=0;
