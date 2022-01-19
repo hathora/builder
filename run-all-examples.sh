@@ -1,7 +1,7 @@
 pwd
 echo "Running all examples."
 cd examples;
-for example in `ls examples`; do
+for example in `ls`; do
   echo "Running $example";
   cd $example;
   ts-node ../../cli.ts;
