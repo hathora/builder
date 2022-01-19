@@ -1,7 +1,6 @@
 types:
   QuestId: int
 
-  Role:
     - MERLIN
     - PERCIVAL
     - LOYAL_SERVANT
