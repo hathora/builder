@@ -1,3 +1,4 @@
+pwd
 echo "Running all examples."
 cd examples;
 for example in `ls examples`; do
