@@ -1,7 +1,7 @@
-name: build-develop
+name: build
 on: [push]
 jobs:
-  check-bats-version:
+  install-ts-node:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
