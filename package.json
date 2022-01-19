@@ -54,6 +54,6 @@
   },
   "homepage": "https://github.com/hathora/hathora#readme",
   "scripts": {
-    "test": "./run-all-examples.sh" 
+    "test": "./scripts/run-all-examples.sh" 
   }
 }
