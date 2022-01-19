@@ -1,5 +1,7 @@
 # Hathora - multiplayer game framework
 
+[![build](https://github.com/hathora/hathora/actions/workflows/build.yml/badge.svg)](https://github.com/hathora/hathora/actions/workflows/build.yml)
+
 ## Overview
 
 Hathora is a framework for building multiplayer games and other realtime applications.
