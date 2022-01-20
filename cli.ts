@@ -66,6 +66,7 @@ async function startFrontend(root: string, port: number) {
   return createServer({
     root,
     publicDir: join(clientDir, "public"),
+    build: { target: ["esnext"] },
     envDir: rootDir,
     clearScreen: false,
     server: { host: "0.0.0.0", port },

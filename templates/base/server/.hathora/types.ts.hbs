@@ -1,5 +1,5 @@
+import { Writer, Reader } from "bin-serde";
 import { Response } from "./base";
-import { Writer, Reader } from "./serde";
 
 export const NO_DIFF = Symbol("NODIFF");
 export type DeepPartial<T> = T extends string | number | boolean | undefined
