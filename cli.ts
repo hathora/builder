@@ -111,6 +111,11 @@ if (command === "init") {
 } else if (command === "start") {
   startServer().then(() => startFrontends());
 } else if (command === "dev") {
+  if (!existsSync(join(serverDir, "impl.ts"))) {
+    console.error("Missing impl.ts, make sure to run hathora init first");
+  } else {
+    generate(rootDir, "templates/base");
+  }
   install();
   startServer().then(() => startFrontends());
 } else if (command === "build") {

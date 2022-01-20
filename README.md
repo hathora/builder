@@ -29,7 +29,7 @@ git clone https://github.com/hathora/ship-battle.git
 Inside the `ship-battle` directory, start the Hathora dev server:
 
 ```sh
-hathora && hathora dev
+hathora dev
 ```
 
 Finally, visit http://localhost:4000 to see the game in action:
