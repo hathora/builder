@@ -1,6 +1,6 @@
 import net from "net";
 import retry from "retry";
-import { SmartBuffer } from "smart-buffer";
+import { Reader, Writer } from "bin-serde";
 
 type StateId = bigint;
 type UserId = string;
@@ -56,25 +56,19 @@ export function register(store: Store): Promise<CoordinatorClient> {
       }
     });
     readData(socket, (data) => {
-      const reader = SmartBuffer.fromBuffer(data);
+      const reader = new Reader(data);
       while (reader.remaining() > 0) {
-        const type = reader.readInt8();
+        const type = reader.readUInt8();
         if (type === NEW_STATE) {
-          store.newState(
-            reader.readBigUInt64LE(),
-            reader.readString(reader.readUInt32LE()),
-            reader.readBuffer(reader.readUInt32LE())
-          );
+          store.newState(reader.readUInt64(), reader.readString(), reader.readBuffer(reader.readUInt32()));
         } else if (type === SUBSCRIBE_USER) {
-          store.subscribeUser(reader.readBigUInt64LE(), reader.readString(reader.readUInt32LE()));
+          store.subscribeUser(reader.readUInt64(), reader.readString());
         } else if (type === UNSUBSCRIBE_USER) {
-          store.unsubscribeUser(reader.readBigUInt64LE(), reader.readString(reader.readUInt32LE()));
+          store.unsubscribeUser(reader.readUInt64(), reader.readString());
         } else if (type === HANDLE_UPDATE) {
-          store.handleUpdate(
-            reader.readBigUInt64LE(),
-            reader.readString(reader.readUInt32LE()),
-            reader.readBuffer(reader.readUInt32LE())
-          );
+          store.handleUpdate(reader.readUInt64(), reader.readString(), reader.readBuffer(reader.readUInt32()));
+        } else {
+          throw new Error("Unknown type: " + type);
         }
       }
     });
@@ -82,21 +76,24 @@ export function register(store: Store): Promise<CoordinatorClient> {
 }
 
 interface Store {
-  newState(stateId: StateId, userId: UserId, argsBuffer: Buffer): void;
+  newState(stateId: StateId, userId: UserId, argsBuffer: ArrayBufferView): void;
   subscribeUser(stateId: StateId, userId: UserId): void;
   unsubscribeUser(stateId: StateId, userId: UserId): void;
-  handleUpdate(stateId: StateId, userId: UserId, data: Buffer): void;
+  handleUpdate(stateId: StateId, userId: UserId, data: ArrayBufferView): void;
 }
 
 class CoordinatorClient {
   constructor(private socket: net.Socket) {}
 
   public onStateUpdate(stateId: StateId, userId: UserId, data: Buffer) {
-    const buf = new SmartBuffer()
-      .writeBigUInt64LE(stateId)
-      .writeUInt32LE(userId.length)
-      .writeString(userId)
-      .writeBuffer(data);
-    this.socket.write(buf.insertUInt32LE(buf.length, 0).toBuffer());
+    const userIdBuf = new Writer().writeString(userId).toBuffer();
+    this.socket.write(
+      new Writer()
+        .writeUInt32(8 + userIdBuf.length + data.length)
+        .writeUInt64(stateId)
+        .writeBuffer(userIdBuf)
+        .writeBuffer(data)
+        .toBuffer()
+    );
   }
 }

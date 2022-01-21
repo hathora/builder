@@ -1,8 +1,7 @@
 import { randomBytes } from "crypto";
 import { existsSync, mkdirSync } from "fs";
 import seedrandom from "seedrandom";
-import { SmartBuffer } from "smart-buffer";
-import { Writer } from "bin-serde";
+import { Writer, Reader } from "bin-serde";
 import "dotenv/config";
 import { register } from "./protocol";
 import LogStore from "./logstore";
@@ -48,7 +47,7 @@ class Store {
         const changedAt = impl.changedAt();
         if (changedAt !== undefined) {
           changedStates.set(stateId, changedAt);
-          log.append(stateId, currTime, new SmartBuffer().writeUInt8(0xff).writeUInt32LE(timeDelta).toBuffer());
+          log.append(stateId, currTime, new Writer().writeUInt8(0xff).writeUInt32(timeDelta).toBuffer());
         }
       });
       prevUpdateTime = currTime;
@@ -70,11 +69,10 @@ class Store {
     log.append(
       stateId,
       time,
-      new SmartBuffer()
-        .writeBigUInt64LE(seed)
-        .writeUInt32LE(userId.length)
+      new Writer()
+        .writeUInt64(seed)
         .writeString(userId)
-        .writeUInt32LE(argsBuffer.length)
+        .writeUInt32(argsBuffer.length)
         .writeBuffer(argsBuffer)
         .toBuffer()
     );
@@ -118,8 +116,12 @@ class Store {
       return;
     }
     const { state, rng } = stateInfo.get(stateId)!;
-    const reader = SmartBuffer.fromBuffer(data);
-    const [method, msgId, argsBuffer] = [reader.readUInt8(), reader.readUInt32LE(), reader.readBuffer()];
+    const reader = new Reader(data);
+    const [method, msgId, argsBuffer] = [
+      reader.readUInt8(),
+      reader.readUInt32(),
+      reader.readBuffer(reader.remaining()),
+    ];
     const time = Date.now();
     const response = impl.getResult(state, userId, method, ctx(rng, time), argsBuffer);
     if (response !== undefined) {
@@ -129,11 +131,10 @@ class Store {
         log.append(
           stateId,
           time,
-          new SmartBuffer()
+          new Writer()
             .writeUInt8(method)
-            .writeUInt32LE(userId.length)
             .writeString(userId)
-            .writeUInt32LE(argsBuffer.length)
+            .writeUInt32(argsBuffer.length)
             .writeBuffer(argsBuffer)
             .toBuffer()
         );
@@ -158,26 +159,26 @@ function loadState(stateId: StateId) {
     const rows = log.load(stateId);
 
     const { time, record } = rows[0];
-    const reader = SmartBuffer.fromBuffer(record);
-    const seed = reader.readBigUInt64LE();
-    const userId = reader.readString(reader.readUInt32LE());
-    const argsBuffer = reader.readBuffer(reader.readUInt32LE());
+    const reader = new Reader(record);
+    const seed = reader.readUInt64();
+    const userId = reader.readString();
+    const argsBuffer = reader.readBuffer(reader.readUInt32());
     const rng = seedrandom(seed.toString(36));
     const state = impl.initialize(userId, ctx(rng, time), argsBuffer);
 
     for (let i = 1; i < rows.length; i++) {
       const { time, record } = rows[i];
-      const reader = SmartBuffer.fromBuffer(record);
+      const reader = new Reader(record);
       const method = reader.readUInt8();
       {{#if tick}}
       if (method === 0xff) {
-        const timeDelta = reader.readUInt32LE();
+        const timeDelta = reader.readUInt32();
         impl.onTick(state, ctx(rng, time), timeDelta / 1000);
         continue;
       }
       {{/if}}
-      const userId = reader.readString(reader.readUInt32LE());
-      const argsBuffer = reader.readBuffer(reader.readUInt32LE());
+      const userId = reader.readString();
+      const argsBuffer = reader.readBuffer(reader.readUInt32());
       impl.getResult(state, userId, method, ctx(rng, time), argsBuffer);
     }
 
