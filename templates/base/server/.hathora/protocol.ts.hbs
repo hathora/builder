@@ -15,7 +15,7 @@ function readData(socket: net.Socket, onData: (data: Buffer) => void) {
   socket.on("data", (data) => {
     buf = Buffer.concat([buf, data]);
     while (buf.length >= 4) {
-      const bufLen = buf.readUInt32LE();
+      const bufLen = buf.readUInt32BE();
       if (buf.length < 4 + bufLen) {
         return;
       }
@@ -60,13 +60,13 @@ export function register(store: Store): Promise<CoordinatorClient> {
       while (reader.remaining() > 0) {
         const type = reader.readUInt8();
         if (type === NEW_STATE) {
-          store.newState(reader.readUInt64(), reader.readString(), reader.readBuffer(reader.readUInt32()));
+          store.newState(reader.readUInt64(), reader.readString(), reader.readBuffer(reader.remaining()));
         } else if (type === SUBSCRIBE_USER) {
           store.subscribeUser(reader.readUInt64(), reader.readString());
         } else if (type === UNSUBSCRIBE_USER) {
           store.unsubscribeUser(reader.readUInt64(), reader.readString());
         } else if (type === HANDLE_UPDATE) {
-          store.handleUpdate(reader.readUInt64(), reader.readString(), reader.readBuffer(reader.readUInt32()));
+          store.handleUpdate(reader.readUInt64(), reader.readString(), reader.readBuffer(reader.remaining()));
         } else {
           throw new Error("Unknown type: " + type);
         }
