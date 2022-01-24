@@ -10,6 +10,7 @@ import {
 export interface Context {
   rand(): number;
   randInt(limit?: number): number;
+  shuffle<T>(items: T[]): T[];
   time(): number;
 }
 

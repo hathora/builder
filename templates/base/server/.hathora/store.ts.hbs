@@ -221,8 +221,22 @@ function sendResponses(stateId: StateId, responses: Map<UserId, Record<number, R
 
 function ctx(rng: ReturnType<seedrandom>, time: number) {
   return {
-    rand: () => rng(),
-    randInt: (limit?: number) => (limit === undefined ? rng.int32() : Math.floor(rng() * limit)),
-    time: () => time,
+    rand() {
+      return rng();
+    },
+    randInt(limit?: number) {
+      return limit === undefined ? rng.int32() : Math.floor(rng() * limit);
+    },
+    shuffle<T>(items: T[]) {
+      const shuffled = [...items];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(rng() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    },
+    time() {
+      return time;
+    },
   };
 }

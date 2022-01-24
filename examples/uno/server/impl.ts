@@ -43,7 +43,7 @@ export class Impl implements Methods<InternalState> {
     if (state.pile !== undefined) {
       return Response.error("Already started");
     }
-    state.deck = shuffle(ctx.randInt, state.deck);
+    state.deck = ctx.shuffle(state.deck);
     // give each player 7 cards
     state.players.forEach((playerId) => {
       state.hands.set(playerId, []);
@@ -101,13 +101,4 @@ export class Impl implements Methods<InternalState> {
       winner: state.winner,
     };
   }
-}
-
-function shuffle<T>(randInt: (limit: number) => number, items: T[]) {
-  const shuffled = [...items];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = randInt(i + 1);
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled;
 }

@@ -11,8 +11,7 @@ import {
   IRaiseRequest,
   PlayerStatus,
 } from "./.hathora/types";
-import { shuffle } from "./utils";
-import { Cards, createDeck, drawCardsFromDeck, findHighestHands } from "@pairjacks/poker-cards";
+import { Card, Cards, createDeck, drawCardsFromDeck, findHighestHands } from "@pairjacks/poker-cards";
 
 type InternalPlayerInfo = {
   id: UserId;
@@ -60,7 +59,7 @@ export class Impl implements Methods<InternalState> {
     }
     state.dealerIdx = (state.dealerIdx + 1) % state.players.length;
     state.revealedCards = [];
-    state.deck = shuffle(ctx.randInt, createDeck());
+    state.deck = ctx.shuffle(createDeck() as Card[]);
     makeBet(state.players[(state.dealerIdx + 1) % state.players.length], state.smallBlindAmt);
     makeBet(state.players[(state.dealerIdx + 2) % state.players.length], state.smallBlindAmt * 2);
     state.activePlayerIdx = (state.dealerIdx + 3) % state.players.length;
