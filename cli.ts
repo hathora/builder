@@ -47,7 +47,7 @@ function install() {
 }
 
 async function startServer() {
-  shelljs.cd(serverDir);
+  shelljs.cd(join(serverDir, ".hathora"));
   process.env.DATA_DIR = join(serverDir, ".hathora/data");
   process.env.DOTENV_CONFIG_PATH = join(rootDir, ".env");
   process.env.NODE_LOADER_CONFIG = join(__dirname, "node-loader.config.mjs");
