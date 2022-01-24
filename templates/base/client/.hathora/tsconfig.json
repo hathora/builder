@@ -7,6 +7,10 @@
     "moduleResolution": "node",
     "isolatedModules": true,
     "experimentalDecorators": true,
-    "jsx": "react"
+    "jsx": "react",
+    "baseUrl": "../../",
+    "paths": {
+      "@api/*": ["api/*"]
+    }
   }
 }

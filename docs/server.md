@@ -37,7 +37,7 @@ initialize: createGame
 // impl.ts
 
 import { Methods, Context } from "./.hathora/methods";
-import { UserId, PlayerStatus, ICreateGameRequest } from "./.hathora/types";
+import { UserId, PlayerStatus, ICreateGameRequest } from "../api/types";
 import { Cards } from "@pairjacks/poker-cards";
 
 type InternalPlayerInfo = {

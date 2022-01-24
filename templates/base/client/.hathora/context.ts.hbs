@@ -1,7 +1,7 @@
 import React from "react";
-import { UserData } from "./base";
+import { UserData } from "../../api/base";
 import { HathoraConnection } from "./client";
-import { {{userState}} as UserState } from "./types";
+import { {{userState}} as UserState } from "../../api/types";
 
 type HathoraContext = { connection: HathoraConnection; user: UserData; state: UserState; updatedAt: number } | undefined;
 export const HathoraContext = React.createContext<HathoraContext>(undefined);

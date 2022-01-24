@@ -93,8 +93,8 @@ The following server interface will be generated in `methods.ts`:
 ```ts
 // .hathora/methods.ts (generated)
 
-import { Response } from "./base";
-import { UserId, GameState, ICreateGameRequest, IMoveTowardsRequest, ISendMessageRequest } from "./types";
+import { Response } from "../../api/base";
+import { UserId, GameState, ICreateGameRequest, IMoveTowardsRequest, ISendMessageRequest } from "../../api/types";
 
 export interface Methods<T> {
   createGame(userId: UserId, ctx: Context, request: ICreateGameRequest): T;
@@ -110,8 +110,8 @@ And you must implement this interface in the server:
 // impl.ts (user code)
 
 import { Methods, Context } from "./.hathora/methods";
-import { Response } from "./.hathora/base";
-import { UserId, ICreateGameRequest, IMoveTowardsRequest, ISendMessageRequest, GameState } from "./.hathora/types";
+import { Response } from "../api/base";
+import { UserId, ICreateGameRequest, IMoveTowardsRequest, ISendMessageRequest, GameState } from "../api/types";
 
 type InternalState = // ...
 

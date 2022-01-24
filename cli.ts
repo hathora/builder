@@ -44,6 +44,7 @@ function install() {
   npmInstall(join(clientDir, ".hathora"));
   npmInstall(serverDir);
   npmInstall(join(serverDir, ".hathora"));
+  npmInstall(join(rootDir, "api"));
 }
 
 async function startServer() {

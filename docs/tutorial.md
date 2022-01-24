@@ -95,7 +95,7 @@ Because of the default implementation, we don't see any real data and click Subm
 
 ```ts
 import { Methods, Context } from "./.hathora/methods";
-import { Response } from "./.hathora/base";
+import { Response } from "../api/base";
 import {
   UserId,
   PlayerState,
@@ -106,7 +106,7 @@ import {
   IDrawCardRequest,
   Card,
   Color,
-} from "./.hathora/types";
+} from "../api/types";
 
 type InternalState = {
   deck: Card[];

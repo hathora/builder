@@ -1,6 +1,6 @@
 import { Methods, Context } from "./.hathora/methods";
-import { Response } from "./.hathora/base";
-import { UserId, Direction, PlayerState, ICreateGameRequest, ISetDirectionRequest, Player, Point } from "./.hathora/types";
+import { Response } from "../api/base";
+import { UserId, Direction, PlayerState, ICreateGameRequest, ISetDirectionRequest, Player, Point } from "../api/types";
 
 const MAP_WIDTH = 600;
 const MAP_HEIGHT = 400;

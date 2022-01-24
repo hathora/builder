@@ -1,0 +1,7 @@
+{
+  "type": "module",
+  "dependencies": {
+    "axios": "0.24.0",
+    "bin-serde": "1.1.1"
+  }
+}

@@ -1,7 +1,7 @@
 import React, { useRef, useLayoutEffect, useContext, useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { MinusSmIcon, PlusSmIcon, UserCircleIcon } from "@heroicons/react/solid";
-import { getUserDisplayName, lookupUser, UserData } from "./base";
+import { getUserDisplayName, lookupUser, UserData } from "../../api/base";
 import { HathoraConnection } from "./client";
 import { HathoraContext } from "./context";
 import {
@@ -9,7 +9,7 @@ import {
   {{#each types}}
   {{@key}},
   {{/each}}
-} from "./types";
+} from "../../api/types";
 {{#each plugins}}
 import {{this}}Plugin from "../plugins/{{this}}";
 {{/each}}
