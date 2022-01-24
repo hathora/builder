@@ -33,18 +33,22 @@ export class Impl implements Methods<InternalState> {
     return { deck, players: [userId], hands: new Map(), turn: userId };
   }
   joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {
-    if (state.players.find((playerName) => playerName === userId) !== undefined) {
+    if (state.players.find((playerId) => playerId === userId) !== undefined) {
       return Response.error("Already joined");
     }
     state.players.push(userId);
     return Response.ok();
   }
   startGame(state: InternalState, userId: UserId, ctx: Context, request: IStartGameRequest): Response {
+    if (state.pile !== undefined) {
+      return Response.error("Already started");
+    }
     state.deck = shuffle(ctx.randInt, state.deck);
-    state.players.forEach((playerName) => {
-      state.hands.set(playerName, []);
+    // give each player 7 cards
+    state.players.forEach((playerId) => {
+      state.hands.set(playerId, []);
       for (let i = 0; i < 7; i++) {
-        state.hands.get(playerName)!.push(state.deck.pop()!);
+        state.hands.get(playerId)!.push(state.deck.pop()!);
       }
     });
     state.pile = state.deck.pop();
@@ -78,7 +82,13 @@ export class Impl implements Methods<InternalState> {
     return Response.ok();
   }
   drawCard(state: InternalState, userId: UserId, ctx: Context, request: IDrawCardRequest): Response {
-    const hand = state.hands.get(userId)!;
+    if (state.deck.length === 0) {
+      return Response.error("Deck is empty");
+    }
+    const hand = state.hands.get(userId);
+    if (hand === undefined) {
+      return Response.error("Invalid user");
+    }
     hand.push(state.deck.pop()!);
     return Response.ok();
   }
