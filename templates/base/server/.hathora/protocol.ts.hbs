@@ -57,19 +57,17 @@ export function register(store: Store): Promise<CoordinatorClient> {
     });
     readData(socket, (data) => {
       const reader = new Reader(data);
-      while (reader.remaining() > 0) {
-        const type = reader.readUInt8();
-        if (type === NEW_STATE) {
-          store.newState(reader.readUInt64(), reader.readString(), reader.readBuffer(reader.remaining()));
-        } else if (type === SUBSCRIBE_USER) {
-          store.subscribeUser(reader.readUInt64(), reader.readString());
-        } else if (type === UNSUBSCRIBE_USER) {
-          store.unsubscribeUser(reader.readUInt64(), reader.readString());
-        } else if (type === HANDLE_UPDATE) {
-          store.handleUpdate(reader.readUInt64(), reader.readString(), reader.readBuffer(reader.remaining()));
-        } else {
-          throw new Error("Unknown type: " + type);
-        }
+      const type = reader.readUInt8();
+      if (type === NEW_STATE) {
+        store.newState(reader.readUInt64(), reader.readString(), reader.readBuffer(reader.remaining()));
+      } else if (type === SUBSCRIBE_USER) {
+        store.subscribeUser(reader.readUInt64(), reader.readString());
+      } else if (type === UNSUBSCRIBE_USER) {
+        store.unsubscribeUser(reader.readUInt64(), reader.readString());
+      } else if (type === HANDLE_UPDATE) {
+        store.handleUpdate(reader.readUInt64(), reader.readString(), reader.readBuffer(reader.remaining()));
+      } else {
+        throw new Error("Unknown type: " + type);
       }
     });
   });
