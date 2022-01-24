@@ -1,6 +1,7 @@
 import { randomBytes } from "crypto";
 import { existsSync, mkdirSync } from "fs";
 import seedrandom from "seedrandom";
+import "smart-buffer";
 import { Writer, Reader } from "bin-serde";
 import "dotenv/config";
 import { register } from "./protocol";
