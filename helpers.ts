@@ -1,25 +1,25 @@
 import { createHash } from "crypto";
-import { registerHelper } from "handlebars";
+import Handlebars from "handlebars";
 import { v4 as uuidv4 } from "uuid";
 
-registerHelper("concat", (...arr) => arr.splice(0, arr.length - 1).join(""));
-registerHelper("eq", (a, b) => a === b);
-registerHelper("ne", (a, b) => a !== b);
-registerHelper("stringify", JSON.stringify);
-registerHelper("len", (x) => (Array.isArray(x) ? x.length : Object.keys(x).length));
-registerHelper("isArray", Array.isArray);
-registerHelper("isObject", (x) => typeof x === "object");
-registerHelper("capitalize", capitalize);
-registerHelper("uppercase", (x) =>
+Handlebars.registerHelper("concat", (...arr) => arr.splice(0, arr.length - 1).join(""));
+Handlebars.registerHelper("eq", (a, b) => a === b);
+Handlebars.registerHelper("ne", (a, b) => a !== b);
+Handlebars.registerHelper("stringify", JSON.stringify);
+Handlebars.registerHelper("len", (x) => (Array.isArray(x) ? x.length : Object.keys(x).length));
+Handlebars.registerHelper("isArray", Array.isArray);
+Handlebars.registerHelper("isObject", (x) => typeof x === "object");
+Handlebars.registerHelper("capitalize", capitalize);
+Handlebars.registerHelper("uppercase", (x) =>
   x
     .split(/(?=[A-Z])/)
     .join("_")
     .toUpperCase()
 );
-registerHelper("makeRequestName", (x) => "I" + capitalize(x) + "Request");
-registerHelper("makePluginName", (x) => x.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase() + "-plugin");
-registerHelper("uuid", () => uuidv4());
-registerHelper("sha256", (x) => createHash("sha256").update(x).digest("hex"));
+Handlebars.registerHelper("makeRequestName", (x) => "I" + capitalize(x) + "Request");
+Handlebars.registerHelper("makePluginName", (x) => x.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase() + "-plugin");
+Handlebars.registerHelper("uuid", () => uuidv4());
+Handlebars.registerHelper("sha256", (x) => createHash("sha256").update(x).digest("hex"));
 
 function capitalize(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
