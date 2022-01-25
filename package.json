@@ -14,7 +14,7 @@
   ],
   "dependencies": {
     "@node-loader/core": "2.0.0",
-    "@vercel/ncc": "0.33.1",
+    "esbuild": "0.14.13",
     "fs-extra": "10.0.0",
     "handlebars": "4.7.7",
     "hot-esm": "1.2.2",
@@ -54,6 +54,6 @@
   },
   "homepage": "https://github.com/hathora/hathora#readme",
   "scripts": {
-    "test": "./scripts/run-all-examples.sh" 
+    "test": "./scripts/run-all-examples.sh"
   }
 }
