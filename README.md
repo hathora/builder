@@ -54,7 +54,7 @@ Here are some other example apps built with hathora:
 
 ## Community
 
-Discord: https://discord.gg/VWXYtBX4
+Discord: https://discord.gg/6nVdeCBffR
 
 Reddit: https://www.reddit.com/r/hathora/
 
