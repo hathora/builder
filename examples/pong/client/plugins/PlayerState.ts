@@ -1,8 +1,8 @@
 import { LitElement, html, css } from "lit";
 import { property } from "lit/decorators.js";
+import { InterpolationBuffer } from "interpolation-buffer";
 import { Direction, PlayerState } from "../.hathora/types";
 import { HathoraConnection } from "../.hathora/client";
-import { StateBuffer } from "../stateBuffer";
 
 const WIDTH = 600;
 const HEIGHT = 400;
@@ -16,7 +16,7 @@ export default class StateComponent extends LitElement {
   @property() val!: PlayerState;
   @property() updatedAt!: number;
 
-  private buffer!: StateBuffer<PlayerState>;
+  private buffer!: InterpolationBuffer<PlayerState>;
 
   static get styles() {
     return css`
@@ -51,7 +51,7 @@ export default class StateComponent extends LitElement {
   }
 
   firstUpdated() {
-    this.buffer = new StateBuffer(this.val, lerpState);
+    this.buffer = new InterpolationBuffer(this.val, 100, lerpState);
     const ctx = this.renderRoot.querySelector("canvas")!.getContext("2d")!;
     const playerAScoreEl = this.renderRoot.querySelector("div#playerAScore")!;
     const playerBScoreEl = this.renderRoot.querySelector("div#playerBScore")!;
