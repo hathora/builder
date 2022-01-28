@@ -17,7 +17,7 @@ import { ConnectionFailure } from "./failures";
 const client = new HathoraClient(import.meta.env.VITE_APP_ID);
 
 function App() {
-  const [token, setToken] = useState<string | undefined>(sessionStorage.getItem("token") ?? undefined);
+  const [token, setToken] = useState<string | undefined>(sessionStorage.getItem(client.appId) ?? undefined);
   const [connection, setConnection] = useState<HathoraConnection>();
   const [updateArgs, setUpdateArgs] = useState<UpdateArgs>();
   const [connectionError, setConnectionError] = useState<ConnectionFailure>();
@@ -26,7 +26,7 @@ function App() {
 
   useEffect(() => {
     if (location.hash.length > 0) {
-      sessionStorage.setItem("token", location.hash.substring(1));
+      sessionStorage.setItem(client.appId, location.hash.substring(1));
       setToken(location.hash.substring(1));
       navigate(location.pathname, { replace: true });
     }
@@ -130,7 +130,7 @@ function Login({ setToken }: { setToken: (token: string) => void }) {
                 client
                   .loginAnonymous()
                   .then((token) => {
-                    sessionStorage.setItem("token", token);
+                    sessionStorage.setItem(client.appId, token);
                     setToken(token);
                   })
                   .catch((e) => toast.error("Authentication error: " + e.reason))
@@ -148,7 +148,7 @@ function Login({ setToken }: { setToken: (token: string) => void }) {
                 client
                   .loginGoogle(tokenId)
                   .then((token) => {
-                    sessionStorage.setItem("token", token);
+                    sessionStorage.setItem(client.appId, token);
                     setToken(token);
                   })
                   .catch((e) => toast.error("Authentication error: " + e.reason))

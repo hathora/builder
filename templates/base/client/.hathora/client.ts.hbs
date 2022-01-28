@@ -20,7 +20,7 @@ export type StateId = string;
 export type UpdateArgs = { state: UserState; updatedAt: number };
 
 export class HathoraClient {
-  public constructor(private appId: string) {}
+  public constructor(public appId: string) {}
 
   public static getUserFromToken(token: string): UserData {
     return jwtDecode(token);
