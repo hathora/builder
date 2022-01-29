@@ -18,8 +18,8 @@ import {{this}}Plugin from "../plugins/{{this}}";
 window.customElements.define("{{makePluginName this}}", {{this}}Plugin);
 {{/each}}
 
-function CollapsibleDisplay(props: { defaultCollapsed: boolean; collapsed: JSX.Element; expanded: JSX.Element }) {
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(props.defaultCollapsed);
+function KVDisplay(props: { label: string; children: JSX.Element }) {
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   let icon;
   if (isCollapsed) {
     icon = <PlusSmIcon className="w-3 h-3 fill-current" aria-hidden="true" />;
@@ -27,8 +27,9 @@ function CollapsibleDisplay(props: { defaultCollapsed: boolean; collapsed: JSX.E
     icon = <MinusSmIcon className="w-3 h-3 fill-current" aria-hidden="true" />;
   }
   return (
-    <div className="p-1 m-1 bg-white border rounded object-display">
-      <span className="align-middle mr-0.5">
+    <div className="kv-display p-1 m-1">
+      <span className="font-bold">{props.label}: </span>
+      <span className="align-middle mr-1">
         <button
           type="button"
           onClick={() => setIsCollapsed(!isCollapsed)}
@@ -37,16 +38,7 @@ function CollapsibleDisplay(props: { defaultCollapsed: boolean; collapsed: JSX.E
           {icon}
         </button>
       </span>
-      {isCollapsed ? props.collapsed : props.expanded}
-    </div>
-  );
-}
-
-function KVDisplay(props: { label: string; children: JSX.Element }) {
-  return (
-    <div className="kv-display">
-      <span className="font-bold">{props.label}: </span>
-      {props.children}
+      {isCollapsed ? "..." : props.children}
     </div>
   );
 }
@@ -60,23 +52,17 @@ function ArrayDisplay<T>(props: { value: T[]; children: (value: T) => JSX.Elemen
           <span className="ml-2 text-sm italic text-gray-500">
             {props.value.length} {props.value.length === 1 ? "item" : "items"}
           </span>
-          <CollapsibleDisplay
-            defaultCollapsed={props.value.length > 4}
-            collapsed={<span className="text-sm italic text-gray-500">array collapsed</span>}
-            expanded={
-              <div
-                className={`flex ${
-                  typeof props.value[0] === "object"
-                    ? "flex-row overflow-x-auto"
-                    : "flex-col array-max-height overflow-y-auto"
-                }`}
-              >
-                {props.value.map((val, i) => (
-                  <div key={i}>{props.children(val)}</div>
-                ))}
-              </div>
-            }
-          />
+          <div
+            className={`flex ${
+              typeof props.value[0] === "object"
+                ? "flex-row overflow-x-auto"
+                : "flex-col array-max-height overflow-y-auto"
+            }`}
+          >
+            {props.value.map((val, i) => (
+              <div key={i}>{props.children(val)}</div>
+            ))}
+          </div>
         </>
       )}
       ]
@@ -110,29 +96,23 @@ function UserIdDisplay({ value }: { value: string }) {
     </span>
   );
   if (userData === undefined) {
-    return <div className="p-1 m-1 bg-white border rounded object-display">{renderDisplayText(value)}</div>;
+    return <div>{renderDisplayText(value)}</div>;
   }
   return (
-    <div className="flex">
-      <CollapsibleDisplay
-        defaultCollapsed={true}
-        collapsed={renderDisplayText(getUserDisplayName(userData))}
-        expanded={
-          <>
-            {renderDisplayText(getUserDisplayName(userData))}
-            <div className="mt-1">
-              <div className="kv-display">
-                <span className="font-bold">UserId: </span>
-                <StringDisplay value={userData.id} />
-              </div>
-              <div className="kv-display">
-                <span className="font-bold">type: </span>
-                <StringDisplay value={userData.type} />
-              </div>
-            </div>
-          </>
-        }
-      />
+    <div className="flex border rounded p-2">
+      <>
+        {renderDisplayText(getUserDisplayName(userData))}
+        {/* <div className="mt-1">
+          <div className="kv-display">
+            <span className="font-bold">UserId: </span>
+            <StringDisplay value={userData.id} />
+          </div>
+          <div className="kv-display">
+            <span className="font-bold">type: </span>
+            <StringDisplay value={userData.type} />
+          </div>
+        </div> */}
+      </>
     </div>
   );
 }
@@ -172,11 +152,7 @@ function PluginDisplay<T>({ value, component }: { value: T; component: string })
   });
   return (
     <div className="flex">
-      <CollapsibleDisplay
-        defaultCollapsed={false}
-        collapsed={<span className="text-sm italic text-gray-500">plugin collapsed</span>}
-        expanded={<div className="p-1 plugin-display">{React.createElement(component, { ref })}</div>}
-      />
+      <div className="p-1 plugin-display">{React.createElement(component, { ref })}</div>
     </div>
   );
 }
@@ -185,19 +161,13 @@ function PluginDisplay<T>({ value, component }: { value: T; component: string })
 {{#if (eq type "object")}}
 function {{@key}}Display({ value }: { value: {{@key}}  }) {
   return (
-    <CollapsibleDisplay
-      defaultCollapsed={false}
-      collapsed={<span className="text-sm italic text-gray-500">object collapsed</span>}
-      expanded={
-        <>
-          {{#each properties}}
-          <KVDisplay label="{{@key}}">
-            {{> renderDisplay arg=@key}}
-          </KVDisplay>
-          {{/each}}
-        </>
-      }
-    />
+    <div className="border rounded">
+      {{#each properties}}
+      <KVDisplay label="{{@key}}">
+        {{> renderDisplay arg=@key}}
+      </KVDisplay>
+      {{/each}}
+    </div>
   );
 }
 
@@ -216,7 +186,7 @@ function {{@key}}Display({ value }: { value: {{@key}} }) {
 export function State() {
   const { state: value } = useContext(HathoraContext)!;
   return (
-    <div className="w-full font-mono text-gray-700 state-display">
+    <div className="w-full font-mono text-gray-700 bg-white state-display">
       {{> renderDisplay (lookup types userState)}}
     </div>
   );
