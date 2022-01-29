@@ -18,6 +18,30 @@ import {{this}}Plugin from "../plugins/{{this}}";
 window.customElements.define("{{makePluginName this}}", {{this}}Plugin);
 {{/each}}
 
+function CollapsibleDisplay(props: { defaultCollapsed: boolean; collapsed: JSX.Element; expanded: JSX.Element }) {
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(props.defaultCollapsed);
+  let icon;
+  if (isCollapsed) {
+    icon = <PlusSmIcon className="w-3 h-3 fill-current" aria-hidden="true" />;
+  } else {
+    icon = <MinusSmIcon className="w-3 h-3 fill-current" aria-hidden="true" />;
+  }
+  return (
+    <div className="p-1 m-1 bg-white border rounded object-display">
+      <span className="align-middle mr-0.5">
+        <button
+          type="button"
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="inline-flex items-center text-sm font-medium text-gray-700 bg-gray-100 border border-gray-700 rounded-md shadow-sm hover:bg-gray-200 hover:text-gray-900 hover:border-gray-900 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-indigo-500 disabled:opacity-50"
+        >
+          {icon}
+        </button>
+      </span>
+      {isCollapsed ? props.collapsed : props.expanded}
+    </div>
+  );
+}
+
 function KVDisplay(props: { label: string; children: JSX.Element }) {
   return (
     <div className="kv-display">
@@ -28,45 +52,31 @@ function KVDisplay(props: { label: string; children: JSX.Element }) {
 }
 
 function ArrayDisplay<T>(props: { value: T[]; children: (value: T) => JSX.Element }) {
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(props.value &&
-    ((typeof props.value[0] === "object" && props.value.length > 7) || props.value.length > 4));
-
-  let icon;
-  if (isCollapsed) {
-    icon = <PlusSmIcon className="w-3 h-3 fill-current" aria-hidden="true" />;
-  } else {
-    icon = <MinusSmIcon className="w-3 h-3 fill-current" aria-hidden="true" />;
-  }
   return (
     <span className={`array-display`}>
-      {props.value && props.value.length > 0 && (
-        <span className="align-middle mr-0.5">
-          <button
-            type="button"
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="inline-flex items-center text-sm font-medium text-gray-700 bg-gray-100 border border-gray-700 rounded-md shadow-sm hover:bg-gray-200 hover:text-gray-900 hover:border-gray-900 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-indigo-500 disabled:opacity-50"
-          >
-            {icon}
-          </button>
-        </span>
-      )}
       [
-      {props.value && props.value.length > 0 && (
+      {props.value.length > 0 && (
         <>
-          {!isCollapsed && (<br />)}
-          <span className="ml-3 text-sm italic text-gray-500">
+          <span className="ml-2 text-sm italic text-gray-500">
             {props.value.length} {props.value.length === 1 ? "item" : "items"}
           </span>
-          {!isCollapsed && (
-            <div className={`p-1 m-1 bg-gray-100 border rounded flex ${typeof props.value[0] === "object" ? "flex-row overflow-x-auto" : "flex-col array-max-height overflow-y-auto"}`}>
-              {props.value.map((val, i) => (
-                <div className={`${typeof props.value[0] === "object" ? "array-item-object" : "array-item pl-2"}`} key={i}>
-                  {props.children(val)}
-                </div>
-              ))}
-            </div>
-          )}
-          {isCollapsed && "..."}
+          <CollapsibleDisplay
+            defaultCollapsed={props.value.length > 4}
+            collapsed={<span className="text-sm italic text-gray-500">array collapsed</span>}
+            expanded={
+              <div
+                className={`flex ${
+                  typeof props.value[0] === "object"
+                    ? "flex-row overflow-x-auto"
+                    : "flex-col array-max-height overflow-y-auto"
+                }`}
+              >
+                {props.value.map((val, i) => (
+                  <div key={i}>{props.children(val)}</div>
+                ))}
+              </div>
+            }
+          />
         </>
       )}
       ]
@@ -76,7 +86,7 @@ function ArrayDisplay<T>(props: { value: T[]; children: (value: T) => JSX.Elemen
 
 function OptionalDisplay<T>(props: { value: T | undefined; children: (value: T) => JSX.Element }) {
   if (props.value === undefined) {
-    return <span className="text-sm italic text-gray-500">none</span>
+    return <span className="text-sm italic text-gray-500">none</span>;
   }
   return <span className="optional-display">{props.children(props.value)}</span>;
 }
@@ -89,62 +99,40 @@ function EnumDisplay(props: { value: number; enum: object }) {
 }
 
 function UserIdDisplay({ value }: { value: string }) {
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
   const [userData, setUserData] = useState<UserData>();
   useEffect(() => {
     lookupUser(value).then(setUserData);
   }, [value]);
+  const renderDisplayText = (displayName: string) => (
+    <span className="user-display items-center">
+      <UserCircleIcon className="inline flex-shrink-0 mr-1.5 h-5 w-5 text-gray-500" aria-hidden="true" />
+      {displayName}
+    </span>
+  );
   if (userData === undefined) {
-    return (
-      <div className="p-1 m-1 bg-white border rounded object-display">
-        <span className="user-display flex items-center">
-          <UserCircleIcon className="inline flex-shrink-0 mr-1.5 h-5 w-5 text-gray-500" aria-hidden="true" />
-          {value}
-        </span>
-      </div>
-    );
+    return <div className="p-1 m-1 bg-white border rounded object-display">{renderDisplayText(value)}</div>;
   }
-
-  let icon;
-  if (isCollapsed) {
-    icon = <PlusSmIcon className="w-3 h-3 fill-current" aria-hidden="true" />;
-  } else {
-    icon = <MinusSmIcon className="w-3 h-3 fill-current" aria-hidden="true" />;
-  }
-
   return (
-    <div className="p-1 m-1 bg-white border rounded object-display">
-      <div className="flex justify-between items-center">
-        <span className="user-display flex items-center">
-          <UserCircleIcon
-            className="inline align-middle flex-shrink-0 mr-1.5 h-5 w-5 text-gray-500"
-            aria-hidden="true"
-          />
-          {getUserDisplayName(userData)}
-        </span>
-
-        <span className="align-middle mr-0.5 ml-2">
-          <button
-            type="button"
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="inline-flex items-center text-sm font-medium text-gray-700 bg-gray-100 border border-gray-700 rounded-md shadow-sm hover:bg-gray-200 hover:text-gray-900 hover:border-gray-900 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-indigo-500 disabled:opacity-50"
-          >
-            {icon}
-          </button>
-        </span>
-      </div>
-      {!isCollapsed && (
-        <div className="mt-1">
-          <div className="kv-display">
-            <span className="font-bold">UserId: </span>
-            <StringDisplay value={userData.id} />
-          </div>
-          <div className="kv-display">
-            <span className="font-bold">type: </span>
-            <StringDisplay value={userData.type} />
-          </div>
-        </div>
-      )}
+    <div className="flex">
+      <CollapsibleDisplay
+        defaultCollapsed={true}
+        collapsed={renderDisplayText(getUserDisplayName(userData))}
+        expanded={
+          <>
+            {renderDisplayText(getUserDisplayName(userData))}
+            <div className="mt-1">
+              <div className="kv-display">
+                <span className="font-bold">UserId: </span>
+                <StringDisplay value={userData.id} />
+              </div>
+              <div className="kv-display">
+                <span className="font-bold">type: </span>
+                <StringDisplay value={userData.type} />
+              </div>
+            </div>
+          </>
+        }
+      />
     </div>
   );
 }
@@ -165,15 +153,7 @@ function BooleanDisplay({ value }: { value: boolean }) {
   return <span className="boolean-display">{value ? "true" : "false"}</span>;
 }
 
-function PluginDisplay<T>({
-  value,
-  component,
-  isCollapsible,
-}: {
-  value: T;
-  component: string;
-  isCollapsible: boolean;
-}) {
+function PluginDisplay<T>({ value, component }: { value: T; component: string }) {
   const { connection, user, state, updatedAt } = useContext(HathoraContext)!;
   const ref = useRef<{ val: T; client: HathoraConnection; user: UserData; state: UserState; updatedAt: number }>();
   const displayError = (e: CustomEvent) => toast.error(e.detail);
@@ -190,98 +170,34 @@ function PluginDisplay<T>({
       };
     }
   });
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
-  let icon;
-  if (isCollapsed) {
-    icon = <PlusSmIcon className="w-3 h-3 fill-current" aria-hidden="true" />;
-  } else {
-    icon = <MinusSmIcon className="w-3 h-3 fill-current" aria-hidden="true" />;
-  }
   return (
-    <>
-      {!isCollapsed ? (
-        <div>
-          {isCollapsible && (
-            <span className="align-middle mr-0.5">
-              <button
-                type="button"
-                onClick={() => setIsCollapsed(!isCollapsed)}
-                className="inline-flex items-center text-sm font-medium text-gray-700 bg-gray-100 border border-gray-700 rounded-md shadow-sm hover:bg-gray-200 hover:text-gray-900 hover:border-gray-900 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-indigo-500 disabled:opacity-50"
-              >
-                {icon}
-              </button>
-            </span>
-          )}
-          <div className="p-1 plugin-display">{React.createElement(component, { ref })}</div>
-        </div>
-      ) : (
-        <div className="p-1 m-1 bg-white border rounded object-display">
-          {isCollapsible && (
-            <span className="align-middle mr-0.5">
-              <button
-                type="button"
-                onClick={() => setIsCollapsed(!isCollapsed)}
-                className="inline-flex items-center text-sm font-medium text-gray-700 bg-gray-100 border border-gray-700 rounded-md shadow-sm hover:bg-gray-200 hover:text-gray-900 hover:border-gray-900 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-indigo-500 disabled:opacity-50"
-              >
-                {icon}
-              </button>
-            </span>
-          )}
-          <span className="text-sm italic text-gray-500">plugin collapsed</span>
-        </div>
-      )}
-    </>
+    <div className="flex">
+      <CollapsibleDisplay
+        defaultCollapsed={false}
+        collapsed={<span className="text-sm italic text-gray-500">plugin collapsed</span>}
+        expanded={<div className="p-1 plugin-display">{React.createElement(component, { ref })}</div>}
+      />
+    </div>
   );
 }
 
 {{#each types}}
 {{#if (eq type "object")}}
-function {{@key}}Display({ value, isCollapsible }: { value: {{@key}}, isCollapsible: boolean  }) {
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
-  let icon;
-  if (isCollapsed) {
-    icon = <PlusSmIcon className="w-3 h-3 fill-current" aria-hidden="true" />;
-  } else {
-    icon = <MinusSmIcon className="w-3 h-3 fill-current" aria-hidden="true" />;
-  }
+function {{@key}}Display({ value }: { value: {{@key}}  }) {
   return (
-    <>
-      {!isCollapsed ? (
-        <div className="p-1 m-1 bg-white border rounded object-display">
-          {isCollapsible && (
-            <span className="align-middle mr-0.5">
-              <button
-                type="button"
-                onClick={() => setIsCollapsed(!isCollapsed)}
-                className="inline-flex items-center text-sm font-medium text-gray-700 bg-gray-100 border border-gray-700 rounded-md shadow-sm hover:bg-gray-200 hover:text-gray-900 hover:border-gray-900 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-indigo-500 disabled:opacity-50"
-              >
-                {icon}
-              </button>
-            </span>
-          )}
+    <CollapsibleDisplay
+      defaultCollapsed={false}
+      collapsed={<span className="text-sm italic text-gray-500">object collapsed</span>}
+      expanded={
+        <>
           {{#each properties}}
           <KVDisplay label="{{@key}}">
-            {{> renderDisplay arg=@key isCollapsible=true}}
+            {{> renderDisplay arg=@key}}
           </KVDisplay>
           {{/each}}
-        </div>
-      ) : (
-        <div className="p-1 m-1 bg-white border rounded object-display">
-          {isCollapsible && (
-            <span className="align-middle mr-0.5">
-              <button
-                type="button"
-                onClick={() => setIsCollapsed(!isCollapsed)}
-                className="inline-flex items-center text-sm font-medium text-gray-700 bg-gray-100 border border-gray-700 rounded-md shadow-sm hover:bg-gray-200 hover:text-gray-900 hover:border-gray-900 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-indigo-500 disabled:opacity-50"
-              >
-                {icon}
-              </button>
-            </span>
-          )}
-          <span className="text-sm italic text-gray-500"> object collapsed</span>
-        </div>
-      )}
-    </>
+        </>
+      }
+    />
   );
 }
 
@@ -290,7 +206,7 @@ function {{@key}}Display({ value }: { value: {{@key}} }) {
   switch (value.type) {
     {{#each options}}
     case "{{@key}}":
-      return {{> renderDisplay arg="val" isCollapsible=true}};
+      return {{> renderDisplay arg="val"}};
     {{/each}}
   }
 }
@@ -301,27 +217,27 @@ export function State() {
   const { state: value } = useContext(HathoraContext)!;
   return (
     <div className="w-full font-mono text-gray-700 state-display">
-      {{> renderDisplay (lookup types userState) isCollapsible=false}}
+      {{> renderDisplay (lookup types userState)}}
     </div>
   );
 }
 {{#*inline "renderDisplay"}}
 {{#if (eq type "plugin")}}
-<PluginDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} component="{{makePluginName typeString}}" isCollapsible={ {{isCollapsible}} } />
+<PluginDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} component="{{makePluginName typeString}}"/>
 {{else if (eq type "object")}}
-<{{typeString}}Display {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} isCollapsible={ {{isCollapsible}} } />
+<{{typeString}}Display {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}}/>
 {{else if (eq type "union")}}
-<{{typeString}}Display {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} isCollapsible={ {{isCollapsible}} } />
+<{{typeString}}Display {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}}/>
 {{else if (eq type "array")}}
 <ArrayDisplay<{{> renderTypeArg items}}> {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}}>
   {(value) => 
-    {{> renderDisplay items isCollapsible=true}}
+    {{> renderDisplay items}}
   }
 </ArrayDisplay>
 {{else if (eq type "optional")}}
 <OptionalDisplay<{{> renderTypeArg}}> {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}}>
   {(value) => 
-    {{> renderDisplay item isCollapsible=isCollapsible}}
+    {{> renderDisplay item}}
   }
 </OptionalDisplay>
 {{else if (eq type "enum")}}
