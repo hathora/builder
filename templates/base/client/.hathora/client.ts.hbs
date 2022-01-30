@@ -124,7 +124,7 @@ export class HathoraConnection {
       } else {
         const msgId: Uint8Array = getRandomValues(new Uint8Array(4));
         this.socket.send(new Uint8Array([...new Uint8Array([method]), ...msgId, ...request]));
-        this.callbacks[new DataView(msgId.buffer).getUint32(0, true)] = resolve;
+        this.callbacks[new DataView(msgId.buffer).getUint32(0)] = resolve;
       }
     });
   }
