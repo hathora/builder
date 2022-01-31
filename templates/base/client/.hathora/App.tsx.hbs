@@ -119,7 +119,7 @@ function Login({ setToken }: { setToken: (token: string) => void }) {
   return (
     <div className="flex flex-col w-full md:justify-center">
       <div className="w-6/12 m-auto">
-        <h2 className="text-base text-xl font-semibold text-gray-900">Login</h2>
+        <h2 className="text-xl font-semibold text-gray-900">Login</h2>
         <div className="flex flex-col mt-2">
 {{#each auth}}
 {{#if (eq @key "anonymous")}}
@@ -169,7 +169,7 @@ function Home({ onConnect }: { onConnect: (request: {{makeRequestName initialize
   return (
     <div className="flex flex-col w-full md:justify-center">
       <div className="w-6/12 m-auto">
-        <h2 className="text-base text-xl font-semibold text-gray-900">Home</h2>
+        <h2 className="text-xl font-semibold text-gray-900">Home</h2>
         <div className="flex flex-col mt-2">
           <div className="w-6/12 mb-4">
             <InitializeForm submit={onConnect} />
