@@ -175,7 +175,7 @@ function PluginDisplay<T>({ value, component }: { value: T; component: string })
 {{#if (eq type "object")}}
 function {{@key}}Display({ value }: { value: {{@key}}  }) {
   return (
-    <div className="border rounded">
+    <div className="border rounded object-display">
       {{#each properties}}
       <KVDisplay label="{{@key}}">
         {{> renderDisplay arg=@key}}
