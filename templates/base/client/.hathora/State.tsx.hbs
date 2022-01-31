@@ -147,13 +147,13 @@ function BooleanDisplay({ value }: { value: boolean }) {
   return <span className="boolean-display">{value ? "true" : "false"}</span>;
 }
 
-function PluginDisplay<T>({ value, component }: { value: T; component: string }) {
+function PluginDisplay<T>(props: { value: T; component: string; children: (value: T) => JSX.Element }) {
   const { connection, user, state, updatedAt } = useContext(HathoraContext)!;
   const ref = useRef<{ val: T; client: HathoraConnection; user: UserData; state: UserState; updatedAt: number }>();
   const displayError = (e: CustomEvent) => toast.error(e.detail);
   useLayoutEffect(() => {
     if (ref.current) {
-      ref.current.val = value;
+      ref.current.val = props.value;
       ref.current.client = connection;
       ref.current.user = user;
       ref.current.state = state;
@@ -164,11 +164,7 @@ function PluginDisplay<T>({ value, component }: { value: T; component: string })
       };
     }
   });
-  return (
-    <div className="flex">
-      <div className="p-1 plugin-display">{React.createElement(component, { ref })}</div>
-    </div>
-  );
+  return <div className="p-1 plugin-display">{React.createElement(props.component, { ref })}</div>;
 }
 
 {{#each types}}
@@ -207,20 +203,24 @@ export function State() {
 }
 {{#*inline "renderDisplay"}}
 {{#if (eq type "plugin")}}
-<PluginDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} component="{{makePluginName typeString}}"/>
+<PluginDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} component="{{makePluginName typeString}}">
+  {(value) =>
+    {{> renderDisplay item}}
+  }
+</PluginDisplay>
 {{else if (eq type "object")}}
 <{{typeString}}Display {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}}/>
 {{else if (eq type "union")}}
 <{{typeString}}Display {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}}/>
 {{else if (eq type "array")}}
 <ArrayDisplay<{{> renderTypeArg items}}> {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}}>
-  {(value) => 
+  {(value) =>
     {{> renderDisplay items}}
   }
 </ArrayDisplay>
 {{else if (eq type "optional")}}
 <OptionalDisplay<{{> renderTypeArg}}> {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}}>
-  {(value) => 
+  {(value) =>
     {{> renderDisplay item}}
   }
 </OptionalDisplay>
