@@ -18,7 +18,7 @@ import {{this}}Plugin from "../plugins/{{this}}";
 window.customElements.define("{{makePluginName this}}", {{this}}Plugin);
 {{/each}}
 
-function KVDisplay(props: { label: string; children: JSX.Element }) {
+function KVDisplay(props: { label: string; typeString: string; children: JSX.Element }) {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   let icon;
   if (isCollapsed) {
@@ -33,7 +33,10 @@ function KVDisplay(props: { label: string; children: JSX.Element }) {
           {icon}
         </button>
       </span>
-      <span className="font-bold">{props.label}: </span>
+      <span className="group">
+        <span className="hidden text-sm italic text-gray-500 group-hover:inline">({props.typeString}) </span>
+        <span className="font-bold">{props.label}: </span>
+      </span>
       {isCollapsed ? "..." : props.children}
     </div>
   );
@@ -173,7 +176,7 @@ function {{@key}}Display({ value }: { value: {{@key}}  }) {
   return (
     <div className="border rounded object-display">
       {{#each properties}}
-      <KVDisplay label="{{@key}}">
+      <KVDisplay label="{{@key}}" typeString="{{typeString}}">
         {{> renderDisplay arg=@key}}
       </KVDisplay>
       {{/each}}
