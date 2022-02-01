@@ -39,6 +39,9 @@ function install() {
   npmInstall(join(rootDir, "api"));
   npmInstall(join(clientDir, ".hathora"));
   npmInstall(join(clientDir, "prototype-ui"));
+  if (existsSync(join(clientDir, "web"))) {
+    npmInstall(join(clientDir, "web"));
+  }
   if (existsSync(join(clientDir, "prototype-ui", "plugins"))) {
     readdirSync(join(clientDir, "prototype-ui", "plugins")).forEach((dir) =>
       npmInstall(join(clientDir, "prototype-ui", "plugins", dir))
@@ -67,7 +70,6 @@ async function startServer() {
 async function startFrontend(root: string, port: number) {
   return createServer({
     root,
-    publicDir: join(clientDir, "public"),
     build: { target: ["esnext"] },
     envDir: rootDir,
     clearScreen: false,
@@ -79,8 +81,8 @@ async function startFrontend(root: string, port: number) {
 
 async function startFrontends() {
   startFrontend(join(clientDir, "prototype-ui"), 3000);
-  if (existsSync(join(clientDir, "index.html"))) {
-    startFrontend(clientDir, 4000);
+  if (existsSync(join(clientDir, "web", "index.html"))) {
+    startFrontend(join(clientDir, "web"), 4000);
   }
 }
 
