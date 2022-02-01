@@ -91,7 +91,7 @@ Next, run `hathora dev` to start the development server. Visit http://localhost:
 
 ![image](https://user-images.githubusercontent.com/5400947/149869164-19a7cbe3-59a6-47a8-95b0-6bc316b31cef.png)
 
-Because of the default implementation, we don't see any real data and click Submit for any of the methods displays a "Not implemented" error. Let's fix this by adding our business logic to `server/impl.ts`:
+Because of the default implementation, we don't see any real data and clicking Submit for any of the methods displays a "Not implemented" error. Let's fix this by adding our business logic to `server/impl.ts`:
 
 ```ts
 import { Methods, Context } from "./.hathora/methods";
@@ -204,7 +204,7 @@ See [here](methods) for more details about how server methods works.
 
 > The hathora dev server supports hot reloading of both backend and frontend, so you shouldn't need to restart the server when making edits.
 
-Going back to the prototype UI, we can see our working application in action. Create a game, join it as another user from a different tab, and start the game. You should see a view like this:
+Going back to the prototype UI, we can see our working application in action. Create a game, join it as another user from a different tab (by using the same url), and start the game. You should see a view like this:
 
 ![image](https://user-images.githubusercontent.com/5400947/149870083-67986611-6151-4ea8-abb2-9a67467741d1.png)
 

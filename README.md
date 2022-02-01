@@ -32,7 +32,7 @@ Inside the `ship-battle` directory, start the Hathora dev server:
 hathora dev
 ```
 
-Finally, visit http://localhost:4000 to see the game in action:
+Finally, visit http://localhost:4000 to see the game in action (add multiple users by opening the same url in different tabs):
 
 > Instructions: Arrow keys to move, space bar to fire.
 
@@ -54,7 +54,7 @@ Here are some other example apps built with hathora:
 
 ## Community
 
-Discord: https://discord.gg/VWXYtBX4
+Discord: https://discord.gg/6nVdeCBffR
 
 Reddit: https://www.reddit.com/r/hathora/
 

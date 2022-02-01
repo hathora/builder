@@ -18,15 +18,17 @@ type InternalUser = {
   color: Color;
 };
 type InternalState = {
-  chess: ChessInstance & { _modCnt: number };
+  chess: ChessInstance;
   users: InternalUser[];
+  turnCount: number;
 };
 
 export class Impl implements Methods<InternalState> {
   createGame(userId: UserId, ctx: Context, request: ICreateGameRequest): InternalState {
     return {
-      chess: Object.assign(new Chess(), { _modCnt: 0 }),
+      chess: new Chess(),
       users: [{ name: userId, color: Color.WHITE }],
+      turnCount: 0,
     };
   }
   startGame(state: InternalState, userId: UserId, ctx: Context, request: IStartGameRequest): Response {
@@ -48,7 +50,7 @@ export class Impl implements Methods<InternalState> {
     if (move === null) {
       return Response.error("Invalid move");
     }
-    state.chess._modCnt++;
+    state.turnCount++;
     return Response.ok();
   }
   getUserState(state: InternalState, userId: UserId): PlayerState {

@@ -3,12 +3,10 @@
 import { createHash } from "crypto";
 import { outputFileSync, existsSync } from "fs-extra";
 import { join } from "path";
-import { pathToFileURL } from "url";
 import shelljs from "shelljs";
 import { v4 as uuidv4 } from "uuid";
-import { createServer, build } from "vite";
-// @ts-ignore
-import ncc from "@vercel/ncc";
+import { createServer, build as buildClient } from "vite";
+import { build as buildServer } from "esbuild";
 import { generate } from "./generate";
 import "./helpers";
 
@@ -52,7 +50,7 @@ async function startServer() {
   process.env.DATA_DIR = join(serverDir, ".hathora/data");
   process.env.DOTENV_CONFIG_PATH = join(rootDir, ".env");
   process.env.NODE_LOADER_CONFIG = join(__dirname, "node-loader.config.mjs");
-  const loaderPath = pathToFileURL(join(__dirname, "node_modules/@node-loader/core/lib/node-loader-core.js"));
+  const loaderPath = require.resolve("@node-loader/core/lib/node-loader-core.js");
   const storePath = join(serverDir, ".hathora/store.ts");
   const cp = shelljs.exec(`node --loader ${loaderPath} --experimental-specifier-resolution=node ${storePath}`, {
     async: true,
@@ -122,21 +120,23 @@ if (command === "init") {
   startServer().then(() => startFrontends());
 } else if (command === "build") {
   process.env.VITE_APP_ID = appId;
-  build({
+  buildClient({
     root: existsSync(join(clientDir, "index.html")) ? clientDir : join(clientDir, ".hathora"),
     publicDir: join(clientDir, "public"),
-    build: { outDir: join(rootDir, "dist/client"), target: ["esnext"] },
+    build: { outDir: join(rootDir, "dist", "client"), target: ["esnext"] },
   });
-  ncc(join(serverDir, ".hathora/store.ts")).then(
-    ({ code, assets }: { code: string; assets: Record<string, { source: string | Buffer }> }) => {
-      const outDir = join(rootDir, "dist/server");
-      outputFileSync(join(outDir, "index.js"), code);
-      Object.entries(assets).forEach(([filename, { source }]) => {
-        outputFileSync(join(outDir, filename), source);
-      });
-      outputFileSync(join(outDir, ".env"), `APP_SECRET=${appSecret}\n`);
-    }
-  );
+  const outDir = join(rootDir, "dist", "server");
+  outputFileSync(join(outDir, ".env"), `APP_SECRET=${appSecret}\n`);
+  buildServer({
+    entryPoints: [join(serverDir, ".hathora", "store.ts")],
+    bundle: true,
+    platform: "node",
+    format: "esm",
+    outfile: join(outDir, "index.mjs"),
+    banner: {
+      js: "import { createRequire as topLevelCreateRequire } from 'module';\n const require = topLevelCreateRequire(import.meta.url);",
+    },
+  });
 } else {
   console.error(`Unknown command: ${command}`);
 }
