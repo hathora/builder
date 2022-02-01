@@ -124,7 +124,7 @@ if (command === "init") {
 } else if (command === "build") {
   process.env.VITE_APP_ID = appId;
   buildClient({
-    root: existsSync(join(clientDir, "index.html")) ? clientDir : join(clientDir, ".hathora", "prototype-ui"),
+    root: existsSync(join(clientDir, "web", "index.html")) ? clientDir : join(clientDir, "prototype-ui"),
     publicDir: join(clientDir, "public"),
     build: { outDir: join(rootDir, "dist", "client"), target: ["esnext"] },
   });
