@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { BrowserRouter, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import { ToastContainer, Zoom, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { LightningBoltIcon, UserCircleIcon } from "@heroicons/react/solid";
 {{#if auth.google}}
 import { GoogleLogin } from "react-google-login";
@@ -12,7 +13,7 @@ import { getUserDisplayName, UserData } from "../../../api/base";
 import { HathoraContext } from "./context";
 import { Forms, InitializeForm } from "./Forms";
 import { State } from "./State";
-import { ConnectionFailure } from "./failures";
+import { ConnectionFailure } from "../failures";
 
 const client = new HathoraClient(import.meta.env.VITE_APP_ID);
 
