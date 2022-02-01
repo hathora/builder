@@ -1,12 +1,12 @@
 import onChange from "on-change";
 import { Context } from "./methods";
-import { Response, Method } from "./base";
+import { Response, Method } from "../../api/base";
 import {
   UserId,
   {{#each methods}}
   {{makeRequestName @key}},
   {{/each}}
-} from "./types";
+} from "../../api/types";
 
 let impl = new (await import("../impl")).Impl();
 setInterval(async () => {

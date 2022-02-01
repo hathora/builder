@@ -1,11 +1,11 @@
-import { Response } from "./base";
+import { Response } from "../../api/base";
 import {
   UserId,
   {{userState}} as UserState,
   {{#each methods}}
   {{makeRequestName @key}},
   {{/each}}
-} from "./types";
+} from "../../api/types";
 
 export interface Context {
   rand(): number;

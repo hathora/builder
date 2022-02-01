@@ -7,8 +7,8 @@ import { LightningBoltIcon, UserCircleIcon } from "@heroicons/react/solid";
 import { GoogleLogin } from "react-google-login";
 {{/if}}
 import { HathoraClient, HathoraConnection, UpdateArgs } from "./client";
-import { {{makeRequestName initialize}} } from "./types";
-import { getUserDisplayName, UserData } from "./base";
+import { {{makeRequestName initialize}} } from "../../api/types";
+import { getUserDisplayName, UserData } from "../../api/base";
 import { HathoraContext } from "./context";
 import { Forms, InitializeForm } from "./Forms";
 import { State } from "./State";

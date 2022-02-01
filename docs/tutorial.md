@@ -48,7 +48,7 @@ error: string
 
 This file defines the client data model and the server api endpoints for our application. For more information on this file format, see [here](type-driven-development).
 
-To initialize our project structure run `hathora init`. You should see a `client` and `server` directory generated, along with a `.gitignore` and `.env` file. Inside both directories you will find a `.hathora` directory with framework generated code based on our `hathora.yml` file.
+To initialize our project structure run `hathora init`. You should see `api`, `client`, and `server` directory generated, along with a `.gitignore` and `.env` file. Inside both directories you will find a `.hathora` directory with framework generated code based on our `hathora.yml` file.
 
 > If you plan on using git, this is a good time to run `git init`
 
@@ -95,7 +95,7 @@ Because of the default implementation, we don't see any real data and clicking S
 
 ```ts
 import { Methods, Context } from "./.hathora/methods";
-import { Response } from "./.hathora/base";
+import { Response } from "../api/base";
 import {
   UserId,
   PlayerState,
@@ -106,7 +106,7 @@ import {
   IDrawCardRequest,
   Card,
   Color,
-} from "./.hathora/types";
+} from "../api/types";
 
 type InternalState = {
   deck: Card[];

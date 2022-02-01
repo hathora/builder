@@ -1,5 +1,5 @@
 import { Methods, Context } from "./.hathora/methods";
-import { Response } from "./.hathora/base";
+import { Response } from "../api/base";
 import {
   UserId,
   ICreateGameRequest,
@@ -14,7 +14,7 @@ import {
   PlayerInfo,
   GameStatus,
   TurnInfo,
-} from "./.hathora/types";
+} from "../api/types";
 import { wordList } from "./words";
 
 type InternalState = {

@@ -6,8 +6,8 @@ import "dotenv/config";
 import { register } from "./protocol";
 import LogStore from "./logstore";
 import { ImplWrapper as impl } from "./wrapper";
-import { Response } from "./base";
-import { UserId, encodeStateUpdate, NO_DIFF, {{userState}} as UserState } from "./types";
+import { Response } from "../../api/base";
+import { UserId, encodeStateUpdate, NO_DIFF, {{userState}} as UserState } from "../../api/types";
 import { computeDiff } from "./diff";
 
 type StateId = bigint;
