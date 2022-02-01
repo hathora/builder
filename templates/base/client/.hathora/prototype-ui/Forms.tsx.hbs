@@ -4,7 +4,7 @@ import { Dialog, Listbox, Switch, Transition } from "@headlessui/react";
 import { ArrowUpIcon, ArrowDownIcon, CheckIcon, PlusIcon, SelectorIcon, XIcon } from "@heroicons/react/outline";
 import { LightningBoltIcon } from "@heroicons/react/solid";
 import { HathoraContext } from "./context";
-import { Response } from "../../api/base";
+import { Response } from "../../../api/base";
 import {
   {{#each methods}}
   {{makeRequestName @key}},
@@ -12,7 +12,7 @@ import {
   {{#each types}}
   {{@key}},
   {{/each}}
-} from "../../api/types";
+} from "../../../api/types";
 
 type MethodProps<T> = {
   method: string;
