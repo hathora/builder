@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { createHash } from "crypto";
-import { outputFileSync, existsSync } from "fs-extra";
+import { outputFileSync, existsSync, readdirSync } from "fs-extra";
 import { join } from "path";
 import shelljs from "shelljs";
 import { v4 as uuidv4 } from "uuid";
@@ -26,14 +26,12 @@ function getCommand(argv: string[]) {
 }
 
 function npmInstall(dir: string) {
-  if (existsSync(dir)) {
-    console.log(`Installing dependencies in ${dir}`);
-    if (existsSync(join(dir, "yarn.lock"))) {
-      shelljs.exec(`yarn install --cwd ${dir}`);
-    } else {
-      shelljs.cd(dir);
-      shelljs.exec("npm install");
-    }
+  console.log(`Installing dependencies in ${dir}`);
+  if (existsSync(join(dir, "yarn.lock"))) {
+    shelljs.exec(`yarn install --cwd ${dir}`);
+  } else {
+    shelljs.cd(dir);
+    shelljs.exec("npm install");
   }
 }
 
@@ -41,6 +39,11 @@ function install() {
   npmInstall(join(rootDir, "api"));
   npmInstall(join(clientDir, ".hathora"));
   npmInstall(join(clientDir, "prototype-ui"));
+  if (existsSync(join(clientDir, "prototype-ui", "plugins"))) {
+    readdirSync(join(clientDir, "prototype-ui", "plugins")).forEach((dir) =>
+      npmInstall(join(clientDir, "prototype-ui", "plugins", dir))
+    );
+  }
   npmInstall(serverDir);
   npmInstall(join(serverDir, ".hathora"));
 }
