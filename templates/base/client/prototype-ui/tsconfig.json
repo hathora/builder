@@ -5,6 +5,8 @@
     "strict": true,
     "target": "esnext",
     "moduleResolution": "node",
-    "isolatedModules": true
+    "isolatedModules": true,
+    "experimentalDecorators": true,
+    "jsx": "react"
   }
 }

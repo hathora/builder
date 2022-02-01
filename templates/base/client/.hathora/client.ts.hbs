@@ -3,9 +3,9 @@ import WebSocket from "isomorphic-ws";
 import getRandomValues from "get-random-values";
 import axios from "axios";
 import jwtDecode from "jwt-decode";
-import { UserData, Response, Method } from "../../api/base";
 import { ConnectionFailure, transformCoordinatorFailure } from "./failures";
 import { computePatch } from "./patch";
+import { UserData, Response, Method } from "../../api/base";
 import {
   decodeStateUpdate,
   {{userState}} as UserState,

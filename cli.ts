@@ -38,11 +38,11 @@ function npmInstall(dir: string) {
 }
 
 function install() {
-  npmInstall(clientDir);
+  npmInstall(join(rootDir, "api"));
   npmInstall(join(clientDir, ".hathora"));
+  npmInstall(join(clientDir, "prototype-ui"));
   npmInstall(serverDir);
   npmInstall(join(serverDir, ".hathora"));
-  npmInstall(join(rootDir, "api"));
 }
 
 async function startServer() {
@@ -75,7 +75,7 @@ async function startFrontend(root: string, port: number) {
 }
 
 async function startFrontends() {
-  startFrontend(join(clientDir, ".hathora", "prototype-ui"), 3000);
+  startFrontend(join(clientDir, "prototype-ui"), 3000);
   if (existsSync(join(clientDir, "index.html"))) {
     startFrontend(clientDir, 4000);
   }
