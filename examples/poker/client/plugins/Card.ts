@@ -1,6 +1,6 @@
 import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
-import { Card } from "../.hathora/types";
+import { Card } from "../../api/types";
 import "playing-card";
 
 const rankConversion: Record<string, string> = {

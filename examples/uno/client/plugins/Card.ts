@@ -1,7 +1,7 @@
 import { LitElement, html, css } from "lit";
 import { property } from "lit/decorators.js";
 import { styleMap } from "lit/directives/style-map.js";
-import { Card, Color } from "../.hathora/types";
+import { Card, Color } from "../../api/types";
 import { HathoraConnection } from "../.hathora/client";
 
 let DISPLAY_COLORS = {

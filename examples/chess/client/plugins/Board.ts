@@ -1,6 +1,6 @@
 import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
-import { Board, Color, Piece, PieceType, PlayerState } from "../.hathora/types";
+import { Board, Color, Piece, PieceType, PlayerState } from "../../api/types"
 import { HathoraConnection } from "../.hathora/client";
 import "chessboard-element";
 

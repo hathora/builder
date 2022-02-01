@@ -1,7 +1,7 @@
 import { LitElement, html, css } from "lit";
 import { property } from "lit/decorators.js";
 import { InterpolationBuffer } from "interpolation-buffer";
-import { Direction, PlayerState } from "../.hathora/types";
+import { Direction, PlayerState } from "../../api/types";
 import { HathoraConnection } from "../.hathora/client";
 
 const WIDTH = 600;
