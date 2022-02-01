@@ -1,5 +1,5 @@
 import { LitElement, html, css } from "lit";
-import { property } from "lit/decorators";
+import { property } from "lit/decorators.js";
 import { InterpolationBuffer } from "interpolation-buffer";
 import { Direction, PlayerState } from "../../../../api/types";
 import { HathoraConnection } from "../../../.hathora/client";
