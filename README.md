@@ -50,6 +50,7 @@ Here are some other example apps built with hathora:
 - [poker](examples/poker)
 - [rock-paper-scissor](examples/rock-paper-scissor)
 - [uno](examples/uno)
+- [tussie-missue](https://github.com/hpx7/tussie-mussie)
 - [hive](https://github.com/knigam/hive)
 
 ## Community
