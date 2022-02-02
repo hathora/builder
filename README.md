@@ -32,7 +32,7 @@ Inside the `ship-battle` directory, start the Hathora dev server:
 hathora dev
 ```
 
-Finally, visit http://localhost:4000 to see the game in action (add multiple users by opening the same url in different tabs):
+Finally, visit http://localhost:3001 to see the game in action (add multiple users by opening the same url in different tabs):
 
 > Instructions: Arrow keys to move, space bar to fire.
 
