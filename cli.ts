@@ -29,7 +29,7 @@ function npmInstall(dir: string) {
   console.log(`Installing dependencies in ${dir}`);
   if (existsSync(join(dir, "yarn.lock"))) {
     shelljs.exec(`yarn install --cwd ${dir}`);
-  } else {
+  } else if (existsSync(join(dir, "package.json"))) {
     shelljs.cd(dir);
     shelljs.exec("npm install");
   }
@@ -37,11 +37,7 @@ function npmInstall(dir: string) {
 
 function install() {
   npmInstall(join(rootDir, "api"));
-  npmInstall(join(clientDir, ".hathora"));
-  npmInstall(join(clientDir, "prototype-ui"));
-  if (existsSync(join(clientDir, "web"))) {
-    npmInstall(join(clientDir, "web"));
-  }
+  readdirSync(clientDir).forEach((dir) => npmInstall(join(clientDir, dir)));
   if (existsSync(join(clientDir, "prototype-ui", "plugins"))) {
     readdirSync(join(clientDir, "prototype-ui", "plugins")).forEach((dir) =>
       npmInstall(join(clientDir, "prototype-ui", "plugins", dir))
@@ -67,22 +63,24 @@ async function startServer() {
   });
 }
 
-async function startFrontend(root: string, port: number) {
+async function startFrontend(root: string) {
+  console.log(`Starting frontend at ${root}`);
   return createServer({
     root,
     build: { target: ["esnext"] },
     envDir: rootDir,
     clearScreen: false,
-    server: { host: "0.0.0.0", port },
+    server: { host: "0.0.0.0" },
   })
     .then((server) => server.listen())
     .then((server) => server.printUrls());
 }
 
 async function startFrontends() {
-  startFrontend(join(clientDir, "prototype-ui"), 3000);
-  if (existsSync(join(clientDir, "web", "index.html"))) {
-    startFrontend(join(clientDir, "web"), 4000);
+  for (const dir of readdirSync(clientDir)) {
+    if (existsSync(join(clientDir, dir, "index.html"))) {
+      await startFrontend(join(clientDir, dir));
+    }
   }
 }
 
@@ -114,7 +112,7 @@ if (command === "init") {
 } else if (command === "install") {
   install();
 } else if (command === "start") {
-  startServer().then(() => startFrontends());
+  startServer().then(startFrontends);
 } else if (command === "dev") {
   if (!existsSync(join(serverDir, "impl.ts"))) {
     console.error("Missing impl.ts, make sure to run hathora init first");
@@ -122,7 +120,7 @@ if (command === "init") {
     generate(rootDir, "templates/base");
   }
   install();
-  startServer().then(() => startFrontends());
+  startServer().then(startFrontends);
 } else if (command === "build") {
   process.env.VITE_APP_ID = appId;
   buildClient({
