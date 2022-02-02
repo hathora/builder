@@ -1,5 +1,5 @@
 import { Writer, Reader } from "bin-serde";
-import { Response } from "./base";
+import { Response, Message, ResponseMessage, EventMessage } from "./base";
 
 export const NO_DIFF = Symbol("NODIFF");
 export type DeepPartial<T> = T extends string | number | boolean | undefined
@@ -306,33 +306,38 @@ parseBoolean(sb)
 export function encodeStateUpdate(
   stateDiff: DeepPartial<{{userState}}> | undefined,
   changedAtDiff: number,
-  responses: Record<number, Response>
+  messages: Message[]
 ) {
   const buf = new Writer();
   buf.writeUVarint(changedAtDiff);
   writeOptional(buf, stateDiff, (x) => {{userState}}.encodeDiff(x, buf));
-  Object.entries(responses).forEach(([msgId, response]) => {
+  const responses = messages.flatMap((msg) => (msg.type === "response" ? msg : []));
+  buf.writeUVarint(responses.length);
+  responses.forEach(({ msgId, response }) => {
     buf.writeUInt32(Number(msgId));
-    const maybeError = response.type === "error" ? response.error : undefined;
-    writeOptional(buf, maybeError, (x) => writeString(buf, x));
+    writeOptional(buf, response.type === "error" ? response.error : undefined, (x) => writeString(buf, x));
   });
+  const events = messages.flatMap((msg) => (msg.type === "event" ? msg : []));
+  buf.writeUVarint(events.length);
+  events.forEach(({ event }) => buf.writeString(event));
   return buf.toBuffer();
 }
 export function decodeStateUpdate(buf: ArrayBufferView | Reader): {
   stateDiff?: DeepPartial<{{userState}}>;
   changedAtDiff: number;
-  responses: Record<number, Response>;
+  responses: ResponseMessage[];
+  events: EventMessage[];
 } {
   const sb = ArrayBuffer.isView(buf) ? new Reader(buf) : buf;
   const changedAtDiff = sb.readUVarint();
   const stateDiff = parseOptional(sb, () => {{userState}}.decodeDiff(sb));
-  const responses: Record<number, Response> = {};
-  while (sb.remaining() > 0) {
+  const responses = [...Array(sb.readUVarint())].map(() => {
     const msgId = sb.readUInt32();
     const maybeError = parseOptional(sb, () => parseString(sb));
-    responses[msgId] = maybeError === undefined ? Response.ok() : Response.error(maybeError);
-  }
-  return { stateDiff, changedAtDiff, responses };
+    return Message.response(msgId, maybeError === undefined ? Response.ok() : Response.error(maybeError));
+  });
+  const events = [...Array(sb.readUVarint())].map(() => Message.event(sb.readString()));
+  return { stateDiff, changedAtDiff, responses, events };
 }
 
 function writeUInt8(buf: Writer, x: number) {

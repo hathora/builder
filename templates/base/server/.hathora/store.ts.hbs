@@ -3,11 +3,11 @@ import { existsSync, mkdirSync } from "fs";
 import seedrandom from "seedrandom";
 import { Writer, Reader } from "bin-serde";
 import "dotenv/config";
+import { Message } from "../../api/base";
+import { UserId, encodeStateUpdate, NO_DIFF, {{userState}} as UserState } from "../../api/types";
 import { register } from "./protocol";
 import LogStore from "./logstore";
 import { ImplWrapper as impl } from "./wrapper";
-import { Response } from "../../api/base";
-import { UserId, encodeStateUpdate, NO_DIFF, {{userState}} as UserState } from "../../api/types";
 import { computeDiff } from "./diff";
 
 type StateId = bigint;
@@ -22,19 +22,19 @@ if (!existsSync(dataDir)) {
 const log = new LogStore(dataDir);
 const stateInfo: Map<StateId, StateInfo> = new Map();
 const changedStates: Map<StateId, number> = new Map();
-const userResponses: Map<StateId, Map<UserId, Record<number, Response>>> = new Map();
+const userMessages: Map<StateId, Map<UserId, Message[]>> = new Map();
 const userStateInfo: Map<StateId, Map<UserId, UserStateInfo>> = new Map();
 
 class Store {
   constructor() {
     setInterval(() => {
       changedStates.forEach((changedAt, stateId) => {
-        sendUpdates(stateId, changedAt, userResponses.get(stateId) ?? new Map());
-        userResponses.delete(stateId);
+        sendUpdates(stateId, changedAt, userMessages.get(stateId) ?? new Map());
+        userMessages.delete(stateId);
       });
-      userResponses.forEach((responses, stateId) => sendResponses(stateId, responses));
+      userMessages.forEach((messages, stateId) => sendMessages(stateId, messages));
       changedStates.clear();
-      userResponses.clear();
+      userMessages.clear();
     }, 50);
     {{#if tick}}
 
@@ -101,12 +101,12 @@ class Store {
     const subscribers = stateInfo.get(stateId)!.subscriptions;
     if (subscribers.size > 1) {
       subscribers.delete(userId);
-      userResponses.get(stateId)?.delete(userId);
+      userMessages.get(stateId)?.delete(userId);
       userStateInfo.get(stateId)?.delete(userId);
     } else {
       stateInfo.delete(stateId);
       changedStates.delete(stateId);
-      userResponses.delete(stateId);
+      userMessages.delete(stateId);
       userStateInfo.delete(stateId);
       log.unload(stateId);
     }
@@ -139,13 +139,13 @@ class Store {
             .toBuffer()
         );
       }
-      if (!userResponses.has(stateId)) {
-        userResponses.set(stateId, new Map([[userId, { [msgId]: response }]]));
+      if (!userMessages.has(stateId)) {
+        userMessages.set(stateId, new Map([[userId, [Message.response(msgId, response)]]]));
       } else {
-        if (!userResponses.get(stateId)!.has(userId)) {
-          userResponses.get(stateId)!.set(userId, { [msgId]: response });
+        if (!userMessages.get(stateId)!.has(userId)) {
+          userMessages.get(stateId)!.set(userId, [Message.response(msgId, response)]);
         } else {
-          userResponses.get(stateId)!.get(userId)![msgId] = response;
+          userMessages.get(stateId)!.get(userId)!.push(Message.response(msgId, response));
         }
       }
     }
@@ -196,7 +196,7 @@ function sendSnapshot(stateId: StateId, userId: UserId) {
   coordinator.onStateUpdate(stateId, userId, buf);
 }
 
-function sendUpdates(stateId: StateId, changedAt: number, responses: Map<UserId, Record<number, Response>>) {
+function sendUpdates(stateId: StateId, changedAt: number, messages: Map<UserId, Message[]>) {
   if (stateInfo.has(stateId)) {
     const { state, subscriptions } = stateInfo.get(stateId)!;
     for (const userId of subscriptions) {
@@ -204,7 +204,7 @@ function sendUpdates(stateId: StateId, changedAt: number, responses: Map<UserId,
       const currState = impl.getUserState(state, userId);
       const diff = computeDiff(currState, prevState);
       const buf = Buffer.from(
-        encodeStateUpdate(diff !== NO_DIFF ? diff : undefined, changedAt - prevChangedAt, responses.get(userId) ?? {})
+        encodeStateUpdate(diff !== NO_DIFF ? diff : undefined, changedAt - prevChangedAt, messages.get(userId) ?? [])
       );
       coordinator.onStateUpdate(stateId, userId, buf);
       userStateInfo.get(stateId)!.set(userId, { state: JSON.parse(JSON.stringify(currState)), changedAt });
@@ -212,9 +212,9 @@ function sendUpdates(stateId: StateId, changedAt: number, responses: Map<UserId,
   }
 }
 
-function sendResponses(stateId: StateId, responses: Map<UserId, Record<number, Response>>) {
-  responses.forEach((response, userId) => {
-    const buf = Buffer.from(encodeStateUpdate(undefined, 0, response));
+function sendMessages(stateId: StateId, allMessages: Map<UserId, Message[]>) {
+  allMessages.forEach((messages, userId) => {
+    const buf = Buffer.from(encodeStateUpdate(undefined, 0, messages));
     coordinator.onStateUpdate(stateId, userId, buf);
   });
 }

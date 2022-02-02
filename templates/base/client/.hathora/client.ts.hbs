@@ -95,7 +95,7 @@ export class HathoraConnection {
         this.state = computePatch(this.state, stateDiff);
         onUpdate({ state: JSON.parse(JSON.stringify(this.state)), updatedAt: this.changedAt });
       }
-      Object.entries(responses).forEach(([msgId, response]) => {
+      responses.forEach(({ msgId, response }) => {
         if (msgId in this.callbacks) {
           this.callbacks[msgId](response);
           delete this.callbacks[msgId];

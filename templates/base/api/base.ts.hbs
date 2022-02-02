@@ -8,23 +8,26 @@ export enum Method {
   {{/if}}
   {{/each}}
 }
-export interface OkResponse {
-  type: "ok";
-}
-export interface ErrorResponse {
-  type: "error";
-  error: {{error.typeString}};
-}
+
+export type OkResponse = { type: "ok" };
+export type ErrorResponse = { type: "error"; error: {{error.typeString}} };
 export type Response = OkResponse | ErrorResponse;
 export const Response: { ok: () => OkResponse; error: (error: {{error.typeString}}) => ErrorResponse } = {
-  ok: () => ({
-    type: "ok",
-  }),
-  error: (error: {{error.typeString}}) => ({
-    type: "error",
-    error,
-  }),
+  ok: () => ({ type: "ok" }),
+  error: (error) => ({ type: "error", error }),
 };
+
+export type ResponseMessage = { type: "response"; msgId: number; response: Response };
+export type EventMessage = { type: "event"; event: string };
+export type Message = ResponseMessage | EventMessage;
+export const Message: {
+  response: (msgId: number, response: Response) => ResponseMessage;
+  event: (event: string) => EventMessage;
+} = {
+  response: (msgId, response) => ({ type: "response", msgId, response }),
+  event: (event) => ({ type: "event", event }),
+};
+
 {{#each auth}}
 export interface {{capitalize @key}}UserData {
   type: "{{@key}}";
