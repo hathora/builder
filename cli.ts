@@ -123,10 +123,15 @@ if (command === "init") {
   startServer().then(startFrontends);
 } else if (command === "build") {
   process.env.VITE_APP_ID = appId;
-  buildClient({
-    root: existsSync(join(clientDir, "web", "index.html")) ? join(clientDir, "web") : join(clientDir, "prototype-ui"),
-    build: { outDir: join(rootDir, "dist", "client"), target: ["esnext"] },
-  });
+  for (const dir of readdirSync(clientDir)) {
+    if (existsSync(join(clientDir, dir, "index.html"))) {
+      buildClient({
+        root: join(clientDir, dir),
+        build: { outDir: join(rootDir, "dist", "client", dir), target: ["esnext"] },
+        clearScreen: false,
+      });
+    }
+  }
   const outDir = join(rootDir, "dist", "server");
   outputFileSync(join(outDir, ".env"), `APP_SECRET=${appSecret}\n`);
   buildServer({
