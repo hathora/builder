@@ -43,10 +43,10 @@ methods:
 
 ## Typesafe clients
 
-The following will be generated inside `types.ts` in both the client and server:
+The following will be generated inside api:
 
 ```ts
-// .hathora/types.ts (generated)
+// api/types.ts (generated)
 
 export enum GameStatus {
   LOBBY,
@@ -74,7 +74,7 @@ And `client.ts` will have api calls generated which can be consumed in user code
 ```ts
 // example user code
 
-import { HathoraConnection } from "./.hathora/client";
+import { HathoraConnection } from "../.hathora/client";
 
 const connection: HathoraConnection = getConnection(/* ... */);
 
@@ -91,7 +91,7 @@ connection.sendMessage({ userId: someUserId, message: "Hello!" });
 The following server interface will be generated in `methods.ts`:
 
 ```ts
-// .hathora/methods.ts (generated)
+// server/.hathora/methods.ts (generated)
 
 import { Response } from "../../api/base";
 import { UserId, GameState, ICreateGameRequest, IMoveTowardsRequest, ISendMessageRequest } from "../../api/types";

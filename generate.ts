@@ -182,9 +182,8 @@ export function generate(rootDir: string, templatesDir: string) {
     throw new Error("Invalid initialize");
   }
 
-  const plugins = existsSync(join(clientDir, "plugins"))
-    ? readdirSync(join(clientDir, "plugins")).map((p) => p.replace(/\..*$/, ""))
-    : [];
+  const pluginsDir = join(clientDir, "prototype-ui", "plugins");
+  const plugins = existsSync(pluginsDir) ? readdirSync(pluginsDir).map((p) => p.replace(/\..*$/, "")) : [];
   const appName = basename(rootDir);
   const enrichedDoc = enrichDoc(doc, plugins, appName);
 
