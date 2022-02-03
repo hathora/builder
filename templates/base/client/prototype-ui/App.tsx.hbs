@@ -221,6 +221,8 @@ function Main({ user, connection, connectionError, updateArgs, onConnect, onDisc
     return <div>Loading...</div>;
   }
 
+  updateArgs.events.forEach((event) => toast.info(event));
+
   return (
     <HathoraContext.Provider value=\{{ user, connection, ...updateArgs }}>
       <div className="fixed top-24 right-6 lg:right-8">

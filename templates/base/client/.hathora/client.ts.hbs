@@ -17,7 +17,7 @@ import {
 const COORDINATOR_HOST = "rtag.dev";
 
 export type StateId = string;
-export type UpdateArgs = { state: UserState; updatedAt: number };
+export type UpdateArgs = { state: UserState; updatedAt: number; events: string[] };
 
 export class HathoraClient {
   public constructor(public appId: string) {}
@@ -86,14 +86,18 @@ export class HathoraConnection {
     socket.onmessage = ({ data }) => {
       if (this.state === undefined) {
         this.state = UserState.decode(new Uint8Array(data as ArrayBuffer));
-        onUpdate({ state: JSON.parse(JSON.stringify(this.state)), updatedAt: 0 });
+        onUpdate({ state: JSON.parse(JSON.stringify(this.state)), updatedAt: 0, events: [] });
         return;
       }
-      const { stateDiff, changedAtDiff, responses } = decodeStateUpdate(new Uint8Array(data as ArrayBuffer));
+      const { stateDiff, changedAtDiff, responses, events } = decodeStateUpdate(new Uint8Array(data as ArrayBuffer));
       this.changedAt += changedAtDiff;
       if (stateDiff !== undefined) {
         this.state = computePatch(this.state, stateDiff);
-        onUpdate({ state: JSON.parse(JSON.stringify(this.state)), updatedAt: this.changedAt });
+        onUpdate({
+          state: JSON.parse(JSON.stringify(this.state)),
+          updatedAt: this.changedAt,
+          events: events.map((e) => e.event),
+        });
       }
       responses.forEach(({ msgId, response }) => {
         if (msgId in this.callbacks) {
