@@ -18,7 +18,7 @@ type StateInfo = { state: State; rng: ReturnType<seedrandom>; subscriptions: Map
 
 const stateInfo: Map<StateId, StateInfo> = new Map();
 const changedStates: Map<StateId, number> = new Map();
-const pendingMessages: Map<StateId, Map<UserId, Message[]>> = new Map();
+const pendingMessages: Map<StateId, Set<UserId>> = new Map();
 
 const dataDir = process.env.DATA_DIR!;
 if (!existsSync(dataDir)) {
@@ -31,7 +31,7 @@ class Store {
     setInterval(() => {
       changedStates.forEach((changedAt, stateId) => sendUpdates(stateId, changedAt));
       changedStates.clear();
-      pendingMessages.forEach((userMessages, stateId) => sendMessages(stateId, userMessages));
+      pendingMessages.forEach((userIds, stateId) => userIds.forEach((userId) => sendMessages(stateId, userId)));
       pendingMessages.clear();
     }, 50);
     {{#if tick}}
@@ -126,10 +126,10 @@ class Store {
             .toBuffer()
         );
       } else {
-        if (!pendingMessages.get(stateId)!.has(userId)) {
-          pendingMessages.get(stateId)!.set(userId, []);
+        if (!pendingMessages.has(stateId)) {
+          pendingMessages.set(stateId, new Set());
         }
-        pendingMessages.get(stateId)!.get(userId)!.push(Message.response(msgId, response));
+        pendingMessages.get(stateId)!.add(userId);
       }
     }
   }
@@ -194,11 +194,12 @@ function sendUpdates(stateId: StateId, changedAt: number) {
   }
 }
 
-function sendMessages(stateId: StateId, userMessages: Map<UserId, Message[]>) {
-  userMessages.forEach((messages, userId) => {
+function sendMessages(stateId: StateId, userId: UserId) {
+  const messages = stateInfo.get(stateId)?.subscriptions.get(userId)?.messages;
+  if (messages !== undefined) {
     const buf = Buffer.from(encodeStateUpdate(undefined, 0, messages));
     coordinator.onStateUpdate(stateId, userId, buf);
-  });
+  }
 }
 
 function ctx(rng: ReturnType<seedrandom>, time: number, stateId?: StateId): Context {
