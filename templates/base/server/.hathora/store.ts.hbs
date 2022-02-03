@@ -199,6 +199,7 @@ function sendMessages(stateId: StateId, userId: UserId) {
   if (messages !== undefined) {
     const buf = Buffer.from(encodeStateUpdate(undefined, 0, messages));
     coordinator.onStateUpdate(stateId, userId, buf);
+    messages.splice(0);
   }
 }
 
