@@ -12,6 +12,7 @@ export interface Context {
   randInt(limit?: number): number;
   shuffle<T>(items: T[]): T[];
   time(): number;
+  event: (event: string, to: UserId) => void;
 }
 
 export interface Methods<T> {

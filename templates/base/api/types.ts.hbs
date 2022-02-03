@@ -1,5 +1,12 @@
 import { Writer as _Writer, Reader as _Reader } from "bin-serde";
-import { Response as _Response, NO_DIFF as _NO_DIFF, DeepPartial as _DeepPartial } from "./base";
+import {
+  NO_DIFF as _NO_DIFF,
+  DeepPartial as _DeepPartial,
+  Response as _Response,
+  Message as _Message,
+  ResponseMessage as _ResponseMessage,
+  EventMessage as _EventMessage
+} from "./base";
 
 {{#each types}}
 {{#if alias}}
@@ -304,33 +311,38 @@ export function encodeStateSnapshot(x: {{userState}}) {
 export function encodeStateUpdate(
   stateDiff: _DeepPartial<{{userState}}> | undefined,
   changedAtDiff: number,
-  responses: Record<number, _Response>
+  messages: _Message[]
 ) {
   const buf = new _Writer();
   buf.writeUVarint(changedAtDiff);
   writeOptional(buf, stateDiff, (x) => {{#with (lookup types userState)}}{{> renderEncodeDiffArg}}{{/with}});
-  Object.entries(responses).forEach(([msgId, response]) => {
+  const responses = messages.flatMap((msg) => (msg.type === "response" ? msg : []));
+  buf.writeUVarint(responses.length);
+  responses.forEach(({ msgId, response }) => {
     buf.writeUInt32(Number(msgId));
-    const maybeError = response.type === "error" ? response.error : undefined;
-    writeOptional(buf, maybeError, (x) => writeString(buf, x));
+    writeOptional(buf, response.type === "error" ? response.error : undefined, (x) => writeString(buf, x));
   });
+  const events = messages.flatMap((msg) => (msg.type === "event" ? msg : []));
+  buf.writeUVarint(events.length);
+  events.forEach(({ event }) => buf.writeString(event));
   return buf.toBuffer();
 }
 export function decodeStateUpdate(buf: ArrayBufferView | _Reader): {
   stateDiff?: _DeepPartial<{{userState}}>;
   changedAtDiff: number;
-  responses: Record<number, _Response>;
+  responses: _ResponseMessage[];
+  events: _EventMessage[];
 } {
   const sb = ArrayBuffer.isView(buf) ? new _Reader(buf) : buf;
   const changedAtDiff = sb.readUVarint();
   const stateDiff = parseOptional(sb, () => {{#with (lookup types userState)}}{{> renderDecodeDiffArg}}{{/with}});
-  const responses: Record<number, _Response> = {};
-  while (sb.remaining() > 0) {
+  const responses = [...Array(sb.readUVarint())].map(() => {
     const msgId = sb.readUInt32();
     const maybeError = parseOptional(sb, () => parseString(sb));
-    responses[msgId] = maybeError === undefined ? _Response.ok() : _Response.error(maybeError);
-  }
-  return { stateDiff, changedAtDiff, responses };
+    return _Message.response(msgId, maybeError === undefined ? _Response.ok() : _Response.error(maybeError));
+  });
+  const events = [...Array(sb.readUVarint())].map(() => _Message.event(sb.readString()));
+  return { stateDiff, changedAtDiff, responses, events };
 }
 export function decodeStateSnapshot(buf: ArrayBufferView | _Reader) {
   const sb = ArrayBuffer.isView(buf) ? new _Reader(buf) : buf;
