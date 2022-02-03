@@ -197,8 +197,7 @@ function sendUpdates(stateId: StateId, changedAt: number) {
 function sendMessages(stateId: StateId, userId: UserId) {
   const messages = stateInfo.get(stateId)?.subscriptions.get(userId)?.messages;
   if (messages !== undefined) {
-    const buf = Buffer.from(encodeStateUpdate(undefined, 0, messages));
-    coordinator.onStateUpdate(stateId, userId, buf);
+    coordinator.onStateUpdate(stateId, userId, Buffer.from(encodeStateUpdate(undefined, 0, messages)));
     messages.splice(0);
   }
 }
