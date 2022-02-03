@@ -23,13 +23,17 @@ export class Impl implements Methods<InternalState> {
   {{/if}}
   {{/each}}
   getUserState(state: InternalState, userId: UserId): {{userState}} {
+    {{#with (lookup types userState)}}
+    {{#if (eq type "object")}}
     return {
-      {{#with (lookup types userState)}}
       {{#each properties}}
       {{@key}}: {{> renderDefault}},
       {{/each}}
-      {{/with}}
     };
+    {{else}}
+    return {{> renderDefault}};
+    {{/if}}
+    {{/with}}
   }
   {{#if tick}}
   onTick(state: InternalState, ctx: Context, timeDelta: number): void {}

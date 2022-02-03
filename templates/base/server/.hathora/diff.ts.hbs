@@ -10,7 +10,9 @@ import {
 {{> renderDiffFunction}}
 {{/each}}
 export function computeDiff(state: {{userState}}, prevState: {{userState}}): DeepPartial<{{userState}}> | typeof NO_DIFF {
-  return diff{{userState}}(state, prevState);
+  {{#with (lookup types userState)}}
+  return {{> renderDiff a="state" b="prevState"}};
+  {{/with}}
 }
 
 function diffPrimitive<T>(a: T, b: T) {

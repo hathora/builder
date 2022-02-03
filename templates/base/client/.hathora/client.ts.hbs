@@ -7,6 +7,7 @@ import { ConnectionFailure, transformCoordinatorFailure } from "./failures";
 import { computePatch } from "./patch";
 import { UserData, Response, Method } from "../../api/base";
 import {
+  decodeStateSnapshot,
   decodeStateUpdate,
   {{userState}} as UserState,
   {{#each methods}}
@@ -85,7 +86,7 @@ export class HathoraConnection {
   public constructor(public stateId: StateId, private socket: WebSocket, onUpdate: (updateArgs: UpdateArgs) => void) {
     socket.onmessage = ({ data }) => {
       if (this.state === undefined) {
-        this.state = UserState.decode(new Uint8Array(data as ArrayBuffer));
+        this.state = decodeStateSnapshot(new Uint8Array(data as ArrayBuffer));
         onUpdate({ state: JSON.parse(JSON.stringify(this.state)), updatedAt: 0 });
         return;
       }

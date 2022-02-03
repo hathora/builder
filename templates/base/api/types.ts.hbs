@@ -303,6 +303,13 @@ parseBoolean(sb)
 {{~/if}}
 {{/inline}}
 
+export function encodeStateSnapshot(x: {{userState}}) {
+  const buf = new Writer();
+  {{#with (lookup types userState)}}
+  {{> renderEncodeArg}};
+  {{/with}}
+  return buf.toBuffer();
+}
 export function encodeStateUpdate(
   stateDiff: DeepPartial<{{userState}}> | undefined,
   changedAtDiff: number,
@@ -310,7 +317,7 @@ export function encodeStateUpdate(
 ) {
   const buf = new Writer();
   buf.writeUVarint(changedAtDiff);
-  writeOptional(buf, stateDiff, (x) => {{userState}}.encodeDiff(x, buf));
+  writeOptional(buf, stateDiff, (x) => {{#with (lookup types userState)}}{{> renderEncodeDiffArg}}{{/with}});
   Object.entries(responses).forEach(([msgId, response]) => {
     buf.writeUInt32(Number(msgId));
     const maybeError = response.type === "error" ? response.error : undefined;
@@ -325,7 +332,7 @@ export function decodeStateUpdate(buf: ArrayBufferView | Reader): {
 } {
   const sb = ArrayBuffer.isView(buf) ? new Reader(buf) : buf;
   const changedAtDiff = sb.readUVarint();
-  const stateDiff = parseOptional(sb, () => {{userState}}.decodeDiff(sb));
+  const stateDiff = parseOptional(sb, () => {{#with (lookup types userState)}}{{> renderDecodeDiffArg}}{{/with}});
   const responses: Record<number, Response> = {};
   while (sb.remaining() > 0) {
     const msgId = sb.readUInt32();
@@ -333,6 +340,12 @@ export function decodeStateUpdate(buf: ArrayBufferView | Reader): {
     responses[msgId] = maybeError === undefined ? Response.ok() : Response.error(maybeError);
   }
   return { stateDiff, changedAtDiff, responses };
+}
+export function decodeStateSnapshot(buf: ArrayBufferView | Reader) {
+  const sb = ArrayBuffer.isView(buf) ? new Reader(buf) : buf;
+  {{#with (lookup types userState)}}
+  return {{> renderDecodeArg}};
+  {{/with}}
 }
 
 function writeUInt8(buf: Writer, x: number) {
