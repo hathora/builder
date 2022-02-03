@@ -44,7 +44,7 @@ class Store {
       const currTime = Date.now();
       stateInfo.forEach(({ state, rng }, stateId) => {
         const timeDelta = currTime - prevUpdateTime;
-        impl.onTick(state, ctx(rng, currTime, handleEvent(stateId)), timeDelta / 1000);
+        impl.onTick(state, ctx(rng, currTime, stateId), timeDelta / 1000);
         const changedAt = impl.changedAt();
         if (changedAt !== undefined) {
           changedStates.set(stateId, changedAt);
@@ -59,7 +59,7 @@ class Store {
     const seed = randomBytes(8).readBigUInt64LE();
     const time = Date.now();
     const rng = seedrandom(seed.toString(36));
-    const state = impl.initialize(userId, ctx(rng, time, handleEvent(stateId)), argsBuffer);
+    const state = impl.initialize(userId, ctx(rng, time, stateId), argsBuffer);
     stateInfo.set(stateId, {
       state,
       rng,
@@ -124,7 +124,7 @@ class Store {
       reader.readBuffer(reader.remaining()),
     ];
     const time = Date.now();
-    const response = impl.getResult(state, userId, method, ctx(rng, time, handleEvent(stateId)), argsBuffer);
+    const response = impl.getResult(state, userId, method, ctx(rng, time, stateId), argsBuffer);
     if (response !== undefined) {
       const changedAt = impl.changedAt();
       if (changedAt !== undefined) {
@@ -156,7 +156,6 @@ class Store {
 const coordinator = await register(new Store());
 
 function loadState(stateId: StateId) {
-  function noop() {}
   try {
     const rows = log.load(stateId);
 
@@ -166,7 +165,7 @@ function loadState(stateId: StateId) {
     const userId = reader.readString();
     const argsBuffer = reader.readBuffer(reader.readUInt32());
     const rng = seedrandom(seed.toString(36));
-    const state = impl.initialize(userId, ctx(rng, time, noop), argsBuffer);
+    const state = impl.initialize(userId, ctx(rng, time), argsBuffer);
 
     for (let i = 1; i < rows.length; i++) {
       const { time, record } = rows[i];
@@ -175,13 +174,13 @@ function loadState(stateId: StateId) {
       {{#if tick}}
       if (method === 0xff) {
         const timeDelta = reader.readUInt32();
-        impl.onTick(state, ctx(rng, time, noop), timeDelta / 1000);
+        impl.onTick(state, ctx(rng, time), timeDelta / 1000);
         continue;
       }
       {{/if}}
       const userId = reader.readString();
       const argsBuffer = reader.readBuffer(reader.readUInt32());
-      impl.getResult(state, userId, method, ctx(rng, time, noop), argsBuffer);
+      impl.getResult(state, userId, method, ctx(rng, time), argsBuffer);
     }
 
     return { state, rng };
@@ -220,7 +219,7 @@ function sendMessages(stateId: StateId, allMessages: Map<UserId, Message[]>) {
   });
 }
 
-function ctx(rng: ReturnType<seedrandom>, time: number, handleEvent: (event: string, to: UserId) => void): Context {
+function ctx(rng: ReturnType<seedrandom>, time: number, stateId?: StateId): Context {
   return {
     rand() {
       return rng();
@@ -239,21 +238,19 @@ function ctx(rng: ReturnType<seedrandom>, time: number, handleEvent: (event: str
     time() {
       return time;
     },
-    event: handleEvent,
-  };
-}
-
-function handleEvent(stateId: StateId) {
-  return (event: string, userId: UserId) => {
-    const messages = userMessages.get(stateId);
-    if (messages === undefined) {
-      userMessages.set(stateId, new Map([[userId, [Message.event(event)]]]));
-    } else {
-      if (!messages.has(userId)) {
-        messages.set(userId, [Message.event(event)]);
-      } else {
-        messages.get(userId)!.push(Message.event(event));
+    event(event: string, userId: UserId) {
+      if (stateId !== undefined) {
+        const messages = userMessages.get(stateId);
+        if (messages === undefined) {
+          userMessages.set(stateId, new Map([[userId, [Message.event(event)]]]));
+        } else {
+          if (!messages.has(userId)) {
+            messages.set(userId, [Message.event(event)]);
+          } else {
+            messages.get(userId)!.push(Message.event(event));
+          }
+        }
       }
-    }
+    },
   };
 }
