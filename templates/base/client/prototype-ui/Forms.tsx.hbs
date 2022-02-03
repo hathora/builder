@@ -8,10 +8,8 @@ import {
   {{#each methods}}
   {{makeRequestName @key}},
   {{/each}}
-  {{#each types}}
-  {{@key}},
-  {{/each}}
 } from "../../api/types";
+import * as T from "../../api/types";
 import { HathoraContext } from "./context";
 
 type MethodProps<T> = {
@@ -352,7 +350,7 @@ export function Forms({ open, setOpen }: { open: boolean; setOpen: (v: boolean) 
 {{#if (eq type "plugin")}}
 {{> renderInput item}}
 {{else if (eq type "object")}}
-function {{@key}}Input({ value, update }: BaseProps<{{@key}}>) {
+function {{@key}}Input({ value, update }: BaseProps<T.{{@key}}>) {
   return (
     <div className="gap-2 p-2 ml-2 border border-gray-300 rounded-md">
       {{#each properties}}
@@ -463,7 +461,7 @@ function {{@key}}Input({ value, update }: BaseProps<{{@key}}>) {
   }
 </OptionalInput>
 {{else if (eq type "enum")}}
-<EnumInput {{#if arg}}value={ value.{{arg}} } update={(v) => update({ ...value, {{arg}}: v })}{{else}}value={value} update={update}{{/if}} enumType={ {{typeString}} } />
+<EnumInput {{#if arg}}value={ value.{{arg}} } update={(v) => update({ ...value, {{arg}}: v })}{{else}}value={value} update={update}{{/if}} enumType={ T.{{typeString}} } />
 {{else if (eq type "string")}}
 <StringInput {{#if arg}}value={ value.{{arg}} } update={(v) => update({ ...value, {{arg}}: v })}{{else}}value={value} update={update}{{/if}} />
 {{else if (eq type "int")}}
@@ -476,7 +474,7 @@ function {{@key}}Input({ value, update }: BaseProps<{{@key}}>) {
 {{/inline}}
 {{#*inline "renderTypeArg"}}
 {{#if alias}}
-{{typeString}}
+T.{{typeString}}
 {{~else if (eq type "optional")}}
 {{> renderTypeArg item}}
 {{~else if (eq type "array")}}
@@ -511,7 +509,7 @@ false
 {{~else if (eq type "optional")}}
 undefined
 {{~else if (eq type "object")}}
-{{typeString}}.default()
+T.{{typeString}}.default()
 {{~else if (eq type "plugin")}}
 {{> renderDefault item}}
 {{/if}}

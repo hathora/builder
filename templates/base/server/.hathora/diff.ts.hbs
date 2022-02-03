@@ -1,15 +1,10 @@
-import {
-  NO_DIFF,
-  DeepPartial,
-  {{#each types}}
-  {{@key}},
-  {{/each}}
-} from "../../api/types";
+import { DeepPartial, NO_DIFF } from "../../api/base";
+import * as T from "../../api/types";
 
 {{#each types}}
 {{> renderDiffFunction}}
 {{/each}}
-export function computeDiff(state: {{userState}}, prevState: {{userState}}): DeepPartial<{{userState}}> | typeof NO_DIFF {
+export function computeDiff(state: T.{{userState}}, prevState: T.{{userState}}): DeepPartial<T.{{userState}}> | typeof NO_DIFF {
   {{#with (lookup types userState)}}
   return {{> renderDiff a="state" b="prevState"}};
   {{/with}}
@@ -44,7 +39,7 @@ function diffObj<T>(obj: T) {
 {{#if (eq type "plugin")}}
 {{> renderDiffFunction item}}
 {{else if (eq type "object")}}
-function diff{{@key}}(obj: {{@key}}, prevObj: {{@key}}): DeepPartial<{{@key}}> | typeof NO_DIFF {
+function diff{{@key}}(obj: T.{{@key}}, prevObj: T.{{@key}}): DeepPartial<T.{{@key}}> | typeof NO_DIFF {
   return diffObj({
     {{#each properties}}
     {{@key}}: {{> renderDiff a=(concat "obj." @key) b=(concat "prevObj." @key)}},
@@ -53,7 +48,7 @@ function diff{{@key}}(obj: {{@key}}, prevObj: {{@key}}): DeepPartial<{{@key}}> |
 }
 
 {{else if (eq type "union")}}
-function diff{{@key}}(obj: {{@key}}, prevObj: {{@key}}): DeepPartial<{{@key}}> {
+function diff{{@key}}(obj: T.{{@key}}, prevObj: T.{{@key}}): DeepPartial<T.{{@key}}> {
   {{#each options}}
   {{#unless @first}}else {{/unless}}if (obj.type === "{{@key}}" && prevObj.type === "{{@key}}") {
     return { type: "{{@key}}", val: {{> renderDiff a="obj.val" b="prevObj.val"}} };

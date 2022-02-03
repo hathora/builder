@@ -1,6 +1,15 @@
 import axios from "axios";
 import { UserId } from "./types";
 
+export const NO_DIFF = Symbol("NODIFF");
+export type DeepPartial<T> = T extends string | number | boolean | undefined
+  ? T
+  : T extends Array<infer ArrayType>
+  ? Array<DeepPartial<ArrayType> | typeof NO_DIFF> | typeof NO_DIFF
+  : T extends { type: string; val: any }
+  ? { type: T["type"]; val: DeepPartial<T["val"] | typeof NO_DIFF> }
+  : { [K in keyof T]: DeepPartial<T[K]> | typeof NO_DIFF };
+
 export enum Method {
   {{#each methods}}
   {{#if (ne @key ../initialize)}}

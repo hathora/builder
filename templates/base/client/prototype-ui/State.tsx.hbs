@@ -2,12 +2,7 @@ import React, { useRef, useLayoutEffect, useContext, useState, useEffect } from 
 import { toast } from "react-toastify";
 import { ChevronRightIcon, ChevronDownIcon, MinusSmIcon, PlusSmIcon, UserCircleIcon } from "@heroicons/react/solid";
 import { getUserDisplayName, lookupUser, UserData } from "../../api/base";
-import {
-  {{userState}} as UserState,
-  {{#each types}}
-  {{@key}},
-  {{/each}}
-} from "../../api/types";
+import * as T from "../../api/types";
 import { HathoraConnection } from "../.hathora/client";
 {{#each plugins}}
 import {{this}}Plugin from "./plugins/{{this}}";
@@ -152,7 +147,7 @@ function BooleanDisplay({ value }: { value: boolean }) {
 
 function PluginDisplay<T>(props: { value: T; component: string; children: (value: T) => JSX.Element }) {
   const { connection, user, state, updatedAt } = useContext(HathoraContext)!;
-  const ref = useRef<{ val: T; client: HathoraConnection; user: UserData; state: UserState; updatedAt: number }>();
+  const ref = useRef<{ val: T; client: HathoraConnection; user: UserData; state: T.{{userState}}; updatedAt: number }>();
   const displayError = (e: CustomEvent) => toast.error(e.detail);
   useLayoutEffect(() => {
     if (ref.current) {
@@ -172,7 +167,7 @@ function PluginDisplay<T>(props: { value: T; component: string; children: (value
 
 {{#each types}}
 {{#if (eq type "object")}}
-function {{@key}}Display({ value }: { value: {{@key}}  }) {
+function {{@key}}Display({ value }: { value: T.{{@key}}  }) {
   return (
     <div className="border rounded object-display">
       {{#each properties}}
@@ -228,7 +223,7 @@ export function State() {
   }
 </OptionalDisplay>
 {{else if (eq type "enum")}}
-<EnumDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} enum={ {{typeString}} } />
+<EnumDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} enum={ T.{{typeString}} } />
 {{else if (eq typeString "UserId")}}
 <UserIdDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} />
 {{else if (eq type "string")}}
@@ -243,7 +238,7 @@ export function State() {
 {{/inline}}
 {{#*inline "renderTypeArg"}}
 {{#if alias}}
-{{typeString}}
+T.{{typeString}}
 {{~else if (eq type "optional")}}
 {{> renderTypeArg item}}
 {{~else if (eq type "array")}}
