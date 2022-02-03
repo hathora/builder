@@ -3,8 +3,8 @@ import { existsSync, mkdirSync } from "fs";
 import seedrandom from "seedrandom";
 import { Writer, Reader } from "bin-serde";
 import "dotenv/config";
-import { Message } from "../../api/base";
-import { UserId, encodeStateUpdate, NO_DIFF, {{userState}} as UserState } from "../../api/types";
+import { Message, NO_DIFF } from "../../api/base";
+import { UserId, encodeStateSnapshot, encodeStateUpdate, {{userState}} as UserState } from "../../api/types";
 import { register } from "./protocol";
 import LogStore from "./logstore";
 import { ImplWrapper as impl } from "./wrapper";
@@ -194,8 +194,7 @@ function sendSnapshot(stateId: StateId, userId: UserId) {
   const { state } = stateInfo.get(stateId)!;
   const userState = impl.getUserState(state, userId);
   userStateInfo.get(stateId)!.set(userId, { state: JSON.parse(JSON.stringify(userState)), changedAt: 0 });
-  const buf = Buffer.from(UserState.encode(userState).toBuffer());
-  coordinator.onStateUpdate(stateId, userId, buf);
+  coordinator.onStateUpdate(stateId, userId, Buffer.from(encodeStateSnapshot(userState)));
 }
 
 function sendUpdates(stateId: StateId, changedAt: number, messages: Map<UserId, Message[]>) {

@@ -1,14 +1,12 @@
-import { Writer, Reader } from "bin-serde";
-import { Response, Message, ResponseMessage, EventMessage } from "./base";
-
-export const NO_DIFF = Symbol("NODIFF");
-export type DeepPartial<T> = T extends string | number | boolean | undefined
-  ? T
-  : T extends Array<infer ArrayType>
-  ? Array<DeepPartial<ArrayType> | typeof NO_DIFF> | typeof NO_DIFF
-  : T extends { type: string; val: any }
-  ? { type: T["type"]; val: DeepPartial<T["val"] | typeof NO_DIFF> }
-  : { [K in keyof T]: DeepPartial<T[K]> | typeof NO_DIFF };
+import { Writer as _Writer, Reader as _Reader } from "bin-serde";
+import {
+  NO_DIFF as _NO_DIFF,
+  DeepPartial as _DeepPartial,
+  Response as _Response,
+  Message as _Message,
+  ResponseMessage as _ResponseMessage,
+  EventMessage as _EventMessage
+} from "./base";
 
 {{#each types}}
 {{#if alias}}
@@ -43,15 +41,15 @@ export const {{makeRequestName @key}} = {
       {{/each}}
     };
   },
-  encode(obj: {{makeRequestName @key}}, writer?: Writer) {
-    const buf = writer ?? new Writer();
+  encode(obj: {{makeRequestName @key}}, writer?: _Writer) {
+    const buf = writer ?? new _Writer();
     {{#each properties}}
     {{> renderEncodeArg arg=@key}};
     {{/each}}
     return buf;
   },
-  decode(buf: ArrayBufferView | Reader): {{makeRequestName @key}} {
-    const sb = ArrayBuffer.isView(buf) ? new Reader(buf) : buf;
+  decode(buf: ArrayBufferView | _Reader): {{makeRequestName @key}} {
+    const sb = ArrayBuffer.isView(buf) ? new _Reader(buf) : buf;
     return {
       {{#each properties}}
       {{@key}}: {{> renderDecodeArg}},
@@ -99,41 +97,41 @@ export const {{@key}} = {
       {{/each}}
     };
   },
-  encode(obj: {{@key}}, writer?: Writer) {
-    const buf = writer ?? new Writer();
+  encode(obj: {{@key}}, writer?: _Writer) {
+    const buf = writer ?? new _Writer();
     {{#each properties}}
     {{> renderEncodeArg arg=@key}};
     {{/each}}
     return buf;
   },
-  encodeDiff(obj: DeepPartial<{{@key}}>, writer?: Writer) {
-    const buf = writer ?? new Writer();
+  encodeDiff(obj: _DeepPartial<{{@key}}>, writer?: _Writer) {
+    const buf = writer ?? new _Writer();
     const tracker: boolean[] = [];
     {{#each properties}}
-    tracker.push(obj.{{@key}} !== NO_DIFF);
+    tracker.push(obj.{{@key}} !== _NO_DIFF);
     {{/each}}
     buf.writeBits(tracker);
     {{#each properties}}
-    if (obj.{{@key}} !== NO_DIFF) {
+    if (obj.{{@key}} !== _NO_DIFF) {
       {{> renderEncodeDiffArg arg=@key}};
     }
     {{/each}}
     return buf;
   },
-  decode(buf: ArrayBufferView | Reader): {{@key}} {
-    const sb = ArrayBuffer.isView(buf) ? new Reader(buf) : buf;
+  decode(buf: ArrayBufferView | _Reader): {{@key}} {
+    const sb = ArrayBuffer.isView(buf) ? new _Reader(buf) : buf;
     return {
       {{#each properties}}
       {{@key}}: {{> renderDecodeArg}},
       {{/each}}
     };
   },
-  decodeDiff(buf: ArrayBufferView | Reader): DeepPartial<{{@key}}> {
-    const sb = ArrayBuffer.isView(buf) ? new Reader(buf) : buf;
+  decodeDiff(buf: ArrayBufferView | _Reader): _DeepPartial<{{@key}}> {
+    const sb = ArrayBuffer.isView(buf) ? new _Reader(buf) : buf;
     const tracker = sb.readBits({{len properties}});
     return {
       {{#each properties}}
-      {{@key}}: tracker.shift() ? {{> renderDecodeDiffArg}} : NO_DIFF,
+      {{@key}}: tracker.shift() ? {{> renderDecodeDiffArg}} : _NO_DIFF,
       {{/each}}
     };
   },
@@ -143,8 +141,8 @@ export const {{@key}} = {
   values() {
     return [{{#each options}}"{{@key}}"{{#unless @last}}, {{/unless}}{{/each}}];
   },
-  encode(obj: {{@key}}, writer?: Writer) {
-    const buf = writer ?? new Writer();
+  encode(obj: {{@key}}, writer?: _Writer) {
+    const buf = writer ?? new _Writer();
     {{#each options}}
     {{#unless @first}}else {{/unless}}if (obj.type === "{{@key}}") {
       writeUInt8(buf, {{@index}});
@@ -154,13 +152,13 @@ export const {{@key}} = {
     {{/each}}
     return buf;
   },
-  encodeDiff(obj: DeepPartial<{{@key}}>, writer?: Writer) {
-    const buf = writer ?? new Writer();
+  encodeDiff(obj: _DeepPartial<{{@key}}>, writer?: _Writer) {
+    const buf = writer ?? new _Writer();
     {{#each options}}
     {{#unless @first}}else {{/unless}}if (obj.type === "{{@key}}") {
       writeUInt8(buf, {{@index}});
-      writeBoolean(buf, obj.val !== NO_DIFF);
-      if (obj.val !== NO_DIFF) {
+      writeBoolean(buf, obj.val !== _NO_DIFF);
+      if (obj.val !== _NO_DIFF) {
         const x = obj.val;
         {{> renderEncodeDiffArg}};
       }
@@ -168,8 +166,8 @@ export const {{@key}} = {
     {{/each}}
     return buf;
   },
-  decode(buf: ArrayBufferView | Reader): {{@key}} {
-    const sb = ArrayBuffer.isView(buf) ? new Reader(buf) : buf;
+  decode(buf: ArrayBufferView | _Reader): {{@key}} {
+    const sb = ArrayBuffer.isView(buf) ? new _Reader(buf) : buf;
     const type = parseUInt8(sb);
     {{#each options}}
     {{#unless @first}}else {{/unless}}if (type === {{@index}}) {
@@ -178,12 +176,12 @@ export const {{@key}} = {
     {{/each}}
     throw new Error("Invalid union");
   },
-  decodeDiff(buf: ArrayBufferView | Reader): DeepPartial<{{@key}}> {
-    const sb = ArrayBuffer.isView(buf) ? new Reader(buf) : buf;
+  decodeDiff(buf: ArrayBufferView | _Reader): _DeepPartial<{{@key}}> {
+    const sb = ArrayBuffer.isView(buf) ? new _Reader(buf) : buf;
     const type = parseUInt8(sb);
     {{#each options}}
     {{#unless @first}}else {{/unless}}if (type === {{@index}}) {
-      return { type: "{{@key}}", val: parseBoolean(sb) ? {{> renderDecodeDiffArg}} : NO_DIFF };
+      return { type: "{{@key}}", val: parseBoolean(sb) ? {{> renderDecodeDiffArg}} : _NO_DIFF };
     }
     {{/each}}
     throw new Error("Invalid union");
@@ -303,14 +301,21 @@ parseBoolean(sb)
 {{~/if}}
 {{/inline}}
 
+export function encodeStateSnapshot(x: {{userState}}) {
+  const buf = new _Writer();
+  {{#with (lookup types userState)}}
+  {{> renderEncodeArg}};
+  {{/with}}
+  return buf.toBuffer();
+}
 export function encodeStateUpdate(
-  stateDiff: DeepPartial<{{userState}}> | undefined,
+  stateDiff: _DeepPartial<{{userState}}> | undefined,
   changedAtDiff: number,
-  messages: Message[]
+  messages: _Message[]
 ) {
-  const buf = new Writer();
+  const buf = new _Writer();
   buf.writeUVarint(changedAtDiff);
-  writeOptional(buf, stateDiff, (x) => {{userState}}.encodeDiff(x, buf));
+  writeOptional(buf, stateDiff, (x) => {{#with (lookup types userState)}}{{> renderEncodeDiffArg}}{{/with}});
   const responses = messages.flatMap((msg) => (msg.type === "response" ? msg : []));
   buf.writeUVarint(responses.length);
   responses.forEach(({ msgId, response }) => {
@@ -322,84 +327,90 @@ export function encodeStateUpdate(
   events.forEach(({ event }) => buf.writeString(event));
   return buf.toBuffer();
 }
-export function decodeStateUpdate(buf: ArrayBufferView | Reader): {
-  stateDiff?: DeepPartial<{{userState}}>;
+export function decodeStateUpdate(buf: ArrayBufferView | _Reader): {
+  stateDiff?: _DeepPartial<{{userState}}>;
   changedAtDiff: number;
-  responses: ResponseMessage[];
-  events: EventMessage[];
+  responses: _ResponseMessage[];
+  events: _EventMessage[];
 } {
-  const sb = ArrayBuffer.isView(buf) ? new Reader(buf) : buf;
+  const sb = ArrayBuffer.isView(buf) ? new _Reader(buf) : buf;
   const changedAtDiff = sb.readUVarint();
-  const stateDiff = parseOptional(sb, () => {{userState}}.decodeDiff(sb));
+  const stateDiff = parseOptional(sb, () => {{#with (lookup types userState)}}{{> renderDecodeDiffArg}}{{/with}});
   const responses = [...Array(sb.readUVarint())].map(() => {
     const msgId = sb.readUInt32();
     const maybeError = parseOptional(sb, () => parseString(sb));
-    return Message.response(msgId, maybeError === undefined ? Response.ok() : Response.error(maybeError));
+    return _Message.response(msgId, maybeError === undefined ? _Response.ok() : _Response.error(maybeError));
   });
-  const events = [...Array(sb.readUVarint())].map(() => Message.event(sb.readString()));
+  const events = [...Array(sb.readUVarint())].map(() => _Message.event(sb.readString()));
   return { stateDiff, changedAtDiff, responses, events };
 }
+export function decodeStateSnapshot(buf: ArrayBufferView | _Reader) {
+  const sb = ArrayBuffer.isView(buf) ? new _Reader(buf) : buf;
+  {{#with (lookup types userState)}}
+  return {{> renderDecodeArg}};
+  {{/with}}
+}
 
-function writeUInt8(buf: Writer, x: number) {
+function writeUInt8(buf: _Writer, x: number) {
   buf.writeUInt8(x);
 }
-function writeBoolean(buf: Writer, x: boolean) {
+function writeBoolean(buf: _Writer, x: boolean) {
   buf.writeUInt8(x ? 1 : 0);
 }
-function writeInt(buf: Writer, x: number) {
+function writeInt(buf: _Writer, x: number) {
   buf.writeVarint(x);
 }
-function writeFloat(buf: Writer, x: number) {
+function writeFloat(buf: _Writer, x: number) {
   buf.writeFloat(x);
 }
-function writeString(buf: Writer, x: string) {
+function writeString(buf: _Writer, x: string) {
   buf.writeString(x);
 }
-function writeOptional<T>(buf: Writer, x: T | undefined, innerWrite: (x: T) => void) {
+function writeOptional<T>(buf: _Writer, x: T | undefined, innerWrite: (x: T) => void) {
   writeBoolean(buf, x !== undefined);
   if (x !== undefined) {
     innerWrite(x);
   }
 }
-function writeArray<T>(buf: Writer, x: T[], innerWrite: (x: T) => void) {
+function writeArray<T>(buf: _Writer, x: T[], innerWrite: (x: T) => void) {
   buf.writeUVarint(x.length);
   for (let i = 0; i < x.length; i++) {
     innerWrite(x[i]);
   }
 }
-function writeArrayDiff<T>(buf: Writer, x: (T | typeof NO_DIFF)[], innerWrite: (x: T) => void) {
+function writeArrayDiff<T>(buf: _Writer, x: (T | typeof _NO_DIFF)[], innerWrite: (x: T) => void) {
   buf.writeUVarint(x.length);
   const tracker: boolean[] = [];
   x.forEach((val) => {
-    tracker.push(val !== NO_DIFF);
+    tracker.push(val !== _NO_DIFF);
   });
   buf.writeBits(tracker);
   x.forEach((val) => {
-    if (val !== NO_DIFF) {
+    if (val !== _NO_DIFF) {
       innerWrite(val);
     }
   });
 }
 
-function parseUInt8(buf: Reader): number {
+function parseUInt8(buf: _Reader): number {
   return buf.readUInt8();
 }
-function parseBoolean(buf: Reader): boolean {
+function parseBoolean(buf: _Reader): boolean {
   return buf.readUInt8() > 0;
 }
-function parseInt(buf: Reader): number {
+function parseInt(buf: _Reader): number {
   return buf.readVarint();
 }
-function parseFloat(buf: Reader): number {
+function parseFloat(buf: _Reader): number {
   return buf.readFloat();
 }
-function parseString(buf: Reader): string {
+function parseString(buf: _Reader): string {
   return buf.readString();
 }
-function parseOptional<T>(buf: Reader, innerParse: (buf: Reader) => T): T | undefined {
+function parseOptional<T>(buf: _Reader, innerParse: (buf: _Reader) => T): T | undefined {
   return parseBoolean(buf) ? innerParse(buf) : undefined;
 }
-function parseArray<T>(buf: Reader, innerParse: () => T): T[] {
+function parseArray<T>(buf: _Reader, innerParse: () => T): T[] {
   const len = buf.readUVarint();
   const arr = [];
   for (let i = 0; i < len; i++) {
@@ -407,7 +418,7 @@ function parseArray<T>(buf: Reader, innerParse: () => T): T[] {
   }
   return arr;
 }
-function parseArrayDiff<T>(buf: Reader, innerParse: () => T): (T | typeof NO_DIFF)[] {
+function parseArrayDiff<T>(buf: _Reader, innerParse: () => T): (T | typeof _NO_DIFF)[] {
   const len = buf.readUVarint();
   const tracker = buf.readBits(len);
   const arr = [];
@@ -415,7 +426,7 @@ function parseArrayDiff<T>(buf: Reader, innerParse: () => T): (T | typeof NO_DIF
     if (tracker.shift()) {
       arr.push(innerParse());
     } else {
-      arr.push(NO_DIFF);
+      arr.push(_NO_DIFF);
     }
   }
   return arr;
