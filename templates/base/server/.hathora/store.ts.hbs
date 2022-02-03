@@ -16,19 +16,23 @@ type State = ReturnType<typeof impl.initialize>;
 type UserInfo = { userState: UserState; changedAt: number; messages: Message[] };
 type StateInfo = { state: State; rng: ReturnType<seedrandom>; subscriptions: Map<UserId, UserInfo> };
 
+const stateInfo: Map<StateId, StateInfo> = new Map();
+const changedStates: Map<StateId, number> = new Map();
+const pendingMessages: Map<StateId, Map<UserId, Message[]>> = new Map();
+
 const dataDir = process.env.DATA_DIR!;
 if (!existsSync(dataDir)) {
   mkdirSync(dataDir);
 }
 const log = new LogStore(dataDir);
-const stateInfo: Map<StateId, StateInfo> = new Map();
-const changedStates: Map<StateId, number> = new Map();
 
 class Store {
   constructor() {
     setInterval(() => {
       changedStates.forEach((changedAt, stateId) => sendUpdates(stateId, changedAt));
       changedStates.clear();
+      pendingMessages.forEach((userMessages, stateId) => sendMessages(stateId, userMessages));
+      pendingMessages.clear();
     }, 50);
     {{#if tick}}
 
@@ -41,6 +45,7 @@ class Store {
         const changedAt = impl.changedAt();
         if (changedAt !== undefined) {
           changedStates.set(stateId, changedAt);
+          pendingMessages.delete(stateId);
           log.append(stateId, currTime, new Writer().writeUInt8(0xff).writeUInt32(timeDelta).toBuffer());
         }
       });
@@ -87,6 +92,7 @@ class Store {
     } else {
       stateInfo.delete(stateId);
       changedStates.delete(stateId);
+      pendingMessages.delete(stateId);
       log.unload(stateId);
     }
   }
@@ -103,10 +109,12 @@ class Store {
     ];
     const time = Date.now();
     const response = impl.getResult(state, userId, method, ctx(rng, time, stateId), argsBuffer);
-    if (response !== undefined) {
+    if (response !== undefined && subscriptions.has(userId)) {
+      subscriptions.get(userId)!.messages.push(Message.response(msgId, response));
       const changedAt = impl.changedAt();
       if (changedAt !== undefined) {
         changedStates.set(stateId, changedAt);
+        pendingMessages.delete(stateId);
         log.append(
           stateId,
           time,
@@ -117,9 +125,11 @@ class Store {
             .writeBuffer(argsBuffer)
             .toBuffer()
         );
-      }
-      if (subscriptions.has(userId)) {
-        subscriptions.get(userId)!.messages.push(Message.response(msgId, response));
+      } else {
+        if (!pendingMessages.get(stateId)!.has(userId)) {
+          pendingMessages.get(stateId)!.set(userId, []);
+        }
+        pendingMessages.get(stateId)!.get(userId)!.push(Message.response(msgId, response));
       }
     }
   }
@@ -182,6 +192,13 @@ function sendUpdates(stateId: StateId, changedAt: number) {
       subscriptions.set(userId, { userState: JSON.parse(JSON.stringify(currUserState)), changedAt, messages: [] });
     }
   }
+}
+
+function sendMessages(stateId: StateId, userMessages: Map<UserId, Message[]>) {
+  userMessages.forEach((messages, userId) => {
+    const buf = Buffer.from(encodeStateUpdate(undefined, 0, messages));
+    coordinator.onStateUpdate(stateId, userId, buf);
+  });
 }
 
 function ctx(rng: ReturnType<seedrandom>, time: number, stateId?: StateId): Context {
