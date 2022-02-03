@@ -13,8 +13,8 @@ import { Context } from "./methods";
 
 type StateId = bigint;
 type State = ReturnType<typeof impl.initialize>;
-type StateInfo = { state: State; rng: ReturnType<seedrandom>; subscriptions: Set<UserId> };
-type UserStateInfo = { state: UserState; changedAt: number };
+type UserInfo = { userState: UserState; changedAt: number; messages: Message[] };
+type StateInfo = { state: State; rng: ReturnType<seedrandom>; subscriptions: Map<UserId, UserInfo> };
 
 const dataDir = process.env.DATA_DIR!;
 if (!existsSync(dataDir)) {
@@ -23,19 +23,12 @@ if (!existsSync(dataDir)) {
 const log = new LogStore(dataDir);
 const stateInfo: Map<StateId, StateInfo> = new Map();
 const changedStates: Map<StateId, number> = new Map();
-const userMessages: Map<StateId, Map<UserId, Message[]>> = new Map();
-const userStateInfo: Map<StateId, Map<UserId, UserStateInfo>> = new Map();
 
 class Store {
   constructor() {
     setInterval(() => {
-      changedStates.forEach((changedAt, stateId) => {
-        sendUpdates(stateId, changedAt, userMessages.get(stateId) ?? new Map());
-        userMessages.delete(stateId);
-      });
-      userMessages.forEach((messages, stateId) => sendMessages(stateId, messages));
+      changedStates.forEach((changedAt, stateId) => sendUpdates(stateId, changedAt));
       changedStates.clear();
-      userMessages.clear();
     }, 50);
     {{#if tick}}
 
@@ -60,12 +53,7 @@ class Store {
     const time = Date.now();
     const rng = seedrandom(seed.toString(36));
     const state = impl.initialize(userId, ctx(rng, time, stateId), argsBuffer);
-    stateInfo.set(stateId, {
-      state,
-      rng,
-      subscriptions: new Set([userId]),
-    });
-    userStateInfo.set(stateId, new Map());
+    stateInfo.set(stateId, { state, rng, subscriptions: new Map() });
     sendSnapshot(stateId, userId);
     log.append(
       stateId,
@@ -85,14 +73,8 @@ class Store {
         coordinator.onStateUpdate(stateId, userId, Buffer.alloc(0));
         return;
       }
-      stateInfo.set(stateId, {
-        state: loaded.state,
-        rng: loaded.rng,
-        subscriptions: new Set(),
-      });
-      userStateInfo.set(stateId, new Map());
+      stateInfo.set(stateId, { state: loaded.state, rng: loaded.rng, subscriptions: new Map() });
     }
-    stateInfo.get(stateId)!.subscriptions.add(userId);
     sendSnapshot(stateId, userId);
   }
   unsubscribeUser(stateId: StateId, userId: UserId) {
@@ -102,13 +84,9 @@ class Store {
     const subscribers = stateInfo.get(stateId)!.subscriptions;
     if (subscribers.size > 1) {
       subscribers.delete(userId);
-      userMessages.get(stateId)?.delete(userId);
-      userStateInfo.get(stateId)?.delete(userId);
     } else {
       stateInfo.delete(stateId);
       changedStates.delete(stateId);
-      userMessages.delete(stateId);
-      userStateInfo.delete(stateId);
       log.unload(stateId);
     }
   }
@@ -116,7 +94,7 @@ class Store {
     if (!stateInfo.has(stateId)) {
       return;
     }
-    const { state, rng } = stateInfo.get(stateId)!;
+    const { state, rng, subscriptions } = stateInfo.get(stateId)!;
     const reader = new Reader(data);
     const [method, msgId, argsBuffer] = [
       reader.readUInt8(),
@@ -140,14 +118,8 @@ class Store {
             .toBuffer()
         );
       }
-      if (!userMessages.has(stateId)) {
-        userMessages.set(stateId, new Map([[userId, [Message.response(msgId, response)]]]));
-      } else {
-        if (!userMessages.get(stateId)!.has(userId)) {
-          userMessages.get(stateId)!.set(userId, [Message.response(msgId, response)]);
-        } else {
-          userMessages.get(stateId)!.get(userId)!.push(Message.response(msgId, response));
-        }
+      if (subscriptions.has(userId)) {
+        subscriptions.get(userId)!.messages.push(Message.response(msgId, response));
       }
     }
   }
@@ -190,33 +162,26 @@ function loadState(stateId: StateId) {
 }
 
 function sendSnapshot(stateId: StateId, userId: UserId) {
-  const { state } = stateInfo.get(stateId)!;
+  const { state, subscriptions } = stateInfo.get(stateId)!;
   const userState = impl.getUserState(state, userId);
-  userStateInfo.get(stateId)!.set(userId, { state: JSON.parse(JSON.stringify(userState)), changedAt: 0 });
+  subscriptions.set(userId, { userState: JSON.parse(JSON.stringify(userState)), changedAt: 0, messages: [] });
   coordinator.onStateUpdate(stateId, userId, Buffer.from(encodeStateSnapshot(userState)));
 }
 
-function sendUpdates(stateId: StateId, changedAt: number, messages: Map<UserId, Message[]>) {
+function sendUpdates(stateId: StateId, changedAt: number) {
   if (stateInfo.has(stateId)) {
     const { state, subscriptions } = stateInfo.get(stateId)!;
-    for (const userId of subscriptions) {
-      const { state: prevState, changedAt: prevChangedAt } = userStateInfo.get(stateId)!.get(userId)!;
-      const currState = impl.getUserState(state, userId);
-      const diff = computeDiff(currState, prevState);
+    for (const [userId, userInfo] of subscriptions) {
+      const { userState: prevUserState, changedAt: prevChangedAt, messages } = userInfo!;
+      const currUserState = impl.getUserState(state, userId);
+      const diff = computeDiff(currUserState, prevUserState);
       const buf = Buffer.from(
-        encodeStateUpdate(diff !== NO_DIFF ? diff : undefined, changedAt - prevChangedAt, messages.get(userId) ?? [])
+        encodeStateUpdate(diff !== NO_DIFF ? diff : undefined, changedAt - prevChangedAt, messages)
       );
       coordinator.onStateUpdate(stateId, userId, buf);
-      userStateInfo.get(stateId)!.set(userId, { state: JSON.parse(JSON.stringify(currState)), changedAt });
+      subscriptions.set(userId, { userState: JSON.parse(JSON.stringify(currUserState)), changedAt, messages: [] });
     }
   }
-}
-
-function sendMessages(stateId: StateId, allMessages: Map<UserId, Message[]>) {
-  allMessages.forEach((messages, userId) => {
-    const buf = Buffer.from(encodeStateUpdate(undefined, 0, messages));
-    coordinator.onStateUpdate(stateId, userId, buf);
-  });
 }
 
 function ctx(rng: ReturnType<seedrandom>, time: number, stateId?: StateId): Context {
@@ -240,16 +205,7 @@ function ctx(rng: ReturnType<seedrandom>, time: number, stateId?: StateId): Cont
     },
     event(event: string, userId: UserId) {
       if (stateId !== undefined) {
-        const messages = userMessages.get(stateId);
-        if (messages === undefined) {
-          userMessages.set(stateId, new Map([[userId, [Message.event(event)]]]));
-        } else {
-          if (!messages.has(userId)) {
-            messages.set(userId, [Message.event(event)]);
-          } else {
-            messages.get(userId)!.push(Message.event(event));
-          }
-        }
+        stateInfo.get(stateId)?.subscriptions.get(userId)?.messages.push(Message.event(event));
       }
     },
   };
