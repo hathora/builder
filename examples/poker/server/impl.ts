@@ -59,7 +59,7 @@ export class Impl implements Methods<InternalState> {
     }
     state.dealerIdx = (state.dealerIdx + 1) % state.players.length;
     state.revealedCards = [];
-    state.deck = ctx.shuffle(createDeck() as Card[]);
+    state.deck = ctx.chance.shuffle(createDeck() as Card[]);
     makeBet(state.players[(state.dealerIdx + 1) % state.players.length], state.smallBlindAmt);
     makeBet(state.players[(state.dealerIdx + 2) % state.players.length], state.smallBlindAmt * 2);
     state.activePlayerIdx = (state.dealerIdx + 3) % state.players.length;

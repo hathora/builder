@@ -51,16 +51,16 @@ export class Impl implements Methods<InternalState> {
     }
 
     // set up cards
-    const shuffledList = ctx.shuffle(wordList);
+    const shuffledList = ctx.chance.shuffle(wordList);
     state.cards = [];
     state.cards.push(...chooseCards(shuffledList, 9, Color.RED));
     state.cards.push(...chooseCards(shuffledList, 8, Color.BLUE));
     state.cards.push(...chooseCards(shuffledList, 7, Color.YELLOW));
     state.cards.push(...chooseCards(shuffledList, 1, Color.BLACK));
-    state.cards = ctx.shuffle(state.cards);
+    state.cards = ctx.chance.shuffle(state.cards);
 
     // set up teams
-    state.players = ctx.shuffle(state.players);
+    state.players = ctx.chance.shuffle(state.players);
     for (let i = 0; i < state.players.length; i++) {
       state.players[i].team = i * 2 < state.players.length ? Color.RED : Color.BLUE;
       state.players[i].isSpymaster = false;

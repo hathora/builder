@@ -84,7 +84,7 @@ Methods receive four arguments as input:
 
 1. `state`: the internal state describe above
 2. `userId`: the id of the user who called the method
-3. `ctx`: a context object, which must be used for sources of nondeterminism (random numbers, current time, api calls)
+3. `ctx`: a context object, which must be used for sources of nondeterminism (random values, current time, api calls)
 4. `request`: the input arguments to the method as defined in `hathora.yml`
 
 Based on these inputs, the method can validate whether the action is permitted, returning an error response if not. Otherwise, the method can mutate `state` as desired and return a success response. Any mutations that occur will ultimately be reflected in the client state via the `getUserState` function.
