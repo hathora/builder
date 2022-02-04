@@ -5,9 +5,9 @@ These are some Hathora apps that implement familiar functionality with relativel
 | Name                                                                                              | Frontend type      | Lines of code (frontend) | Lines of code (backend) |
 | ------------------------------------------------------------------------------------------------- | ------------------ | ------------------------ | ----------------------- |
 | [rock-paper-scissor](https://github.com/hathora/hathora/tree/develop/examples/rock-paper-scissor) | Prototype UI       | 0                        | 83                      |
-| [avalon](https://github.com/hathora/hathora/tree/develop/examples/avalon)                         | Prototype UI       | 0                        | 280                     |
-| [poker](https://github.com/hathora/hathora/tree/develop/examples/poker)                           | Plugin             | 33                       | 197                     |
-| [codenames](https://github.com/hathora/hathora/tree/develop/examples/codenames)                   | Interactive Plugin | 73                       | 191                     |
-| [chess](https://github.com/hathora/hathora/tree/develop/examples/chess)                           | Interactive Plugin | 65                       | 110                     |
+| [avalon](https://github.com/hathora/hathora/tree/develop/examples/avalon)                         | Prototype UI       | 0                        | 279                     |
+| [poker](https://github.com/hathora/hathora/tree/develop/examples/poker)                           | Plugin             | 33                       | 213                     |
+| [codenames](https://github.com/hathora/hathora/tree/develop/examples/codenames)                   | Interactive Plugin | 73                       | 190                     |
+| [chess](https://github.com/hathora/hathora/tree/develop/examples/chess)                           | Interactive Plugin | 65                       | 112                     |
 | [pong](https://github.com/hathora/hathora/tree/develop/examples/pong)                             | Interactive Plugin | 129                      | 78                      |
-| [ship-battle](https://github.com/hathora/ship-battle)                                             | Custom             | 138                      | 95                      |
+| [ship-battle](https://github.com/hathora/ship-battle)                                             | Custom             | 145                      | 94                      |
