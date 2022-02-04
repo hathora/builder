@@ -16,59 +16,24 @@ Note that in simple cases, the `userState` can be used as the type of internal s
 - allow for a more optimized data structure in the server (e.g. chess.js in chess example)
 - derive certain properties rather than store them (e.g. game status in codenames example)
 
-The internal state can be composed of any primitives and built in data structures of the language. Custom classes, whether user-defined or imported from a library, can also be used, but they need to utilize a `_modCount` property to allow for change detection (see [chess example](../examples/chess/server/impl.ts)).
+The internal state can be composed of any primitives and built in data structures of the language, including objects, classes, and functions.
 
-The internal state is first created via the method referenced by `initialize` in `hathora.yml`.
+The internal state is first created via the `initialize` method:
 
 Example (poker game):
-
-```yml
-# hathora.yml
-
-methods:
-  createGame:
-    startingChips: int
-    startingBlind: int
-# ...
-initialize: createGame
-```
-
 ```ts
 // impl.ts
 
-import { Methods, Context } from "./.hathora/methods";
-import { UserId, PlayerStatus, ICreateGameRequest } from "../api/types";
-import { Cards } from "@pairjacks/poker-cards";
-
-type InternalPlayerInfo = {
-  id: UserId;
-  chipCount: number;
-  chipsInPot: number;
-  cards: Cards;
-  status: PlayerStatus;
-};
-
-type InternalState = {
-  players: InternalPlayerInfo[];
-  dealerIdx: number;
-  activePlayerIdx: number;
-  revealedCards: Cards;
-  startingChips: number;
-  smallBlindAmt: number;
-  deck: Cards;
-};
+// ...
 
 export class Impl implements Methods<InternalState> {
-  createGame(userId: UserId, ctx: Context, request: ICreateGameRequest): InternalState {
+  initialize(userId: UserId, ctx: Context): InternalState {
     return {
-      players: [
-        { id: userId, chipCount: request.startingChips, chipsInPot: 0, cards: [], status: PlayerStatus.WAITING },
-      ],
+      players: [createPlayer(userId)],
       dealerIdx: 0,
       activePlayerIdx: 0,
       revealedCards: [],
-      startingChips: request.startingChips,
-      smallBlindAmt: request.startingBlind,
+      smallBlindAmt: 0,
       deck: [],
     };
   }
