@@ -5,13 +5,14 @@ types:
     sentBy: UserId
     sentTo: UserId?
   RoomState:
-    name: string
     createdBy: UserId
+    users: UserId[]
     messages: Message[]
 
 methods:
   createRoom:
-    name: string
+  joinRoom:
+  leaveRoom:
   sendPublicMessage:
     text: string
   sendPrivateMessage:
