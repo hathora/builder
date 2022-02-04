@@ -162,7 +162,7 @@ function Login({ setToken }: { setToken: (token: string) => void }) {
   );
 }
 
-function Home({ onConnect }: { onConnect: (request: any) => void }) {
+function Home({ onConnect }: { onConnect: () => void }) {
   const [stateId, setStateId] = useState<string>("");
   const navigate = useNavigate();
   return (
