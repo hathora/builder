@@ -20,9 +20,10 @@ types:
 
 methods:
   createGame:
+  joinGame:
+  startGame:
     startingChips: int
     startingBlind: int
-  joinGame:
   startRound:
   fold:
   call:
