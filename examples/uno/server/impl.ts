@@ -43,7 +43,7 @@ export class Impl implements Methods<InternalState> {
     if (state.pile !== undefined) {
       return Response.error("Already started");
     }
-    state.deck = ctx.shuffle(state.deck);
+    state.deck = ctx.chance.shuffle(state.deck);
     // give each player 7 cards
     state.players.forEach((playerId) => {
       state.hands.set(playerId, []);

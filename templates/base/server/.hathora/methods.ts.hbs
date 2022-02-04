@@ -1,3 +1,4 @@
+import { Chance } from "chance";
 import { Response } from "../../api/base";
 import {
   UserId,
@@ -8,10 +9,8 @@ import {
 } from "../../api/types";
 
 export interface Context {
-  rand(): number;
-  randInt(limit?: number): number;
-  shuffle<T>(items: T[]): T[];
-  time(): number;
+  chance: ReturnType<typeof Chance>;
+  time: number;
   event: (event: string, to: UserId) => void;
 }
 
