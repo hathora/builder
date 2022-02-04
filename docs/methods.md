@@ -8,7 +8,7 @@ Methods return a `Response` object, which can either be `Response.ok()` or `Resp
 
 ## Determinism
 
-Hathora requires that methods are reproducible, i.e. anytime the method is called with the same inputs it should always produce the same effects. Methods are to base their action on the function inputs: `state` (the current `InternalState` object), `userId` (who called the method), and `request` (the method's arguments supplied by the client). For sources of nondeterminism the method additionally has access to a context input `ctx`, which it can use to get pseudorandom values (`ctx.chance`) or the current time (`ctx.time`).
+Hathora requires that methods are reproducible, i.e. anytime the method is called with the same inputs it should always produce the same effects. Methods are to base their action on the function inputs: `state` (the current `InternalState` object), `userId` (who called the method), and `request` (the method's arguments supplied by the client). For sources of nondeterminism the method additionally has access to a context input `ctx`, which it can use to get pseudorandom values (`ctx.chance`, a [chancejs](https://chancejs.com) object) or the current time (`ctx.time`).
 
 ## Simulation
 
