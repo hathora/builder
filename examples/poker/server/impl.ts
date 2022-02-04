@@ -5,7 +5,6 @@ import {
   PlayerState,
   PlayerStatus,
   PlayerInfo,
-  ICreateGameRequest,
   IJoinGameRequest,
   IStartGameRequest,
   IStartRoundRequest,
@@ -26,7 +25,7 @@ type InternalState = {
 };
 
 export class Impl implements Methods<InternalState> {
-  createGame(userId: UserId, ctx: Context, request: ICreateGameRequest): InternalState {
+  initialize(userId: UserId, ctx: Context): InternalState {
     return {
       players: [createPlayer(userId)],
       dealerIdx: 0,

@@ -10,7 +10,6 @@ types:
     messages: Message[]
 
 methods:
-  createRoom:
   joinRoom:
   leaveRoom:
   sendPublicMessage:
@@ -24,5 +23,4 @@ auth:
     separator: "-"
 
 userState: RoomState
-initialize: createRoom
 error: string

@@ -16,7 +16,6 @@ const HathoraConfig = z
       })
       .strict(),
     userState: z.string(),
-    initialize: z.string(),
     error: z.string(),
     tick: z.optional(z.number().int().gte(50)),
   })
@@ -177,9 +176,6 @@ export function generate(rootDir: string, templatesDir: string) {
   const doc = HathoraConfig.parse(load(readFileSync(join(rootDir, "hathora.yml"), "utf8")));
   if (!Object.keys(doc.types).includes(doc.userState)) {
     throw new Error("Invalid userState");
-  }
-  if (!Object.keys(doc.methods).includes(doc.initialize)) {
-    throw new Error("Invalid initialize");
   }
 
   const pluginsDir = join(clientDir, "prototype-ui", "plugins");

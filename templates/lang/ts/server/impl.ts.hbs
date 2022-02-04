@@ -12,15 +12,13 @@ import {
 type InternalState = {};
 
 export class Impl implements Methods<InternalState> {
-  {{initialize}}(userId: UserId, ctx: Context, request: {{makeRequestName initialize}}): InternalState {
+  initialize(userId: UserId, ctx: Context): InternalState {
     return {};
   }
   {{#each methods}}
-  {{#if (ne @key ../initialize)}}
   {{@key}}(state: InternalState, userId: UserId, ctx: Context, request: {{makeRequestName @key}}): Response {
     return Response.error("Not implemented");
   }
-  {{/if}}
   {{/each}}
   getUserState(state: InternalState, userId: UserId): {{userState}} {
     {{#with (lookup types userState)}}

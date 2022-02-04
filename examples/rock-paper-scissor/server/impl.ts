@@ -3,7 +3,6 @@ import { Response } from "../api/base";
 import {
   UserId,
   PlayerState,
-  ICreateGameRequest,
   IJoinGameRequest,
   IChooseGestureRequest,
   INextRoundRequest,
@@ -11,7 +10,7 @@ import {
 } from "../api/types";
 
 export class Impl implements Methods<PlayerState> {
-  createGame(userId: UserId, ctx: Context, request: ICreateGameRequest): PlayerState {
+  initialize(userId: UserId, ctx: Context): PlayerState {
     return { round: 0, player1: { id: userId, score: 0 } };
   }
   joinGame(state: PlayerState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {

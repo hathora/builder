@@ -13,7 +13,6 @@ types:
     player2: PlayerInfo?
 
 methods:
-  createGame:
   joinGame:
   chooseGesture:
     gesture: Gesture
@@ -24,5 +23,4 @@ auth:
     separator: "-"
 
 userState: PlayerState
-initialize: createGame
 error: string

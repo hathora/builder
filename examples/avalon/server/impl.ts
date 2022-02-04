@@ -3,7 +3,6 @@ import { Response } from "../api/base";
 import {
   UserId,
   PlayerState,
-  ICreateGameRequest,
   IJoinGameRequest,
   IStartGameRequest,
   IProposeQuestRequest,
@@ -54,13 +53,8 @@ const QUEST_CONFIGURATIONS = new Map([
 ]);
 
 export class Impl implements Methods<InternalState> {
-  createGame(userId: UserId, ctx: Context, request: ICreateGameRequest): InternalState {
-    return {
-      creator: userId,
-      players: [userId],
-      roles: new Map(),
-      quests: [],
-    };
+  initialize(userId: UserId, ctx: Context): InternalState {
+    return { creator: userId, players: [userId], roles: new Map(), quests: [] };
   }
   joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {
     if (state.players.find((player) => player === userId) !== undefined) {

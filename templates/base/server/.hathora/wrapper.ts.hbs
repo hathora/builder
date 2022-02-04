@@ -13,24 +13,20 @@ setInterval(async () => {
   impl = new (await import("../impl")).Impl();
 }, 100);
 
-type State = ReturnType<typeof impl.{{initialize}}>;
+type State = ReturnType<typeof impl.initialize>;
 
 let changedAt: number | undefined = undefined;
 
 export const ImplWrapper = {
-  initialize(userId: UserId, ctx: Context, argsBuffer: ArrayBufferView): State {
-    const state = impl.{{initialize}}(userId, ctx, {{makeRequestName initialize}}.decode(argsBuffer));
-    return onChange(state, () => {
-      changedAt = Date.now();
-    });
+  initialize(userId: UserId, ctx: Context): State {
+    const state = impl.initialize(userId, ctx);
+    return onChange(state, () => (changedAt = Date.now()));
   },
   getResult(state: State, userId: UserId, method: Method, ctx: Context, argsBuffer: ArrayBufferView): Response | undefined {
     switch (method) {
       {{#each methods}}
-      {{#if (ne @key ../initialize)}}
       case Method.{{uppercase @key}}:
         return impl.{{@key}}(state, userId, ctx, {{makeRequestName @key}}.decode(argsBuffer));
-      {{/if}}
       {{/each}}
     }
   },
