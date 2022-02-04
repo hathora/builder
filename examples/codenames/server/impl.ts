@@ -2,7 +2,6 @@ import { Methods, Context } from "./.hathora/methods";
 import { Response } from "../api/base";
 import {
   UserId,
-  ICreateGameRequest,
   IJoinGameRequest,
   IStartGameRequest,
   IGiveClueRequest,
@@ -25,12 +24,8 @@ type InternalState = {
 };
 
 export class Impl implements Methods<InternalState> {
-  createGame(userId: UserId, ctx: Context, request: ICreateGameRequest): InternalState {
-    return {
-      players: [createPlayer(userId)],
-      currentTurn: Color.YELLOW,
-      cards: [],
-    };
+  initialize(userId: UserId, ctx: Context): InternalState {
+    return { players: [createPlayer(userId)], currentTurn: Color.YELLOW, cards: [] };
   }
   joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {
     if (getGameStatus(state.cards) !== GameStatus.NOT_STARTED) {

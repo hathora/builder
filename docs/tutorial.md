@@ -99,7 +99,6 @@ import { Response } from "../api/base";
 import {
   UserId,
   PlayerState,
-  ICreateGameRequest,
   IJoinGameRequest,
   IStartGameRequest,
   IPlayCardRequest,
@@ -118,7 +117,7 @@ type InternalState = {
 };
 
 export class Impl implements Methods<InternalState> {
-  createGame(userId: UserId, ctx: Context, request: ICreateGameRequest): InternalState {
+  initialize(userId: UserId, ctx: Context): InternalState {
     const deck = [];
     for (let i = 2; i <= 9; i++) {
       deck.push({ value: i, color: Color.RED });

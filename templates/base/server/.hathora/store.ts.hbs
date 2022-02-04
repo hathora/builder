@@ -53,11 +53,11 @@ class Store {
     }, {{tick}});
     {{/if}}
   }
-  async newState(stateId: StateId, userId: UserId, argsBuffer: Buffer) {
+  async newState(stateId: StateId, userId: UserId) {
     const seed = randomBytes(8).readBigUInt64LE();
     const time = Date.now();
     const chance = Chance(seed.toString());
-    const state = impl.initialize(userId, ctx(chance, time, stateId), argsBuffer);
+    const state = impl.initialize(userId, ctx(chance, time, stateId));
     stateInfo.set(stateId, { state, chance, subscriptions: new Map() });
     sendSnapshot(stateId, userId);
     log.append(
@@ -66,8 +66,6 @@ class Store {
       new Writer()
         .writeUInt64(seed)
         .writeString(userId)
-        .writeUInt32(argsBuffer.length)
-        .writeBuffer(argsBuffer)
         .toBuffer()
     );
   }
@@ -145,9 +143,8 @@ function loadState(stateId: StateId) {
     const reader = new Reader(record);
     const seed = reader.readUInt64();
     const userId = reader.readString();
-    const argsBuffer = reader.readBuffer(reader.readUInt32());
     const chance = Chance(seed.toString());
-    const state = impl.initialize(userId, ctx(chance, time), argsBuffer);
+    const state = impl.initialize(userId, ctx(chance, time));
 
     for (let i = 1; i < rows.length; i++) {
       const { time, record } = rows[i];

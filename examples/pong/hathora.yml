@@ -15,7 +15,6 @@ types:
     ball: Point
 
 methods:
-  createGame:
   setDirection:
     direction: Direction
 
@@ -24,6 +23,5 @@ auth:
     separator: "-"
 
 userState: PlayerState
-initialize: createGame
 error: string
 tick: 100

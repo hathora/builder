@@ -19,7 +19,6 @@ types:
     revealedCards: Card[]
 
 methods:
-  createGame:
   joinGame:
   startGame:
     startingChips: int
@@ -35,5 +34,4 @@ auth:
     separator: "-"
   
 userState: PlayerState
-initialize: createGame
 error: string

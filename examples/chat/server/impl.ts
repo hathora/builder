@@ -3,7 +3,6 @@ import { Response } from "../api/base";
 import {
   UserId,
   RoomState,
-  ICreateRoomRequest,
   IJoinRoomRequest,
   ILeaveRoomRequest,
   ISendPublicMessageRequest,
@@ -11,7 +10,7 @@ import {
 } from "../api/types";
 
 export class Impl implements Methods<RoomState> {
-  createRoom(userId: UserId, ctx: Context, request: ICreateRoomRequest): RoomState {
+  initialize(userId: UserId, ctx: Context): RoomState {
     return { createdBy: userId, users: [userId], messages: [] };
   }
   joinRoom(state: RoomState, userId: string, ctx: Context, request: IJoinRoomRequest): Response {

@@ -59,7 +59,7 @@ export function register(store: Store): Promise<CoordinatorClient> {
       const reader = new Reader(data);
       const type = reader.readUInt8();
       if (type === NEW_STATE) {
-        store.newState(reader.readUInt64(), reader.readString(), reader.readBuffer(reader.remaining()));
+        store.newState(reader.readUInt64(), reader.readString());
       } else if (type === SUBSCRIBE_USER) {
         store.subscribeUser(reader.readUInt64(), reader.readString());
       } else if (type === UNSUBSCRIBE_USER) {
@@ -74,7 +74,7 @@ export function register(store: Store): Promise<CoordinatorClient> {
 }
 
 interface Store {
-  newState(stateId: StateId, userId: UserId, argsBuffer: ArrayBufferView): void;
+  newState(stateId: StateId, userId: UserId): void;
   subscribeUser(stateId: StateId, userId: UserId): void;
   unsubscribeUser(stateId: StateId, userId: UserId): void;
   handleUpdate(stateId: StateId, userId: UserId, data: ArrayBufferView): void;

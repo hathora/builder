@@ -6,7 +6,6 @@ import {
   Color,
   Piece,
   PlayerState,
-  ICreateGameRequest,
   IStartGameRequest,
   IMovePieceRequest,
   PieceType,
@@ -24,12 +23,8 @@ type InternalState = {
 };
 
 export class Impl implements Methods<InternalState> {
-  createGame(userId: UserId, ctx: Context, request: ICreateGameRequest): InternalState {
-    return {
-      chess: new Chess(),
-      users: [{ name: userId, color: Color.WHITE }],
-      turnCount: 0,
-    };
+  initialize(userId: UserId, ctx: Context): InternalState {
+    return { chess: new Chess(), users: [{ name: userId, color: Color.WHITE }], turnCount: 0 };
   }
   startGame(state: InternalState, userId: UserId, ctx: Context, request: IStartGameRequest): Response {
     if (state.users.find((u) => u.name === userId) !== undefined) {

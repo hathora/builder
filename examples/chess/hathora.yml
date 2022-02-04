@@ -31,7 +31,6 @@ types:
     opponent: UserId?
 
 methods:
-  createGame:
   startGame:
   movePiece:
     from: Square
@@ -42,5 +41,4 @@ auth:
     separator: "-"
 
 userState: PlayerState
-initialize: createGame
 error: string

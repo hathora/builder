@@ -12,9 +12,7 @@ export type DeepPartial<T> = T extends string | number | boolean | undefined
 
 export enum Method {
   {{#each methods}}
-  {{#if (ne @key ../initialize)}}
   {{uppercase @key}},
-  {{/if}}
   {{/each}}
 }
 

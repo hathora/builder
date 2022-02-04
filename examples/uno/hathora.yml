@@ -15,7 +15,6 @@ types:
     winner: UserId?
 
 methods:
-  createGame:
   joinGame:
   startGame:
   playCard:
@@ -27,5 +26,4 @@ auth:
     separator: "-"
 
 userState: PlayerState
-initialize: createGame
 error: string

@@ -6,12 +6,11 @@ import { LightningBoltIcon, UserCircleIcon } from "@heroicons/react/solid";
 {{#if auth.google}}
 import { GoogleLogin } from "react-google-login";
 {{/if}}
-import { {{makeRequestName initialize}} } from "../../api/types";
 import { getUserDisplayName, UserData } from "../../api/base";
 import { HathoraClient, HathoraConnection, UpdateArgs } from "../.hathora/client";
 import { ConnectionFailure } from "../.hathora/failures";
 import { HathoraContext } from "./context";
-import { Forms, InitializeForm } from "./Forms";
+import { Forms } from "./Forms";
 import { State } from "./State";
 
 const client = new HathoraClient(import.meta.env.VITE_APP_ID);
@@ -67,8 +66,8 @@ function App() {
               path="/"
               element={
                 <Home
-                  onConnect={async (request) => {
-                    const conn = await client.connectNew(token, request, setUpdateArgs, setConnectionError);
+                  onConnect={async () => {
+                    const conn = await client.connectNew(token, setUpdateArgs, setConnectionError);
                     setConnection(conn);
                     navigate(`/state/${conn.stateId}`);
                   }}
@@ -163,7 +162,7 @@ function Login({ setToken }: { setToken: (token: string) => void }) {
   );
 }
 
-function Home({ onConnect }: { onConnect: (request: {{makeRequestName initialize}}) => void }) {
+function Home({ onConnect }: { onConnect: () => void }) {
   const [stateId, setStateId] = useState<string>("");
   const navigate = useNavigate();
   return (
@@ -172,7 +171,13 @@ function Home({ onConnect }: { onConnect: (request: {{makeRequestName initialize
         <h2 className="text-xl font-semibold text-gray-900">Home</h2>
         <div className="flex flex-col mt-2">
           <div className="w-6/12 mb-4">
-            <InitializeForm submit={onConnect} />
+            <button
+              type="button"
+              onClick={onConnect}
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Create
+            </button>
           </div>
           <div className="w-6/12">
             <input
