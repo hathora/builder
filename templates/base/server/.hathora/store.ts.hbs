@@ -56,7 +56,7 @@ class Store {
   async newState(stateId: StateId, userId: UserId, argsBuffer: Buffer) {
     const seed = randomBytes(8).readBigUInt64LE();
     const time = Date.now();
-    const chance = Chance(seed.toString(36));
+    const chance = Chance(seed.toString());
     const state = impl.initialize(userId, ctx(chance, time, stateId), argsBuffer);
     stateInfo.set(stateId, { state, chance, subscriptions: new Map() });
     sendSnapshot(stateId, userId);
@@ -146,7 +146,7 @@ function loadState(stateId: StateId) {
     const seed = reader.readUInt64();
     const userId = reader.readString();
     const argsBuffer = reader.readBuffer(reader.readUInt32());
-    const chance = Chance(seed.toString(36));
+    const chance = Chance(seed.toString());
     const state = impl.initialize(userId, ctx(chance, time), argsBuffer);
 
     for (let i = 1; i < rows.length; i++) {
