@@ -30,7 +30,6 @@ types:
     winner: UserId?
 
 methods:
-  createGame:
   joinGame:
   startGame:
   playCard:
@@ -42,7 +41,6 @@ auth:
     separator: "-"
 
 userState: PlayerState
-initialize: createGame
 error: string
 ```
 
@@ -60,7 +58,7 @@ Inside the server directory we will also find a `impl.ts` file filled out with a
 // ...
 
 export class Impl implements Methods<InternalState> {
-  createGame(userId: UserId, ctx: Context, request: ICreateGameRequest): InternalState {
+  initialize(userId: UserId, ctx: Context): InternalState {
     return {};
   }
   joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {
