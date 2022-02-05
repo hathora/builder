@@ -1,5 +1,5 @@
 import axios from "axios";
-import { UserId } from "./types";
+import * as T from "./types";
 
 export const NO_DIFF = Symbol("NODIFF");
 export type DeepPartial<T> = T extends string | number | boolean | undefined
@@ -17,9 +17,9 @@ export enum Method {
 }
 
 export type OkResponse = { type: "ok" };
-export type ErrorResponse = { type: "error"; error: {{error.typeString}} };
+export type ErrorResponse = { type: "error"; error: {{> renderTypeArg error}} };
 export type Response = OkResponse | ErrorResponse;
-export const Response: { ok: () => OkResponse; error: (error: {{error.typeString}}) => ErrorResponse } = {
+export const Response: { ok: () => OkResponse; error: (error: {{> renderTypeArg error}}) => ErrorResponse } = {
   ok: () => ({ type: "ok" }),
   error: (error) => ({ type: "error", error }),
 };
@@ -51,7 +51,7 @@ export interface {{capitalize @key}}UserData {
 {{/each}}
 export type UserData = {{#each auth}}{{capitalize @key}}UserData{{#unless @last}} | {{/unless}}{{/each}};
 
-export function lookupUser(userId: UserId): Promise<UserData> {
+export function lookupUser(userId: T.UserId): Promise<UserData> {
   return axios.get<UserData>(`https://rtag.dev/users/${userId}`).then((res) => res.data);
 }
 
@@ -69,3 +69,22 @@ export function getUserDisplayName(user: UserData) {
     {{/each}}
   }
 }
+{{#*inline "renderTypeArg"}}
+{{#if alias}}
+T.{{typeString}}
+{{~else if (eq type "optional")}}
+{{> renderTypeArg item}}
+{{~else if (eq type "array")}}
+{{> renderTypeArg items}}[]
+{{~else if (eq type "int")}}
+number
+{{~else if (eq type "float")}}
+number
+{{~else if (eq type "string")}}
+string
+{{~else if (eq type "boolean")}}
+boolean
+{{~else if (eq type "plugin")}}
+{{> renderTypeArg item}}
+{{~/if}}
+{{/inline}}

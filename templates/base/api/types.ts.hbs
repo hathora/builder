@@ -320,7 +320,7 @@ export function encodeStateUpdate(
   buf.writeUVarint(responses.length);
   responses.forEach(({ msgId, response }) => {
     buf.writeUInt32(Number(msgId));
-    writeOptional(buf, response.type === "error" ? response.error : undefined, (x) => writeString(buf, x));
+    writeOptional(buf, response.type === "error" ? response.error : undefined, (x) => {{> renderEncodeArg error}});
   });
   const events = messages.flatMap((msg) => (msg.type === "event" ? msg : []));
   buf.writeUVarint(events.length);
@@ -338,7 +338,7 @@ export function decodeStateUpdate(buf: ArrayBufferView | _Reader): {
   const stateDiff = parseOptional(sb, () => {{#with (lookup types userState)}}{{> renderDecodeDiffArg}}{{/with}});
   const responses = [...Array(sb.readUVarint())].map(() => {
     const msgId = sb.readUInt32();
-    const maybeError = parseOptional(sb, () => parseString(sb));
+    const maybeError = parseOptional(sb, () => {{> renderDecodeArg error}});
     return _Message.response(msgId, maybeError === undefined ? _Response.ok() : _Response.error(maybeError));
   });
   const events = [...Array(sb.readUVarint())].map(() => _Message.event(sb.readString()));
