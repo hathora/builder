@@ -11,7 +11,8 @@ import {
 export interface Context {
   chance: ReturnType<typeof Chance>;
   time: number;
-  event: (event: string, to: UserId) => void;
+  sendEvent: (event: string, to: UserId) => void;
+  broadcastEvent: (event: string) => void;
 }
 
 export interface Methods<T> {

@@ -144,7 +144,7 @@ function loadState(stateId: StateId) {
     const seed = reader.readUInt64();
     const userId = reader.readString();
     const chance = Chance(seed.toString());
-    const state = impl.initialize(userId, ctx(chance, time));
+    const state = impl.initialize(userId, ctxNoEvents(chance, time));
 
     for (let i = 1; i < rows.length; i++) {
       const { time, record } = rows[i];
@@ -153,13 +153,13 @@ function loadState(stateId: StateId) {
       {{#if tick}}
       if (method === 0xff) {
         const timeDelta = reader.readUInt32();
-        impl.onTick(state, ctx(chance, time), timeDelta / 1000);
+        impl.onTick(state, ctxNoEvents(chance, time), timeDelta / 1000);
         continue;
       }
       {{/if}}
       const userId = reader.readString();
       const argsBuffer = reader.readBuffer(reader.readUInt32());
-      impl.getResult(state, userId, method, ctx(chance, time), argsBuffer);
+      impl.getResult(state, userId, method, ctxNoEvents(chance, time), argsBuffer);
     }
 
     return { state, chance };
@@ -199,14 +199,23 @@ function sendMessages(stateId: StateId, userId: UserId) {
   }
 }
 
-function ctx(chance: Chance.Chance, time: number, stateId?: StateId): Context {
+function ctx(chance: Chance.Chance, time: number, stateId: StateId): Context {
   return {
     chance,
     time,
-    event(event: string, userId: UserId) {
-      if (stateId !== undefined) {
-        stateInfo.get(stateId)?.subscriptions.get(userId)?.messages.push(Message.event(event));
+    sendEvent(event: string, userId: UserId) {
+      stateInfo.get(stateId)?.subscriptions.get(userId)?.messages.push(Message.event(event));
+    },
+    broadcastEvent(event: string) {
+      if (stateInfo.has(stateId)) {
+        for (const { messages } of stateInfo.get(stateId)!.subscriptions.values()) {
+          messages.push(Message.event(event));
+        }
       }
     },
   };
+}
+
+function ctxNoEvents(chance: Chance.Chance, time: number): Context {
+  return { chance, time, sendEvent() {}, broadcastEvent() {} };
 }
