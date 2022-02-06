@@ -3,6 +3,7 @@
 import { createHash } from "crypto";
 import { outputFileSync, existsSync, readdirSync } from "fs-extra";
 import { join } from "path";
+import { pathToFileURL } from "url";
 import shelljs from "shelljs";
 import { v4 as uuidv4 } from "uuid";
 import { createServer, build as buildClient } from "vite";
@@ -52,7 +53,7 @@ async function startServer() {
   process.env.DATA_DIR = join(serverDir, ".hathora/data");
   process.env.DOTENV_CONFIG_PATH = join(rootDir, ".env");
   process.env.NODE_LOADER_CONFIG = join(__dirname, "node-loader.config.mjs");
-  const loaderPath = require.resolve("@node-loader/core/lib/node-loader-core.js");
+  const loaderPath = pathToFileURL(require.resolve("@node-loader/core/lib/node-loader-core.js"));
   const storePath = join(serverDir, ".hathora/store.ts");
   const cp = shelljs.exec(`node --loader ${loaderPath} --experimental-specifier-resolution=node ${storePath}`, {
     async: true,
