@@ -84,27 +84,8 @@ export class HathoraConnection {
 
   public constructor(public stateId: StateId, private socket: WebSocket, onUpdate: (updateArgs: UpdateArgs) => void) {
     socket.onmessage = ({ data }) => {
-      if (this.state === undefined) {
-        this.state = decodeStateSnapshot(new Uint8Array(data as ArrayBuffer));
-        onUpdate({ state: JSON.parse(JSON.stringify(this.state)), updatedAt: 0, events: [] });
-        return;
-      }
-      const { stateDiff, changedAtDiff, responses, events } = decodeStateUpdate(new Uint8Array(data as ArrayBuffer));
-      this.changedAt += changedAtDiff;
-      if (stateDiff !== undefined) {
-        this.state = computePatch(this.state, stateDiff);
-        onUpdate({
-          state: JSON.parse(JSON.stringify(this.state)),
-          updatedAt: this.changedAt,
-          events: events.map((e) => e.event),
-        });
-      }
-      responses.forEach(({ msgId, response }) => {
-        if (msgId in this.callbacks) {
-          this.callbacks[msgId](response);
-          delete this.callbacks[msgId];
-        }
-      });
+      const state = JSON.parse(new TextDecoder().decode(data as ArrayBuffer));
+      onUpdate({ state, updatedAt: Date.now(), events: [] });
     };
   }
 
