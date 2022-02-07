@@ -164,7 +164,7 @@ function loadState(stateId: StateId) {
 
     return { state, chance };
   } catch (e) {
-    console.error("Unable to load state", stateId.toString(36), e);
+    console.error("Unable to load state", stateId.toString(36));
   }
 }
 
@@ -172,7 +172,8 @@ function sendSnapshot(stateId: StateId, userId: UserId) {
   const { state, subscriptions } = stateInfo.get(stateId)!;
   const userState = impl.getUserState(state, userId);
   subscriptions.set(userId, { userState: JSON.parse(JSON.stringify(userState)), changedAt: 0, messages: [] });
-  coordinator.onStateUpdate(stateId, userId, Buffer.from(encodeStateSnapshot(userState)));
+  const buf = encodeStateSnapshot(userState);
+  coordinator.onStateUpdate(stateId, userId, Buffer.from(buf));
 }
 
 function sendUpdates(stateId: StateId, changedAt: number) {
@@ -182,10 +183,8 @@ function sendUpdates(stateId: StateId, changedAt: number) {
       const { userState: prevUserState, changedAt: prevChangedAt, messages } = userInfo!;
       const currUserState = impl.getUserState(state, userId);
       const diff = computeDiff(currUserState, prevUserState);
-      const buf = Buffer.from(
-        encodeStateUpdate(diff !== NO_DIFF ? diff : undefined, changedAt - prevChangedAt, messages)
-      );
-      coordinator.onStateUpdate(stateId, userId, buf);
+      const buf = encodeStateUpdate(diff !== NO_DIFF ? diff : undefined, changedAt - prevChangedAt, messages);
+      coordinator.onStateUpdate(stateId, userId, Buffer.from(buf));
       subscriptions.set(userId, { userState: JSON.parse(JSON.stringify(currUserState)), changedAt, messages: [] });
     }
   }
@@ -194,7 +193,8 @@ function sendUpdates(stateId: StateId, changedAt: number) {
 function sendMessages(stateId: StateId, userId: UserId) {
   const messages = stateInfo.get(stateId)?.subscriptions.get(userId)?.messages;
   if (messages !== undefined) {
-    coordinator.onStateUpdate(stateId, userId, Buffer.from(encodeStateUpdate(undefined, 0, messages)));
+    const buf = encodeStateUpdate(undefined, 0, messages);
+    coordinator.onStateUpdate(stateId, userId, Buffer.from(buf));
     messages.splice(0);
   }
 }
