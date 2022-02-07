@@ -13,6 +13,8 @@ import { HathoraContext } from "./context";
 window.customElements.define("{{makePluginName this}}", {{this}}Plugin);
 {{/each}}
 
+let _pluginsAsObjects = false;
+
 function KVDisplay(props: { label: string; typeString: string; children: JSX.Element }) {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   let icon;
@@ -97,10 +99,10 @@ function UserIdDisplay({ value }: { value: string }) {
     icon = <MinusSmIcon className="w-3 h-3 fill-current" aria-hidden="true" />;
   }
   if (userData === undefined) {
-    return <div className="p-1 m-1 border rounded">{renderDisplayText(value)}</div>;
+    return <div className="p-1 m-1 border rounded max-w-md">{renderDisplayText(value)}</div>;
   }
   return (
-    <div className="p-1 m-1 border rounded">
+    <div className="p-1 m-1 border rounded max-w-md">
       <div className="flex items-center justify-between">
         {renderDisplayText(getUserDisplayName(userData))}
         <span className="align-middle mr-0.5 ml-2">
@@ -158,18 +160,30 @@ function PluginDisplay<T>(props: { value: T; component: string; children: (value
       ref.current.updatedAt = updatedAt;
       (ref.current as any).addEventListener("error", displayError);
       return () => {
-        (ref.current as any).removeEventListener("error", displayError);
+        if (ref.current) {
+          (ref.current as any).removeEventListener("error", displayError);
+        }
       };
     }
   });
-  return <div className="p-1 plugin-display">{React.createElement(props.component, { ref })}</div>;
+            console.log(props.children);
+  if (_pluginsAsObjects) {
+    return (<>
+      {props.children(props.value)}
+          </>
+    );
+  }
+  else {
+    return <div className="p-1 plugin-display">{React.createElement(props.component, { ref })}</div>;
+  }
 }
 
 {{#each types}}
 {{> renderComponent}}
 {{/each}}
-export function State() {
+export function State({ pluginsAsObjects }: { pluginsAsObjects: boolean; }) {
   const { state: value } = useContext(HathoraContext)!;
+  _pluginsAsObjects = pluginsAsObjects;
   return (
     <div className="w-full font-mono text-gray-700 bg-white state-display">
       {{> renderDisplay (lookup types userState)}}

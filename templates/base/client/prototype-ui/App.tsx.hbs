@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { BrowserRouter, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import { ToastContainer, Zoom, toast } from "react-toastify";
-import { LightningBoltIcon, UserCircleIcon } from "@heroicons/react/solid";
+import { EyeIcon, LightningBoltIcon, UserCircleIcon } from "@heroicons/react/solid";
 {{#if auth.google}}
 import { GoogleLogin } from "react-google-login";
 {{/if}}
@@ -211,6 +211,7 @@ type MainProps = {
 function Main({ user, connection, connectionError, updateArgs, onConnect, onDisconnect }: MainProps) {
   const { stateId } = useParams();
   const [openMethods, setOpenMethods] = useState(false);
+  const [pluginsAsObjects, setPluginsAsObjects] = useState(false);
   useEffect(() => {
     if (connection === undefined) {
       onConnect(stateId!);
@@ -230,7 +231,7 @@ function Main({ user, connection, connectionError, updateArgs, onConnect, onDisc
 
   return (
     <HathoraContext.Provider value=\{{ user, connection, ...updateArgs }}>
-      <div className="fixed top-24 right-6 lg:right-8">
+      <div className="fixed top-24 right-6 lg:right-10">
         <span className="sm:ml-3">
           <button
             type="button"
@@ -242,7 +243,21 @@ function Main({ user, connection, connectionError, updateArgs, onConnect, onDisc
           </button>
         </span>
       </div>
-      <State />
+      {{#if plugins}}
+      <div className="absolute top-4 right-4 lg:right-10">
+        <span className="sm:ml-3">
+          <button
+                  type="button"
+                  onClick={() => setPluginsAsObjects(!pluginsAsObjects)}
+            className="inline-flex items-center px-4 py-2 text-xs font-medium text-indigo-200"
+          >
+            <EyeIcon className="w-4 h-4 mr-0.5 -ml-0.5" aria-hidden="true" />
+            Toggle Plugin View
+          </button>
+        </span>
+      </div>
+      {{/if}}
+      <State pluginsAsObjects={pluginsAsObjects} />
       <Forms open={openMethods} setOpen={setOpenMethods} />
     </HathoraContext.Provider>
   );
