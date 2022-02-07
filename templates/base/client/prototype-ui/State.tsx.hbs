@@ -166,7 +166,20 @@ function PluginDisplay<T>(props: { value: T; component: string; children: (value
 }
 
 {{#each types}}
-{{#if (eq type "object")}}
+{{> renderComponent}}
+{{/each}}
+export function State() {
+  const { state: value } = useContext(HathoraContext)!;
+  return (
+    <div className="w-full font-mono text-gray-700 bg-white state-display">
+      {{> renderDisplay (lookup types userState)}}
+    </div>
+  );
+}
+{{#*inline "renderComponent"}}
+{{#if (eq type "plugin")}}
+{{> renderComponent item}}
+{{else if (eq type "object")}}
 function {{@key}}Display({ value }: { value: T.{{@key}}  }) {
   return (
     <div className="border rounded object-display">
@@ -190,15 +203,7 @@ function {{@key}}Display({ value }: { value: {{@key}} }) {
 }
 
 {{/if}}
-{{/each}}
-export function State() {
-  const { state: value } = useContext(HathoraContext)!;
-  return (
-    <div className="w-full font-mono text-gray-700 bg-white state-display">
-      {{> renderDisplay (lookup types userState)}}
-    </div>
-  );
-}
+{{/inline}}
 {{#*inline "renderDisplay"}}
 {{#if (eq type "plugin")}}
 <PluginDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} component="{{makePluginName typeString}}">
