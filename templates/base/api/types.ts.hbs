@@ -5,7 +5,7 @@ import {
   Response as _Response,
   Message as _Message,
   ResponseMessage as _ResponseMessage,
-  EventMessage as _EventMessage
+  EventMessage as _EventMessage,
 } from "./base";
 
 {{#each types}}
@@ -55,8 +55,8 @@ export const {{makeRequestName @key}} = {
       {{@key}}: {{> renderDecodeArg}},
       {{/each}}
     };
-  }
-}
+  },
+};
 {{/each}}
 {{#*inline "renderTypeArg"}}
 {{#if alias}}
