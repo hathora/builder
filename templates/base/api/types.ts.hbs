@@ -104,13 +104,28 @@ export const {{@key}} = {
     {{/each}}
     return buf;
   },
-  encodeDiff(obj: _DeepPartial<{{@key}}>, writer?: _Writer) {
-    const buf = writer ?? new _Writer();
-    const tracker: boolean[] = [];
+  encodeDiffHeader(obj: _DeepPartial<{{@key}}>, tracker: boolean[]) {
     {{#each properties}}
     tracker.push(obj.{{@key}} !== _NO_DIFF);
+{{#if (eq type "object")}}
+    if (obj.{{@key}} !== _NO_DIFF) {
+      {{typeString}}.encodeDiffHeader(obj.{{@key}}, tracker);
+    }
+{{else if (eq type "array")}}
+    if (obj.{{@key}} !== _NO_DIFF) {
+    {{#with items}}
+{{#if (eq type "object")}}
+      writeArrayHeader(obj.{{@key}}, tracker, (x) => {{typeString}}.encodeDiffHeader({{#if arg}}obj.{{arg}}{{else}}x{{/if}}, tracker));
+{{else}}
+      writeArrayHeader(obj.{{@key}}, tracker);
+{{/if}}
+    {{/with}}
+    }
+{{/if}}
     {{/each}}
-    buf.writeBits(tracker);
+  },
+  encodeDiff(obj: _DeepPartial<{{@key}}>, writer?: _Writer) {
+    const buf = writer ?? new _Writer();
     {{#each properties}}
     if (obj.{{@key}} !== _NO_DIFF) {
       {{> renderEncodeDiffArg arg=@key}};
@@ -126,9 +141,8 @@ export const {{@key}} = {
       {{/each}}
     };
   },
-  decodeDiff(buf: ArrayBufferView | _Reader): _DeepPartial<{{@key}}> {
+  decodeDiff(buf: ArrayBufferView | _Reader, tracker: boolean[]): _DeepPartial<{{@key}}> {
     const sb = ArrayBuffer.isView(buf) ? new _Reader(buf) : buf;
-    const tracker = sb.readBits({{len properties}});
     return {
       {{#each properties}}
       {{@key}}: tracker.shift() ? {{> renderDecodeDiffArg}} : _NO_DIFF,
@@ -283,7 +297,7 @@ parseBoolean(sb)
 {{#if (eq type "optional")}}
 parseOptional(sb, () => {{> renderDecodeDiffArg item}})
 {{~else if (eq type "array")}}
-parseArrayDiff(sb, () => {{> renderDecodeDiffArg items}})
+parseArrayDiff(sb, tracker, () => {{> renderDecodeDiffArg items}})
 {{~else if (eq type "enum")}}
 parseUInt8(sb)
 {{~else if (eq type "int")}}
@@ -297,7 +311,7 @@ parseBoolean(sb)
 {{~else if (eq type "plugin")}}
 {{> renderDecodeDiffArg item}}
 {{~else}}
-{{typeString}}.decodeDiff(sb)
+{{typeString}}.decodeDiff(sb, tracker)
 {{~/if}}
 {{/inline}}
 
@@ -325,6 +339,10 @@ export function encodeStateUpdate(
   buf.writeUVarint(events.length);
   events.forEach(({ event }) => buf.writeString(event));
   if (x !== undefined) {
+    const tracker: boolean[] = [];
+    {{userState}}.encodeDiffHeader(x, tracker);
+    buf.writeUVarint(tracker.length);
+    buf.writeBits(tracker);
     {{#with (lookup types userState)}}{{> renderEncodeDiffArg}};{{/with}}
   }
   return buf.toBuffer();
@@ -343,7 +361,11 @@ export function decodeStateUpdate(buf: ArrayBufferView | _Reader): {
     return _Message.response(msgId, maybeError === undefined ? _Response.ok() : _Response.error(maybeError));
   });
   const events = [...Array(sb.readUVarint())].map(() => _Message.event(sb.readString()));
-  const stateDiff = sb.remaining() ? {{#with (lookup types userState)}}{{> renderDecodeDiffArg}}{{/with}} : undefined;
+  let stateDiff: _DeepPartial<PlayerState> | undefined;
+  if (sb.remaining()) {
+    const tracker = sb.readBits(sb.readUVarint());
+    stateDiff = {{#with (lookup types userState)}}{{> renderDecodeDiffArg}}{{/with}};
+  }
   return { stateDiff, changedAtDiff, responses, events };
 }
 export function decodeStateSnapshot(buf: ArrayBufferView | _Reader) {
@@ -380,13 +402,16 @@ function writeArray<T>(buf: _Writer, x: T[], innerWrite: (x: T) => void) {
     innerWrite(x[i]);
   }
 }
-function writeArrayDiff<T>(buf: _Writer, x: (T | typeof _NO_DIFF)[], innerWrite: (x: T) => void) {
-  buf.writeUVarint(x.length);
-  const tracker: boolean[] = [];
+function writeArrayHeader<T>(x: (T | typeof _NO_DIFF)[], tracker: boolean[], innerWrite?: (x: T) => void) {
   x.forEach((val) => {
     tracker.push(val !== _NO_DIFF);
+    if (val !== _NO_DIFF && innerWrite !== undefined) {
+      innerWrite(val);
+    }
   });
-  buf.writeBits(tracker);
+}
+function writeArrayDiff<T>(buf: _Writer, x: (T | typeof _NO_DIFF)[], innerWrite: (x: T) => void) {
+  buf.writeUVarint(x.length);
   x.forEach((val) => {
     if (val !== _NO_DIFF) {
       innerWrite(val);
@@ -420,9 +445,8 @@ function parseArray<T>(buf: _Reader, innerParse: () => T): T[] {
   }
   return arr;
 }
-function parseArrayDiff<T>(buf: _Reader, innerParse: () => T): (T | typeof _NO_DIFF)[] {
+function parseArrayDiff<T>(buf: _Reader, tracker: boolean[], innerParse: () => T): (T | typeof _NO_DIFF)[] {
   const len = buf.readUVarint();
-  const tracker = buf.readBits(len);
   const arr = [];
   for (let i = 0; i < len; i++) {
     if (tracker.shift()) {
