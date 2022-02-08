@@ -230,7 +230,7 @@ function Main({ user, connection, connectionError, updateArgs, onConnect, onDisc
   updateArgs.events.forEach((event) => toast.info(event));
 
   return (
-    <HathoraContext.Provider value=\{{ user, connection, ...updateArgs }}>
+    <HathoraContext.Provider value=\{{ user, connection, ...updateArgs, pluginsAsObjects }}>
       <div className="fixed top-24 right-6 lg:right-10">
         <span className="sm:ml-3">
           <button
@@ -257,7 +257,7 @@ function Main({ user, connection, connectionError, updateArgs, onConnect, onDisc
         </span>
       </div>
       {{/if}}
-      <State pluginsAsObjects={pluginsAsObjects} />
+      <State />
       <Forms open={openMethods} setOpen={setOpenMethods} />
     </HathoraContext.Provider>
   );

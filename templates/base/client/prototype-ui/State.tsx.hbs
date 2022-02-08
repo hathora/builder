@@ -13,8 +13,6 @@ import { HathoraContext } from "./context";
 window.customElements.define("{{makePluginName this}}", {{this}}Plugin);
 {{/each}}
 
-let _pluginsAsObjects = false;
-
 function KVDisplay(props: { label: string; typeString: string; children: JSX.Element }) {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   let icon;
@@ -148,7 +146,7 @@ function BooleanDisplay({ value }: { value: boolean }) {
 }
 
 function PluginDisplay<T>(props: { value: T; component: string; children: (value: T) => JSX.Element }) {
-  const { connection, user, state, updatedAt } = useContext(HathoraContext)!;
+  const { connection, user, state, updatedAt, pluginsAsObjects } = useContext(HathoraContext)!;
   const ref = useRef<{ val: T; client: HathoraConnection; user: UserData; state: T.{{userState}}; updatedAt: number }>();
   const displayError = (e: CustomEvent) => toast.error(e.detail);
   useLayoutEffect(() => {
@@ -167,7 +165,7 @@ function PluginDisplay<T>(props: { value: T; component: string; children: (value
     }
   });
             console.log(props.children);
-  if (_pluginsAsObjects) {
+  if (pluginsAsObjects) {
     return (<>
       {props.children(props.value)}
           </>
@@ -181,9 +179,8 @@ function PluginDisplay<T>(props: { value: T; component: string; children: (value
 {{#each types}}
 {{> renderComponent}}
 {{/each}}
-export function State({ pluginsAsObjects }: { pluginsAsObjects: boolean; }) {
+export function State() {
   const { state: value } = useContext(HathoraContext)!;
-  _pluginsAsObjects = pluginsAsObjects;
   return (
     <div className="w-full font-mono text-gray-700 bg-white state-display">
       {{> renderDisplay (lookup types userState)}}
