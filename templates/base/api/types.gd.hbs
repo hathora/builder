@@ -1,0 +1,26 @@
+extends Node
+
+{{#each types}}
+{{> renderClass}}
+{{/each}}
+{{#*inline "renderClass"}}
+{{#if (eq type "object")}}
+class {{typeString}}:
+{{#each properties}}
+  var {{@key}}
+{{/each}}
+  func _init(sbp: StreamPeerBuffer):
+{{#each properties}}
+{{#if (eq type "float")}}
+    {{@key}} = sbp.get_float()
+{{else if (eq type "int")}}
+    {{@key}} = sbp.get_8()
+{{else if (eq type "object")}}
+    {{@key}} = {{typeString}}.new(sbp)
+{{/if}}
+{{/each}}
+
+{{else if (eq type "plugin")}}
+{{> renderClass item}}
+{{/if}}
+{{/inline}}
