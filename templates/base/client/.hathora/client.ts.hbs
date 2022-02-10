@@ -90,15 +90,15 @@ export class HathoraConnection {
         return;
       }
       const { stateDiff, changedAtDiff, responses, events } = decodeStateUpdate(new Uint8Array(data as ArrayBuffer));
-      this.changedAt += changedAtDiff;
       if (stateDiff !== undefined) {
         this.state = computePatch(this.state, stateDiff);
-        onUpdate({
-          state: JSON.parse(JSON.stringify(this.state)),
-          updatedAt: this.changedAt,
-          events: events.map((e) => e.event),
-        });
+        this.changedAt += changedAtDiff;
       }
+      onUpdate({
+        state: JSON.parse(JSON.stringify(this.state)),
+        updatedAt: this.changedAt,
+        events: events.map((e) => e.event),
+      });
       responses.forEach(({ msgId, response }) => {
         if (msgId in this.callbacks) {
           this.callbacks[msgId](response);
