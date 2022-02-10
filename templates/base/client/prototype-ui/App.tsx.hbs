@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { BrowserRouter, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import { ToastContainer, Zoom, toast } from "react-toastify";
-import { LightningBoltIcon, UserCircleIcon } from "@heroicons/react/solid";
+import { EyeIcon, LightningBoltIcon, UserCircleIcon } from "@heroicons/react/solid";
 {{#if auth.google}}
 import { GoogleLogin } from "react-google-login";
 {{/if}}
@@ -134,7 +134,7 @@ function Login({ setToken }: { setToken: (token: string) => void }) {
                   })
                   .catch((e) => toast.error("Authentication error: " + e.reason))
               }
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               Login (Anonymous)
             </button>
@@ -211,6 +211,7 @@ type MainProps = {
 function Main({ user, connection, connectionError, updateArgs, onConnect, onDisconnect }: MainProps) {
   const { stateId } = useParams();
   const [openMethods, setOpenMethods] = useState(false);
+  const [pluginsAsObjects, setPluginsAsObjects] = useState(false);
   useEffect(() => {
     if (connection === undefined) {
       onConnect(stateId!);
@@ -229,8 +230,8 @@ function Main({ user, connection, connectionError, updateArgs, onConnect, onDisc
   updateArgs.events.forEach((event) => toast.info(event));
 
   return (
-    <HathoraContext.Provider value=\{{ user, connection, ...updateArgs }}>
-      <div className="fixed top-24 right-6 lg:right-8">
+    <HathoraContext.Provider value=\{{ user, connection, ...updateArgs, pluginsAsObjects }}>
+      <div className="fixed top-24 right-6 lg:right-10">
         <span className="sm:ml-3">
           <button
             type="button"
@@ -242,6 +243,20 @@ function Main({ user, connection, connectionError, updateArgs, onConnect, onDisc
           </button>
         </span>
       </div>
+      {{#if plugins}}
+      <div className="absolute top-4 right-4 lg:right-10">
+        <span className="sm:ml-3">
+          <button
+            type="button"
+            onClick={() => setPluginsAsObjects(!pluginsAsObjects)}
+            className="inline-flex items-center px-4 py-2 text-xs font-medium text-indigo-200"
+          >
+            <EyeIcon className="w-4 h-4 mr-0.5 -ml-0.5" aria-hidden="true" />
+            Toggle Plugin View
+          </button>
+        </span>
+      </div>
+      {{/if}}
       <State />
       <Forms open={openMethods} setOpen={setOpenMethods} />
     </HathoraContext.Provider>
