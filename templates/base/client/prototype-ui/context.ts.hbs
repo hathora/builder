@@ -3,5 +3,12 @@ import { UserData } from "../../api/base";
 import { {{userState}} as UserState } from "../../api/types";
 import { HathoraConnection } from "../.hathora/client";
 
-type HathoraContext = { connection: HathoraConnection; user: UserData; state: UserState; updatedAt: number } | undefined;
-export const HathoraContext = React.createContext<HathoraContext>(undefined);
+type HathoraContext = {
+  user: UserData;
+  connection: HathoraConnection;
+  state: UserState;
+  updatedAt: number;
+  pluginsAsObjects: boolean;
+};
+
+export const HathoraContext = React.createContext<HathoraContext | undefined>(undefined);
