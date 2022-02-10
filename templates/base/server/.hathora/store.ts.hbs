@@ -173,9 +173,11 @@ function sendUpdates(stateId: StateId, changedAt: number) {
       const { userState: prevUserState, changedAt: prevChangedAt, messages } = userInfo!;
       const currUserState = impl.getUserState(state, userId);
       const diff = computeDiff(currUserState, prevUserState);
-      const buf = encodeStateUpdate(diff !== NO_DIFF ? diff : undefined, changedAt - prevChangedAt, messages);
-      coordinator.onStateUpdate(stateId, userId, Buffer.from(buf));
-      subscriptions.set(userId, { userState: JSON.parse(JSON.stringify(currUserState)), changedAt, messages: [] });
+      if (diff !== NO_DIFF || messages.length > 0) {
+        const buf = encodeStateUpdate(diff !== NO_DIFF ? diff : undefined, changedAt - prevChangedAt, messages);
+        coordinator.onStateUpdate(stateId, userId, Buffer.from(buf));
+        subscriptions.set(userId, { userState: JSON.parse(JSON.stringify(currUserState)), changedAt, messages: [] });
+      }
     }
   }
 }
