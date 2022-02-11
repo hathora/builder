@@ -170,6 +170,7 @@ function sendUpdates(stateId: StateId, changedAt: number) {
   if (stateInfo.has(stateId)) {
     const { state, subscriptions } = stateInfo.get(stateId)!;
     for (const [userId, userInfo] of subscriptions) {
+      const { userState: prevUserState, changedAt: prevChangedAt, messages } = userInfo!;
       const currUserState = impl.getUserState(state, userId);
       const diff = computeDiff(currUserState, prevUserState);
       if (diff !== NO_DIFF || messages.length > 0) {
