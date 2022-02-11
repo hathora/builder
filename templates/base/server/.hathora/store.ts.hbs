@@ -60,14 +60,7 @@ class Store {
     const state = impl.initialize(userId, ctx(chance, time, stateId));
     stateInfo.set(stateId, { state, chance, subscriptions: new Map() });
     sendSnapshot(stateId, userId);
-    log.append(
-      stateId,
-      time,
-      new Writer()
-        .writeUInt64(seed)
-        .writeString(userId)
-        .toBuffer()
-    );
+    log.append(stateId, time, new Writer().writeUInt64(seed).writeString(userId).toBuffer());
   }
   async subscribeUser(stateId: StateId, userId: UserId) {
     if (!stateInfo.has(stateId)) {
@@ -124,10 +117,7 @@ class Store {
             .toBuffer()
         );
       } else {
-        if (!pendingMessages.has(stateId)) {
-          pendingMessages.set(stateId, new Set());
-        }
-        pendingMessages.get(stateId)!.add(userId);
+        addPendingMessage(stateId, userId);
       }
     }
   }
@@ -181,9 +171,12 @@ function sendUpdates(stateId: StateId, changedAt: number) {
     const { state, subscriptions } = stateInfo.get(stateId)!;
     for (const [userId, userInfo] of subscriptions) {
       const currUserState = impl.getUserState(state, userId);
-      const buf = JSON.stringify(currUserState);
-      coordinator.onStateUpdate(stateId, userId, Buffer.from(buf));
-      subscriptions.set(userId, { userState: JSON.parse(JSON.stringify(currUserState)), changedAt, messages: [] });
+      const diff = computeDiff(currUserState, prevUserState);
+      if (diff !== NO_DIFF || messages.length > 0) {
+        const buf = JSON.stringify(currUserState);
+        coordinator.onStateUpdate(stateId, userId, Buffer.from(buf));
+        subscriptions.set(userId, { userState: JSON.parse(JSON.stringify(currUserState)), changedAt, messages: [] });
+      }
     }
   }
 }
@@ -200,12 +193,21 @@ function ctx(chance: Chance.Chance, time: number, stateId: StateId): Context {
     chance,
     time,
     sendEvent(event: string, userId: UserId) {
-      stateInfo.get(stateId)?.subscriptions.get(userId)?.messages.push(Message.event(event));
+      const userInfo = stateInfo.get(stateId)?.subscriptions.get(userId);
+      if (userInfo !== undefined) {
+        userInfo.messages.push(Message.event(event));
+        if (!changedStates.has(stateId)) {
+          addPendingMessage(stateId, userId);
+        }
+      }
     },
     broadcastEvent(event: string) {
       if (stateInfo.has(stateId)) {
-        for (const { messages } of stateInfo.get(stateId)!.subscriptions.values()) {
+        for (const [userId, { messages }] of stateInfo.get(stateId)!.subscriptions) {
           messages.push(Message.event(event));
+          if (!changedStates.has(stateId)) {
+            addPendingMessage(stateId, userId);
+          }
         }
       }
     },
@@ -214,4 +216,11 @@ function ctx(chance: Chance.Chance, time: number, stateId: StateId): Context {
 
 function ctxNoEvents(chance: Chance.Chance, time: number): Context {
   return { chance, time, sendEvent() {}, broadcastEvent() {} };
+}
+
+function addPendingMessage(stateId: StateId, userId: UserId) {
+  if (!pendingMessages.has(stateId)) {
+    pendingMessages.set(stateId, new Set());
+  }
+  pendingMessages.get(stateId)!.add(userId);
 }

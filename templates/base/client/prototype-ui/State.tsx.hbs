@@ -97,10 +97,10 @@ function UserIdDisplay({ value }: { value: string }) {
     icon = <MinusSmIcon className="w-3 h-3 fill-current" aria-hidden="true" />;
   }
   if (userData === undefined) {
-    return <div className="p-1 m-1 border rounded">{renderDisplayText(value)}</div>;
+    return <div className="max-w-md p-1 m-1 border rounded">{renderDisplayText(value)}</div>;
   }
   return (
-    <div className="p-1 m-1 border rounded">
+    <div className="max-w-md p-1 m-1 border rounded">
       <div className="flex items-center justify-between">
         {renderDisplayText(getUserDisplayName(userData))}
         <span className="align-middle mr-0.5 ml-2">
@@ -146,8 +146,8 @@ function BooleanDisplay({ value }: { value: boolean }) {
 }
 
 function PluginDisplay<T>(props: { value: T; component: string; children: (value: T) => JSX.Element }) {
-  const { connection, user, state, updatedAt } = useContext(HathoraContext)!;
-  const ref = useRef<{ val: T; client: HathoraConnection; user: UserData; state: T.{{userState}}; updatedAt: number }>();
+  const { connection, user, state, updatedAt, pluginsAsObjects } = useContext(HathoraContext)!;
+  const ref = useRef<{ val: T; client: HathoraConnection; user: UserData; state: T.PlayerState; updatedAt: number }>();
   const displayError = (e: CustomEvent) => toast.error(e.detail);
   useLayoutEffect(() => {
     if (ref.current) {
@@ -158,15 +158,34 @@ function PluginDisplay<T>(props: { value: T; component: string; children: (value
       ref.current.updatedAt = updatedAt;
       (ref.current as any).addEventListener("error", displayError);
       return () => {
-        (ref.current as any).removeEventListener("error", displayError);
+        if (ref.current) {
+          (ref.current as any).removeEventListener("error", displayError);
+        }
       };
     }
   });
-  return <div className="p-1 plugin-display">{React.createElement(props.component, { ref })}</div>;
+  if (pluginsAsObjects) {
+    return props.children(props.value);
+  } else {
+    return <div className="p-1 plugin-display">{React.createElement(props.component, { ref })}</div>;
+  }
 }
 
 {{#each types}}
-{{#if (eq type "object")}}
+{{> renderComponent}}
+{{/each}}
+export function State() {
+  const { state: value } = useContext(HathoraContext)!;
+  return (
+    <div className="w-full font-mono text-gray-700 bg-white state-display">
+      {{> renderDisplay (lookup types userState)}}
+    </div>
+  );
+}
+{{#*inline "renderComponent"}}
+{{#if (eq type "plugin")}}
+{{> renderComponent item}}
+{{else if (eq type "object")}}
 function {{@key}}Display({ value }: { value: T.{{@key}}  }) {
   return (
     <div className="border rounded object-display">
@@ -190,15 +209,7 @@ function {{@key}}Display({ value }: { value: {{@key}} }) {
 }
 
 {{/if}}
-{{/each}}
-export function State() {
-  const { state: value } = useContext(HathoraContext)!;
-  return (
-    <div className="w-full font-mono text-gray-700 bg-white state-display">
-      {{> renderDisplay (lookup types userState)}}
-    </div>
-  );
-}
+{{/inline}}
 {{#*inline "renderDisplay"}}
 {{#if (eq type "plugin")}}
 <PluginDisplay {{#if arg}}value={ value.{{arg}} }{{else}}value={value}{{/if}} component="{{makePluginName typeString}}">

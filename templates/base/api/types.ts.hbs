@@ -5,7 +5,7 @@ import {
   Response as _Response,
   Message as _Message,
   ResponseMessage as _ResponseMessage,
-  EventMessage as _EventMessage
+  EventMessage as _EventMessage,
 } from "./base";
 
 {{#each types}}
@@ -55,8 +55,8 @@ export const {{makeRequestName @key}} = {
       {{@key}}: {{> renderDecodeArg}},
       {{/each}}
     };
-  }
-}
+  },
+};
 {{/each}}
 {{#*inline "renderTypeArg"}}
 {{#if alias}}
@@ -309,13 +309,12 @@ export function encodeStateSnapshot(x: {{userState}}) {
   return buf.toBuffer();
 }
 export function encodeStateUpdate(
-  stateDiff: _DeepPartial<{{userState}}> | undefined,
+  x: _DeepPartial<{{userState}}> | undefined,
   changedAtDiff: number,
   messages: _Message[]
 ) {
   const buf = new _Writer();
   buf.writeUVarint(changedAtDiff);
-  writeOptional(buf, stateDiff, (x) => {{#with (lookup types userState)}}{{> renderEncodeDiffArg}}{{/with}});
   const responses = messages.flatMap((msg) => (msg.type === "response" ? msg : []));
   buf.writeUVarint(responses.length);
   responses.forEach(({ msgId, response }) => {
@@ -325,6 +324,9 @@ export function encodeStateUpdate(
   const events = messages.flatMap((msg) => (msg.type === "event" ? msg : []));
   buf.writeUVarint(events.length);
   events.forEach(({ event }) => buf.writeString(event));
+  if (x !== undefined) {
+    {{#with (lookup types userState)}}{{> renderEncodeDiffArg}};{{/with}}
+  }
   return buf.toBuffer();
 }
 export function decodeStateUpdate(buf: ArrayBufferView | _Reader): {
@@ -335,13 +337,13 @@ export function decodeStateUpdate(buf: ArrayBufferView | _Reader): {
 } {
   const sb = ArrayBuffer.isView(buf) ? new _Reader(buf) : buf;
   const changedAtDiff = sb.readUVarint();
-  const stateDiff = parseOptional(sb, () => {{#with (lookup types userState)}}{{> renderDecodeDiffArg}}{{/with}});
   const responses = [...Array(sb.readUVarint())].map(() => {
     const msgId = sb.readUInt32();
     const maybeError = parseOptional(sb, () => {{> renderDecodeArg error}});
     return _Message.response(msgId, maybeError === undefined ? _Response.ok() : _Response.error(maybeError));
   });
   const events = [...Array(sb.readUVarint())].map(() => _Message.event(sb.readString()));
+  const stateDiff = sb.remaining() ? {{#with (lookup types userState)}}{{> renderDecodeDiffArg}}{{/with}} : undefined;
   return { stateDiff, changedAtDiff, responses, events };
 }
 export function decodeStateSnapshot(buf: ArrayBufferView | _Reader) {

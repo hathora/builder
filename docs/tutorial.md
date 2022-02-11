@@ -2,11 +2,15 @@
 
 In this tutorial we will explore Hathora by learning to make a simplified version of [Uno](https://www.mattel.com/products/uno-gdj85).
 
+## Install
+
 Before you begin, make sure you have nodejs and the hathora cli installed:
 
 ```sh
 npm install -g hathora
 ```
+
+## hathora.yml
 
 To start, create a directory called `uno-tutorial` and create a `hathora.yml` file inside with the following contents:
 
@@ -46,7 +50,24 @@ error: string
 
 This file defines the client data model and the server api endpoints for our application. For more information on this file format, see [here](type-driven-development).
 
-To initialize our project structure run `hathora init`. You should see `api`, `client`, and `server` directory generated, along with a `.gitignore` and `.env` file. Inside both directories you will find a `.hathora` directory with framework generated code based on our `hathora.yml` file.
+To initialize our project structure run `hathora init`. You should see the following directory structure generated for you:
+
+```
+uno-tutorial               # project root
+├─ api                     # generated + gitignored
+├─ client
+│  ├─ .hathora             # generated + gitignored
+│  └─ prototype-ui         # generated + gitignored
+├─ server
+│  ├─ .hathora             # generated + gitignored
+│  ├─ impl.ts              # user-editable
+│  ├─ tsconfig.json        # user-editable
+│  ├─ package.josn         # user-editable
+│  └─ package-lock.json    # user-editable
+├─ hathora.yml             # user-editable
+├─ .env                    # user-editable
+└─ .gitignore              # user-editable
+```
 
 > If you plan on using git, this is a good time to run `git init`
 
@@ -89,6 +110,8 @@ Next, run `hathora dev` to start the development server. Visit http://localhost:
 
 ![image](https://user-images.githubusercontent.com/5400947/149869164-19a7cbe3-59a6-47a8-95b0-6bc316b31cef.png)
 
+## Backend logic
+
 Because of the default implementation, we don't see any real data and clicking Submit for any of the methods displays a "Not implemented" error. Let's fix this by adding our business logic to `server/impl.ts`:
 
 ```ts
@@ -116,6 +139,7 @@ type InternalState = {
 
 export class Impl implements Methods<InternalState> {
   initialize(userId: UserId, ctx: Context): InternalState {
+    // create the initial version of our state
     const deck = [];
     for (let i = 2; i <= 9; i++) {
       deck.push({ value: i, color: Color.RED });
@@ -126,18 +150,13 @@ export class Impl implements Methods<InternalState> {
     return { deck, players: [userId], hands: new Map(), turn: userId };
   }
   joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {
-    if (state.players.find((playerId) => playerId === userId) !== undefined) {
-      return Response.error("Already joined");
-    }
+    // append the user who called the method
     state.players.push(userId);
     return Response.ok();
   }
   startGame(state: InternalState, userId: UserId, ctx: Context, request: IStartGameRequest): Response {
-    if (state.pile !== undefined) {
-      return Response.error("Already started");
-    }
+    // shuffle the deck, give each player 7 cards, and start the pile
     state.deck = ctx.chance.shuffle(state.deck);
-    // give each player 7 cards
     state.players.forEach((playerId) => {
       state.hands.set(playerId, []);
       for (let i = 0; i < 7; i++) {
@@ -148,18 +167,9 @@ export class Impl implements Methods<InternalState> {
     return Response.ok();
   }
   playCard(state: InternalState, userId: UserId, ctx: Context, request: IPlayCardRequest): Response {
-    if (state.turn != userId) {
-      return Response.error("Not your turn");
-    }
-    if (request.card.color != state.pile!.color && request.card.value != state.pile!.value) {
-      return Response.error("Doesn't match top of pile");
-    }
+    // remove from hand
     const hand = state.hands.get(userId)!;
     const cardIdx = hand.findIndex((card) => card.value == request.card.value && card.color == request.card.color);
-    if (cardIdx < 0) {
-      return Response.error("Card not in hand");
-    }
-    // remove from hand
     hand.splice(cardIdx, 1);
     // update pile
     state.pile = request.card;
@@ -175,19 +185,14 @@ export class Impl implements Methods<InternalState> {
     return Response.ok();
   }
   drawCard(state: InternalState, userId: UserId, ctx: Context, request: IDrawCardRequest): Response {
-    if (state.deck.length === 0) {
-      return Response.error("Deck is empty");
-    }
-    const hand = state.hands.get(userId);
-    if (hand === undefined) {
-      return Response.error("Invalid user");
-    }
-    hand.push(state.deck.pop()!);
+    // add the top card to the player's hand
+    state.hands.get(userId)!.push(state.deck.pop()!);
     return Response.ok();
   }
   getUserState(state: InternalState, userId: UserId): PlayerState {
+    // compute the user state from the internal state
     return {
-      hand: state.hands.get(userId) ?? [],
+      hand: state.hands.get(userId) ?? [], // only return this user's hand
       players: state.players,
       turn: state.turn,
       pile: state.pile,
@@ -199,11 +204,29 @@ export class Impl implements Methods<InternalState> {
 
 See [here](methods) for more details about how server methods works.
 
-> The hathora dev server supports hot reloading of both backend and frontend, so you shouldn't need to restart the server when making edits.
+> The hathora dev server supports hot reloading of both backend and frontend, so you shouldn't need to restart the server when making edits to your code.
 
 Going back to the prototype UI, we can see our working application in action. Create a game, join it as another user from a different tab (by using the same url), and start the game. You should see a view like this:
 
 ![image](https://user-images.githubusercontent.com/5400947/149870083-67986611-6151-4ea8-abb2-9a67467741d1.png)
+
+## Validation
+
+One problem with our current backend implementation is that there is no validation. For example, players can join the game multiple times even though they shouldn't be able to. We can enforce that a player can only join once by chaning our `joinGame` implementation to the following:
+
+```ts
+// impl.ts
+
+  joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {
+    if (state.players.find((playerId) => playerId === userId) !== undefined) {
+      return Response.error("Already joined");
+    }
+    state.players.push(userId);
+    return Response.ok();
+  }
+```
+
+Now, if you try to join a second time you will get a `Already joined` error on the screen. Try adding validations to the other functions as well. To see a complete implementation of the backend, see [the uno example](https://github.com/hathora/hathora/tree/develop/examples/uno).
 
 ## Next steps
 
