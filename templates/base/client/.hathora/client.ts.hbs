@@ -92,8 +92,8 @@ export class HathoraConnection {
       const { stateDiff, changedAtDiff, responses, events } = decodeStateUpdate(new Uint8Array(data as ArrayBuffer));
       if (stateDiff !== undefined) {
         this.state = computePatch(this.state, stateDiff);
-        this.changedAt += changedAtDiff;
       }
+      this.changedAt += changedAtDiff;
       onUpdate({
         state: JSON.parse(JSON.stringify(this.state)),
         updatedAt: this.changedAt,
