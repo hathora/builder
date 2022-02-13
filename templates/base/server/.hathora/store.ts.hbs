@@ -28,16 +28,11 @@ const log = new LogStore(dataDir);
 
 class Store {
   constructor() {
-    setInterval(() => {
-      changedStates.forEach((changedAt, stateId) => sendUpdates(stateId, changedAt));
-      changedStates.clear();
-      pendingMessages.forEach((userIds, stateId) => userIds.forEach((userId) => sendMessages(stateId, userId)));
-      pendingMessages.clear();
-    }, 50);
     {{#if tick}}
-
     let prevUpdateTime = Date.now();
+    {{/if}}
     setInterval(() => {
+      {{#if tick}}
       const currTime = Date.now();
       stateInfo.forEach(({ state, chance }, stateId) => {
         const timeDelta = currTime - prevUpdateTime;
@@ -50,8 +45,13 @@ class Store {
         }
       });
       prevUpdateTime = currTime;
-    }, {{tick}});
-    {{/if}}
+
+      {{/if}}
+      changedStates.forEach((changedAt, stateId) => sendUpdates(stateId, changedAt));
+      changedStates.clear();
+      pendingMessages.forEach((userIds, stateId) => userIds.forEach((userId) => sendMessages(stateId, userId)));
+      pendingMessages.clear();
+    }, {{#if tick}}{{tick}}{{else}}50{{/if}});
   }
   async newState(stateId: StateId, userId: UserId) {
     const seed = randomBytes(8).readBigUInt64LE();

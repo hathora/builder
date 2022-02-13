@@ -1,7 +1,7 @@
 {
   "type": "module",
   "dependencies": {
-    "interpolation-buffer": "^1.2.2",
+    "interpolation-buffer": "^1.2.3",
     "lit": "^2.0.2"
   },
   "devDependencies": {
