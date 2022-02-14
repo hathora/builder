@@ -9,18 +9,10 @@ import {
 {{/each}}
 } from "../api/types";
 
-type InternalState = {};
+type InternalState = {{userState}};
 
 export class Impl implements Methods<InternalState> {
   initialize(userId: UserId, ctx: Context): InternalState {
-    return {};
-  }
-  {{#each methods}}
-  {{@key}}(state: InternalState, userId: UserId, ctx: Context, request: {{makeRequestName @key}}): Response {
-    return Response.error("Not implemented");
-  }
-  {{/each}}
-  getUserState(state: InternalState, userId: UserId): {{userState}} {
     {{#with (lookup types userState)}}
     {{#if (eq type "object")}}
     return {
@@ -32,6 +24,14 @@ export class Impl implements Methods<InternalState> {
     return {{> renderDefault}};
     {{/if}}
     {{/with}}
+  }
+  {{#each methods}}
+  {{@key}}(state: InternalState, userId: UserId, ctx: Context, request: {{makeRequestName @key}}): Response {
+    return Response.error("Not implemented");
+  }
+  {{/each}}
+  getUserState(state: InternalState, userId: UserId): {{userState}} {
+    return state;
   }
   {{#if tick}}
   onTick(state: InternalState, ctx: Context, timeDelta: number): void {}

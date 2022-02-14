@@ -78,9 +78,17 @@ Inside the server directory we will also find a `impl.ts` file filled out with a
 
 // ...
 
+type InternalState = PlayerState;
+
 export class Impl implements Methods<InternalState> {
   initialize(userId: UserId, ctx: Context): InternalState {
-    return {};
+    return {
+      hand: [],
+      players: [],
+      turn: "",
+      pile: undefined,
+      winner: undefined,
+    };
   }
   joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {
     return Response.error("Not implemented");
@@ -95,13 +103,7 @@ export class Impl implements Methods<InternalState> {
     return Response.error("Not implemented");
   }
   getUserState(state: InternalState, userId: UserId): PlayerState {
-    return {
-      hand: [],
-      players: [],
-      turn: "",
-      pile: undefined,
-      winner: undefined,
-    };
+    return state;
   }
 }
 ```
