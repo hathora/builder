@@ -1,0 +1,12 @@
+import React from "react";
+import ReactDom from "react-dom";
+//@ts-ignore
+import reactToWebComponent from "react-to-webcomponent";
+import { {{val}}, {{userState}} } from "../../../../api/types";
+import { HathoraConnection } from "../../../.hathora/client";
+
+function {{val}}Component({ val, state, client }: { val: {{val}}; state: {{userState}}; client: HathoraConnection }) {
+  return <>Hello world!</>;
+}
+
+export default reactToWebComponent({{val}}Component, React, ReactDom);
