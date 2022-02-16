@@ -41,8 +41,7 @@ methods:
   drawCard:
 
 auth:
-  anonymous:
-    separator: "-"
+  anonymous: {}
 
 userState: PlayerState
 error: string

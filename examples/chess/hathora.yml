@@ -37,8 +37,7 @@ methods:
     to: Square
 
 auth:
-  anonymous:
-    separator: "-"
+  anonymous: {}
 
 userState: PlayerState
 error: string

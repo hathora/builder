@@ -30,8 +30,7 @@ methods:
     amount: int
 
 auth:
-  anonymous:
-    separator: "-"
+  anonymous: {}
   
 userState: PlayerState
 error: string

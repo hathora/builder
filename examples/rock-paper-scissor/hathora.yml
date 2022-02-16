@@ -19,8 +19,7 @@ methods:
   nextRound:
 
 auth:
-  anonymous:
-    separator: "-"
+  anonymous: {}
 
 userState: PlayerState
 error: string

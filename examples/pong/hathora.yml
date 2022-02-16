@@ -19,8 +19,7 @@ methods:
     direction: Direction
 
 auth:
-  anonymous:
-    separator: "-"
+  anonymous: {}
 
 userState: PlayerState
 error: string

@@ -57,8 +57,7 @@ Example:
 
 ```yml
 auth:
-  anonymous:
-    separator: "-"
+  anonymous: {}
   google:
     clientId: 0123456789-abcd1234efgh5678.apps.googleusercontent.com
 ```

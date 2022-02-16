@@ -19,8 +19,7 @@ methods:
     to: UserId
 
 auth:
-  anonymous:
-    separator: "-"
+  anonymous: {}
 
 userState: RoomState
 error: string
