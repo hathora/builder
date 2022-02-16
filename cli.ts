@@ -101,7 +101,7 @@ if (command === "init") {
   if (existsSync(join(serverDir, "impl.ts"))) {
     console.error("Cannot init inside existing project, delete impl.ts to regenerate");
   } else {
-    generate(rootDir, "templates/lang/ts");
+    generate(rootDir, "templates/bootstrap");
     generate(rootDir, "templates/base");
   }
 } else if (command === "generate") {
