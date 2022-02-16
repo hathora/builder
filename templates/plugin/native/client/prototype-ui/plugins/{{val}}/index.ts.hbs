@@ -1,0 +1,15 @@
+import { {{val}}, {{userState}} } from "../../../../api/types";
+import { HathoraConnection } from "../../../.hathora/client";
+
+export default class {{val}}Plugin extends HTMLElement {
+  val!: {{val}};
+  state!: {{userState}};
+  client!: HathoraConnection;
+
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+  }
+
+  connectedCallback() {}
+}

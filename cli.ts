@@ -110,6 +110,12 @@ if (command === "init") {
   } else {
     generate(rootDir, "templates/base");
   }
+} else if (command === "create-plugin-native") {
+  generate(rootDir, "templates/plugin/native", { val: process.argv[3] });
+} else if (command === "create-plugin-lit") {
+  generate(rootDir, "templates/plugin/lit", { val: process.argv[3] });
+} else if (command === "create-plugin-react") {
+  generate(rootDir, "templates/plugin/react", { val: process.argv[3] });
 } else if (command === "install") {
   install();
 } else if (command === "start") {

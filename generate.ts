@@ -171,7 +171,7 @@ function enrichDoc(doc: z.infer<typeof HathoraConfig>, plugins: string[], appNam
   };
 }
 
-export function generate(rootDir: string, templatesDir: string) {
+export function generate(rootDir: string, templatesDir: string, args: Record<string, string> = {}) {
   const clientDir = join(rootDir, "client");
   const doc = HathoraConfig.parse(load(readFileSync(join(rootDir, "hathora.yml"), "utf8")));
   if (!Object.keys(doc.types).includes(doc.userState)) {
@@ -181,13 +181,14 @@ export function generate(rootDir: string, templatesDir: string) {
   const pluginsDir = join(clientDir, "prototype-ui", "plugins");
   const plugins = existsSync(pluginsDir) ? readdirSync(pluginsDir).map((p) => p.replace(/\..*$/, "")) : [];
   const appName = basename(rootDir);
-  const enrichedDoc = enrichDoc(doc, plugins, appName);
+  const enrichedDoc = { ...enrichDoc(doc, plugins, appName), ...args };
 
   function codegen(inDir: string, outDir: string) {
     readdirSync(inDir).forEach((f) => {
       const file = join(inDir, f);
       if (statSync(file).isDirectory()) {
-        codegen(file, join(outDir, f));
+        const outFile = f.replace(/\{\{(.+)\}\}/, (_, val) => (val in args ? args[val] : ""));
+        codegen(file, join(outDir, outFile));
       } else {
         const template = compile(readFileSync(file, "utf8"));
         outputFileSync(join(outDir, f.split(".hbs")[0]), template(enrichedDoc));

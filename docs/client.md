@@ -4,15 +4,15 @@ The hathora framework includes an automatically generated debug application that
 
 ## Plugins
 
-Plugins go inside the `client/prototype-ui/plugins` directory. To create a plugin for type `Foo`, create a directory named `Foo` with a `index.ts` inside it. This will cause the debug app to render your plugin's component anywhere `Foo` shows up in the state tree (instead of the rendering the default json view).
+Plugins allow you to customize the way the prototype UI renders types in its state view. Plugins simply need to export a webcomponent, and can be created as follows for the following frontend frameworks:
 
-Your plugin must export a webcomponent (a class that extends `HTMLElement`). While you are free to write a native webcomponent without any dependencies, most popular frontend libraries have ways to create webcomponents. Some examples include:
+- No framework: `hathora create-plugin-native <type>`
+- React: `hathora create-plugin-react <type>`
+- Lit: `hathora create-plugin-view <type>`
 
-- React (via https://github.com/bitovi/react-to-webcomponent)
-- Vue (via https://github.com/vuejs/vue-web-component-wrapper)
-- Lit (no wrapper required)
+For example, you can create aa plugin for type `Foo` using React by running `hathora create-plugin-react Foo`. This will cause the debug app to render your plugin's component anywhere `Foo` shows up in the state tree (instead of the rendering the default json view).
 
-Plugins receive the following props as input:
+Plugins receive the following properties as input:
 
 - val -- this is the value you are rendering, it has the type of your filename
 - state -- this is the entire state tree, it has the type of `userState`
@@ -56,8 +56,10 @@ Which renders like this in the debug application:
 
 ## Fully custom frontend
 
-When you're ready to move away from the debug app, simply create a new folder inside the `client` directory with an `index.html` file inside. This file now serves as the entry point to your frontend at http://localhost:3001, and can load code and other resources as needed. You are free to use any technologies you wish to build your frontend, just make sure to import the generated client to communicate with the hathora server.
+When you're ready to move away from the debug app, simply create a new folder (you can name it anything you want) inside the `client` directory with an `index.html` file inside. This file now serves as the entry point to your frontend at http://localhost:3001, and can load code and other resources as needed. You are free to use any technologies you wish to build your frontend, just make sure to import the generated client to communicate with the hathora server.
 
 The `hathora` frontend tooling is built around [vite](https://vitejs.dev/), which generally creates for a pleasant development experience.
 
-For an example of a fully custom frotend built using hathora, see https://github.com/hathora/ship-battle.
+For an example of a fully custom frotend built using hathora and PIXI.js, see https://github.com/hathora/ship-battle.
+
+For an example using React, see https://github.com/hpx7/tussie-mussie.

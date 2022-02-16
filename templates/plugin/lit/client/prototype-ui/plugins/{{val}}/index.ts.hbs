@@ -1,0 +1,18 @@
+import { LitElement, html } from "lit";
+import { property } from "lit/decorators.js";
+import { {{val}}, {{userState}} } from "../../../../api/types";
+import { HathoraConnection } from "../../../.hathora/client";
+
+export default class {{val}}Plugin extends LitElement {
+  @property() val!: {{val}};
+  @property() state!: {{userState}};
+  @property() client!: HathoraConnection;
+
+  render() {
+    return html`Hello world!`;
+  }
+
+  firstUpdated() {}
+
+  updated() {}
+}
