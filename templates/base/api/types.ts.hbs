@@ -9,17 +9,7 @@ import {
 } from "./base";
 
 {{#each types}}
-{{#if alias}}
-export type {{@key}} = {{> renderTypeArg}};
-{{else if (eq type "enum")}}
-export enum {{@key}} {
-  {{#each options}}
-  {{label}},
-  {{/each}}
-}
-{{else}}
-export type {{@key}} = {{> renderTypeArg}};
-{{/if}}
+{{> renderExportArg}}
 {{/each}}
 {{#each methods}}
 export type {{makeRequestName @key}} = {
@@ -58,6 +48,21 @@ export const {{makeRequestName @key}} = {
   },
 };
 {{/each}}
+{{#*inline "renderExportArg"}}
+{{#if alias}}
+export type {{@key}} = {{> renderTypeArg}};
+{{else if (eq type "enum")}}
+export enum {{@key}} {
+  {{#each options}}
+  {{label}},
+  {{/each}}
+}
+{{else if (eq type "plugin")}}
+{{> renderExportArg item}}
+{{else}}
+export type {{@key}} = {{> renderTypeArg}};
+{{/if}}
+{{/inline}}
 {{#*inline "renderTypeArg"}}
 {{#if alias}}
 {{typeString}}
