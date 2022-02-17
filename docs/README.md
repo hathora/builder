@@ -25,7 +25,7 @@ Hathora's abstractions greatly simplify these aspects so that you can focus on w
 Hathora comes with the following features out of the box:
 
 - Built in networking
-  - Automaitic state synchronization of server state to all subscribed clients
+  - Automatic state synchronization of server state to all subscribed clients
   - Optimized binary protocol with delta encoding
   - Easy to use remote procedure calls (RPCs)
 - Declarative API format with code generation of typesafe data models and clients
