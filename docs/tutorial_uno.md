@@ -61,8 +61,7 @@ uno-tutorial               # project root
 │  ├─ .hathora             # generated + gitignored
 │  ├─ impl.ts              # user-editable
 │  ├─ tsconfig.json        # user-editable
-│  ├─ package.josn         # user-editable
-│  └─ package-lock.json    # user-editable
+│  ├─ package.json         # user-editable
 ├─ hathora.yml             # user-editable
 ├─ .env                    # user-editable
 └─ .gitignore              # user-editable
@@ -113,7 +112,7 @@ Next, run `hathora dev` to start the development server. Visit http://localhost:
 
 ## Backend logic
 
-Because of the default implementation, we don't see any real data and clicking Submit for any of the methods displays a "Not implemented" error. Let's fix this by adding our business logic to `server/impl.ts`:
+Because of the default implementation, we don't see any real data and clicking Submit for any of the methods displays a "Not implemented" error. Let's fix this by adding our game logic to `server/impl.ts`:
 
 ```ts
 import { Methods, Context } from "./.hathora/methods";

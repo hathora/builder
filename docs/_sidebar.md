@@ -1,6 +1,7 @@
 - Getting started
 
-  - [Tutorial](tutorial.md)
+  - [Tutorial: Uno](tutorial_uno.md)
+  - [Tutorial: Among Us](tutorial_among_us.md)
   - [Showcase](showcase.md)
 
 - Concepts
