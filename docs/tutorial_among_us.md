@@ -12,7 +12,7 @@ npm install -g hathora
 
 ## hathora.yml
 
-To start, create a directory called `among-us-tutorial` and create a `hathora.yml` file inside with the following contents:
+To start, create a directory called `among-us-tutorial` and create a `hathora.yml` file. This file defines the client data model and the server functions for our application:
 
 ```yml
 # hathora.yml
@@ -49,7 +49,7 @@ error: string
 tick: 50
 ```
 
-This file defines the client data model and the server functions for our application. You'll notice there is not much specific to Among Us right now -- to start with we'll just get some players moving around on a map, and then we'll add more specific Among Us functionality afterwards.
+You'll notice below that there is not much specific to Among Us right now -- to start with we'll just get some players moving around on a map, and then we'll add more specific Among Us functionality afterwards.
 
 For more information on the hathora.yml file format, see [here](type-driven-development).
 
@@ -266,7 +266,7 @@ For this tutorial I have chosen to use the [PixiJS](https://pixijs.com/) library
 
 The full code for the UI can be found at https://github.com/hathora/among-us-tutorial/tree/develop/client/web -- it's roughly 130 lines of typescript.
 
-To see the final result, run `hathora dev` and visit http://localhost:3000:
+To see the final result, run `hathora dev` and visit http://localhost:3000. Here's an example of two players joining the same game instance:
 
 [mp4](https://user-images.githubusercontent.com/5400947/154386873-a5dd9dbe-fe98-4943-87a8-e5f59fec9107.mp4 ":include")
 
