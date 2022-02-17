@@ -1,6 +1,7 @@
 # Hathora - multiplayer game framework
 
 [![build](https://github.com/hathora/hathora/actions/workflows/build.yml/badge.svg)](https://github.com/hathora/hathora/actions/workflows/build.yml)
+[![npm version](https://badge.fury.io/js/hathora.svg)](https://www.npmjs.com/package/hathora)
 
 ## Overview
 
