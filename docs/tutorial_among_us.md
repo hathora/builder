@@ -6,7 +6,7 @@ This is what our game will look like by the end of this tutorial:
 
 ![image](https://user-images.githubusercontent.com/5400947/154554747-2418c0c1-2658-45ea-bcd9-331cea37fabc.png)
 
-The full code for this game can be found at https://github.com/hathora/among-us-tutorial. The repo also includes instructions for how to run it locally.
+The full code for this game can be found at https://github.com/hathora/among-us-tutorial. The repo includes instructions for running it locally, and you can also play the deployed version [here](https://among-us-tutorial.surge.sh/).
 
 ## Install
 
