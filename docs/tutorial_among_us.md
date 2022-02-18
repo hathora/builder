@@ -2,6 +2,12 @@
 
 For this tutorial, we’re going to see what it’s like to build a game similar to [Among Us](https://www.innersloth.com/games/among-us/) using the Hathora framework.
 
+This is what our game will look like by the end of this tutorial:
+
+![image](https://user-images.githubusercontent.com/5400947/154554747-2418c0c1-2658-45ea-bcd9-331cea37fabc.png)
+
+The full code for this game can be found at https://github.com/hathora/among-us-tutorial. The repo also includes instructions for how to run it locally.
+
 ## Install
 
 Before you begin, make sure you have nodejs and the hathora cli installed:
@@ -12,7 +18,7 @@ npm install -g hathora
 
 ## hathora.yml
 
-To start, create a directory called `among-us-tutorial` and create a `hathora.yml` file. This file defines the client data model and the server functions for our application:
+To start, create a directory called `among-us-tutorial` and create a `hathora.yml` file. This file defines the client data model and the server functions for our application. For more information on the hathora.yml file format, see [here](type-driven-development).
 
 ```yml
 # hathora.yml
@@ -49,9 +55,7 @@ error: string
 tick: 50
 ```
 
-You'll notice below that there is not much specific to Among Us right now -- to start with we'll just get some players moving around on a map, and then we'll add more specific Among Us functionality afterwards.
-
-For more information on the hathora.yml file format, see [here](type-driven-development).
+You'll notice below that there is not much specific to Among Us right now -- to start with we'll just get some players moving around on a map, and then we'll add more specific Among Us functionality in Part 2.
 
 To initialize our project structure run `hathora init`. You should see the following directory structure generated for you:
 
@@ -162,7 +166,7 @@ Now it’s straightforward to implement moveTo – we’ll find the player who c
   }
 ```
 
-onTick allows us to add logic that runs at a fixed interval in the server. We’ll implement the actual movement logic here by moving each player towards their target at a constant speed.
+The [onTick](server.md?id=ontick) function allows us to add logic that runs at a fixed interval in the server. We’ll implement the actual movement logic here by moving each player towards their target at a constant speed.
 
 ```ts
   onTick(state: InternalState, ctx: Context, timeDelta: number): void {
