@@ -152,6 +152,7 @@ function Login({ setToken }: { setToken: (token: string) => void }) {
                   })
                   .catch((e) => toast.error("Authentication error: " + e.reason))
               }
+              onFailure={(error) => toast.error("Authentication error: " + error)}
             />
           </div>
 {{/if}}
