@@ -1,4 +1,4 @@
-# Tutorial
+# Tutorial: Among Us (Part 1)
 
 For this tutorial, we’re going to see what it’s like to build a game similar to [Among Us](https://www.innersloth.com/games/among-us/) using the Hathora framework.
 

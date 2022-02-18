@@ -1,4 +1,4 @@
-# Tutorial
+# Tutorial: Uno
 
 In this tutorial we will explore Hathora by learning to make a simplified version of [Uno](https://www.mattel.com/products/uno-gdj85).
 
