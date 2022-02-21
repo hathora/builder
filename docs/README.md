@@ -12,7 +12,7 @@ Hathora can be used for:
 
 3. 💬 **Realtime & social applications** - Examples: chat apps, delivery tracking apps, etc
 
-See the [showcase](./showcase.md) to see some example games and demos made with Hathora!
+See the [showcase](showcase.md) to see some example games and demos made with Hathora!
 
 ## Motivation
 
@@ -48,4 +48,4 @@ npm install -g hathora
 
 ## Getting started
 
-Try out the [Uno](./tutorial_uno.md) or [Among Us](./tutorial_among_us.md) tutorials.
+Try out the [Uno](tutorial_uno.md) or [Among Us](tutorial_among_us.md) tutorials.

@@ -10,7 +10,7 @@ The server has three responsibilities:
 
 For each stateId, the backend maintains an internal representation of the state in memory inside the server. The internal state type is passed into the `Methods` interface as a parameter so that it can enforce the correct class structure. The server entrypoint must export a class conforming to this `Methods` interface.
 
-Note that in simple cases, the `userState` can be used as the type of internal state (see [chat example](../examples/chat/server/impl.ts)). However, many times you may want a separate representation of internal state which then gets converted to the `userState` via the `getUserState()` function. By having this separation between server state and user state, you can do things like:
+Note that in simple cases, the `userState` can be used as the type of internal state (see [chat example](https://github.com/hathora/hathora/tree/develop/examples/chat)). However, many times you may want a separate representation of internal state which then gets converted to the `userState` via the `getUserState()` function. By having this separation between server state and user state, you can do things like:
 
 - enforce privacy by selectively allowing access to parts of the state per user (e.g. private messages in chat example)
 - allow for a more optimized data structure in the server (e.g. chess.js in chess example)
