@@ -17,3 +17,4 @@
   - [hathora.yml](hathora-yml.md)
   - [Server](server.md)
   - [Client](client.md)
+  - [Deploy](deploy.md)
