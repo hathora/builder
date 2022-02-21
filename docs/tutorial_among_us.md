@@ -256,7 +256,7 @@ Lets fill in the `connectedCallback()` function with logic to render players as 
   }
 ```
 
-Now we can see this nice visualization of our players:
+After running `hathora dev` again, we can see this nice visualization of our players:
 
 ![gif](https://user-images.githubusercontent.com/5400947/154377517-bd36b47f-bdbf-40cd-a502-d8c333d90d4d.gif)
 
