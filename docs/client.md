@@ -1,6 +1,6 @@
 # Client
 
-The hathora framework includes an automatically generated debug application that lets you interact with your application and test your backend logic without writing any frontend code. Furthermore, hathora provides ways to incrementally add custom presentation logic as you become ready for it.
+The hathora framework includes an automatically generated [prototype UI](type-driven-development.md?id=prototype-ui) that lets you interact with your application and test your backend logic without writing any frontend code. Furthermore, hathora provides ways to incrementally add custom presentation logic as you become ready for it.
 
 ## Plugins
 
@@ -10,7 +10,7 @@ Plugins allow you to customize the way the prototype UI renders types in its sta
 - React: `hathora create-plugin-react <type>`
 - Lit: `hathora create-plugin-view <type>`
 
-For example, you can create aa plugin for type `Foo` using React by running `hathora create-plugin-react Foo`. This will cause the debug app to render your plugin's component anywhere `Foo` shows up in the state tree (instead of the rendering the default json view).
+For example, you can create a plugin for type `Foo` using React by running `hathora create-plugin-react Foo`. This will cause the debug app to render your plugin's component anywhere `Foo` shows up in the state tree (instead of the rendering the default json view).
 
 Plugins receive the following properties as input:
 
@@ -51,7 +51,7 @@ export default class CardComponent extends LitElement {
 }
 ```
 
-Which renders like this in the debug application:
+Which renders like this in the prototype UI:
 ![image](https://user-images.githubusercontent.com/5400947/149680633-b165e6d7-8c87-417a-88e8-9cc1fd14b80d.png)
 
 ## Fully custom frontend

@@ -10,7 +10,7 @@ The full code for this game can be found at https://github.com/hathora/among-us-
 
 ## Install
 
-Before you begin, make sure you have nodejs and the hathora cli installed:
+Before you begin, make sure you have nodejs v16.12+ and the hathora cli installed:
 
 ```sh
 npm install -g hathora

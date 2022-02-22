@@ -10,7 +10,7 @@ By leveraging this rich declarative format along with its code generation system
 
 > Note that the `hathora.yml` format is designed to be language agnostic, so all the code generation can be ported to produce output in any language. Typescript is the only current language implemented but support for others is coming soon.
 
-Let's examine each these components based on the following example `hathora.yml` snippet:
+Let's examine each of these components based on the following example `hathora.yml` snippet:
 
 ```yml
 # hathora.yml

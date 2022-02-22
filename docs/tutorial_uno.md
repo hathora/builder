@@ -4,7 +4,7 @@ In this tutorial we will explore Hathora by learning to make a simplified versio
 
 ## Install
 
-Before you begin, make sure you have nodejs and the hathora cli installed:
+Before you begin, make sure you have nodejs v16.12+ and the hathora cli installed:
 
 ```sh
 npm install -g hathora

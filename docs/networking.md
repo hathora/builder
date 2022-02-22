@@ -10,7 +10,7 @@ That being said, the only transport currently implemented for Hathora is Websock
 
 ## Protocol
 
-There are two modes of message between a Hathora server and client: state synchronization and events.
+There are two modes of messaging between a Hathora server and client: state synchronization and events.
 
 State synchronization is the process of keeping clients up to date with data on the server. State synchronization is handled automatically by Hathora -- when state is mutated inside server methods, Hathora detects the mutation and computes what data needs to be sent to each subscribed client. Network packets are kept small by only sending diffs and by utilizing an optimized binary serialization format.
 
