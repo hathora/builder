@@ -24,15 +24,15 @@ Hathora's abstractions greatly simplify these aspects so that you can focus on w
 
 Hathora comes with the following features out of the box:
 
-- Built in networking
+- Built in [networking](networking.md)
   - Automatic state synchronization of server state to all subscribed clients
   - Optimized binary protocol with delta encoding
   - Easy to use remote procedure calls (RPCs)
-- Declarative API format with code generation of typesafe data models and clients
-- Development server with built in prototyping interface
-- Various authentication providers
-- Durable persistence of server state
-- Horizontally scalable architecture
+- Declarative [API format](type-driven-development.md) with code generation of typesafe data models and clients
+- Development server with built in [prototyping interface](type-driven-development.md?id=prototype-ui)
+- Various built in [authentication providers](auth.md)
+- Automatic [persistence](state.md?id=persistence) of server state
+- Horizontally scalable [architecture](architecture.md)
 
 ## Installation
 
