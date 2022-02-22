@@ -33,9 +33,9 @@ class Store {
     setInterval(() => {
       {{#if tick}}
       const currTime = Date.now();
-      stateInfo.forEach(({ state, chance }, stateId) => {
+      stateInfo.forEach(async ({ state, chance }, stateId) => {
         const timeDelta = currTime - prevUpdateTime;
-        impl.onTick(state, ctx(chance, currTime, stateId), timeDelta / 1000);
+        await impl.onTick(state, ctx(chance, currTime, stateId), timeDelta / 1000);
         const changedAt = impl.changedAt();
         if (changedAt !== undefined) {
           changedStates.set(stateId, changedAt);
@@ -142,13 +142,13 @@ async function loadState(stateId: StateId) {
       {{#if tick}}
       if (method === 0xff) {
         const timeDelta = reader.readUInt32();
-        impl.onTick(state, ctxNoEvents(chance, time), timeDelta / 1000);
+        await impl.onTick(state, ctxNoEvents(chance, time), timeDelta / 1000);
         continue;
       }
       {{/if}}
       const userId = reader.readString();
       const argsBuffer = reader.readBuffer(reader.readUInt32());
-      impl.getResult(state, userId, method, ctxNoEvents(chance, time), argsBuffer);
+      await impl.getResult(state, userId, method, ctxNoEvents(chance, time), argsBuffer);
     }
 
     return { state, chance };
