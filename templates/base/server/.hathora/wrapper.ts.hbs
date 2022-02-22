@@ -1,6 +1,6 @@
 import onChange from "on-change";
 import { Context } from "./methods";
-import { Response, Method } from "../../api/base";
+import { Method } from "../../api/base";
 import {
   UserId,
   {{#each methods}}
@@ -8,21 +8,19 @@ import {
   {{/each}}
 } from "../../api/types";
 
-let impl = new (await import("../impl")).Impl();
-setInterval(async () => {
-  impl = new (await import("../impl")).Impl();
-}, 100);
-
-type State = ReturnType<typeof impl.initialize>;
+const impl = new (await import("../impl")).Impl();
+export type State = ReturnType<typeof impl.initialize>;
 
 let changedAt: number | undefined = undefined;
 
 export const ImplWrapper = {
-  initialize(userId: UserId, ctx: Context): State {
+  async initialize(userId: UserId, ctx: Context) {
+    const impl = new (await import("../impl")).Impl();
     const state = impl.initialize(userId, ctx);
     return onChange(state, () => (changedAt = Date.now()));
   },
-  getResult(state: State, userId: UserId, method: Method, ctx: Context, argsBuffer: ArrayBufferView): Response | undefined {
+  async getResult(state: State, userId: UserId, method: Method, ctx: Context, argsBuffer: ArrayBufferView) {
+    const impl = new (await import("../impl")).Impl();
     switch (method) {
       {{#each methods}}
       case Method.{{uppercase @key}}:
@@ -31,11 +29,13 @@ export const ImplWrapper = {
     }
   },
   {{#if tick}}
-  onTick(state: State, ctx: Context, timeDelta: number): void {
+  async onTick(state: State, ctx: Context, timeDelta: number) {
+    const impl = new (await import("../impl")).Impl();
     impl.onTick(state, ctx, timeDelta);
   },
   {{/if}}
-  getUserState(state: State, userId: UserId) {
+  async getUserState(state: State, userId: UserId) {
+    const impl = new (await import("../impl")).Impl();
     return impl.getUserState(onChange.target(state), userId);
   },
   changedAt(): number | undefined {

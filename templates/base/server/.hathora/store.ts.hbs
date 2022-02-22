@@ -7,12 +7,11 @@ import { Message, NO_DIFF } from "../../api/base";
 import { UserId, encodeStateSnapshot, encodeStateUpdate, {{userState}} as UserState } from "../../api/types";
 import { register } from "./protocol";
 import LogStore from "./logstore";
-import { ImplWrapper as impl } from "./wrapper";
+import { State, ImplWrapper as impl } from "./wrapper";
 import { computeDiff } from "./diff";
 import { Context } from "./methods";
 
 type StateId = bigint;
-type State = ReturnType<typeof impl.initialize>;
 type UserInfo = { userState: UserState; changedAt: number; messages: Message[] };
 type StateInfo = { state: State; chance: Chance.Chance; subscriptions: Map<UserId, UserInfo> };
 
@@ -57,14 +56,14 @@ class Store {
     const seed = randomBytes(8).readBigUInt64LE();
     const time = Date.now();
     const chance = Chance(seed.toString());
-    const state = impl.initialize(userId, ctx(chance, time, stateId));
+    const state = await impl.initialize(userId, ctx(chance, time, stateId));
     stateInfo.set(stateId, { state, chance, subscriptions: new Map() });
     sendSnapshot(stateId, userId);
     log.append(stateId, time, new Writer().writeUInt64(seed).writeString(userId).toBuffer());
   }
   async subscribeUser(stateId: StateId, userId: UserId) {
     if (!stateInfo.has(stateId)) {
-      const loaded = loadState(stateId);
+      const loaded = await loadState(stateId);
       if (loaded === undefined) {
         coordinator.onStateUpdate(stateId, userId, Buffer.alloc(0));
         return;
@@ -87,7 +86,7 @@ class Store {
       log.unload(stateId);
     }
   }
-  handleUpdate(stateId: StateId, userId: UserId, data: Buffer) {
+  async handleUpdate(stateId: StateId, userId: UserId, data: Buffer) {
     if (!stateInfo.has(stateId)) {
       return;
     }
@@ -99,8 +98,8 @@ class Store {
       reader.readBuffer(reader.remaining()),
     ];
     const time = Date.now();
-    const response = impl.getResult(state, userId, method, ctx(chance, time, stateId), argsBuffer);
-    if (response !== undefined && subscriptions.has(userId)) {
+    const response = await impl.getResult(state, userId, method, ctx(chance, time, stateId), argsBuffer);
+    if (subscriptions.has(userId)) {
       subscriptions.get(userId)!.messages.push(Message.response(msgId, response));
       const changedAt = impl.changedAt();
       if (changedAt !== undefined) {
@@ -125,7 +124,7 @@ class Store {
 
 const coordinator = await register(new Store());
 
-function loadState(stateId: StateId) {
+async function loadState(stateId: StateId) {
   try {
     const rows = log.load(stateId);
 
@@ -134,7 +133,7 @@ function loadState(stateId: StateId) {
     const seed = reader.readUInt64();
     const userId = reader.readString();
     const chance = Chance(seed.toString());
-    const state = impl.initialize(userId, ctxNoEvents(chance, time));
+    const state = await impl.initialize(userId, ctxNoEvents(chance, time));
 
     for (let i = 1; i < rows.length; i++) {
       const { time, record } = rows[i];
@@ -158,20 +157,20 @@ function loadState(stateId: StateId) {
   }
 }
 
-function sendSnapshot(stateId: StateId, userId: UserId) {
+async function sendSnapshot(stateId: StateId, userId: UserId) {
   const { state, subscriptions } = stateInfo.get(stateId)!;
-  const userState = impl.getUserState(state, userId);
+  const userState = await impl.getUserState(state, userId);
   subscriptions.set(userId, { userState: JSON.parse(JSON.stringify(userState)), changedAt: 0, messages: [] });
   const buf = encodeStateSnapshot(userState);
   coordinator.onStateUpdate(stateId, userId, Buffer.from(buf));
 }
 
-function sendUpdates(stateId: StateId, changedAt: number) {
+async function sendUpdates(stateId: StateId, changedAt: number) {
   if (stateInfo.has(stateId)) {
     const { state, subscriptions } = stateInfo.get(stateId)!;
     for (const [userId, userInfo] of subscriptions) {
       const { userState: prevUserState, changedAt: prevChangedAt, messages } = userInfo!;
-      const currUserState = impl.getUserState(state, userId);
+      const currUserState = await impl.getUserState(state, userId);
       const diff = computeDiff(currUserState, prevUserState);
       if (diff !== NO_DIFF || messages.length > 0) {
         const buf = encodeStateUpdate(diff !== NO_DIFF ? diff : undefined, changedAt - prevChangedAt, messages);
