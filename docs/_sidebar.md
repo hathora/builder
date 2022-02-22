@@ -11,6 +11,7 @@
   - [State](state.md)
   - [Methods](methods.md)
   - [Authentication](auth.md)
+  - [Networking](networking.md)
 
 - Reference
 
