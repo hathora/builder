@@ -276,4 +276,4 @@ To see the final result, run `hathora dev` and visit http://localhost:3000. Here
 
 ## Next steps
 
-In the next part of the tutorial, we'll add other Among Us features having imposters and crewmates, letting crewmates do tasks, and imposters kill players.
+In the next part of the tutorial, we'll look into adding collision detection, differentiating between imposters and crewmates, and deploying to the cloud.
