@@ -43,3 +43,9 @@ DATA_DIR=./data node index.mjs
 ```
 
 > For running in production, it may be preferable to use a process manager like [pm2](https://pm2.keymetrics.io/).
+
+## Managed Hosting
+
+We are working on a managed hosting option called Hathora Cloud and hope to release it soon. The vision is that you won't need to do all the above steps and can deploy your app by simply running `hathora deploy`. Hathora Cloud will simplify running Hathora apps in production by offering features like auto scaling, live application monitoring, managed migrations, and more.
+
+That being said, self-hosting will remain to be an option for those that want more control.
