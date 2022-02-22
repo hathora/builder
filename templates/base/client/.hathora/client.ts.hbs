@@ -5,7 +5,7 @@ import axios from "axios";
 import jwtDecode from "jwt-decode";
 import { ConnectionFailure, transformCoordinatorFailure } from "./failures";
 import { computePatch } from "./patch";
-import { UserData, Response, Method } from "../../api/base";
+import { UserData, Response, Method, COORDINATOR_HOST } from "../../api/base";
 import {
   decodeStateSnapshot,
   decodeStateUpdate,
@@ -14,8 +14,6 @@ import {
   {{makeRequestName @key}},
   {{/each}}
 } from "../../api/types";
-
-const COORDINATOR_HOST = "rtag.dev";
 
 export type StateId = string;
 export type UpdateArgs = { state: UserState; updatedAt: number; events: string[] };

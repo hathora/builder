@@ -1,13 +1,14 @@
 import net from "net";
 import { Reader, Writer } from "bin-serde";
-
-type StateId = bigint;
-type UserId = string;
+import { COORDINATOR_HOST } from "../../api/base";
 
 const NEW_STATE = 0;
 const SUBSCRIBE_USER = 1;
 const UNSUBSCRIBE_USER = 2;
 const HANDLE_UPDATE = 3;
+
+type StateId = bigint;
+type UserId = string;
 
 function readData(socket: net.Socket, onData: (data: Buffer) => void) {
   let buf = Buffer.alloc(0);
@@ -27,7 +28,7 @@ function readData(socket: net.Socket, onData: (data: Buffer) => void) {
 export function register(store: Store): Promise<CoordinatorClient> {
   return new Promise((resolve, reject) => {
     const socket = new net.Socket();
-    socket.connect(7147, "rtag.dev", () => {
+    socket.connect(7147, COORDINATOR_HOST, () => {
       socket.setKeepAlive(true, 30000);
       socket.write(
         JSON.stringify({
