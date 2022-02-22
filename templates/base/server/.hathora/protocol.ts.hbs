@@ -44,7 +44,7 @@ export function register(store: Store): Promise<CoordinatorClient> {
           },
         })
       );
-      console.log("Connected to coordinator");
+      console.log("Connected to coordinator at " + COORDINATOR_HOST);
       resolve(new CoordinatorClient(socket));
     });
     socket.on("error", reject);
