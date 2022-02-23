@@ -12,6 +12,7 @@
   - [Methods](methods.md)
   - [Authentication](auth.md)
   - [Networking](networking.md)
+  - [Architecture](architecture.md)
 
 - Reference
 
@@ -19,3 +20,5 @@
   - [Server](server.md)
   - [Client](client.md)
   - [Deploy](deploy.md)
+
+- [Roadmap](roadmap.md)
