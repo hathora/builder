@@ -5,6 +5,8 @@ These are the features on the Hathora roadmap for 2022:
 - Continue to improve documentation and tutorials
 - Expand language support beyond Typescript
   - C# (enables Unity development)
+  - C++ (enables Unreal development)
+  - GDScript (enables Godot development)
   - Java (enables native Android development)
   - Swift (enables native iOS development)
   - Rust
