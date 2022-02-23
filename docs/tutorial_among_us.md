@@ -2,11 +2,14 @@
 
 For this tutorial, we’re going to see what it’s like to build a game similar to [Among Us](https://www.innersloth.com/games/among-us/) using the Hathora framework.
 
+## Repo
+
+The full code for this game can be found at https://github.com/hathora/among-us-tutorial. The repo includes instructions for running it locally, and you can also play the deployed version [here](https://among-us-tutorial.surge.sh/).
+
 This is what our game will look like by the end of this tutorial:
 
 ![image](https://user-images.githubusercontent.com/5400947/154554747-2418c0c1-2658-45ea-bcd9-331cea37fabc.png)
 
-The full code for this game can be found at https://github.com/hathora/among-us-tutorial. The repo includes instructions for running it locally, and you can also play the deployed version [here](https://among-us-tutorial.surge.sh/).
 
 ## Install
 
@@ -276,4 +279,4 @@ To see the final result, run `hathora dev` and visit http://localhost:3000. Here
 
 ## Next steps
 
-In the next part of the tutorial, we'll look into adding collision detection, differentiating between imposters and crewmates, and deploying to the cloud.
+In the next part of the tutorial (coming soon), we'll look into adding collision detection, differentiating between imposters and crewmates, and deploying to the cloud.
