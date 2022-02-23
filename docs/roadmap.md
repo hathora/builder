@@ -17,5 +17,5 @@ These are the features on the Hathota roadmap for 2022:
   - More OAuth providers
   - Email login
   - Custom JWT login
-  - Add matchmaking service
-  - Allow exfiltrating Hathora game data for use cases like full-text search (indexing), external user accounts, analytics, etc
+- Add matchmaking service
+- Allow exfiltrating Hathora game data for use cases like full-text search (indexing), external user accounts, analytics, etc
