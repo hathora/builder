@@ -39,7 +39,7 @@ Finally, visit http://localhost:3001 to see the game in action (add multiple use
 
 ![image](https://user-images.githubusercontent.com/5400947/149647035-91442df6-73d6-4b55-ae30-f3862e8b5c8b.png)
 
-For a deeper introduction, take a look at the [tutorial](https://docs.hathora.dev/#/tutorial).
+For a deeper introduction, take a look at the [tutorial](https://docs.hathora.dev/#/tutorial_among_us).
 
 ## Examples
 
