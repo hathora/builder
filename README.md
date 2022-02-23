@@ -58,8 +58,6 @@ Here are some other example apps built with hathora:
 
 Discord: https://discord.gg/6nVdeCBffR
 
-Reddit: https://www.reddit.com/r/hathora/
-
 ## Contributing
 
 To contribute to Hathora, first clone the repo:
