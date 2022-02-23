@@ -2,6 +2,14 @@
 
 In this tutorial we will explore Hathora by learning to make a simplified version of [Uno](https://www.mattel.com/products/uno-gdj85).
 
+## Repo
+
+The full code for this game can be found [here](https://github.com/hathora/hathora/tree/develop/examples/uno), and you can also play the deployed version [here](https://hathora-uno.surge.sh/).
+
+This is what our game will look like by the end of this tutorial:
+
+![image](https://user-images.githubusercontent.com/5400947/149870083-67986611-6151-4ea8-abb2-9a67467741d1.png)
+
 ## Install
 
 Before you begin, make sure you have nodejs v16.12+ and the hathora cli installed:
