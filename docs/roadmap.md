@@ -1,16 +1,16 @@
 # Roadmap
 
-These are the features on the Hathota roadmap for 2022:
+These are the features on the Hathora roadmap for 2022:
 
 - Continue to improve documentation and tutorials
-- Expand language support
+- Expand language support beyond Typescript
   - C# (enables Unity development)
   - Java (enables native Android development)
   - Swift (enables native iOS development)
   - Rust
   - Go
   - Python
-- Expand transport support
+- Expand transport support beyond Websocket
   - TCP
   - UDP
 - Add more authentication providers
