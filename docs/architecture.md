@@ -50,7 +50,7 @@ The coordinator has many client connections but sends data to backends across a 
 
 The coordinator knows data about backend instance health, active client connections, running game sessions, and more. In the future, we want to expose this data to developers to help them understand their game's usage and performance characteristics.
 
-## Data Privacy
+## Data Privacy and Offline Development
 
 Currently, there is a single cloud coordinator instance deployed at coordinator.hathora.dev. This instance is mainted by the Hathora team.
 
