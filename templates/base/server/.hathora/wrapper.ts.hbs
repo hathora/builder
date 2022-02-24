@@ -8,19 +8,19 @@ import {
   {{/each}}
 } from "../../api/types";
 
-const impl = new (await import("../impl")).Impl();
+let impl = new (await import("../impl")).Impl();
 export type State = ReturnType<typeof impl.initialize>;
 
 let changedAt: number | undefined = undefined;
 
 export const ImplWrapper = {
   async initialize(userId: UserId, ctx: Context) {
-    const impl = new (await import("../impl")).Impl();
+    await tryReloadImpl();
     const state = impl.initialize(userId, ctx);
     return onChange(state, () => (changedAt = Date.now()));
   },
   async getResult(state: State, userId: UserId, method: Method, ctx: Context, argsBuffer: ArrayBufferView) {
-    const impl = new (await import("../impl")).Impl();
+    await tryReloadImpl();
     switch (method) {
       {{#each methods}}
       case Method.{{uppercase @key}}:
@@ -30,12 +30,12 @@ export const ImplWrapper = {
   },
   {{#if tick}}
   async onTick(state: State, ctx: Context, timeDelta: number) {
-    const impl = new (await import("../impl")).Impl();
+    await tryReloadImpl();
     impl.onTick(state, ctx, timeDelta);
   },
   {{/if}}
   async getUserState(state: State, userId: UserId) {
-    const impl = new (await import("../impl")).Impl();
+    await tryReloadImpl();
     return impl.getUserState(onChange.target(state), userId);
   },
   changedAt(): number | undefined {
@@ -44,3 +44,20 @@ export const ImplWrapper = {
     return res;
   },
 };
+
+let prevError = "";
+async function tryReloadImpl() {
+  try {
+    impl = new (await import("../impl")).Impl();
+    if (prevError !== "") {
+      console.log("Successfully reloaded impl");
+      prevError = "";
+    }
+  } catch (e) {
+    const errorString = (e as any).toString();
+    if (errorString !== prevError) {
+      console.error("Error reloading impl: " + e);
+      prevError = errorString;
+    }
+  }
+}
