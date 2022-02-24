@@ -15,7 +15,7 @@
   "dependencies": {
     "@node-loader/core": "2.0.0",
     "esbuild": "0.14.23",
-    "fs-extra": "10.0.0",
+    "fs-extra": "10.0.1",
     "handlebars": "4.7.7",
     "hot-esm": "1.4.0",
     "js-yaml": "4.1.0",
