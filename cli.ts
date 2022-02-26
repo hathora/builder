@@ -85,6 +85,31 @@ async function startFrontends() {
   }
 }
 
+function build() {
+  process.env.VITE_APP_ID = appId;
+  for (const dir of readdirSync(clientDir)) {
+    if (existsSync(join(clientDir, dir, "index.html"))) {
+      buildClient({
+        root: join(clientDir, dir),
+        build: { outDir: join(rootDir, "dist", "client", dir), target: ["esnext"] },
+        clearScreen: false,
+      });
+    }
+  }
+  const outDir = join(rootDir, "dist", "server");
+  outputFileSync(join(outDir, ".env"), `APP_SECRET=${appSecret}\n`);
+  buildServer({
+    entryPoints: [join(serverDir, ".hathora", "store.ts")],
+    bundle: true,
+    platform: "node",
+    format: "esm",
+    outfile: join(outDir, "index.mjs"),
+    banner: {
+      js: "import { createRequire as topLevelCreateRequire } from 'module';\n const require = topLevelCreateRequire(import.meta.url);",
+    },
+  });
+}
+
 const rootDir = getProjectRoot(process.cwd());
 const clientDir = join(rootDir, "client");
 const serverDir = join(rootDir, "server");
@@ -129,28 +154,13 @@ if (command === "init") {
   install();
   startServer().then(startFrontends);
 } else if (command === "build") {
-  process.env.VITE_APP_ID = appId;
-  for (const dir of readdirSync(clientDir)) {
-    if (existsSync(join(clientDir, dir, "index.html"))) {
-      buildClient({
-        root: join(clientDir, dir),
-        build: { outDir: join(rootDir, "dist", "client", dir), target: ["esnext"] },
-        clearScreen: false,
-      });
-    }
+  if (!existsSync(join(serverDir, "impl.ts"))) {
+    console.error("Missing impl.ts, make sure to run hathora init first");
+  } else {
+    generate(rootDir, "templates/base");
   }
-  const outDir = join(rootDir, "dist", "server");
-  outputFileSync(join(outDir, ".env"), `APP_SECRET=${appSecret}\n`);
-  buildServer({
-    entryPoints: [join(serverDir, ".hathora", "store.ts")],
-    bundle: true,
-    platform: "node",
-    format: "esm",
-    outfile: join(outDir, "index.mjs"),
-    banner: {
-      js: "import { createRequire as topLevelCreateRequire } from 'module';\n const require = topLevelCreateRequire(import.meta.url);",
-    },
-  });
+  install();
+  build();
 } else {
   console.error(`Unknown command: ${command}`);
 }
