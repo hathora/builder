@@ -293,7 +293,6 @@ export function Forms({ open, setOpen }: { open: boolean; setOpen: (v: boolean) 
                   <div className="relative flex-1 px-4 mt-6 sm:px-6">
                     <div className="forms">
                       {{#each methods}}
-                      {{#if (ne @key ../initialize)}}
                       <MethodForm<{{makeRequestName @key}}>
                         method="{{@key}}"
                         submit={connection.{{@key}}.bind(connection)}
@@ -310,7 +309,6 @@ export function Forms({ open, setOpen }: { open: boolean; setOpen: (v: boolean) 
                           </div>
                         )}
                       </MethodForm>
-                      {{/if}}
                       {{/each}}
                     </div>
                   </div>

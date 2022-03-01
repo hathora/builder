@@ -72,10 +72,6 @@ Example:
 userState: MyUnion
 ```
 
-## initialize
-
-The `initialize` key represents the method which is responsible for creating a new state.
-
 ## error
 
 The `error` key represents the response type the server sends when a method call fails.
