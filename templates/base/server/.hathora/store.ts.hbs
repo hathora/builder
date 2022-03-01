@@ -5,7 +5,7 @@ import { Writer, Reader } from "bin-serde";
 import { Message, NO_DIFF } from "../../api/base";
 import { UserId, encodeStateSnapshot, encodeStateUpdate, {{userState}} as UserState } from "../../api/types";
 import { register } from "./protocol";
-import LogStore from "./logstore";
+import { LogStore } from "@hathora/log-store";
 import { State, ImplWrapper as impl } from "./wrapper";
 import { computeDiff } from "./diff";
 import { Context } from "./methods";
