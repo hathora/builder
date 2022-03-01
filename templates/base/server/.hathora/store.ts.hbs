@@ -2,7 +2,6 @@ import { randomBytes } from "crypto";
 import { existsSync, mkdirSync } from "fs";
 import { Chance } from "chance";
 import { Writer, Reader } from "bin-serde";
-import "dotenv/config";
 import { Message, NO_DIFF } from "../../api/base";
 import { UserId, encodeStateSnapshot, encodeStateUpdate, {{userState}} as UserState } from "../../api/types";
 import { register } from "./protocol";

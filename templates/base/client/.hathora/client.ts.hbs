@@ -19,7 +19,7 @@ export type StateId = string;
 export type UpdateArgs = { stateId: StateId; state: UserState; updatedAt: number; events: string[] };
 
 export class HathoraClient {
-  public constructor(public appId: string) {}
+  public appId = "{{appId}}";
 
   public static getUserFromToken(token: string): UserData {
     return jwtDecode(token);
@@ -28,12 +28,14 @@ export class HathoraClient {
 {{#each auth}}
 {{#if (eq @key "anonymous")}}
   public async loginAnonymous(): Promise<string> {
-    return (await axios.post(`https://${COORDINATOR_HOST}/${this.appId}/login/anonymous`)).data.token;
+    const res = await axios.post(`https://${COORDINATOR_HOST}/${this.appId}/login/anonymous`);
+    return res.data.token;
   }
 
 {{else if (eq @key "google")}}
   public async loginGoogle(idToken: string): Promise<string> {
-    return (await axios.post(`https://${COORDINATOR_HOST}/${this.appId}/login/google`, { idToken })).data.token;
+    const res = await axios.post(`https://${COORDINATOR_HOST}/${this.appId}/login/google`, { idToken });
+    return res.data.token;
   }
 
 {{/if}}

@@ -74,7 +74,6 @@ among-us-tutorial          # project root
 │  ├─ tsconfig.json        # user-editable
 │  ├─ package.json         # user-editable
 ├─ hathora.yml             # user-editable
-├─ .env                    # user-editable
 └─ .gitignore              # user-editable
 ```
 

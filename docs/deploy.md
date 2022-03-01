@@ -31,7 +31,7 @@ surge dist/client/prototype-ui my-app.surge.sh
 
 The `server` directory is a self contains backend application that can be deployed to any cloud server or application hosting environment.
 
-For typescript backends, the two files inside the `server` directory are `index.mjs` and `.env`. Two requirements for running the backend are:
+For typescript backends, the only file inside the `server` directory is `index.mjs`. The two requirements for running the backend are:
 
 - node.js must be installed
 - the `DATA_DIR` environment variable must be set to the path where Hathora should write its data files

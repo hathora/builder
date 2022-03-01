@@ -13,7 +13,7 @@ import { HathoraContext } from "./context";
 import { Forms } from "./Forms";
 import { State } from "./State";
 
-const client = new HathoraClient(import.meta.env.VITE_APP_ID);
+const client = new HathoraClient();
 
 function App() {
   const [token, setToken] = useState<string | undefined>(sessionStorage.getItem(client.appId) ?? undefined);
