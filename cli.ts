@@ -6,6 +6,7 @@ import { join } from "path";
 import { pathToFileURL } from "url";
 import shelljs from "shelljs";
 import { v4 as uuidv4 } from "uuid";
+import dotenv from "dotenv";
 import { createServer, build as buildClient } from "vite";
 import { build as buildServer } from "esbuild";
 import { generate } from "./generate";
@@ -24,6 +25,21 @@ function getProjectRoot(cwd: string): string {
 
 function getCommand(argv: string[]) {
   return argv.length <= 2 ? "generate" : argv[2];
+}
+
+function getAppIdAndSecret() {
+  const appSecret = process.env.APP_SECRET ?? uuidv4();
+  const appId = createHash("sha256").update(appSecret).digest("hex");
+  return { appId, appSecret };
+}
+
+function generateLocal() {
+  dotenv.config({ path: join(rootDir, ".env") });
+  const { appId, appSecret } = getAppIdAndSecret();
+  generate(rootDir, "templates/base", { appId, appSecret });
+  if (!existsSync(join(rootDir, ".env"))) {
+    outputFileSync(join(rootDir, ".env"), `APP_SECRET=${appSecret}\n`);
+  }
 }
 
 function npmInstall(dir: string) {
@@ -51,7 +67,6 @@ function install() {
 async function startServer() {
   shelljs.cd(join(serverDir, ".hathora"));
   process.env.DATA_DIR = join(serverDir, ".hathora/data");
-  process.env.DOTENV_CONFIG_PATH = join(rootDir, ".env");
   process.env.NODE_LOADER_CONFIG = join(__dirname, "node-loader.config.mjs");
   const loaderPath = pathToFileURL(require.resolve("@node-loader/core/lib/node-loader-core.js"));
   const storePath = join(serverDir, ".hathora/store.ts");
@@ -86,7 +101,6 @@ async function startFrontends() {
 }
 
 function build() {
-  process.env.VITE_APP_ID = appId;
   for (const dir of readdirSync(clientDir)) {
     if (existsSync(join(clientDir, dir, "index.html"))) {
       buildClient({
@@ -96,14 +110,12 @@ function build() {
       });
     }
   }
-  const outDir = join(rootDir, "dist", "server");
-  outputFileSync(join(outDir, ".env"), `APP_SECRET=${appSecret}\n`);
   buildServer({
     entryPoints: [join(serverDir, ".hathora", "store.ts")],
     bundle: true,
     platform: "node",
     format: "esm",
-    outfile: join(outDir, "index.mjs"),
+    outfile: join(rootDir, "dist", "server", "index.mjs"),
     banner: {
       js: "import { createRequire as topLevelCreateRequire } from 'module';\n const require = topLevelCreateRequire(import.meta.url);",
     },
@@ -114,12 +126,6 @@ const rootDir = getProjectRoot(process.cwd());
 const clientDir = join(rootDir, "client");
 const serverDir = join(rootDir, "server");
 
-const appSecret = process.env.APP_SECRET ?? uuidv4();
-const appId = createHash("sha256").update(appSecret).digest("hex");
-if (!existsSync(join(rootDir, ".env"))) {
-  outputFileSync(join(rootDir, ".env"), `APP_SECRET=${appSecret}\nVITE_APP_ID=${appId}\n`);
-}
-
 console.log(`Project root: ${rootDir}`);
 const command = getCommand(process.argv);
 if (command === "init") {
@@ -127,13 +133,13 @@ if (command === "init") {
     console.error("Cannot init inside existing project, delete impl.ts to regenerate");
   } else {
     generate(rootDir, "templates/bootstrap");
-    generate(rootDir, "templates/base");
+    generateLocal();
   }
 } else if (command === "generate") {
   if (!existsSync(join(serverDir, "impl.ts"))) {
     console.error("Missing impl.ts, make sure to run hathora init first");
   } else {
-    generate(rootDir, "templates/base");
+    generateLocal();
   }
 } else if (command === "create-plugin-native") {
   generate(rootDir, "templates/plugin/native", { val: process.argv[3] });
@@ -149,7 +155,7 @@ if (command === "init") {
   if (!existsSync(join(serverDir, "impl.ts"))) {
     console.error("Missing impl.ts, make sure to run hathora init first");
   } else {
-    generate(rootDir, "templates/base");
+    generateLocal();
   }
   install();
   startServer().then(startFrontends);
@@ -157,7 +163,8 @@ if (command === "init") {
   if (!existsSync(join(serverDir, "impl.ts"))) {
     console.error("Missing impl.ts, make sure to run hathora init first");
   } else {
-    generate(rootDir, "templates/base");
+    const { appId, appSecret } = getAppIdAndSecret();
+    generate(rootDir, "templates/base", { appId, appSecret });
   }
   install();
   build();

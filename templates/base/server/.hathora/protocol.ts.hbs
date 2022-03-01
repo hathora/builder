@@ -29,13 +29,10 @@ export function register(store: Store): Promise<CoordinatorClient> {
   return new Promise((resolve, reject) => {
     const socket = new net.Socket();
     socket.connect(7147, COORDINATOR_HOST, () => {
-      if (process.env.APP_SECRET === undefined) {
-        throw new Error("APP_SECRET environment variable not set");
-      }
       socket.setKeepAlive(true, 30000);
       socket.write(
         JSON.stringify({
-          appSecret: process.env.APP_SECRET!,
+          appSecret: "{{appSecret}}",
           authInfo: {
 {{#each auth}}
 {{#if (eq @key "anonymous")}}
