@@ -1,7 +1,7 @@
 import axios from "axios";
 import * as T from "./types";
 
-export const COORDINATOR_HOST = "coordinator.hathora.dev";
+export const COORDINATOR_HOST = "{{coordinatorHost}}";
 
 export const NO_DIFF = Symbol("NODIFF");
 export type DeepPartial<T> = T extends string | number | boolean | undefined

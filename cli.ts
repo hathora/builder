@@ -27,18 +27,19 @@ function getCommand(argv: string[]) {
   return argv.length <= 2 ? "generate" : argv[2];
 }
 
-function getAppIdAndSecret() {
+function getAppConfig() {
   const appSecret = process.env.APP_SECRET ?? uuidv4();
   const appId = createHash("sha256").update(appSecret).digest("hex");
-  return { appId, appSecret };
+  const coordinatorHost = process.env.COORDINATOR_HOST ?? "coordinator.hathora.dev";
+  return { appId, appSecret, coordinatorHost };
 }
 
 function generateLocal() {
   dotenv.config({ path: join(rootDir, ".env") });
-  const { appId, appSecret } = getAppIdAndSecret();
-  generate(rootDir, "templates/base", { appId, appSecret });
+  const appConfig = getAppConfig();
+  generate(rootDir, "templates/base", appConfig);
   if (!existsSync(join(rootDir, ".env"))) {
-    outputFileSync(join(rootDir, ".env"), `APP_SECRET=${appSecret}\n`);
+    outputFileSync(join(rootDir, ".env"), `APP_SECRET=${appConfig.appSecret}\n`);
   }
 }
 
@@ -163,8 +164,7 @@ if (command === "init") {
   if (!existsSync(join(serverDir, "impl.ts"))) {
     console.error("Missing impl.ts, make sure to run hathora init first");
   } else {
-    const { appId, appSecret } = getAppIdAndSecret();
-    generate(rootDir, "templates/base", { appId, appSecret });
+    generate(rootDir, "templates/base", getAppConfig());
   }
   install();
   build();

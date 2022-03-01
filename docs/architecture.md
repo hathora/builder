@@ -58,8 +58,12 @@ The coordinator knows data about backend instance health, active client connecti
 
 ## Data Privacy and Offline Development
 
-Currently, there is a single cloud coordinator instance deployed at coordinator.hathora.dev. This instance is mainted by the Hathora team.
+There is a production cloud coordinator instance deployed at coordinator.hathora.dev, mainted by the Hathora team.
 
 The coordinator does not store any game data -- that lives entirely within the backend instances which you own. The coordinator simply proxies game packets back and forth from clients and backend instances. The coordinator does store user profile information in order to allow Hathora applications to perform userId lookups.
 
-To allow for local development without using the cloud coordinator, we are working on releasing a local version of the coordinator. It will not have all the features of the cloud coordinator, but it will be suitable for development and will work in offline contexts.
+To develop locally without using the cloud coordinator (e.g. for working offline), you can make use of the [local coordinator](https://github.com/hathora/local-coordinator). Simply start the local coordinator process in a separate terminal tab, then set the `COORDINATOR_HOST` environment variable when starting the hathora dev server:
+
+```sh
+COORDINATOR_HOST=localhost hathora dev
+```
