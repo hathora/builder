@@ -125,6 +125,12 @@ const coordinator = await register(new Store());
 
 export async function loadState(stateId: StateId) {
   try {
+    const loadFile = "./load.js";
+    if (existsSync(loadFile)) {
+      const load = await import(loadFile);
+      return load() as { state: State; chance: Chance.Chance };
+    }
+
     const rows = log.load(stateId);
 
     const { time, record } = rows[0];
