@@ -24,7 +24,7 @@
     "ts-node": "10.5.0",
     "uuid": "8.3.2",
     "vite": "2.8.5",
-    "zod": "3.12.0"
+    "zod": "3.13.4"
   },
   "devDependencies": {
     "@types/fs-extra": "9.0.13",
