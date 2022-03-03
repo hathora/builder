@@ -123,7 +123,7 @@ class Store {
 
 const coordinator = await register(new Store());
 
-async function loadState(stateId: StateId) {
+export async function loadState(stateId: StateId) {
   try {
     const rows = log.load(stateId);
 
