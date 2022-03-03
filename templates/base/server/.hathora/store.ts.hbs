@@ -128,7 +128,8 @@ export async function loadState(stateId: StateId) {
     const loadFile = "./load.js";
     if (existsSync(loadFile)) {
       const load = await import(loadFile);
-      return load(stateId) as { state: State; chance: Chance.Chance };
+      const { state, seed } = load(stateId) as { state: State; seed: bigint };
+      return { state, chance: Chance(seed.toString()) };
     }
 
     const rows = log.load(stateId);
