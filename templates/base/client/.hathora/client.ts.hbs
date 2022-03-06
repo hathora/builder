@@ -124,6 +124,8 @@ export class HathoraConnection {
     return new Promise((resolve, reject) => {
       if (this.socket.readyState === this.socket.CLOSED) {
         reject("Connection is closed");
+      } else if (this.socket.readyState !== this.socket.OPEN) {
+        setTimeout(() => this.callMethod(method, request).then(resolve).catch(reject), 0);
       } else {
         const msgId: Uint8Array = getRandomValues(new Uint8Array(4));
         this.socket.send(new Uint8Array([...new Uint8Array([method]), ...msgId, ...request]));
