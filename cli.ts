@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { createHash } from "crypto";
-import { outputFileSync, existsSync, readdirSync } from "fs-extra";
+import { outputFileSync, existsSync, readdirSync, copySync } from "fs-extra";
 import { join } from "path";
 import { pathToFileURL } from "url";
 import shelljs from "shelljs";
@@ -160,6 +160,10 @@ if (command === "init") {
   }
   install();
   startServer().then(startFrontends);
+} else if (command === "save") {
+  const stateId = process.argv[3];
+  const saveName = process.argv[4];
+  copySync(join(rootDir, "data", stateId), join(rootDir, "data", "saves", saveName));
 } else if (command === "build") {
   if (!existsSync(join(serverDir, "impl.ts"))) {
     console.error("Missing impl.ts, make sure to run hathora init first");

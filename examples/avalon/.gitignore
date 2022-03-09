@@ -3,6 +3,7 @@ node_modules
 dist
 .env
 /api
-/data
+/data/*
+!/data/saves
 /client/prototype-ui/*
 !/client/prototype-ui/plugins
