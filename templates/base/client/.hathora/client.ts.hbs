@@ -83,13 +83,13 @@ export class HathoraConnection {
   private changedAt = 0;
 
   public constructor(public stateId: StateId, private socket: WebSocket, onUpdate: (updateArgs: UpdateArgs) => void) {
-    socket.onmessage = async ({ data }) => {
+    socket.onmessage = ({ data }) => {
       if (this.state === undefined) {
         this.state = decodeStateSnapshot(new Uint8Array(data as ArrayBuffer));
         onUpdate({ stateId, state: JSON.parse(JSON.stringify(this.state)), updatedAt: 0, events: [] });
         return;
       }
-      const { stateDiff, changedAtDiff, responses, events } = await decodeStateUpdate(new Uint8Array(data as ArrayBuffer));
+      const { stateDiff, changedAtDiff, responses, events } = decodeStateUpdate(new Uint8Array(data as ArrayBuffer));
       if (stateDiff !== undefined) {
         this.state = computePatch(this.state, stateDiff);
       }
