@@ -21,9 +21,9 @@ export enum Method {
 export type OkResponse = { type: "ok" };
 export type ErrorResponse = { type: "error"; error: {{> renderTypeArg error}} };
 export type Response = OkResponse | ErrorResponse;
-export const Response: { ok: () => OkResponse; error: (error: {{> renderTypeArg error}}) => ErrorResponse } = {
-  ok: () => ({ type: "ok" }),
-  error: (error) => ({ type: "error", error }),
+export const Response: { ok: () => Promise<OkResponse>; error: (error: {{> renderTypeArg error}}) => Promise<ErrorResponse> } = {
+  ok: () => new Promise(resolve => resolve({ type: "ok" })),
+  error: (error) => new Promise(resolve => resolve({ type: "error", error })),
 };
 
 export type ResponseMessage = { type: "response"; msgId: number; response: Response };

@@ -334,19 +334,19 @@ export function encodeStateUpdate(
   }
   return buf.toBuffer();
 }
-export function decodeStateUpdate(buf: ArrayBufferView | _Reader): {
+export async function decodeStateUpdate(buf: ArrayBufferView | _Reader): Promise<{
   stateDiff?: _DeepPartial<{{userState}}>;
   changedAtDiff: number;
   responses: _ResponseMessage[];
   events: _EventMessage[];
-} {
+}> {
   const sb = ArrayBuffer.isView(buf) ? new _Reader(buf) : buf;
   const changedAtDiff = sb.readUVarint();
-  const responses = [...Array(sb.readUVarint())].map(() => {
+  const responses = await Promise.all([...Array(sb.readUVarint())].map(async () => {
     const msgId = sb.readUInt32();
     const maybeError = parseOptional(sb, () => {{> renderDecodeArg error}});
-    return _Message.response(msgId, maybeError === undefined ? _Response.ok() : _Response.error(maybeError));
-  });
+    return _Message.response(msgId, maybeError === undefined ? await _Response.ok() : await _Response.error(maybeError));
+  }));
   const events = [...Array(sb.readUVarint())].map(() => _Message.event(sb.readString()));
   const stateDiff = sb.remaining() ? {{#with (lookup types userState)}}{{> renderDecodeDiffArg}}{{/with}} : undefined;
   return { stateDiff, changedAtDiff, responses, events };
