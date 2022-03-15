@@ -13,13 +13,16 @@
     "LICENSE"
   ],
   "dependencies": {
+    "@hathora/log-store": "^0.0.2",
     "@node-loader/core": "2.0.0",
+    "bin-serde": "^1.1.1",
     "dotenv": "16.0.0",
     "esbuild": "0.14.25",
     "fs-extra": "10.0.1",
     "handlebars": "4.7.7",
     "hot-esm": "1.4.0",
     "js-yaml": "4.1.0",
+    "jsonwebtoken": "^8.5.1",
     "shelljs": "0.8.5",
     "ts-node": "10.6.0",
     "uuid": "8.3.2",
@@ -29,6 +32,7 @@
   "devDependencies": {
     "@types/fs-extra": "9.0.13",
     "@types/js-yaml": "4.0.5",
+    "@types/jsonwebtoken": "^8.5.8",
     "@types/node": "17.0.21",
     "@types/shelljs": "0.8.11",
     "@types/uuid": "8.3.4",

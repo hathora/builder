@@ -1,14 +1,17 @@
 #!/usr/bin/env node
 
-import { createHash } from "crypto";
+import { createHash, randomBytes } from "crypto";
 import { outputFileSync, existsSync, readdirSync, copySync } from "fs-extra";
 import { join } from "path";
 import { pathToFileURL } from "url";
+import jwt from "jsonwebtoken";
 import shelljs from "shelljs";
 import { v4 as uuidv4 } from "uuid";
 import dotenv from "dotenv";
 import { createServer, build as buildClient } from "vite";
 import { build as buildServer } from "esbuild";
+import { Reader } from "bin-serde";
+import { LogStore } from "@hathora/log-store";
 import { generate } from "./generate";
 import "./helpers";
 
@@ -101,6 +104,31 @@ async function startFrontends() {
   }
 }
 
+function loadUsersFromLog(stateId: bigint) {
+  const log = new LogStore(join(rootDir, "data"));
+  const rows = log.load(stateId);
+  const userIds = new Set<string>();
+
+  const { record } = rows[0];
+  const reader = new Reader(record);
+  reader.readUInt64(); // seed
+  userIds.add(reader.readString());
+
+  for (let i = 1; i < rows.length; i++) {
+    const { record } = rows[i];
+    const reader = new Reader(record);
+    const method = reader.readUInt8();
+    if (method === 0xff) {
+      reader.readUInt32(); // timeDelta
+      continue;
+    }
+    userIds.add(reader.readString());
+    reader.readBuffer(reader.readUInt32()); // argsBuffer
+  }
+
+  return userIds;
+}
+
 function build() {
   for (const dir of readdirSync(clientDir)) {
     if (existsSync(join(clientDir, dir, "index.html"))) {
@@ -164,6 +192,19 @@ if (command === "init") {
   const stateId = process.argv[3];
   const saveName = process.argv[4];
   copySync(join(rootDir, "data", stateId), join(rootDir, "data", "saves", saveName));
+} else if (command === "load") {
+  const saveName = process.argv[3];
+  const stateId = randomBytes(8).readBigUInt64LE();
+  copySync(join(rootDir, "data", "saves", saveName), join(rootDir, "data", stateId.toString(36)));
+
+  dotenv.config({ path: join(rootDir, ".env") });
+  const { appSecret } = getAppConfig();
+
+  const userIds = loadUsersFromLog(stateId);
+  userIds.forEach((userId) => {
+    const token = jwt.sign({ id: userId }, appSecret);
+    console.log(`http://localhost:3000/state/${stateId.toString(36)}#${token}`);
+  });
 } else if (command === "build") {
   if (!existsSync(join(serverDir, "impl.ts"))) {
     console.error("Missing impl.ts, make sure to run hathora init first");
