@@ -15,7 +15,7 @@
   "dependencies": {
     "@node-loader/core": "2.0.0",
     "dotenv": "16.0.0",
-    "esbuild": "0.14.25",
+    "esbuild": "0.14.26",
     "fs-extra": "10.0.1",
     "handlebars": "4.7.7",
     "hot-esm": "1.4.0",
