@@ -15,14 +15,14 @@ type InternalState = {
 };
 
 export class Impl implements Methods<InternalState> {
-  initialize(userId: UserId, ctx: Context): InternalState {
+  async initialize(userId: UserId, ctx: Context): Promise<InternalState> {
     return {
       playerA: { id: userId, direction: Direction.NONE, paddle: MAP_HEIGHT / 2, score: 0 },
       playerB: { direction: Direction.NONE, paddle: MAP_HEIGHT / 2, score: 0 },
       ball: { x: MAP_WIDTH / 2, y: MAP_HEIGHT / 2, angle: ctx.chance.floating({ min: 0, max: 2 * Math.PI }) },
     };
   }
-  setDirection(state: InternalState, userId: UserId, ctx: Context, request: ISetDirectionRequest): Response {
+  async setDirection(state: InternalState, userId: UserId, ctx: Context, request: ISetDirectionRequest) {
     if (state.playerA.id === userId) {
       state.playerA.direction = request.direction;
       return Response.ok();
@@ -37,10 +37,10 @@ export class Impl implements Methods<InternalState> {
       return Response.error("Not in game");
     }
   }
-  getUserState(state: InternalState, userId: UserId): PlayerState {
+  async getUserState(state: InternalState, userId: UserId): Promise<PlayerState> {
     return state;
   }
-  onTick(state: InternalState, ctx: Context, timeDelta: number): void {
+  async onTick(state: InternalState, ctx: Context, timeDelta: number) {
     movePaddle(state.playerA, PADDLE_SPEED * timeDelta);
     movePaddle(state.playerB, PADDLE_SPEED * timeDelta);
     if (state.playerB.id === undefined) {

@@ -25,7 +25,7 @@ type InternalState = {
 };
 
 export class Impl implements Methods<InternalState> {
-  initialize(userId: UserId, ctx: Context): InternalState {
+  async initialize(userId: UserId, ctx: Context): Promise<InternalState> {
     return {
       players: [createPlayer(userId)],
       dealerIdx: 0,
@@ -35,7 +35,7 @@ export class Impl implements Methods<InternalState> {
       deck: [],
     };
   }
-  joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {
+  async joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest) {
     if (state.players.find((player) => player.id === userId) !== undefined) {
       return Response.error("Already joined");
     }
@@ -45,7 +45,7 @@ export class Impl implements Methods<InternalState> {
     state.players.push(createPlayer(userId));
     return Response.ok();
   }
-  startGame(state: InternalState, userId: string, ctx: Context, request: IStartGameRequest): Response {
+  async startGame(state: InternalState, userId: string, ctx: Context, request: IStartGameRequest) {
     if (state.smallBlindAmt > 0) {
       return Response.error("Already started");
     }
@@ -62,7 +62,7 @@ export class Impl implements Methods<InternalState> {
     state.players.forEach((player) => (player.chipCount = request.startingChips));
     return Response.ok();
   }
-  startRound(state: InternalState, userId: UserId, ctx: Context, request: IStartRoundRequest): Response {
+  async startRound(state: InternalState, userId: UserId, ctx: Context, request: IStartRoundRequest) {
     if (state.smallBlindAmt === 0) {
       return Response.error("Game not started");
     }
@@ -83,7 +83,7 @@ export class Impl implements Methods<InternalState> {
     });
     return Response.ok();
   }
-  fold(state: InternalState, userId: UserId, ctx: Context, request: IFoldRequest): Response {
+  async fold(state: InternalState, userId: UserId, ctx: Context, request: IFoldRequest) {
     const player = state.players[state.activePlayerIdx];
     if (player.id !== userId || player.status !== PlayerStatus.WAITING) {
       return Response.error("Not your turn");
@@ -92,7 +92,7 @@ export class Impl implements Methods<InternalState> {
     advanceRound(state);
     return Response.ok();
   }
-  call(state: InternalState, userId: UserId, ctx: Context, request: ICallRequest): Response {
+  async call(state: InternalState, userId: UserId, ctx: Context, request: ICallRequest) {
     const player = state.players[state.activePlayerIdx];
     if (player.id !== userId || player.status !== PlayerStatus.WAITING) {
       return Response.error("Not your turn");
@@ -105,7 +105,7 @@ export class Impl implements Methods<InternalState> {
     advanceRound(state);
     return Response.ok();
   }
-  raise(state: InternalState, userId: UserId, ctx: Context, request: IRaiseRequest): Response {
+  async raise(state: InternalState, userId: UserId, ctx: Context, request: IRaiseRequest) {
     const player = state.players[state.activePlayerIdx];
     if (player.id !== userId || player.status !== PlayerStatus.WAITING) {
       return Response.error("Not your turn");
@@ -119,7 +119,7 @@ export class Impl implements Methods<InternalState> {
     advanceRound(state);
     return Response.ok();
   }
-  getUserState(state: InternalState, userId: UserId): PlayerState {
+  async getUserState(state: InternalState, userId: UserId): Promise<PlayerState> {
     const showdown =
       filterPlayers(state.players, PlayerStatus.WAITING).length === 0 &&
       filterPlayers(state.players, PlayerStatus.PLAYED).length > 1;

@@ -10,31 +10,31 @@ import {
 } from "../api/types";
 
 export class Impl implements Methods<RoomState> {
-  initialize(userId: UserId, ctx: Context): RoomState {
+  async initialize(userId: UserId, ctx: Context): Promise<RoomState> {
     return { createdBy: userId, users: [userId], messages: [] };
   }
-  joinRoom(state: RoomState, userId: string, ctx: Context, request: IJoinRoomRequest): Response {
+  async joinRoom(state: RoomState, userId: string, ctx: Context, request: IJoinRoomRequest) {
     if (state.users.includes(userId)) {
       return Response.error("Already joined");
     }
     state.users.push(userId);
     return Response.ok();
   }
-  leaveRoom(state: RoomState, userId: string, ctx: Context, request: ILeaveRoomRequest): Response {
+  async leaveRoom(state: RoomState, userId: string, ctx: Context, request: ILeaveRoomRequest) {
     if (!state.users.includes(userId)) {
       return Response.error("Not joined");
     }
     state.users.splice(state.users.indexOf(userId), 1);
     return Response.ok();
   }
-  sendPublicMessage(state: RoomState, userId: UserId, ctx: Context, request: ISendPublicMessageRequest): Response {
+  async sendPublicMessage(state: RoomState, userId: UserId, ctx: Context, request: ISendPublicMessageRequest) {
     if (!state.users.includes(userId)) {
       return Response.error("Not joined");
     }
     state.messages.push({ text: request.text, sentAt: ctx.time, sentBy: userId });
     return Response.ok();
   }
-  sendPrivateMessage(state: RoomState, userId: UserId, ctx: Context, request: ISendPrivateMessageRequest): Response {
+  async sendPrivateMessage(state: RoomState, userId: UserId, ctx: Context, request: ISendPrivateMessageRequest) {
     if (!state.users.includes(userId)) {
       return Response.error("Not joined");
     }
@@ -44,7 +44,7 @@ export class Impl implements Methods<RoomState> {
     state.messages.push({ text: request.text, sentAt: ctx.time, sentBy: userId, sentTo: request.to });
     return Response.ok();
   }
-  getUserState(state: RoomState, userId: UserId): RoomState {
+  async getUserState(state: RoomState, userId: UserId): Promise<RoomState> {
     return {
       createdBy: state.createdBy,
       users: state.users,

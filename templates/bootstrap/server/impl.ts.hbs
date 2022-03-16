@@ -12,7 +12,7 @@ import {
 type InternalState = {{userState}};
 
 export class Impl implements Methods<InternalState> {
-  initialize(userId: UserId, ctx: Context): InternalState {
+  async initialize(userId: UserId, ctx: Context): Promise<InternalState> {
     {{#with (lookup types userState)}}
     {{#if (eq type "object")}}
     return {
@@ -26,15 +26,15 @@ export class Impl implements Methods<InternalState> {
     {{/with}}
   }
   {{#each methods}}
-  {{@key}}(state: InternalState, userId: UserId, ctx: Context, request: {{makeRequestName @key}}): Response {
+  async {{@key}}(state: InternalState, userId: UserId, ctx: Context, request: {{makeRequestName @key}}) {
     return Response.error("Not implemented");
   }
   {{/each}}
-  getUserState(state: InternalState, userId: UserId): {{userState}} {
+  async getUserState(state: InternalState, userId: UserId): Promise<{{userState}}> {
     return state;
   }
   {{#if tick}}
-  onTick(state: InternalState, ctx: Context, timeDelta: number): void {}
+  async onTick(state: InternalState, ctx: Context, timeDelta: number) {}
   {{/if}}
 }
 {{#*inline "renderDefault"}}

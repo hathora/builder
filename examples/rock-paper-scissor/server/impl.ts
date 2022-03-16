@@ -10,10 +10,10 @@ import {
 } from "../api/types";
 
 export class Impl implements Methods<PlayerState> {
-  initialize(userId: UserId, ctx: Context): PlayerState {
+  async initialize(userId: UserId, ctx: Context): Promise<PlayerState> {
     return { round: 0, player1: { id: userId, score: 0 } };
   }
-  joinGame(state: PlayerState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {
+  async joinGame(state: PlayerState, userId: UserId, ctx: Context, request: IJoinGameRequest) {
     if (state.player1.id === userId || state.player2?.id === userId) {
       return Response.error("Already joined");
     }
@@ -23,7 +23,7 @@ export class Impl implements Methods<PlayerState> {
     state.player2 = { id: userId, score: 0 };
     return Response.ok();
   }
-  chooseGesture(state: PlayerState, userId: UserId, ctx: Context, request: IChooseGestureRequest): Response {
+  async chooseGesture(state: PlayerState, userId: UserId, ctx: Context, request: IChooseGestureRequest) {
     if (state.player2 === undefined) {
       return Response.error("Game not started");
     }
@@ -45,7 +45,7 @@ export class Impl implements Methods<PlayerState> {
     }
     return Response.ok();
   }
-  nextRound(state: PlayerState, userId: UserId, ctx: Context, request: INextRoundRequest): Response {
+  async nextRound(state: PlayerState, userId: UserId, ctx: Context, request: INextRoundRequest) {
     if (state.player2 === undefined) {
       return Response.error("Game not started");
     }
@@ -57,7 +57,7 @@ export class Impl implements Methods<PlayerState> {
     state.player2.gesture = undefined;
     return Response.ok();
   }
-  getUserState(state: PlayerState, userId: UserId): PlayerState {
+  async getUserState(state: PlayerState, userId: UserId): Promise<PlayerState> {
     if (state.player2 === undefined) {
       return state;
     }

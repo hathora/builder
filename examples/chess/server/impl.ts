@@ -23,17 +23,17 @@ type InternalState = {
 };
 
 export class Impl implements Methods<InternalState> {
-  initialize(userId: UserId, ctx: Context): InternalState {
+  async initialize(userId: UserId, ctx: Context): Promise<InternalState> {
     return { chess: new Chess(), users: [{ name: userId, color: Color.WHITE }], turnCount: 0 };
   }
-  startGame(state: InternalState, userId: UserId, ctx: Context, request: IStartGameRequest): Response {
+  async startGame(state: InternalState, userId: UserId, ctx: Context, request: IStartGameRequest) {
     if (state.users.find((u) => u.name === userId) !== undefined) {
       return Response.error("Need opponent to start game");
     }
     state.users.push({ name: userId, color: Color.BLACK });
     return Response.ok();
   }
-  movePiece(state: InternalState, userId: UserId, ctx: Context, request: IMovePieceRequest): Response {
+  async movePiece(state: InternalState, userId: UserId, ctx: Context, request: IMovePieceRequest) {
     if (gameStatus(state) === GameStatus.WAITING) {
       return Response.error("Game not started");
     }
@@ -48,7 +48,7 @@ export class Impl implements Methods<InternalState> {
     state.turnCount++;
     return Response.ok();
   }
-  getUserState(state: InternalState, userId: UserId): PlayerState {
+  async getUserState(state: InternalState, userId: UserId): Promise<PlayerState> {
     const internalUser = state.users.find((u) => u.name === userId);
     return {
       board: state.chess.board().flatMap((pieces, i) => {

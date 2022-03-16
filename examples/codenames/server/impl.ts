@@ -24,10 +24,10 @@ type InternalState = {
 };
 
 export class Impl implements Methods<InternalState> {
-  initialize(userId: UserId, ctx: Context): InternalState {
+  async initialize(userId: UserId, ctx: Context): Promise<InternalState> {
     return { players: [createPlayer(userId)], currentTurn: Color.YELLOW, cards: [] };
   }
-  joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {
+  async joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest) {
     if (getGameStatus(state.cards) !== GameStatus.NOT_STARTED) {
       return Response.error("Game already started");
     }
@@ -37,7 +37,7 @@ export class Impl implements Methods<InternalState> {
     state.players.push(createPlayer(userId));
     return Response.ok();
   }
-  startGame(state: InternalState, userId: UserId, ctx: Context, request: IStartGameRequest): Response {
+  async startGame(state: InternalState, userId: UserId, ctx: Context, request: IStartGameRequest) {
     if (getGameStatus(state.cards) === GameStatus.IN_PROGRESS) {
       return Response.error("Game is in progress");
     }
@@ -65,7 +65,7 @@ export class Impl implements Methods<InternalState> {
     state.currentTurn = Color.RED;
     return Response.ok();
   }
-  giveClue(state: InternalState, userId: UserId, ctx: Context, request: IGiveClueRequest): Response {
+  async giveClue(state: InternalState, userId: UserId, ctx: Context, request: IGiveClueRequest) {
     if (getGameStatus(state.cards) !== GameStatus.IN_PROGRESS) {
       return Response.error("Game is over");
     }
@@ -82,7 +82,7 @@ export class Impl implements Methods<InternalState> {
     state.turnInfo = { hint: request.hint, amount: request.amount, guessed: 0 };
     return Response.ok();
   }
-  selectCard(state: InternalState, userId: UserId, ctx: Context, request: ISelectCardRequest): Response {
+  async selectCard(state: InternalState, userId: UserId, ctx: Context, request: ISelectCardRequest) {
     if (getGameStatus(state.cards) !== GameStatus.IN_PROGRESS) {
       return Response.error("Game is over");
     }
@@ -114,7 +114,7 @@ export class Impl implements Methods<InternalState> {
     }
     return Response.ok();
   }
-  endTurn(state: InternalState, userId: UserId, ctx: Context, request: IEndTurnRequest): Response {
+  async endTurn(state: InternalState, userId: UserId, ctx: Context, request: IEndTurnRequest) {
     if (getGameStatus(state.cards) !== GameStatus.IN_PROGRESS) {
       return Response.error("Game is over");
     }
@@ -135,7 +135,7 @@ export class Impl implements Methods<InternalState> {
     state.turnInfo = undefined;
     return Response.ok();
   }
-  getUserState(state: InternalState, userId: UserId): PlayerState {
+  async getUserState(state: InternalState, userId: UserId): Promise<PlayerState> {
     const player = state.players.find((p) => p.id === userId);
     const gameStatus = getGameStatus(state.cards);
     return {

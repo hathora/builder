@@ -21,7 +21,7 @@ type InternalState = {
 };
 
 export class Impl implements Methods<InternalState> {
-  initialize(userId: UserId, ctx: Context): InternalState {
+  async initialize(userId: UserId, ctx: Context): Promise<InternalState> {
     const deck = [];
     for (let i = 2; i <= 9; i++) {
       deck.push({ value: i, color: Color.RED });
@@ -31,14 +31,14 @@ export class Impl implements Methods<InternalState> {
     }
     return { deck, players: [userId], hands: new Map(), turn: userId };
   }
-  joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {
+  async joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest) {
     if (state.players.find((playerId) => playerId === userId) !== undefined) {
       return Response.error("Already joined");
     }
     state.players.push(userId);
     return Response.ok();
   }
-  startGame(state: InternalState, userId: UserId, ctx: Context, request: IStartGameRequest): Response {
+  async startGame(state: InternalState, userId: UserId, ctx: Context, request: IStartGameRequest) {
     if (state.pile !== undefined) {
       return Response.error("Already started");
     }
@@ -53,7 +53,7 @@ export class Impl implements Methods<InternalState> {
     state.pile = state.deck.pop();
     return Response.ok();
   }
-  playCard(state: InternalState, userId: UserId, ctx: Context, request: IPlayCardRequest): Response {
+  async playCard(state: InternalState, userId: UserId, ctx: Context, request: IPlayCardRequest) {
     if (state.turn != userId) {
       return Response.error("Not your turn");
     }
@@ -80,7 +80,7 @@ export class Impl implements Methods<InternalState> {
     state.turn = state.players[nextIdx];
     return Response.ok();
   }
-  drawCard(state: InternalState, userId: UserId, ctx: Context, request: IDrawCardRequest): Response {
+  async drawCard(state: InternalState, userId: UserId, ctx: Context, request: IDrawCardRequest) {
     if (state.deck.length === 0) {
       return Response.error("Deck is empty");
     }
@@ -91,7 +91,7 @@ export class Impl implements Methods<InternalState> {
     hand.push(state.deck.pop()!);
     return Response.ok();
   }
-  getUserState(state: InternalState, userId: UserId): PlayerState {
+  async getUserState(state: InternalState, userId: UserId): Promise<PlayerState> {
     return {
       hand: state.hands.get(userId) ?? [],
       players: state.players,

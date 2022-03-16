@@ -53,10 +53,10 @@ const QUEST_CONFIGURATIONS = new Map([
 ]);
 
 export class Impl implements Methods<InternalState> {
-  initialize(userId: UserId, ctx: Context): InternalState {
+  async initialize(userId: UserId, ctx: Context): Promise<InternalState> {
     return { creator: userId, players: [userId], roles: new Map(), quests: [] };
   }
-  joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {
+  async joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest) {
     if (state.players.find((player) => player === userId) !== undefined) {
       return Response.error("Already joined");
     }
@@ -66,7 +66,7 @@ export class Impl implements Methods<InternalState> {
     state.players.push(userId);
     return Response.ok();
   }
-  startGame(state: InternalState, userId: UserId, ctx: Context, request: IStartGameRequest): Response {
+  async startGame(state: InternalState, userId: UserId, ctx: Context, request: IStartGameRequest) {
     if (!QUEST_CONFIGURATIONS.has(state.players.length)) {
       return Response.error("Invalid number of players");
     }
@@ -92,7 +92,7 @@ export class Impl implements Methods<InternalState> {
     state.quests.push(createQuest(1, 1, state.players.length, leader));
     return Response.ok();
   }
-  proposeQuest(state: InternalState, userId: UserId, ctx: Context, request: IProposeQuestRequest): Response {
+  async proposeQuest(state: InternalState, userId: UserId, ctx: Context, request: IProposeQuestRequest) {
     const quest = state.quests.find((q) => questId(q) === request.questId)!;
     if (quest === undefined) {
       return Response.error("Invalid questId");
@@ -115,7 +115,7 @@ export class Impl implements Methods<InternalState> {
     quest.members = request.proposedMembers;
     return Response.ok();
   }
-  voteForProposal(state: InternalState, userId: UserId, ctx: Context, request: IVoteForProposalRequest): Response {
+  async voteForProposal(state: InternalState, userId: UserId, ctx: Context, request: IVoteForProposalRequest) {
     const quest = state.quests.find((q) => questId(q) === request.questId);
     if (quest === undefined) {
       return Response.error("Invalid questId");
@@ -136,7 +136,7 @@ export class Impl implements Methods<InternalState> {
     }
     return Response.ok();
   }
-  voteInQuest(state: InternalState, userId: UserId, ctx: Context, request: IVoteInQuestRequest): Response {
+  async voteInQuest(state: InternalState, userId: UserId, ctx: Context, request: IVoteInQuestRequest) {
     const quest = state.quests.find((q) => questId(q) === request.questId);
     if (quest === undefined) {
       return Response.error("Invalid questId");
@@ -159,7 +159,7 @@ export class Impl implements Methods<InternalState> {
     }
     return Response.ok();
   }
-  getUserState(state: InternalState, userId: UserId): PlayerState {
+  async getUserState(state: InternalState, userId: UserId): Promise<PlayerState> {
     const role = state.roles.get(userId);
     const roles = [...state.roles];
     const knownRoles = role !== undefined ? ROLES_INFO.get(role)!.knownRoles : new Set();

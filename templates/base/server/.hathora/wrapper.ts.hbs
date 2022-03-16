@@ -9,14 +9,14 @@ import {
 } from "../../api/types";
 
 let impl = new (await import("../impl")).Impl();
-export type State = ReturnType<typeof impl.initialize>;
+export type State = Awaited<ReturnType<typeof impl.initialize>>;
 
 let changedAt: number | undefined = undefined;
 
 export const ImplWrapper = {
   async initialize(userId: UserId, ctx: Context) {
     await tryReloadImpl();
-    const state = impl.initialize(userId, ctx);
+    const state = await impl.initialize(userId, ctx);
     return onChange(state, () => (changedAt = Date.now()));
   },
   async getResult(state: State, userId: UserId, method: Method, ctx: Context, argsBuffer: ArrayBufferView) {
@@ -31,7 +31,7 @@ export const ImplWrapper = {
   {{#if tick}}
   async onTick(state: State, ctx: Context, timeDelta: number) {
     await tryReloadImpl();
-    impl.onTick(state, ctx, timeDelta);
+    await impl.onTick(state, ctx, timeDelta);
   },
   {{/if}}
   async getUserState(state: State, userId: UserId) {

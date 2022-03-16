@@ -16,12 +16,12 @@ export interface Context {
 }
 
 export interface Methods<T> {
-  initialize(userId: UserId, ctx: Context): T;
+  initialize(userId: UserId, ctx: Context): Promise<T>;
   {{#each methods}}
-  {{@key}}(state: T, userId: UserId, ctx: Context, request: {{makeRequestName @key}}): Response;
+  {{@key}}(state: T, userId: UserId, ctx: Context, request: {{makeRequestName @key}}): Promise<Response>;
   {{/each}}
-  getUserState(state: T, userId: UserId): UserState;
+  getUserState(state: T, userId: UserId): Promise<UserState>;
   {{#if tick}}
-  onTick(state: T, ctx: Context, timeDelta: number): void;
+  onTick(state: T, ctx: Context, timeDelta: number): Promise<void>;
   {{/if}}
 }
