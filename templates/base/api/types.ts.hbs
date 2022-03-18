@@ -308,9 +308,14 @@ parseBoolean(sb)
 
 export function encodeStateSnapshot(x: {{userState}}) {
   const buf = new _Writer();
-  {{#with (lookup types userState)}}
-  {{> renderEncodeArg}};
-  {{/with}}
+  try {
+    {{#with (lookup types userState)}}
+    {{> renderEncodeArg}};
+    {{/with}}
+  } catch (e) {
+    console.error("Invalid user state", x);
+    throw e;
+  }
   return buf.toBuffer();
 }
 export function encodeStateUpdate(

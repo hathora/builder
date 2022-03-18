@@ -5,9 +5,14 @@ import * as T from "../../api/types";
 {{> renderDiffFunction}}
 {{/each}}
 export function computeDiff(state: T.{{userState}}, prevState: T.{{userState}}): DeepPartial<T.{{userState}}> | typeof NO_DIFF {
-  {{#with (lookup types userState)}}
-  return {{> renderDiff a="state" b="prevState"}};
-  {{/with}}
+  try {
+    {{#with (lookup types userState)}}
+    return {{> renderDiff a="state" b="prevState"}};
+    {{/with}}
+  } catch (e) {
+    console.error("Invalid user state", state);
+    throw e;
+  }
 }
 
 function diffPrimitive<T>(a: T, b: T) {
