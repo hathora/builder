@@ -142,6 +142,7 @@ const serverDir = join(rootDir, "server");
 console.log(`Project root: ${chalk.underline(rootDir)}`);
 
 yargs(hideBin(process.argv))
+  .scriptName("hathora")
   .command({
     command: "*",
     aliases: ["gen", "g", "generate"],
