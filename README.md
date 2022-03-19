@@ -69,5 +69,5 @@ https://github.com/hathora/hathora
 You can now your local hathora cli as follows:
 
 ```sh
-npm cli dev
+npm run cli dev
 ```
