@@ -35,6 +35,7 @@
     "@types/shelljs": "0.8.11",
     "@types/uuid": "8.3.4",
     "@types/yargs": "^17.0.10",
+    "prettier": "^2.6.0",
     "typescript": "4.6.2"
   },
   "engines": {
