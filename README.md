@@ -66,7 +66,7 @@ To contribute to Hathora, first clone the repo:
 https://github.com/hathora/hathora
 ```
 
-You can now your local hathora cli as follows:
+You can now run your local hathora cli as follows:
 
 ```sh
 npm run cli dev
