@@ -66,14 +66,8 @@ To contribute to Hathora, first clone the repo:
 https://github.com/hathora/hathora
 ```
 
-Make sure you have `ts-node` installed globally:
+You can now run your local hathora cli as follows:
 
 ```sh
-npm install -g ts-node
-```
-
-You can now invoke your local hathora cli as follows:
-
-```
-ts-node /path/to/hathora/cli.ts dev
+npm run cli dev
 ```

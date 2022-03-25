@@ -6,9 +6,9 @@ The hathora framework includes an automatically generated [prototype UI](type-dr
 
 Plugins allow you to customize the way the prototype UI renders types in its state view. Plugins simply need to export a webcomponent, and can be created as follows for the following frontend frameworks:
 
-- No framework: `hathora create-plugin-native <type>`
-- React: `hathora create-plugin-react <type>`
-- Lit: `hathora create-plugin-view <type>`
+- No framework: `hathora create-plugin native <type>`
+- React: `hathora create-plugin react <type>`
+- Lit: `hathora create-plugin view <type>`
 
 For example, you can create a plugin for type `Foo` using React by running `hathora create-plugin-react Foo`. This will cause the debug app to render your plugin's component anywhere `Foo` shows up in the state tree (instead of the rendering the default json view).
 
@@ -60,6 +60,6 @@ When you're ready to move away from the debug app, simply create a new folder (y
 
 The `hathora` frontend tooling is built around [vite](https://vitejs.dev/), which generally creates for a pleasant development experience.
 
-For an example of a fully custom frotend built using hathora and PIXI.js, see https://github.com/hathora/ship-battle.
+For an example of a fully custom frontend built using hathora and PIXI.js, see https://github.com/hathora/ship-battle.
 
 For an example using React, see https://github.com/hpx7/tussie-mussie.

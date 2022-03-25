@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 
+import yargs from "yargs/yargs";
+import { hideBin } from "yargs/helpers";
+import chalk from "chalk";
+
 import { createHash } from "crypto";
 import { outputFileSync, existsSync, readdirSync, copySync } from "fs-extra";
 import { join } from "path";
@@ -21,10 +25,6 @@ function getProjectRoot(cwd: string): string {
     throw new Error("Doesn't appear to be inside a hathora project");
   }
   return getProjectRoot(parentDir);
-}
-
-function getCommand(argv: string[]) {
-  return argv.length <= 2 ? "generate" : argv[2];
 }
 
 function getAppConfig() {
@@ -81,7 +81,7 @@ async function startServer() {
 }
 
 async function startFrontend(root: string) {
-  console.log(`Starting frontend at ${root}`);
+  console.log(`Starting frontend at ${chalk.blue.underline.bold(root)}`);
   return createServer({
     root,
     build: { target: ["esnext"] },
@@ -127,51 +127,145 @@ const rootDir = getProjectRoot(process.cwd());
 const clientDir = join(rootDir, "client");
 const serverDir = join(rootDir, "server");
 
-console.log(`Project root: ${rootDir}`);
-const command = getCommand(process.argv);
-if (command === "init") {
-  if (existsSync(join(serverDir, "impl.ts"))) {
-    console.error("Cannot init inside existing project, delete impl.ts to regenerate");
-  } else {
-    generate(rootDir, "templates/bootstrap");
-    generateLocal();
-  }
-} else if (command === "generate") {
-  if (!existsSync(join(serverDir, "impl.ts"))) {
-    console.error("Missing impl.ts, make sure to run hathora init first");
-  } else {
-    generateLocal();
-  }
-} else if (command === "create-plugin-native") {
-  generate(rootDir, "templates/plugin/native", { val: process.argv[3] });
-} else if (command === "create-plugin-lit") {
-  generate(rootDir, "templates/plugin/lit", { val: process.argv[3] });
-} else if (command === "create-plugin-react") {
-  generate(rootDir, "templates/plugin/react", { val: process.argv[3] });
-} else if (command === "install") {
-  install();
-} else if (command === "start") {
-  startServer().then(startFrontends);
-} else if (command === "dev") {
-  if (!existsSync(join(serverDir, "impl.ts"))) {
-    console.error("Missing impl.ts, make sure to run hathora init first");
-  } else {
-    generateLocal();
-  }
-  install();
-  startServer().then(startFrontends);
-} else if (command === "save") {
-  const stateId = process.argv[3];
-  const saveName = process.argv[4];
-  copySync(join(rootDir, "data", stateId), join(rootDir, "data", "saves", saveName));
-} else if (command === "build") {
-  if (!existsSync(join(serverDir, "impl.ts"))) {
-    console.error("Missing impl.ts, make sure to run hathora init first");
-  } else {
-    generate(rootDir, "templates/base", getAppConfig());
-  }
-  install();
-  build();
-} else {
-  console.error(`Unknown command: ${command}`);
-}
+console.log(`Project root: ${chalk.underline(rootDir)}`);
+
+yargs(hideBin(process.argv))
+  .scriptName("hathora")
+  .command({
+    command: "*",
+    aliases: ["gen", "g", "generate"],
+    describe: "Regenerates the types from hathora.yml",
+    handler: (_argv) => {
+      if (!existsSync(join(serverDir, "impl.ts"))) {
+        console.error(
+          `${chalk.red("Missing impl.ts, make sure to run")}` +
+            `${chalk.blue.bold(" hathora init ")}` +
+            `${chalk.red("first")}`
+        );
+      } else {
+        generateLocal();
+      }
+    },
+  })
+  .command({
+    command: "init",
+    aliases: ["initialize", "initialise"],
+    describe: "Creates a new hathora project",
+    handler: (_argv) => {
+      if (existsSync(join(serverDir, "impl.ts"))) {
+        console.error(
+          `${chalk.red("Cannot init inside existing project, delete ")}` +
+            `${chalk.blue.underline("impl.ts")}` +
+            `${chalk.red(" to regenerate")}`
+        );
+      } else {
+        generate(rootDir, "templates/bootstrap");
+        generateLocal();
+      }
+    },
+  })
+  .command({
+    command: "start",
+    aliases: ["up", "s"],
+    describe: "Starts the hathora server",
+    handler: (_argv) => {
+      startServer().then(startFrontends);
+    },
+  })
+  .command({
+    command: "dev",
+    aliases: ["development", "d"],
+    describe: "Starts the server in development mode",
+    handler: (_argv) => {
+      if (!existsSync(join(serverDir, "impl.ts"))) {
+        console.error(
+          `${chalk.red("Missing impl.ts, make sure to run")}` +
+            `${chalk.blue.bold(" hathora init ")}` +
+            `${chalk.red("first")}`
+        );
+      } else {
+        generateLocal();
+      }
+      install();
+      startServer().then(startFrontends);
+    },
+  })
+  .command({
+    command: "save [stateId] [saveName]",
+    aliases: ["gamesave", "sv"],
+    describe: "Creates a named save game from a specific state id",
+    handler: (argv) => {
+      copySync(join(rootDir, "data", argv.stateId as string), join(rootDir, "data", "saves", argv.saveName as string));
+    },
+  })
+  .command({
+    command: "build",
+    aliases: ["b"],
+    describe: "Builds the project",
+    handler: (_argv) => {
+      if (!existsSync(join(serverDir, "impl.ts"))) {
+        console.error(
+          `${chalk.red("Missing impl.ts, make sure to run")}` +
+            `${chalk.blue.bold(" hathora init ")}` +
+            `${chalk.red("first")}`
+        );
+      } else {
+        generate(rootDir, "templates/base", getAppConfig());
+      }
+      install();
+      build();
+    },
+  })
+  .command({
+    command: "install",
+    aliases: ["i"],
+    describe: "Install hathora dependencies",
+    handler: (_argv) => {
+      install();
+    },
+  })
+  .command({
+    // For backwards compatibility.
+    command: "create-plugin-native <type>",
+    describe: "Creates a native plugin",
+    handler: (argv) => {
+      console.log(chalk.red(`create-plugin-native has been deprecated. Use create-plugin native ${argv.type} instead`));
+    },
+  })
+  .command({
+    // For backwards compatibility
+    command: "create-plugin-react <type>",
+    describe: "Creates a react plugin",
+    handler: (argv) => {
+      console.log(chalk.red(`create-plugin-react has been deprecated. Use create-plugin react ${argv.type} instead`));
+    },
+  })
+  .command({
+    // For backwards compatibility
+    command: "create-plugin-view <type>",
+    aliases: ["create-plugin-lit"],
+    describe: "Creates a lit plugin",
+    handler: (argv) => {
+      console.log(chalk.red(`create-plugin-view has been deprecated. Use create-plugin view ${argv.type} instead`));
+    },
+  })
+  .command({
+    command: "create-plugin <lib> <type>",
+    describe: "Creates a plugin",
+    handler: (argv) => {
+      generate(rootDir, `templates/plugin/${argv.lib}`, {
+        val: argv.type as string,
+      });
+    },
+  })
+  .command({
+    command: "version",
+    describe: "Prints out the current version of Hathora",
+    handler: (_argv) => {
+      console.log(`Version: ${require("./package.json").version}`);
+    },
+  })
+  .completion()
+  .demandCommand()
+  .help()
+  .wrap(72).argv;
