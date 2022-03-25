@@ -133,7 +133,7 @@ yargs(hideBin(process.argv))
   .scriptName("hathora")
   .command({
     command: "*",
-    aliases: ["gen", "g", "generate"],
+    aliases: ["generate", "gen", "g"],
     describe: "Regenerates the types from hathora.yml",
     handler: (_argv) => {
       if (!existsSync(join(serverDir, "impl.ts"))) {
@@ -225,47 +225,11 @@ yargs(hideBin(process.argv))
     },
   })
   .command({
-    // For backwards compatibility.
-    command: "create-plugin-native <type>",
-    describe: "Creates a native plugin",
-    handler: (argv) => {
-      console.log(chalk.red(`create-plugin-native has been deprecated. Use create-plugin native ${argv.type} instead`));
-    },
-  })
-  .command({
-    // For backwards compatibility
-    command: "create-plugin-react <type>",
-    describe: "Creates a react plugin",
-    handler: (argv) => {
-      console.log(chalk.red(`create-plugin-react has been deprecated. Use create-plugin react ${argv.type} instead`));
-    },
-  })
-  .command({
-    // For backwards compatibility
-    command: "create-plugin-view <type>",
-    aliases: ["create-plugin-lit"],
-    describe: "Creates a lit plugin",
-    handler: (argv) => {
-      console.log(chalk.red(`create-plugin-view has been deprecated. Use create-plugin view ${argv.type} instead`));
-    },
-  })
-  .command({
     command: "create-plugin <lib> <type>",
     describe: "Creates a plugin",
     handler: (argv) => {
-      generate(rootDir, `templates/plugin/${argv.lib}`, {
-        val: argv.type as string,
-      });
-    },
-  })
-  .command({
-    command: "version",
-    describe: "Prints out the current version of Hathora",
-    handler: (_argv) => {
-      console.log(`Version: ${require("./package.json").version}`);
+      generate(rootDir, `templates/plugin/${argv.lib}`, { val: argv.type as string });
     },
   })
   .completion()
-  .demandCommand()
-  .help()
   .wrap(72).argv;
