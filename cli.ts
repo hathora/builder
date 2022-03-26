@@ -132,8 +132,8 @@ console.log(`Project root: ${chalk.underline(rootDir)}`);
 yargs(hideBin(process.argv))
   .scriptName("hathora")
   .command({
-    command: "*",
-    aliases: ["generate", "gen", "g"],
+    command: "generate",
+    aliases: ["gen", "g"],
     describe: "Regenerates the types from hathora.yml",
     handler: (_argv) => {
       if (!existsSync(join(serverDir, "impl.ts"))) {
@@ -191,7 +191,7 @@ yargs(hideBin(process.argv))
     },
   })
   .command({
-    command: "save [stateId] [saveName]",
+    command: "save <stateId> <saveName>",
     aliases: ["gamesave", "sv"],
     describe: "Creates a named save game from a specific state id",
     handler: (argv) => {
@@ -231,5 +231,7 @@ yargs(hideBin(process.argv))
       generate(rootDir, `templates/plugin/${argv.lib}`, { val: argv.type as string });
     },
   })
+  .recommendCommands()
   .completion()
-  .wrap(72).argv;
+  .wrap(72)
+  .parse();
