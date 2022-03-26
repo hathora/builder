@@ -231,6 +231,7 @@ yargs(hideBin(process.argv))
       generate(rootDir, `templates/plugin/${argv.lib}`, { val: argv.type as string });
     },
   })
+  .demandCommand()
   .recommendCommands()
   .completion()
   .wrap(72)
