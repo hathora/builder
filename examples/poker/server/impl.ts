@@ -25,9 +25,9 @@ type InternalState = {
 };
 
 export class Impl implements Methods<InternalState> {
-  initialize(userId: UserId, ctx: Context): InternalState {
+  initialize(ctx: Context): InternalState {
     return {
-      players: [createPlayer(userId)],
+      players: [],
       dealerIdx: 0,
       activePlayerIdx: 0,
       revealedCards: [],

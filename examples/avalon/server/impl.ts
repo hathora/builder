@@ -26,7 +26,6 @@ type InternalQuestAttempt = {
 };
 
 type InternalState = {
-  creator: UserId;
   players: UserId[];
   roles: Map<UserId, Role>;
   quests: InternalQuestAttempt[];
@@ -53,8 +52,8 @@ const QUEST_CONFIGURATIONS = new Map([
 ]);
 
 export class Impl implements Methods<InternalState> {
-  initialize(userId: UserId, ctx: Context): InternalState {
-    return { creator: userId, players: [userId], roles: new Map(), quests: [] };
+  initialize(ctx: Context): InternalState {
+    return { players: [], roles: new Map(), quests: [] };
   }
   joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {
     if (state.players.find((player) => player === userId) !== undefined) {
@@ -171,7 +170,6 @@ export class Impl implements Methods<InternalState> {
         knownRoles: [...info.knownRoles],
         quantity: roles.filter(([_, r]) => r === rl).length,
       })),
-      creator: state.creator,
       players: state.players,
       role,
       knownPlayers: roles.filter(([_, r]) => knownRoles.has(r)).map(([p, _]) => p),

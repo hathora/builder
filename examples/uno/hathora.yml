@@ -10,7 +10,7 @@ types:
   PlayerState:
     hand: Card[]
     players: UserId[]
-    turn: UserId
+    turn: UserId?
     pile: Card?
     winner: UserId?
 

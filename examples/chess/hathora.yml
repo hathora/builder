@@ -24,14 +24,16 @@ types:
     color: Color
     type: PieceType
     square: Square
+  Player:
+    id: UserId
+    color: Color
   PlayerState:
     board: Board
     status: GameStatus
-    color: Color
-    opponent: UserId?
+    players: Player[]
 
 methods:
-  startGame:
+  joinGame:
   movePiece:
     from: Square
     to: Square

@@ -24,8 +24,8 @@ type InternalState = {
 };
 
 export class Impl implements Methods<InternalState> {
-  initialize(userId: UserId, ctx: Context): InternalState {
-    return { players: [createPlayer(userId)], currentTurn: Color.YELLOW, cards: [] };
+  initialize(ctx: Context): InternalState {
+    return { players: [], currentTurn: Color.YELLOW, cards: [] };
   }
   joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {
     if (getGameStatus(state.cards) !== GameStatus.NOT_STARTED) {

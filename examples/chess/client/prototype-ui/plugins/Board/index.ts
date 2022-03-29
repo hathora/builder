@@ -1,17 +1,20 @@
 import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
 import { Board, Color, Piece, PieceType, PlayerState } from "../../../../api/types";
+import { UserData } from "../../../../api/base";
 import { HathoraConnection } from "../../../.hathora/client";
 import "chessboard-element";
 
 export default class BoardEl extends LitElement {
   @property() val!: Board;
   @property() state!: PlayerState;
+  @property() user!: UserData;
   @property() client!: HathoraConnection;
 
   render() {
+    const color = this.state.players.find((p) => p.id === this.user.id)?.color;
     return html`<div style="max-width: 400px">
-      <chess-board draggable-pieces orientation=${this.state.color === Color.BLACK ? "black" : "white"}></chess-board>
+      <chess-board draggable-pieces orientation=${color === Color.BLACK ? "black" : "white"}></chess-board>
     </div>`;
   }
 

@@ -10,8 +10,8 @@ import {
 } from "../api/types";
 
 export class Impl implements Methods<RoomState> {
-  initialize(userId: UserId, ctx: Context): RoomState {
-    return { createdBy: userId, users: [userId], messages: [] };
+  initialize(ctx: Context): RoomState {
+    return { users: [], messages: [] };
   }
   joinRoom(state: RoomState, userId: string, ctx: Context, request: IJoinRoomRequest): Response {
     if (state.users.includes(userId)) {
@@ -46,7 +46,6 @@ export class Impl implements Methods<RoomState> {
   }
   getUserState(state: RoomState, userId: UserId): RoomState {
     return {
-      createdBy: state.createdBy,
       users: state.users,
       messages: state.messages.filter(
         (msg) => msg.sentBy === userId || msg.sentTo === userId || msg.sentTo === undefined

@@ -16,12 +16,12 @@ type InternalState = {
   hands: Map<UserId, Card[]>;
   players: UserId[];
   pile?: Card;
-  turn: UserId;
+  turn?: UserId;
   winner?: UserId;
 };
 
 export class Impl implements Methods<InternalState> {
-  initialize(userId: UserId, ctx: Context): InternalState {
+  initialize(ctx: Context): InternalState {
     const deck = [];
     for (let i = 2; i <= 9; i++) {
       deck.push({ value: i, color: Color.RED });
@@ -29,7 +29,7 @@ export class Impl implements Methods<InternalState> {
       deck.push({ value: i, color: Color.GREEN });
       deck.push({ value: i, color: Color.YELLOW });
     }
-    return { deck, players: [userId], hands: new Map(), turn: userId };
+    return { deck, players: [], hands: new Map() };
   }
   joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {
     if (state.players.find((playerId) => playerId === userId) !== undefined) {
@@ -42,6 +42,10 @@ export class Impl implements Methods<InternalState> {
     if (state.pile !== undefined) {
       return Response.error("Already started");
     }
+    if (state.players.length === 0) {
+      return Response.error("At least one player required");
+    }
+    state.turn = ctx.chance.pickone(state.players);
     state.deck = ctx.chance.shuffle(state.deck);
     // give each player 7 cards
     state.players.forEach((playerId) => {
@@ -54,7 +58,7 @@ export class Impl implements Methods<InternalState> {
     return Response.ok();
   }
   playCard(state: InternalState, userId: UserId, ctx: Context, request: IPlayCardRequest): Response {
-    if (state.turn != userId) {
+    if (state.turn !== userId) {
       return Response.error("Not your turn");
     }
     if (request.card.color != state.pile!.color && request.card.value != state.pile!.value) {
