@@ -3,8 +3,7 @@ import WebSocket from "isomorphic-ws";
 import getRandomValues from "get-random-values";
 import axios from "axios";
 import jwtDecode from "jwt-decode";
-import { ConnectionFailure, transformCoordinatorFailure } from "./failures";
-import { computePatch } from "./patch";
+import { Writer } from "bin-serde";
 import { UserData, Response, Method, COORDINATOR_HOST } from "../../api/base";
 import {
   decodeStateSnapshot,
@@ -14,6 +13,8 @@ import {
   {{makeRequestName @key}},
   {{/each}}
 } from "../../api/types";
+import { ConnectionFailure, transformCoordinatorFailure } from "./failures";
+import { computePatch } from "./patch";
 
 export type StateId = string;
 export type UpdateArgs = { stateId: StateId; state: UserState; updatedAt: number; events: string[] };
@@ -47,10 +48,7 @@ export class HathoraClient {
   ): Promise<HathoraConnection> {
     return new Promise((resolve) => {
       const socket = this.initSocket(onConnectionFailure);
-      socket.onopen = () => {
-        socket.send(token);
-        socket.send(new Uint8Array());
-      };
+      socket.onopen = () => socket.send(new Writer().writeUInt8(0).writeString(token).toBuffer());
       socket.onmessage = ({ data }) => resolve(new HathoraConnection(data as StateId, socket, onUpdate));
     });
   }
@@ -62,10 +60,14 @@ export class HathoraClient {
     onConnectionFailure: (failure: ConnectionFailure) => void
   ): HathoraConnection {
     const socket = this.initSocket(onConnectionFailure);
-    socket.onopen = () => {
-      socket.send(token);
-      socket.send(stateId);
-    };
+    socket.onopen = () =>
+      socket.send(
+        new Writer()
+          .writeUInt8(1)
+          .writeString(token)
+          .writeUInt64([...stateId].reduce((r, v) => r * 36n + BigInt(parseInt(v, 36)), 0n))
+          .toBuffer()
+      );
     return new HathoraConnection(stateId, socket, onUpdate);
   }
 

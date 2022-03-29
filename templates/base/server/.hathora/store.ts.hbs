@@ -51,13 +51,12 @@ class Store {
       pendingMessages.clear();
     }, {{#if tick}}{{tick}}{{else}}50{{/if}});
   }
-  async newState(stateId: StateId, userId: UserId) {
+  async newState(stateId: StateId) {
     const seed = randomBytes(8).readBigUInt64LE();
     const time = Date.now();
     const chance = Chance(seed.toString());
     const state = await impl.initialize(ctx(chance, time, stateId));
     stateInfo.set(stateId, { state, chance, subscriptions: new Map() });
-    sendSnapshot(stateId, userId);
     log.append(stateId, time, new Writer().writeUInt64(seed).toBuffer());
   }
   async subscribeUser(stateId: StateId, userId: UserId) {
