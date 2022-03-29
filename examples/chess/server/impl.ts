@@ -6,14 +6,14 @@ import {
   Color,
   Piece,
   PlayerState,
-  IStartGameRequest,
+  IJoinGameRequest,
   IMovePieceRequest,
   PieceType,
 } from "../api/types";
 import { Chess, ChessInstance, Piece as ChessPiece, Square } from "chess.js";
 
 type InternalUser = {
-  name: UserId;
+  id: UserId;
   color: Color;
 };
 type InternalState = {
@@ -23,21 +23,24 @@ type InternalState = {
 };
 
 export class Impl implements Methods<InternalState> {
-  initialize(userId: UserId, ctx: Context): InternalState {
-    return { chess: new Chess(), users: [{ name: userId, color: Color.WHITE }], turnCount: 0 };
+  initialize(ctx: Context): InternalState {
+    return { chess: new Chess(), users: [], turnCount: 0 };
   }
-  startGame(state: InternalState, userId: UserId, ctx: Context, request: IStartGameRequest): Response {
-    if (state.users.find((u) => u.name === userId) !== undefined) {
-      return Response.error("Need opponent to start game");
+  joinGame(state: InternalState, userId: string, ctx: Context, request: IJoinGameRequest): Response {
+    if (state.users.length === 0) {
+      state.users.push({ id: userId, color: Color.WHITE });
+    } else if (state.users.length === 1) {
+      state.users.push({ id: userId, color: Color.BLACK });
+    } else {
+      return Response.error("Game is full");
     }
-    state.users.push({ name: userId, color: Color.BLACK });
     return Response.ok();
   }
   movePiece(state: InternalState, userId: UserId, ctx: Context, request: IMovePieceRequest): Response {
     if (gameStatus(state) === GameStatus.WAITING) {
       return Response.error("Game not started");
     }
-    const color = state.users.find((u) => u.name === userId)?.color;
+    const color = state.users.find((u) => u.id === userId)?.color;
     if (convertColor(state.chess.turn()) !== color) {
       return Response.error("Not your turn");
     }
@@ -49,14 +52,12 @@ export class Impl implements Methods<InternalState> {
     return Response.ok();
   }
   getUserState(state: InternalState, userId: UserId): PlayerState {
-    const internalUser = state.users.find((u) => u.name === userId);
     return {
       board: state.chess.board().flatMap((pieces, i) => {
         return pieces.flatMap((piece, j) => (piece === null ? [] : convertPiece(piece, i, j)));
       }),
       status: gameStatus(state),
-      color: internalUser?.color ?? Color.WHITE,
-      opponent: internalUser !== undefined ? state.users.find((u) => u.name !== userId)?.name : undefined,
+      players: state.users,
     };
   }
 }

@@ -47,7 +47,6 @@ types:
   PlayerState:
     status: GameStatus
     rolesInfo: RoleInfo[]
-    creator: UserId
     players: UserId[]
     role: Role?
     knownPlayers: UserId[]

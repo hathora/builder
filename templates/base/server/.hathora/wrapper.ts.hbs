@@ -14,9 +14,9 @@ export type State = ReturnType<typeof impl.initialize>;
 let changedAt: number | undefined = undefined;
 
 export const ImplWrapper = {
-  async initialize(userId: UserId, ctx: Context) {
+  async initialize(ctx: Context) {
     await tryReloadImpl();
-    const state = impl.initialize(userId, ctx);
+    const state = impl.initialize(ctx);
     return onChange(state, () => (changedAt = Date.now()));
   },
   async getResult(state: State, userId: UserId, method: Method, ctx: Context, argsBuffer: ArrayBufferView) {

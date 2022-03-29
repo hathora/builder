@@ -5,7 +5,6 @@ types:
     sentBy: UserId
     sentTo: UserId?
   RoomState:
-    createdBy: UserId
     users: UserId[]
     messages: Message[]
 

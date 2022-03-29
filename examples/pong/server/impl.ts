@@ -9,15 +9,15 @@ const PADDLE_SPEED = 100;
 const BALL_SPEED = 250;
 
 type InternalState = {
-  playerA: { id: string; direction: Direction; paddle: number; score: number };
+  playerA: { id?: string; direction: Direction; paddle: number; score: number };
   playerB: { id?: string; direction: Direction; paddle: number; score: number };
   ball: { x: number; y: number; angle: number };
 };
 
 export class Impl implements Methods<InternalState> {
-  initialize(userId: UserId, ctx: Context): InternalState {
+  initialize(ctx: Context): InternalState {
     return {
-      playerA: { id: userId, direction: Direction.NONE, paddle: MAP_HEIGHT / 2, score: 0 },
+      playerA: { direction: Direction.NONE, paddle: MAP_HEIGHT / 2, score: 0 },
       playerB: { direction: Direction.NONE, paddle: MAP_HEIGHT / 2, score: 0 },
       ball: { x: MAP_WIDTH / 2, y: MAP_HEIGHT / 2, angle: ctx.chance.floating({ min: 0, max: 2 * Math.PI }) },
     };
@@ -25,17 +25,18 @@ export class Impl implements Methods<InternalState> {
   setDirection(state: InternalState, userId: UserId, ctx: Context, request: ISetDirectionRequest): Response {
     if (state.playerA.id === userId) {
       state.playerA.direction = request.direction;
-      return Response.ok();
     } else if (state.playerB.id === userId) {
       state.playerB.direction = request.direction;
-      return Response.ok();
+    } else if (state.playerA.id === undefined) {
+      state.playerA.id = userId;
+      state.playerA.direction = request.direction;
     } else if (state.playerB.id === undefined) {
       state.playerB.id = userId;
       state.playerB.direction = request.direction;
-      return Response.ok();
     } else {
       return Response.error("Not in game");
     }
+    return Response.ok();
   }
   getUserState(state: InternalState, userId: UserId): PlayerState {
     return state;

@@ -9,7 +9,7 @@ types:
     gesture: Gesture?
   PlayerState:
     round: int
-    player1: PlayerInfo
+    player1: PlayerInfo?
     player2: PlayerInfo?
 
 methods:

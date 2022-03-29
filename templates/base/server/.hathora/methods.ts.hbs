@@ -16,7 +16,7 @@ export interface Context {
 }
 
 export interface Methods<T> {
-  initialize(userId: UserId, ctx: Context): T;
+  initialize(ctx: Context): T;
   {{#each methods}}
   {{@key}}(state: T, userId: UserId, ctx: Context, request: {{makeRequestName @key}}): Response;
   {{/each}}
