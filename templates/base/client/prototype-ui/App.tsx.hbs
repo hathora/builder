@@ -49,7 +49,7 @@ function App() {
                   updateArgs={updateArgs}
                   connectionError={connectionError}
                   onConnect={(stateId) =>
-                    setConnection(client.connectExisting(token, stateId, setUpdateArgs, setConnectionError))
+                    setConnection(client.connect(token, stateId, setUpdateArgs, setConnectionError))
                   }
                   onDisconnect={() => {
                     if (connection !== undefined) {
@@ -64,15 +64,7 @@ function App() {
             />
             <Route
               path="/"
-              element={
-                <Home
-                  onConnect={async () => {
-                    const conn = await client.connectNew(token, setUpdateArgs, setConnectionError);
-                    setConnection(conn);
-                    navigate(`/state/${conn.stateId}`);
-                  }}
-                />
-              }
+              element={<Home onConnect={async () => navigate(`/state/${await client.create(token)}`)} />}
             />
             <Route path="*" element={<div>Not Found</div>} />
           </Routes>
