@@ -18,6 +18,7 @@ export type {{makeRequestName @key}} = {
   {{/each}}
 };
 {{/each}}
+export type {{makeRequestName "initialize"}} = {{> renderTypeArg initializeArgs}};
 
 {{#each types}}
 {{> renderTypeValue}}

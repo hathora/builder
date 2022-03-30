@@ -4,6 +4,7 @@ import {
 {{#each types}}
   {{@key}},
 {{/each}}
+  {{makeRequestName "initialize"}},
 {{#each methods}}
   {{makeRequestName @key}},
 {{/each}}
@@ -12,7 +13,7 @@ import {
 type InternalState = {{userState}};
 
 export class Impl implements Methods<InternalState> {
-  initialize(userId: UserId, ctx: Context): InternalState {
+  initialize(ctx: Context, request: {{makeRequestName "initialize"}}): InternalState;
     {{#with (lookup types userState)}}
     {{#if (eq type "object")}}
     return {

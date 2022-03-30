@@ -3,6 +3,7 @@ import { Response } from "../../api/base";
 import {
   UserId,
   {{userState}} as UserState,
+  {{makeRequestName "initialize"}},
   {{#each methods}}
   {{makeRequestName @key}},
   {{/each}}
@@ -16,7 +17,7 @@ export interface Context {
 }
 
 export interface Methods<T> {
-  initialize(ctx: Context): T;
+  initialize(ctx: Context, request: {{makeRequestName "initialize"}}): T;
   {{#each methods}}
   {{@key}}(state: T, userId: UserId, ctx: Context, request: {{makeRequestName @key}}): Response;
   {{/each}}
