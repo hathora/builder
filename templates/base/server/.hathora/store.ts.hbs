@@ -63,7 +63,7 @@ class Store {
     if (!stateInfo.has(stateId)) {
       const loaded = await loadState(stateId);
       if (loaded === undefined) {
-        coordinator.onStateUpdate(stateId, userId, Buffer.alloc(0));
+        coordinator.stateNotFound(stateId, userId);
         return;
       }
       stateInfo.set(stateId, { state: loaded.state, chance: loaded.chance, subscriptions: new Map() });
@@ -159,7 +159,7 @@ async function sendSnapshot(stateId: StateId, userId: UserId) {
   const userState = await impl.getUserState(state, userId);
   subscriptions.set(userId, { userState: JSON.parse(JSON.stringify(userState)), changedAt: 0, messages: [] });
   const buf = encodeStateSnapshot(userState);
-  coordinator.onStateUpdate(stateId, userId, Buffer.from(buf));
+  coordinator.stateUpdate(stateId, userId, Buffer.from(buf));
 }
 
 async function sendUpdates(stateId: StateId, changedAt: number) {
@@ -171,7 +171,7 @@ async function sendUpdates(stateId: StateId, changedAt: number) {
       const diff = computeDiff(currUserState, prevUserState);
       if (diff !== NO_DIFF || messages.length > 0) {
         const buf = encodeStateUpdate(diff !== NO_DIFF ? diff : undefined, changedAt - prevChangedAt, messages);
-        coordinator.onStateUpdate(stateId, userId, Buffer.from(buf));
+        coordinator.stateUpdate(stateId, userId, Buffer.from(buf));
         subscriptions.set(userId, { userState: JSON.parse(JSON.stringify(currUserState)), changedAt, messages: [] });
       }
     }
@@ -182,7 +182,7 @@ function sendMessages(stateId: StateId, userId: UserId) {
   const messages = stateInfo.get(stateId)?.subscriptions.get(userId)?.messages;
   if (messages !== undefined) {
     const buf = encodeStateUpdate(undefined, 0, messages);
-    coordinator.onStateUpdate(stateId, userId, Buffer.from(buf));
+    coordinator.stateUpdate(stateId, userId, Buffer.from(buf));
     messages.splice(0);
   }
 }

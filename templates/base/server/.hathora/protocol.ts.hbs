@@ -7,6 +7,9 @@ const SUBSCRIBE_USER = 1;
 const UNSUBSCRIBE_USER = 2;
 const HANDLE_UPDATE = 3;
 
+const STATE_UPDATE = 0;
+const STATE_NOT_FOUND = 1;
+
 type StateId = bigint;
 type UserId = string;
 
@@ -76,14 +79,27 @@ interface Store {
 class CoordinatorClient {
   constructor(private socket: net.Socket) {}
 
-  public onStateUpdate(stateId: StateId, userId: UserId, data: Buffer) {
+  public stateUpdate(stateId: StateId, userId: UserId, data: Buffer) {
     const userIdBuf = new Writer().writeString(userId).toBuffer();
     this.socket.write(
       new Writer()
-        .writeUInt32(8 + userIdBuf.length + data.length)
+        .writeUInt32(9 + userIdBuf.length + data.length)
+        .writeUInt8(STATE_UPDATE)
         .writeUInt64(stateId)
         .writeBuffer(userIdBuf)
         .writeBuffer(data)
+        .toBuffer()
+    );
+  }
+
+  public stateNotFound(stateId: StateId, userId: UserId) {
+    const userIdBuf = new Writer().writeString(userId).toBuffer();
+    this.socket.write(
+      new Writer()
+        .writeUInt32(9 + userIdBuf.length)
+        .writeUInt8(STATE_NOT_FOUND)
+        .writeUInt64(stateId)
+        .writeBuffer(userIdBuf)
         .toBuffer()
     );
   }
