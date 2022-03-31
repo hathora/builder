@@ -8,6 +8,7 @@ Handlebars.registerHelper("stringify", JSON.stringify);
 Handlebars.registerHelper("len", (x) => (Array.isArray(x) ? x.length : Object.keys(x).length));
 Handlebars.registerHelper("isArray", Array.isArray);
 Handlebars.registerHelper("isObject", (x) => typeof x === "object");
+Handlebars.registerHelper("isEmpty", (x) => typeof x === "object" && Object.keys(x).length === 0);
 Handlebars.registerHelper("capitalize", capitalize);
 Handlebars.registerHelper("uppercase", (x) =>
   x

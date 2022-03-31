@@ -9,6 +9,7 @@ import {
   decodeStateSnapshot,
   decodeStateUpdate,
   {{userState}} as UserState,
+  IInitializeRequest,
   {{#each methods}}
   {{makeRequestName @key}},
   {{/each}}
@@ -41,11 +42,11 @@ export class HathoraClient {
 
 {{/if}}
 {{/each}}
-  public async create(token: string): Promise<string> {
+  public async create(token: string, request: IInitializeRequest): Promise<string> {
     const res = await axios.post(
       `https://${COORDINATOR_HOST}/${this.appId}/create`,
-      {},
-      { headers: { Authorization: token } }
+      IInitializeRequest.encode(request).toBuffer(),
+      { headers: { Authorization: token, "Content-Type": "application/octet-stream" } }
     );
     return res.data.stateId;
   }

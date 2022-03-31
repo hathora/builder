@@ -3,6 +3,7 @@ import { Context } from "./methods";
 import { Method } from "../../api/base";
 import {
   UserId,
+  IInitializeRequest,
   {{#each methods}}
   {{makeRequestName @key}},
   {{/each}}
@@ -14,9 +15,9 @@ export type State = ReturnType<typeof impl.initialize>;
 let changedAt: number | undefined = undefined;
 
 export const ImplWrapper = {
-  async initialize(ctx: Context) {
+  async initialize(ctx: Context, argsBuffer: ArrayBufferView) {
     await tryReloadImpl();
-    const state = impl.initialize(ctx);
+    const state = impl.initialize(ctx, IInitializeRequest.decode(argsBuffer));
     return onChange(state, () => (changedAt = Date.now()));
   },
   async getResult(state: State, userId: UserId, method: Method, ctx: Context, argsBuffer: ArrayBufferView) {

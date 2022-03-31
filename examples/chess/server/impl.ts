@@ -9,6 +9,7 @@ import {
   IJoinGameRequest,
   IMovePieceRequest,
   PieceType,
+  IInitializeRequest,
 } from "../api/types";
 import { Chess, ChessInstance, Piece as ChessPiece, Square } from "chess.js";
 
@@ -23,7 +24,7 @@ type InternalState = {
 };
 
 export class Impl implements Methods<InternalState> {
-  initialize(ctx: Context): InternalState {
+  initialize(ctx: Context, request: IInitializeRequest): InternalState {
     return { chess: new Chess(), users: [], turnCount: 0 };
   }
   joinGame(state: InternalState, userId: string, ctx: Context, request: IJoinGameRequest): Response {

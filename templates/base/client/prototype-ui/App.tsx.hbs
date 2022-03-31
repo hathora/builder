@@ -64,7 +64,7 @@ function App() {
             />
             <Route
               path="/"
-              element={<Home onConnect={async () => navigate(`/state/${await client.create(token)}`)} />}
+              element={<Home onConnect={async () => navigate(`/state/${await client.create(token, {})}`)} />}
             />
             <Route path="*" element={<div>Not Found</div>} />
           </Routes>

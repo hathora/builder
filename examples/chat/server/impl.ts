@@ -7,10 +7,11 @@ import {
   ILeaveRoomRequest,
   ISendPublicMessageRequest,
   ISendPrivateMessageRequest,
+  IInitializeRequest,
 } from "../api/types";
 
 export class Impl implements Methods<RoomState> {
-  initialize(ctx: Context): RoomState {
+  initialize(ctx: Context, request: IInitializeRequest): RoomState {
     return { users: [], messages: [] };
   }
   joinRoom(state: RoomState, userId: string, ctx: Context, request: IJoinRoomRequest): Response {

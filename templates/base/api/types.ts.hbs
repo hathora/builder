@@ -49,6 +49,31 @@ export const {{makeRequestName @key}} = {
   },
 };
 {{/each}}
+export const {{makeRequestName "initialize"}} = {
+{{#if (isEmpty initializeArgs.properties)}}
+  default(): {{makeRequestName "initialize"}} {
+    return {};
+  },
+  encode(x: {{makeRequestName "initialize"}}, buf?: _Writer) {
+    return buf ?? new _Writer();
+  },
+  decode(sb: ArrayBufferView | _Reader): {{makeRequestName "initialize"}} {
+    return {};
+  },
+{{else}}
+  default(): {{makeRequestName "initialize"}} {
+    return {{> renderDefault initializeArgs}};
+  },
+  encode(x: {{makeRequestName "initialize"}}, writer?: _Writer) {
+    const buf = writer ?? new _Writer();
+    return {{> renderEncodeArg initializeArgs}};
+  },
+  decode(buf: ArrayBufferView | _Reader): {{makeRequestName "initialize"}} {
+    const sb = ArrayBuffer.isView(buf) ? new _Reader(buf) : buf;
+    return {{> renderDecodeArg initializeArgs}};
+  },
+{{/if}}
+};
 {{#*inline "renderExportArg"}}
 {{#if alias}}
 export type {{@key}} = {{> renderTypeArg}};

@@ -13,6 +13,7 @@ import {
   GameStatus,
   QuestAttempt,
   QuestStatus,
+  IInitializeRequest,
 } from "../api/types";
 
 type InternalQuestAttempt = {
@@ -52,7 +53,7 @@ const QUEST_CONFIGURATIONS = new Map([
 ]);
 
 export class Impl implements Methods<InternalState> {
-  initialize(ctx: Context): InternalState {
+  initialize(ctx: Context, request: IInitializeRequest): InternalState {
     return { players: [], roles: new Map(), quests: [] };
   }
   joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {

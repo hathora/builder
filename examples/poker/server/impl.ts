@@ -11,6 +11,7 @@ import {
   IFoldRequest,
   ICallRequest,
   IRaiseRequest,
+  IInitializeRequest,
 } from "../api/types";
 import { Card, Cards, createDeck, drawCardsFromDeck, findHighestHands } from "@pairjacks/poker-cards";
 
@@ -25,7 +26,7 @@ type InternalState = {
 };
 
 export class Impl implements Methods<InternalState> {
-  initialize(ctx: Context): InternalState {
+  initialize(ctx: Context, request: IInitializeRequest): InternalState {
     return {
       players: [],
       dealerIdx: 0,

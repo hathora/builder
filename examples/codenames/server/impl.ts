@@ -13,6 +13,7 @@ import {
   PlayerInfo,
   GameStatus,
   TurnInfo,
+  IInitializeRequest,
 } from "../api/types";
 import { wordList } from "./words";
 
@@ -24,7 +25,7 @@ type InternalState = {
 };
 
 export class Impl implements Methods<InternalState> {
-  initialize(ctx: Context): InternalState {
+  initialize(ctx: Context, request: IInitializeRequest): InternalState {
     return { players: [], currentTurn: Color.YELLOW, cards: [] };
   }
   joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {

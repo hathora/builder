@@ -1,6 +1,6 @@
 import { Methods, Context } from "./.hathora/methods";
 import { Response } from "../api/base";
-import { UserId, Direction, PlayerState, ISetDirectionRequest, Player, Point } from "../api/types";
+import { UserId, Direction, PlayerState, ISetDirectionRequest, Player, Point, IInitializeRequest } from "../api/types";
 
 const MAP_WIDTH = 600;
 const MAP_HEIGHT = 400;
@@ -15,7 +15,8 @@ type InternalState = {
 };
 
 export class Impl implements Methods<InternalState> {
-  initialize(ctx: Context): InternalState {
+  initialize(ctx: Context, request: IInitializeRequest): InternalState {
+    console.log(request);
     return {
       playerA: { direction: Direction.NONE, paddle: MAP_HEIGHT / 2, score: 0 },
       playerB: { direction: Direction.NONE, paddle: MAP_HEIGHT / 2, score: 0 },

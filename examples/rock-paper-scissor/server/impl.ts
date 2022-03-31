@@ -1,9 +1,17 @@
 import { Methods, Context } from "./.hathora/methods";
 import { Response } from "../api/base";
-import { UserId, PlayerState, IJoinGameRequest, IChooseGestureRequest, INextRoundRequest, Gesture } from "../api/types";
+import {
+  UserId,
+  PlayerState,
+  IJoinGameRequest,
+  IChooseGestureRequest,
+  INextRoundRequest,
+  Gesture,
+  IInitializeRequest,
+} from "../api/types";
 
 export class Impl implements Methods<PlayerState> {
-  initialize(ctx: Context): PlayerState {
+  initialize(ctx: Context, request: IInitializeRequest): PlayerState {
     return { round: 0 };
   }
   joinGame(state: PlayerState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {

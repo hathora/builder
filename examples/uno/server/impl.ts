@@ -9,6 +9,7 @@ import {
   IDrawCardRequest,
   Card,
   Color,
+  IInitializeRequest,
 } from "../api/types";
 
 type InternalState = {
@@ -21,7 +22,7 @@ type InternalState = {
 };
 
 export class Impl implements Methods<InternalState> {
-  initialize(ctx: Context): InternalState {
+  initialize(ctx: Context, request: IInitializeRequest): InternalState {
     const deck = [];
     for (let i = 2; i <= 9; i++) {
       deck.push({ value: i, color: Color.RED });

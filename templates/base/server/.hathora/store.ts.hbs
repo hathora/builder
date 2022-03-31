@@ -51,13 +51,13 @@ class Store {
       pendingMessages.clear();
     }, {{#if tick}}{{tick}}{{else}}50{{/if}});
   }
-  async newState(stateId: StateId) {
+  async newState(stateId: StateId, data: Buffer) {
     const seed = randomBytes(8).readBigUInt64LE();
     const time = Date.now();
     const chance = Chance(seed.toString());
-    const state = await impl.initialize(ctx(chance, time, stateId));
+    const state = await impl.initialize(ctx(chance, time, stateId), data);
     stateInfo.set(stateId, { state, chance, subscriptions: new Map() });
-    log.append(stateId, time, new Writer().writeUInt64(seed).toBuffer());
+    log.append(stateId, time, new Writer().writeUInt64(seed).writeUVarint(data.length).writeBuffer(data).toBuffer());
   }
   async subscribeUser(stateId: StateId, userId: UserId) {
     if (!stateInfo.has(stateId)) {
@@ -129,8 +129,9 @@ export async function loadState(stateId: StateId) {
     const { time, record } = rows[0];
     const reader = new Reader(record);
     const seed = reader.readUInt64();
+    const argsBuffer = reader.readBuffer(reader.readUVarint());
     const chance = Chance(seed.toString());
-    const state = await impl.initialize(ctxNoEvents(chance, time));
+    const state = await impl.initialize(ctxNoEvents(chance, time), argsBuffer);
 
     for (let i = 1; i < rows.length; i++) {
       const { time, record } = rows[i];
@@ -144,7 +145,7 @@ export async function loadState(stateId: StateId) {
       }
       {{/if}}
       const userId = reader.readString();
-      const argsBuffer = reader.readBuffer(reader.readUInt32());
+      const argsBuffer = reader.readBuffer(reader.readUVarint());
       await impl.getResult(state, userId, method, ctxNoEvents(chance, time), argsBuffer);
     }
 
