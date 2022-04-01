@@ -255,9 +255,11 @@ export function InitializeForm({ submit }: { submit: (value: IInitializeRequest)
   const [value, update] = useState<IInitializeRequest>(IInitializeRequest.default());
   return (
     <>
+      {{#unless (isEmpty initializeArgs.properties)}}
       <div className="p-3 mb-3 bg-gray-100 shadow sm:rounded-md">
         {{> renderForm initializeArgs}}
       </div>
+      {{/unless}}
       <button
         type="button"
         onClick={() => submit(value)}
