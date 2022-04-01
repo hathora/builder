@@ -7,10 +7,11 @@ import { EyeIcon, LightningBoltIcon, UserCircleIcon } from "@heroicons/react/sol
 import { GoogleLogin } from "react-google-login";
 {{/if}}
 import { getUserDisplayName, UserData } from "../../api/base";
+import { IInitializeRequest } from "../../api/types";
 import { HathoraClient, HathoraConnection, UpdateArgs } from "../.hathora/client";
 import { ConnectionFailure } from "../.hathora/failures";
 import { HathoraContext } from "./context";
-import { Forms } from "./Forms";
+import { Forms, InitializeForm } from "./Forms";
 import { State } from "./State";
 
 const client = new HathoraClient();
@@ -64,7 +65,7 @@ function App() {
             />
             <Route
               path="/"
-              element={<Home onConnect={async () => navigate(`/state/${await client.create(token, {})}`)} />}
+              element={<Home onConnect={async (request) => navigate(`/state/${await client.create(token, request)}`)} />}
             />
             <Route path="*" element={<div>Not Found</div>} />
           </Routes>
@@ -155,7 +156,7 @@ function Login({ setToken }: { setToken: (token: string) => void }) {
   );
 }
 
-function Home({ onConnect }: { onConnect: () => void }) {
+function Home({ onConnect }: { onConnect: (request: IInitializeRequest) => void }) {
   const [stateId, setStateId] = useState<string>("");
   const navigate = useNavigate();
   return (
@@ -164,13 +165,7 @@ function Home({ onConnect }: { onConnect: () => void }) {
         <h2 className="text-xl font-semibold text-gray-900">Home</h2>
         <div className="flex flex-col mt-2">
           <div className="w-6/12 mb-4">
-            <button
-              type="button"
-              onClick={onConnect}
-              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Create
-            </button>
+            <InitializeForm submit={onConnect} />
           </div>
           <div className="w-6/12">
             <input

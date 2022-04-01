@@ -5,6 +5,7 @@ import { ArrowUpIcon, ArrowDownIcon, CheckIcon, PlusIcon, SelectorIcon, XIcon } 
 import { LightningBoltIcon } from "@heroicons/react/solid";
 import { Response } from "../../api/base";
 import {
+  IInitializeRequest,
   {{#each methods}}
   {{makeRequestName @key}},
   {{/each}}
@@ -250,6 +251,24 @@ function BooleanInput({ value, update }: BaseProps<boolean>) {
 {{#each types}}
 {{> renderInput}}
 {{/each}}
+export function InitializeForm({ submit }: { submit: (value: IInitializeRequest) => void }) {
+  const [value, update] = useState<IInitializeRequest>(IInitializeRequest.default());
+  return (
+    <>
+      <div className="p-3 mb-3 bg-gray-100 shadow sm:rounded-md">
+        {{> renderForm initializeArgs}}
+      </div>
+      <button
+        type="button"
+        onClick={() => submit(value)}
+        className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+      >
+        Create
+      </button>
+    </>
+  );
+}
+
 export function Forms({ open, setOpen }: { open: boolean; setOpen: (v: boolean) => void }) {
   const { connection } = useContext(HathoraContext)!;
   return (

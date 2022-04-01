@@ -18,7 +18,7 @@ export type {{makeRequestName @key}} = {
   {{/each}}
 };
 {{/each}}
-export type {{makeRequestName "initialize"}} = {{> renderTypeArg initializeArgs}};
+export type IInitializeRequest = {{> renderTypeArg initializeArgs}};
 
 {{#each types}}
 {{> renderTypeValue}}
@@ -49,26 +49,26 @@ export const {{makeRequestName @key}} = {
   },
 };
 {{/each}}
-export const {{makeRequestName "initialize"}} = {
+export const IInitializeRequest = {
 {{#if (isEmpty initializeArgs.properties)}}
-  default(): {{makeRequestName "initialize"}} {
+  default(): IInitializeRequest {
     return {};
   },
-  encode(x: {{makeRequestName "initialize"}}, buf?: _Writer) {
+  encode(x: IInitializeRequest, buf?: _Writer) {
     return buf ?? new _Writer();
   },
-  decode(sb: ArrayBufferView | _Reader): {{makeRequestName "initialize"}} {
+  decode(sb: ArrayBufferView | _Reader): IInitializeRequest {
     return {};
   },
 {{else}}
-  default(): {{makeRequestName "initialize"}} {
+  default(): IInitializeRequest {
     return {{> renderDefault initializeArgs}};
   },
-  encode(x: {{makeRequestName "initialize"}}, writer?: _Writer) {
+  encode(x: IInitializeRequest, writer?: _Writer) {
     const buf = writer ?? new _Writer();
     return {{> renderEncodeArg initializeArgs}};
   },
-  decode(buf: ArrayBufferView | _Reader): {{makeRequestName "initialize"}} {
+  decode(buf: ArrayBufferView | _Reader): IInitializeRequest {
     const sb = ArrayBuffer.isView(buf) ? new _Reader(buf) : buf;
     return {{> renderDecodeArg initializeArgs}};
   },
