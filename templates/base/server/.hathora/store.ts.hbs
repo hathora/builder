@@ -39,7 +39,7 @@ class Store {
         if (changedAt !== undefined) {
           changedStates.set(stateId, changedAt);
           pendingMessages.delete(stateId);
-          log.append(stateId, currTime, new Writer().writeUInt8(0xff).writeUInt32(timeDelta).toBuffer());
+          log.append(stateId, currTime, new Writer().writeUInt8(0xff).writeUVarint(timeDelta).toBuffer());
         }
       });
       prevUpdateTime = currTime;
@@ -113,7 +113,7 @@ class Store {
           new Writer()
             .writeUInt8(method)
             .writeString(userId)
-            .writeUInt32(argsBuffer.length)
+            .writeUVarint(argsBuffer.length)
             .writeBuffer(argsBuffer)
             .toBuffer()
         );
@@ -144,7 +144,7 @@ export async function loadState(stateId: StateId) {
       const method = reader.readUInt8();
       {{#if tick}}
       if (method === 0xff) {
-        const timeDelta = reader.readUInt32();
+        const timeDelta = reader.readUVarint();
         await impl.onTick(state, ctxNoEvents(chance, time), timeDelta / 1000);
         continue;
       }

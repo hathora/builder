@@ -16,7 +16,6 @@ type InternalState = {
 
 export class Impl implements Methods<InternalState> {
   initialize(ctx: Context, request: IInitializeRequest): InternalState {
-    console.log(request);
     return {
       playerA: { direction: Direction.NONE, paddle: MAP_HEIGHT / 2, score: 0 },
       playerB: { direction: Direction.NONE, paddle: MAP_HEIGHT / 2, score: 0 },
