@@ -31,8 +31,9 @@ function readData(socket: net.Socket, onData: (data: Buffer) => void) {
 export function register(store: Store): Promise<CoordinatorClient> {
   return new Promise((resolve, reject) => {
     const socket = new net.Socket();
-    socket.connect(7147, COORDINATOR_HOST, () => {
-      socket.setKeepAlive(true, 30000);
+    socket.setKeepAlive(true, 10000);
+    socket.connect(7147, COORDINATOR_HOST);
+    socket.on("connect", () => {
       socket.write(
         JSON.stringify({
           appSecret: "{{appSecret}}",
@@ -50,7 +51,14 @@ export function register(store: Store): Promise<CoordinatorClient> {
       console.log("Connected to coordinator at " + COORDINATOR_HOST);
       resolve(new CoordinatorClient(socket));
     });
-    socket.on("error", reject);
+    socket.on("error", (err) => {
+      console.error("Coordinator connection error", err);
+      reject(err.message);
+    });
+    socket.on("close", () => {
+      console.error("Coordinator connection closed, retrying...");
+      setTimeout(() => socket.connect(7147, COORDINATOR_HOST), 1000 + Math.random() * 1000);
+    });
     readData(socket, (data) => {
       const reader = new Reader(data);
       const type = reader.readUInt8();
