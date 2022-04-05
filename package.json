@@ -16,7 +16,7 @@
     "@node-loader/core": "2.0.0",
     "chalk": "4.1.2",
     "dotenv": "16.0.0",
-    "esbuild": "0.14.29",
+    "esbuild": "0.14.31",
     "fs-extra": "10.0.1",
     "handlebars": "4.7.7",
     "hot-esm": "1.4.1",
