@@ -132,8 +132,8 @@ export class Impl implements Methods<InternalState> {
           cards: shouldReveal ? player.cards.map((card) => ({ rank: card[0], suit: card[1] })) : [],
         };
       }),
-      dealer: state.players[state.dealerIdx].id,
-      activePlayer: state.players[state.activePlayerIdx].id,
+      dealer: state.players.length > 0 ? state.players[state.dealerIdx].id : undefined,
+      activePlayer: state.players.length > 0 ? state.players[state.activePlayerIdx].id : undefined,
       revealedCards: state.revealedCards.map((card) => ({ rank: card[0], suit: card[1] })),
     };
   }

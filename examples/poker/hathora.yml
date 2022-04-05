@@ -14,8 +14,8 @@ types:
     status: PlayerStatus
   PlayerState:
     players: PlayerInfo[]
-    dealer: UserId
-    activePlayer: UserId
+    dealer: UserId?
+    activePlayer: UserId?
     revealedCards: Card[]
 
 methods:
