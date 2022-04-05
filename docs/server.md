@@ -27,9 +27,9 @@ Example (poker game):
 // ...
 
 export class Impl implements Methods<InternalState> {
-  initialize(userId: UserId, ctx: Context): InternalState {
+  initialize(ctx: Context, request: IInitializeRequest): InternalState {
     return {
-      players: [createPlayer(userId)],
+      players: [],
       dealerIdx: 0,
       activePlayerIdx: 0,
       revealedCards: [],

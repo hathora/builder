@@ -89,7 +89,7 @@ Inside the server directory we will also find a `impl.ts` file filled out with a
 type InternalState = GameState;
 
 export class Impl implements Methods<InternalState> {
-  initialize(userId: UserId, ctx: Context): InternalState {
+  initialize(ctx: Context, request: IInitializeRequest): InternalState {
     return {
       players: [],
     };

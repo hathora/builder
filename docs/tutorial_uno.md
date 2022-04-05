@@ -86,7 +86,7 @@ Inside the server directory we will also find a `impl.ts` file filled out with a
 type InternalState = PlayerState;
 
 export class Impl implements Methods<InternalState> {
-  initialize(userId: UserId, ctx: Context): InternalState {
+  initialize(ctx: Context, request: IInitializeRequest): InternalState {
     return {
       hand: [],
       players: [],
@@ -154,7 +154,7 @@ export class Impl implements Methods<InternalState> {
       deck.push({ value: i, color: Color.GREEN });
       deck.push({ value: i, color: Color.YELLOW });
     }
-    return { deck, players: [userId], hands: new Map(), turn: userId };
+    return { deck, players: [], hands: new Map() };
   }
   joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {
     // append the user who called the method
