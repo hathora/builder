@@ -334,6 +334,7 @@ parseBoolean(sb)
 
 export function encodeStateSnapshot(x: {{userState}}) {
   const buf = new _Writer();
+  buf.writeUInt8(0);
   try {
     {{#with (lookup types userState)}}
     {{> renderEncodeArg}};
@@ -350,6 +351,7 @@ export function encodeStateUpdate(
   messages: _Message[]
 ) {
   const buf = new _Writer();
+  buf.writeUInt8(1);
   buf.writeUVarint(changedAtDiff);
   const responses = messages.flatMap((msg) => (msg.type === "response" ? msg : []));
   buf.writeUVarint(responses.length);

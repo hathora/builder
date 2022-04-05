@@ -3,7 +3,7 @@ import WebSocket from "isomorphic-ws";
 import getRandomValues from "get-random-values";
 import axios from "axios";
 import jwtDecode from "jwt-decode";
-import { Writer } from "bin-serde";
+import { Reader, Writer } from "bin-serde";
 import { UserData, Response, Method, COORDINATOR_HOST } from "../../api/base";
 import {
   decodeStateSnapshot,
@@ -79,28 +79,33 @@ export class HathoraConnection {
 
   public constructor(public stateId: StateId, private socket: WebSocket, onUpdate: (updateArgs: UpdateArgs) => void) {
     socket.onmessage = ({ data }) => {
-      if (this.state === undefined) {
-        this.state = decodeStateSnapshot(new Uint8Array(data as ArrayBuffer));
-        onUpdate({ stateId, state: JSON.parse(JSON.stringify(this.state)), updatedAt: 0, events: [] });
-        return;
-      }
-      const { stateDiff, changedAtDiff, responses, events } = decodeStateUpdate(new Uint8Array(data as ArrayBuffer));
-      if (stateDiff !== undefined) {
-        this.state = computePatch(this.state, stateDiff);
-      }
-      this.changedAt += changedAtDiff;
-      onUpdate({
-        stateId,
-        state: JSON.parse(JSON.stringify(this.state)),
-        updatedAt: this.changedAt,
-        events: events.map((e) => e.event),
-      });
-      responses.forEach(({ msgId, response }) => {
-        if (msgId in this.callbacks) {
-          this.callbacks[msgId](response);
-          delete this.callbacks[msgId];
+      const reader = new Reader(new Uint8Array(data as ArrayBuffer));
+      const type = reader.readUInt8();
+      if (type === 0) {
+        this.state = decodeStateSnapshot(reader);
+        this.changedAt = 0;
+        onUpdate({ stateId, state: JSON.parse(JSON.stringify(this.state)), updatedAt: this.changedAt, events: [] });
+      } else if (type === 1) {
+        const { stateDiff, changedAtDiff, responses, events } = decodeStateUpdate(reader);
+        if (stateDiff !== undefined) {
+          this.state = computePatch(this.state!, stateDiff);
         }
-      });
+        this.changedAt += changedAtDiff;
+        onUpdate({
+          stateId,
+          state: JSON.parse(JSON.stringify(this.state)),
+          updatedAt: this.changedAt,
+          events: events.map((e) => e.event),
+        });
+        responses.forEach(({ msgId, response }) => {
+          if (msgId in this.callbacks) {
+            this.callbacks[msgId](response);
+            delete this.callbacks[msgId];
+          }
+        });
+      } else {
+        console.error("Unknown message type", type);
+      }
     };
   }
 
