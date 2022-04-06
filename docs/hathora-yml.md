@@ -72,6 +72,10 @@ Example:
 userState: MyUnion
 ```
 
+## initializeArgs
+
+The optional `initializeArgs` key sets the `InitializeRequest` type for the `initialize` method. By default it is empty.
+
 ## error
 
 The `error` key represents the response type the server sends when a method call fails.
