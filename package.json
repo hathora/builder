@@ -1,6 +1,6 @@
 {
   "name": "hathora",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "description": "Multiplayer game framework",
   "bin": "./cli.js",
   "files": [
