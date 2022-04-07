@@ -414,8 +414,8 @@ function writeOptional<T>(buf: _Writer, x: T | undefined, innerWrite: (x: T) => 
 }
 function writeArray<T>(buf: _Writer, x: T[], innerWrite: (x: T) => void) {
   buf.writeUVarint(x.length);
-  for (let i = 0; i < x.length; i++) {
-    innerWrite(x[i]);
+  for (const val of x) {
+    innerWrite(val);
   }
 }
 function writeArrayDiff<T>(buf: _Writer, x: (T | typeof _NO_DIFF)[], innerWrite: (x: T) => void) {
