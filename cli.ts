@@ -101,6 +101,16 @@ async function startFrontends() {
   }
 }
 
+async function start(only: "server" | "client" | undefined) {
+  if (only === "client") {
+    return startFrontends();
+  } else if (only === "server") {
+    return startServer();
+  } else {
+    return startServer().then(startFrontends);
+  }
+}
+
 function build() {
   for (const dir of readdirSync(clientDir)) {
     if (existsSync(join(clientDir, dir, "index.html"))) {
@@ -165,18 +175,28 @@ yargs(hideBin(process.argv))
     },
   })
   .command({
+    command: "install",
+    aliases: ["i"],
+    describe: "Install hathora dependencies",
+    handler: (_argv) => {
+      install();
+    },
+  })
+  .command({
     command: "start",
     aliases: ["up", "s"],
     describe: "Starts the hathora server",
-    handler: (_argv) => {
-      startServer().then(startFrontends);
+    builder: { only: { choices: ["client", "server"] } },
+    handler: (argv) => {
+      start(argv.only as "server" | "client" | undefined);
     },
   })
   .command({
     command: "dev",
     aliases: ["development", "d"],
     describe: "Starts the server in development mode",
-    handler: (_argv) => {
+    builder: { only: { choices: ["client", "server"] } },
+    handler: (argv) => {
       if (!existsSync(join(serverDir, "impl.ts"))) {
         console.error(
           `${chalk.red("Missing impl.ts, make sure to run")}` +
@@ -187,7 +207,7 @@ yargs(hideBin(process.argv))
         generateLocal();
       }
       install();
-      startServer().then(startFrontends);
+      start(argv.only as "server" | "client" | undefined);
     },
   })
   .command({
@@ -214,14 +234,6 @@ yargs(hideBin(process.argv))
       }
       install();
       build();
-    },
-  })
-  .command({
-    command: "install",
-    aliases: ["i"],
-    describe: "Install hathora dependencies",
-    handler: (_argv) => {
-      install();
     },
   })
   .command({
