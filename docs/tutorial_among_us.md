@@ -201,7 +201,7 @@ To better visualize the player locations, let’s create a plugin for the `GameS
 You can use frameworks like React, Vue, Lit, etc to implement your plugin, but we’ll go with a simple approach and define ours using the native javascript apis:
 
 ```sh
-hathora create-plugin-native GameState
+hathora create-plugin native GameState
 ```
 
 Hathora creates a plugin skeleton for us in `client/prototype-ui/plugins/GameState/index.ts`:
