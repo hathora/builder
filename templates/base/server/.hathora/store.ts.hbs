@@ -6,13 +6,13 @@ import { Message, NO_DIFF } from "../../api/base";
 import { UserId, encodeStateSnapshot, encodeStateUpdate, {{userState}} as UserState } from "../../api/types";
 import { register } from "./protocol";
 import { LogStore } from "@hathora/log-store";
-import { State, ImplWrapper as impl } from "./wrapper";
+import { ImplWrapper } from "./wrapper";
 import { computeDiff } from "./diff";
 import { Context } from "./methods";
 
 type StateId = bigint;
 type UserInfo = { userState: UserState; changedAt: number; messages: Message[] };
-type StateInfo = { state: State; chance: Chance.Chance; subscriptions: Map<UserId, UserInfo> };
+type StateInfo = { impl: ImplWrapper; chance: Chance.Chance; subscriptions: Map<UserId, UserInfo> };
 
 const stateInfo: Map<StateId, StateInfo> = new Map();
 const changedStates: Map<StateId, number> = new Map();
@@ -32,9 +32,9 @@ class Store {
     setInterval(() => {
       {{#if tick}}
       const currTime = Date.now();
-      stateInfo.forEach(async ({ state, chance }, stateId) => {
+      stateInfo.forEach(async ({ impl, chance }, stateId) => {
         const timeDelta = currTime - prevUpdateTime;
-        await impl.onTick(state, ctx(chance, currTime, stateId), timeDelta / 1000);
+        await impl.onTick(ctx(chance, currTime, stateId), timeDelta / 1000);
         const changedAt = impl.changedAt();
         if (changedAt !== undefined) {
           changedStates.set(stateId, changedAt);
@@ -55,8 +55,8 @@ class Store {
     const seed = randomBytes(8).readBigUInt64LE();
     const time = Date.now();
     const chance = Chance(seed.toString());
-    const state = await impl.initialize(ctx(chance, time, stateId), data);
-    stateInfo.set(stateId, { state, chance, subscriptions: new Map() });
+    const impl = new ImplWrapper(ctx(chance, time, stateId), data);
+    stateInfo.set(stateId, { impl, chance, subscriptions: new Map() });
     log.append(
       stateId,
       time,
@@ -70,7 +70,7 @@ class Store {
         coordinator.stateNotFound(stateId, userId);
         return;
       }
-      stateInfo.set(stateId, { state: loaded.state, chance: loaded.chance, subscriptions: new Map() });
+      stateInfo.set(stateId, { impl: loaded.impl, chance: loaded.chance, subscriptions: new Map() });
     }
     sendSnapshot(stateId, userId);
   }
@@ -92,7 +92,7 @@ class Store {
     if (!stateInfo.has(stateId)) {
       return;
     }
-    const { state, chance, subscriptions } = stateInfo.get(stateId)!;
+    const { impl, chance, subscriptions } = stateInfo.get(stateId)!;
     const reader = new Reader(data);
     const [method, msgId, argsBuffer] = [
       reader.readUInt8(),
@@ -100,7 +100,7 @@ class Store {
       reader.readBuffer(reader.remaining()),
     ];
     const time = Date.now();
-    const response = await impl.getResult(state, userId, method, ctx(chance, time, stateId), argsBuffer);
+    const response = await impl.getResult(userId, method, ctx(chance, time, stateId), argsBuffer);
     if (subscriptions.has(userId)) {
       subscriptions.get(userId)!.messages.push(Message.response(msgId, response));
       const changedAt = impl.changedAt();
@@ -136,7 +136,7 @@ export async function loadState(stateId: StateId) {
     const userId = reader.readString();
     const argsBuffer = reader.readBuffer(reader.readUVarint());
     const chance = Chance(seed.toString());
-    const state = await impl.initialize(ctxNoEvents(chance, time), argsBuffer);
+    const impl = new ImplWrapper(ctxNoEvents(chance, time), argsBuffer);
 
     for (let i = 1; i < rows.length; i++) {
       const { time, record } = rows[i];
@@ -145,24 +145,24 @@ export async function loadState(stateId: StateId) {
       {{#if tick}}
       if (method === 0xff) {
         const timeDelta = reader.readUVarint();
-        await impl.onTick(state, ctxNoEvents(chance, time), timeDelta / 1000);
+        await impl.onTick(ctxNoEvents(chance, time), timeDelta / 1000);
         continue;
       }
       {{/if}}
       const userId = reader.readString();
       const argsBuffer = reader.readBuffer(reader.readUVarint());
-      await impl.getResult(state, userId, method, ctxNoEvents(chance, time), argsBuffer);
+      await impl.getResult(userId, method, ctxNoEvents(chance, time), argsBuffer);
     }
 
-    return { state, chance };
+    return { impl, chance };
   } catch (e) {
     console.error("Unable to load state", stateId.toString(36));
   }
 }
 
 async function sendSnapshot(stateId: StateId, userId: UserId) {
-  const { state, subscriptions } = stateInfo.get(stateId)!;
-  const userState = await impl.getUserState(state, userId);
+  const { impl, subscriptions } = stateInfo.get(stateId)!;
+  const userState = await impl.getUserState(userId);
   subscriptions.set(userId, { userState: JSON.parse(JSON.stringify(userState)), changedAt: 0, messages: [] });
   const buf = encodeStateSnapshot(userState);
   coordinator.stateUpdate(stateId, userId, Buffer.from(buf));
@@ -170,10 +170,10 @@ async function sendSnapshot(stateId: StateId, userId: UserId) {
 
 async function sendUpdates(stateId: StateId, changedAt: number) {
   if (stateInfo.has(stateId)) {
-    const { state, subscriptions } = stateInfo.get(stateId)!;
+    const { impl, subscriptions } = stateInfo.get(stateId)!;
     for (const [userId, userInfo] of subscriptions) {
       const { userState: prevUserState, changedAt: prevChangedAt, messages } = userInfo!;
-      const currUserState = await impl.getUserState(state, userId);
+      const currUserState = await impl.getUserState(userId);
       const diff = computeDiff(currUserState, prevUserState);
       if (diff !== NO_DIFF || messages.length > 0) {
         const buf = encodeStateUpdate(diff !== NO_DIFF ? diff : undefined, changedAt - prevChangedAt, messages);
