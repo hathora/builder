@@ -59,6 +59,7 @@
   "homepage": "https://github.com/hathora/hathora#readme",
   "scripts": {
     "test": "./scripts/run-all-examples.sh",
+    "test:one": "./scripts/test-example.sh",
     "cli": "ts-node cli.ts"
   }
 }
