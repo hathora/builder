@@ -13,7 +13,7 @@ import { v4 as uuidv4 } from "uuid";
 import dotenv from "dotenv";
 import { createServer, build as buildClient } from "vite";
 import { build as buildServer } from "esbuild";
-import { generate } from "./generate";
+import { generate, vitePublicDir } from "./generate";
 import "./helpers";
 
 function getProjectRoot(cwd: string): string {
@@ -85,6 +85,7 @@ async function startFrontend(root: string) {
   return createServer({
     root,
     build: { target: ["esnext"] },
+    publicDir: vitePublicDir,
     envDir: rootDir,
     clearScreen: false,
     server: { host: "0.0.0.0" },
