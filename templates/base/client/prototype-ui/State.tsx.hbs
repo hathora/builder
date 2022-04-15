@@ -5,7 +5,7 @@ import { getUserDisplayName, lookupUser, UserData } from "../../api/base";
 import * as T from "../../api/types";
 import { HathoraConnection } from "../.hathora/client";
 {{#each plugins}}
-import {{this}}Plugin from "./plugins/{{this}}";
+import {{this}}Plugin from "./plugins/{{this}}/index";
 {{/each}}
 import { HathoraContext } from "./context";
 {{#each plugins}}
