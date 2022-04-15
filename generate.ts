@@ -199,7 +199,7 @@ export function generate(rootDir: string, templatesDir: string, args: Record<str
           const outFile = f.replace(/\{\{(.+)\}\}/, (_, val) => (val in args ? args[val] : ""));
           codegen(file, join(outDir, outFile));
         }
-      } else {
+      } else if (f.endsWith(".hbs")) {
         const template = compile(readFileSync(file, "utf8"));
         outputFileSync(join(outDir, f.split(".hbs")[0]), template(enrichedDoc));
       }
