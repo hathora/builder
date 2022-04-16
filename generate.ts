@@ -173,8 +173,6 @@ function enrichDoc(doc: z.infer<typeof HathoraConfig>, plugins: string[], appNam
   };
 }
 
-export const vitePublicDir = "public";
-
 export function generate(rootDir: string, templatesDir: string, args: Record<string, string> = {}) {
   const clientDir = join(rootDir, "client");
   const doc = HathoraConfig.parse(load(readFileSync(join(rootDir, "hathora.yml"), "utf8")));
@@ -191,17 +189,13 @@ export function generate(rootDir: string, templatesDir: string, args: Record<str
     readdirSync(inDir).forEach((f) => {
       const file = join(inDir, f);
       if (statSync(file).isDirectory()) {
-        // Allow vite public assets to be provided for the generated clients
-        // More info: https://vitejs.dev/config/#publicdir
-        if (basename(file) === vitePublicDir) {
-          copySync(file, join(outDir, f));
-        } else {
-          const outFile = f.replace(/\{\{(.+)\}\}/, (_, val) => (val in args ? args[val] : ""));
-          codegen(file, join(outDir, outFile));
-        }
+        const outFile = f.replace(/\{\{(.+)\}\}/, (_, val) => (val in args ? args[val] : ""));
+        codegen(file, join(outDir, outFile));
       } else if (f.endsWith(".hbs")) {
         const template = compile(readFileSync(file, "utf8"));
         outputFileSync(join(outDir, f.split(".hbs")[0]), template(enrichedDoc));
+      } else {
+        copySync(file, join(outDir, f));
       }
     });
   }
