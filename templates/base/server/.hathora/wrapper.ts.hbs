@@ -16,32 +16,42 @@ export class ImplWrapper {
   private state: State;
   private _changedAt: number | undefined;
   constructor(ctx: Context, argsBuffer: ArrayBufferView) {
+    monkeyPatchSideEffectFunctions(ctx);
     const state = impl.initialize(ctx, IInitializeRequest.decode(argsBuffer));
+    restoreSideEffectFunctions();
     this.state = onChange(state, () => (this._changedAt = Date.now()));
   }
-  async getResult(userId: UserId, method: Method, ctx: Context, argsBuffer: ArrayBufferView) {
+  public async getResult(userId: UserId, method: Method, ctx: Context, argsBuffer: ArrayBufferView) {
     await tryReloadImpl();
+    monkeyPatchSideEffectFunctions(ctx);
+    const res = this._getResult(userId, method, ctx, argsBuffer);
+    restoreSideEffectFunctions();
+    return res;
+  }
+  {{#if tick}}
+  public async onTick(ctx: Context, timeDelta: number) {
+    await tryReloadImpl();
+    monkeyPatchSideEffectFunctions(ctx);
+    impl.onTick(this.state, ctx, timeDelta);
+    restoreSideEffectFunctions();
+  }
+  {{/if}}
+  public async getUserState(userId: UserId) {
+    await tryReloadImpl();
+    return impl.getUserState(onChange.target(this.state), userId);
+  }
+  public changedAt(): number | undefined {
+    const res = this._changedAt;
+    this._changedAt = undefined;
+    return res;
+  }
+  private _getResult(userId: UserId, method: Method, ctx: Context, argsBuffer: ArrayBufferView) {
     switch (method) {
       {{#each methods}}
       case Method.{{uppercase @key}}:
         return impl.{{@key}}(this.state, userId, ctx, {{makeRequestName @key}}.decode(argsBuffer));
       {{/each}}
     }
-  }
-  {{#if tick}}
-  async onTick(ctx: Context, timeDelta: number) {
-    await tryReloadImpl();
-    impl.onTick(this.state, ctx, timeDelta);
-  }
-  {{/if}}
-  async getUserState(userId: UserId) {
-    await tryReloadImpl();
-    return impl.getUserState(onChange.target(this.state), userId);
-  }
-  changedAt(): number | undefined {
-    const res = this._changedAt;
-    this._changedAt = undefined;
-    return res;
   }
 }
 
@@ -60,4 +70,17 @@ async function tryReloadImpl() {
       prevError = errorString;
     }
   }
+}
+
+const origMathRandom = Math.random;
+const origDateNow = Date.now;
+
+function monkeyPatchSideEffectFunctions(ctx: Context) {
+  Math.random = () => (ctx.chance as any).random(); // @types/chance is missing the definition for random
+  Date.now = () => ctx.time;
+}
+
+function restoreSideEffectFunctions() {
+  Math.random = origMathRandom;
+  Date.now = origDateNow;
 }
