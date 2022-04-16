@@ -1,5 +1,5 @@
 import { load } from "js-yaml";
-import { readdirSync, readFileSync, outputFileSync, existsSync, statSync } from "fs-extra";
+import { readdirSync, readFileSync, outputFileSync, existsSync, statSync, copySync } from "fs-extra";
 import { compile } from "handlebars";
 import { z } from "zod";
 import { join, basename } from "path";
@@ -191,9 +191,11 @@ export function generate(rootDir: string, templatesDir: string, args: Record<str
       if (statSync(file).isDirectory()) {
         const outFile = f.replace(/\{\{(.+)\}\}/, (_, val) => (val in args ? args[val] : ""));
         codegen(file, join(outDir, outFile));
-      } else {
+      } else if (f.endsWith(".hbs")) {
         const template = compile(readFileSync(file, "utf8"));
         outputFileSync(join(outDir, f.split(".hbs")[0]), template(enrichedDoc));
+      } else {
+        copySync(file, join(outDir, f));
       }
     });
   }
