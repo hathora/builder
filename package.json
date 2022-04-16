@@ -24,9 +24,9 @@
     "shelljs": "0.8.5",
     "ts-node": "10.7.0",
     "uuid": "8.3.2",
-    "vite": "2.8.6",
+    "vite": "2.9.5",
     "yargs": "17.4.0",
-    "zod": "3.14.3"
+    "zod": "3.14.4"
   },
   "devDependencies": {
     "@types/fs-extra": "9.0.13",
@@ -35,7 +35,7 @@
     "@types/shelljs": "0.8.11",
     "@types/uuid": "8.3.4",
     "@types/yargs": "17.0.10",
-    "prettier": "2.6.1",
+    "prettier": "2.6.2",
     "typescript": "4.6.3"
   },
   "engines": {
