@@ -30,7 +30,6 @@ module.exports = {
     },
     fontFamily: {
       sans: ["Inter", "sans-serif"],
-      serif: ["Merriweather", "serif"],
       display: ['"Josefin Sans"', "Inter", "sans-serif"],
       mono: ["Inconsolata", "Inter", "sans-serif"],
     },
