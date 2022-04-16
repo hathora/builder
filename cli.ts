@@ -13,6 +13,7 @@ import { v4 as uuidv4 } from "uuid";
 import dotenv from "dotenv";
 import { createServer, build as buildClient } from "vite";
 import { build as buildServer } from "esbuild";
+import updateNotifier from "update-notifier";
 import { generate } from "./generate";
 import "./helpers";
 
@@ -132,6 +133,8 @@ function build() {
     },
   });
 }
+
+updateNotifier({ pkg: require("./package.json") }).notify();
 
 const rootDir = getProjectRoot(process.cwd());
 const clientDir = join(rootDir, "client");
