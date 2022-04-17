@@ -13,7 +13,7 @@ This is what our game will look like by the end of this tutorial:
 
 ## Install
 
-Before you begin, make sure you have nodejs v16.12+ and the hathora cli installed:
+Before you begin, make sure you have nodejs v16.14+ and the hathora cli installed:
 
 ```sh
 npm install -g hathora

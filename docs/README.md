@@ -40,7 +40,7 @@ Hathora comes with the following features out of the box:
 
 Requirements:
 
-- node v16.12.0+
+- node v16.14.0+
 
 Install hathora from the npm registry:
 
