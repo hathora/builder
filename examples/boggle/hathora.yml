@@ -1,0 +1,33 @@
+types:
+  BoggleBoard: Letter[]
+  Letter: string
+  Player:
+    id: UserId
+    validGuesses: string[]
+    invalidGuesses: string[]
+    score: int
+  GameStatus:
+    - WAITING
+    - IN_PROGRESS
+  GameState:
+    players: Player[]
+    boggleBoard: BoggleBoard
+    validGuessess: string[]
+    gameStatus: GameStatus
+    timeRemaining: int
+
+methods:
+  joinGame:
+  startRound:
+    duration: int
+  makeGuess:
+    guess: string
+
+auth:
+  anonymous: {}
+
+userState: GameState
+
+error: string
+
+tick: 50
