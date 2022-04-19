@@ -1,6 +1,5 @@
 types:
-  BoggleBoard: Letter[]
-  Letter: string
+  BoggleBoard: string[]
   Player:
     id: UserId
     validGuesses: string[]
@@ -27,7 +26,5 @@ auth:
   anonymous: {}
 
 userState: GameState
-
 error: string
-
 tick: 50

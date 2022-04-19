@@ -1,12 +1,11 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import ReactDom from "react-dom";
 //@ts-ignore
 import reactToWebComponent from "react-to-webcomponent";
-import { BoggleBoard, GameState, GameStatus } from "../../../../api/types";
+import { BoggleBoard } from "../../../../api/types";
 import { HathoraConnection } from "../../../.hathora/client";
 
-
-function BoggleBoardComponent({ val, state, client }: { val: BoggleBoard; state: GameState; client: HathoraConnection }) {
+function BoggleBoardComponent({ val, client }: { val: BoggleBoard; client: HathoraConnection }) {
   const [selectedPositions, setSelectedPositions] = useState<number[]>([]);
 
   const onSubmit = async () => {
@@ -16,7 +15,7 @@ function BoggleBoardComponent({ val, state, client }: { val: BoggleBoard; state:
     if (response.type === "error") {
       console.error(response.error);
     }
-  }
+  };
 
   const setSelected = (position: number) => (isSelected: boolean) => {
     if (!isSelected) {
@@ -29,39 +28,46 @@ function BoggleBoardComponent({ val, state, client }: { val: BoggleBoard; state:
     } else {
       setSelectedPositions(selectedPositions.concat([position]));
     }
-  }
+  };
 
-  const tableElement = <table>
-    {Array(4).fill(0).map((_, i) =>
-      <th>
-        {Array(4).fill(0).map((_, j) =>
-          <tr>
-            <BoggleLetter letter={val[4 * i + j]} isSelected={selectedPositions.includes(4 * i + j)} setSelected={setSelected(4 * i + j)} />
+  const tableElement = (
+    <table>
+      <tbody>
+        {[...Array(4)].map((_, i) => (
+          <tr key={i}>
+            {[...Array(4)].map((_, j) => (
+              <td key={j}>
+                <BoggleLetter
+                  letter={val && val.length > 0 ? val[4 * i + j] : ""}
+                  isSelected={selectedPositions.includes(4 * i + j)}
+                  setSelected={setSelected(4 * i + j)}
+                />
+              </td>
+            ))}
           </tr>
-        )}
-      </th>)}
-  </table>;
+        ))}
+      </tbody>
+    </table>
+  );
 
-  return <div>
-    {tableElement}
-    <button
-      onClick={onSubmit}
-    >
-      Submit
-    </button>
-  </div>;
+  return (
+    <div>
+      {tableElement}
+      <button onClick={onSubmit}>Submit</button>
+    </div>
+  );
 }
 
 interface IBoggleLetterProps {
-  letter: string,
+  letter: string;
   isSelected: boolean;
   setSelected: (isSelected: boolean) => void;
 }
 
 function BoggleLetter(props: IBoggleLetterProps) {
-  const divStyle: React.CSSProperties = {
-    width: '50px',
-    height: '50px',
+  const style: React.CSSProperties = {
+    width: "50px",
+    height: "50px",
     textAlign: "center",
     cursor: "pointer",
     borderRadius: "6px",
@@ -70,16 +76,13 @@ function BoggleLetter(props: IBoggleLetterProps) {
     outline: "1px solid black",
     fontSize: "2rem",
     boxShadow: "2px 2px 2px 2px black",
-    background: props.isSelected ? "yellow" : "";
+    background: props.isSelected ? "yellow" : "",
   };
-
-  return <div
-    className="boggle-letter"
-    style={divStyle}
-    onClick={() => props.setSelected(!props.isSelected)}
-  >
-    {props.letter}
-  </div>
+  return (
+    <div className="boggle-letter" style={style} onClick={() => props.setSelected(!props.isSelected)}>
+      {props.letter}
+    </div>
+  );
 }
 
 export default reactToWebComponent(BoggleBoardComponent, React, ReactDom);

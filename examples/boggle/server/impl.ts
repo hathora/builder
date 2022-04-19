@@ -37,12 +37,12 @@ export class Impl implements Methods<InternalState> {
       id: userId,
       validGuesses: [],
       invalidGuesses: [],
-      score: 0
+      score: 0,
     });
     return Response.ok();
   }
   startRound(state: InternalState, userId: UserId, ctx: Context, request: IStartRoundRequest): Response {
-    const player = state.players.find((p) => p.id === userId)
+    const player = state.players.find((p) => p.id === userId);
     if (player === undefined) {
       return Response.error("Player not joined");
     }
@@ -64,11 +64,11 @@ export class Impl implements Methods<InternalState> {
         validGuesses: [],
         invalidGuesses: [],
       };
-    })
+    });
     return Response.ok();
   }
   makeGuess(state: InternalState, userId: UserId, ctx: Context, request: IMakeGuessRequest): Response {
-    const player = state.players.find((p) => p.id === userId)
+    const player = state.players.find((p) => p.id === userId);
     if (player === undefined) {
       return Response.error("Player not joined");
     }
@@ -95,24 +95,24 @@ export class Impl implements Methods<InternalState> {
       }
       return {
         ...player,
-        validGuesses: state.gameStatus === GameStatus.WAITING ? player.validGuesses : player.validGuesses.map((guess) => {
-          if (curPlayer!.validGuesses.includes(guess)) {
-            return guess;
-          }
-          return "*".repeat(guess.length);
-        }),
+        validGuesses:
+          state.gameStatus === GameStatus.WAITING
+            ? player.validGuesses
+            : player.validGuesses.map((guess) =>
+                curPlayer!.validGuesses.includes(guess) ? guess : "*".repeat(guess.length)
+              ),
         invalidGuesses: [],
-      }
+      };
     });
     return {
       ...state,
       timeRemaining: Math.round(state.timeRemaining),
       validGuessess: [],
       players: redactedPlayers,
-    }
+    };
   }
   onTick(state: InternalState, ctx: Context, timeDelta: number): void {
-    if (state.timeRemaining <= 0) {
+    if (state.timeRemaining < 0) {
       state.timeRemaining = 0;
       state.gameStatus = GameStatus.WAITING;
       return;
