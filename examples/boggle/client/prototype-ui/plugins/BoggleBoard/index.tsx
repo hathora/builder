@@ -45,6 +45,8 @@ function BoggleBoardComponent({ val, state, client }: { val: BoggleBoard; state:
   return <div>
     {tableElement}
     <button
+      className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+      style={{ margin: "10px 0px" }}
       onClick={onSubmit}
     >
       Submit
@@ -70,7 +72,7 @@ function BoggleLetter(props: IBoggleLetterProps) {
     outline: "1px solid black",
     fontSize: "2rem",
     boxShadow: "2px 2px 2px 2px black",
-    background: props.isSelected ? "yellow" : "";
+    background: props.isSelected ? "yellow" : "",
   };
 
   return <div
