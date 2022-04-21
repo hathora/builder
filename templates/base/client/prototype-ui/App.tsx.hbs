@@ -106,6 +106,7 @@ function NavBar({ user }: { user?: UserData }) {
 }
 
 function Login({ setToken }: { setToken: (token: string) => void }) {
+  const [nickname, setNickname] = useState<string>("");
   return (
     <div className="flex flex-col w-full md:justify-center">
       <div className="w-6/12 m-auto">
@@ -129,6 +130,30 @@ function Login({ setToken }: { setToken: (token: string) => void }) {
             >
               Login (Anonymous)
             </button>
+          </div>
+{{else if (eq @key "nickname")}}
+          <div className="w-6/12 mb-4">
+            <form onSubmit={() =>
+              client
+                .loginNickname(nickname)
+                .then((token) => {
+                  sessionStorage.setItem(client.appId, token);
+                  setToken(token);
+                })
+                .catch((e) => toast.error("Authentication error: " + e.reason))
+            }>
+              <input
+                type="text"
+                name="nickname"
+                onChange={(e) => setNickname(e.target.value)}
+                value={nickname}
+                style={ { width: "200px" } }
+                className="block w-full mb-2 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"/>
+              <input
+                type="submit"
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                value="Login (Nickname)" />
+            </form>
           </div>
 {{else if (eq @key "google")}}
           <div className="w-6/12">
