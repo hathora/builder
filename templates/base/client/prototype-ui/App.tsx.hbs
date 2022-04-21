@@ -109,12 +109,12 @@ function Login({ setToken }: { setToken: (token: string) => void }) {
   const [nickname, setNickname] = useState<string>("");
   return (
     <div className="flex flex-col w-full md:justify-center">
-      <div className="w-6/12 m-auto">
+      <div className="w-8/12 m-auto">
         <h2 className="text-xl font-semibold text-gray-900">Login</h2>
         <div className="flex flex-col mt-2">
 {{#each auth}}
 {{#if (eq @key "anonymous")}}
-          <div className="w-6/12 mb-4">
+          <div className="w-8/12 mb-4">
             <button
               type="button"
               onClick={() =>
@@ -132,31 +132,41 @@ function Login({ setToken }: { setToken: (token: string) => void }) {
             </button>
           </div>
 {{else if (eq @key "nickname")}}
-          <div className="w-6/12 mb-4">
-            <form onSubmit={() =>
-              client
-                .loginNickname(nickname)
-                .then((token) => {
-                  sessionStorage.setItem(client.appId, token);
-                  setToken(token);
+          <div
+            className="w-8/12 mb-4"
+            style={ {
+              'display': 'flex',
+              'alignItems': 'baseline',
+            } }
+          >
+            <input
+              type="text"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value.trim())}
+              style={ {
+                'width': '200px',
+                'marginRight': '10px',
+              } }
+              className="block w-full mb-2 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            />
+            <button
+              type="button"
+              onClick={() =>
+                client
+                  .loginNickname(nickname)
+                  .then((token) => {
+                    sessionStorage.setItem(client.appId, token);
+                    setToken(token);
                 })
                 .catch((e) => toast.error("Authentication error: " + e.reason))
-            }>
-              <input
-                type="text"
-                name="nickname"
-                onChange={(e) => setNickname(e.target.value)}
-                value={nickname}
-                style={ { width: "200px" } }
-                className="block w-full mb-2 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"/>
-              <input
-                type="submit"
-                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                value="Login (Nickname)" />
-            </form>
+              }
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Login (Nickname)
+            </button>
           </div>
 {{else if (eq @key "google")}}
-          <div className="w-6/12">
+          <div className="w-8/12">
             <GoogleLogin
               clientId="{{clientId}}"
               onSuccess={({ tokenId }: any) =>
@@ -168,7 +178,7 @@ function Login({ setToken }: { setToken: (token: string) => void }) {
                   })
                   .catch((e) => toast.error("Authentication error: " + e.reason))
               }
-              onFailure={(error) => toast.error("Authentication error: " + error)}
+              onFailure={(error) => toast.error("Authentication error: " + error.details)}
             />
           </div>
 {{/if}}
