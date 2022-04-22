@@ -14,11 +14,9 @@ import {
 
 type InternalState = {
   deck: Card[];
-  hands: Map<UserId, Card[]>;
-  players: UserId[];
+  hands: { userId: UserId; cards: Card[] }[];
+  turnIdx: number;
   pile?: Card;
-  turn?: UserId;
-  winner?: UserId;
 };
 
 export class Impl implements Methods<InternalState> {
@@ -30,79 +28,81 @@ export class Impl implements Methods<InternalState> {
       deck.push({ value: i, color: Color.GREEN });
       deck.push({ value: i, color: Color.YELLOW });
     }
-    return { deck, players: [], hands: new Map() };
+    return { deck, hands: [], turnIdx: 0 };
   }
   joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {
-    if (state.players.find((playerId) => playerId === userId) !== undefined) {
+    if (state.hands.find((hand) => hand.userId === userId) !== undefined) {
       return Response.error("Already joined");
     }
-    state.players.push(userId);
+    if (state.pile !== undefined) {
+      return Response.error("Game in progress");
+    }
+    state.hands.push({ userId, cards: [] });
     return Response.ok();
   }
   startGame(state: InternalState, userId: UserId, ctx: Context, request: IStartGameRequest): Response {
     if (state.pile !== undefined) {
       return Response.error("Already started");
     }
-    if (state.players.length === 0) {
+    if (state.hands.length === 0) {
       return Response.error("At least one player required");
     }
-    state.turn = ctx.chance.pickone(state.players);
+    state.hands = ctx.chance.shuffle(state.hands);
     state.deck = ctx.chance.shuffle(state.deck);
     // give each player 7 cards
-    state.players.forEach((playerId) => {
-      state.hands.set(playerId, []);
+    state.hands.forEach((hand) => {
       for (let i = 0; i < 7; i++) {
-        state.hands.get(playerId)!.push(state.deck.pop()!);
+        hand.cards.push(state.deck.pop()!);
       }
     });
     state.pile = state.deck.pop();
     return Response.ok();
   }
   playCard(state: InternalState, userId: UserId, ctx: Context, request: IPlayCardRequest): Response {
-    if (state.turn !== userId) {
+    if (state.pile === undefined) {
+      return Response.error("Game not started");
+    }
+    const hand = state.hands[state.turnIdx];
+    if (hand.userId !== userId) {
       return Response.error("Not your turn");
     }
     if (request.card.color != state.pile!.color && request.card.value != state.pile!.value) {
       return Response.error("Doesn't match top of pile");
     }
-    const hand = state.hands.get(userId)!;
-    const cardIdx = hand.findIndex((card) => card.value == request.card.value && card.color == request.card.color);
+    const cards = hand.cards;
+    const cardIdx = cards.findIndex((card) => card.value == request.card.value && card.color == request.card.color);
     if (cardIdx < 0) {
       return Response.error("Card not in hand");
     }
     // remove from hand
-    hand.splice(cardIdx, 1);
+    cards.splice(cardIdx, 1);
     // update pile
     state.pile = request.card;
-    // check if won
-    if (hand.length == 0) {
-      state.winner = userId;
-      return Response.ok();
-    }
     // upate turn
-    const currIdx = state.players.indexOf(state.turn);
-    const nextIdx = (currIdx + 1) % state.players.length;
-    state.turn = state.players[nextIdx];
+    state.turnIdx = (state.turnIdx + 1) % state.hands.length;
     return Response.ok();
   }
   drawCard(state: InternalState, userId: UserId, ctx: Context, request: IDrawCardRequest): Response {
+    if (state.pile === undefined) {
+      return Response.error("Game not started");
+    }
+    const hand = state.hands[state.turnIdx];
+    if (hand.userId !== userId) {
+      return Response.error("Not your turn");
+    }
     if (state.deck.length === 0) {
       return Response.error("Deck is empty");
     }
-    const hand = state.hands.get(userId);
-    if (hand === undefined) {
-      return Response.error("Invalid user");
-    }
-    hand.push(state.deck.pop()!);
+    hand.cards.push(state.deck.pop()!);
     return Response.ok();
   }
   getUserState(state: InternalState, userId: UserId): PlayerState {
     return {
-      hand: state.hands.get(userId) ?? [],
-      players: state.players,
-      turn: state.turn,
+      hand: state.hands.find((hand) => hand.userId === userId)?.cards ?? [],
+      players: state.hands.map((hand) => ({ id: hand.userId, numCards: hand.cards.length })),
+      turn: state.pile !== undefined ? state.hands[state.turnIdx].userId : undefined,
       pile: state.pile,
-      winner: state.winner,
+      winner: state.hands.find((hand) => hand.cards.length === 0)?.userId,
     };
   }
 }

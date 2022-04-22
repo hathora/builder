@@ -7,9 +7,12 @@ types:
   Card:
     value: int
     color: Color
+  Player:
+    id: UserId
+    numCards: int
   PlayerState:
     hand: Card[]
-    players: UserId[]
+    players: Player[]
     turn: UserId?
     pile: Card?
     winner: UserId?
