@@ -147,7 +147,7 @@ function BooleanDisplay({ value }: { value: boolean }) {
 
 function PluginDisplay<T>(props: { value: T; component: string; children: (value: T) => JSX.Element }) {
   const { connection, user, state, updatedAt, pluginsAsObjects } = useContext(HathoraContext)!;
-  const ref = useRef<{ val: T; client: HathoraConnection; user: UserData; state: T.PlayerState; updatedAt: number }>();
+  const ref = useRef<{ val: T; client: HathoraConnection; user: UserData; state: T.{{userState}}; updatedAt: number }>();
   const displayError = (e: CustomEvent) => toast.error(e.detail);
   useLayoutEffect(() => {
     if (ref.current) {
