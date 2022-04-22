@@ -29,9 +29,30 @@ export default function Game() {
   }, [playerState?.players.length, gameId]);
 
   return (
-    <div>
-      <div>{JSON.stringify(playerState)}</div>
-      <button>Start Game</button>
+    <div className="flex flex-row h-full">
+      <div className="w-64 flex flex-col overflow-y-auto bg-slate-200 p-5">
+        <h2 className="text-5xl tracking-tight font-bold text-gray-900">Players</h2>
+        <div className="pt-5">
+          {playerState?.players.map((player) => (
+            <div
+              key={player}
+              className={`bg-slate-500 text-white shadow  shadow-gray-600 p-3 rounded mb-2 ${
+                player === playerState?.turn ? "bg-orange-500" : ""
+              }`}
+            >
+              {player}
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="pt-5 flex-5 flex-col">
+        <div className="pile-row flex justify-center items-center h-1/2">
+          {playerState?.pile?.color} {playerState?.pile?.value}
+        </div>
+        <div className="hand-row flex justify-center items-center h-1/2">{JSON.stringify(playerState?.hand)}</div>
+        <div>{JSON.stringify(playerState)}</div>
+        <button>Start Game</button>
+      </div>
     </div>
   );
 }

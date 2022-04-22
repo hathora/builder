@@ -8,11 +8,12 @@ import { IInitializeRequest } from "../../../../api/types";
 
 interface AuthContext {
   token?: string;
-  login: () => Promise<void>;
+  login: () => Promise<string>;
   connect: (gameId: string) => HathoraConnection;
   disconnect: () => void;
-  createGame: () => Promise<string>;
+  createGame: () => Promise<string | undefined>;
   joinGame: (gameId: string) => Promise<void>;
+  startGame: () => Promise<void>;
   playerState?: UpdateArgs["state"];
   connectionError?: ConnectionFailure;
 }
@@ -37,6 +38,7 @@ export default function HathoraContextProvider({ children }: AuthContextProvider
         isLogginIn.current = true;
         const token = await client.loginAnonymous();
         setToken(token);
+        return token;
       } catch (e) {
         console.error(e);
       } finally {
@@ -71,9 +73,18 @@ export default function HathoraContextProvider({ children }: AuthContextProvider
     }
   }, [connection]);
 
-  const createGame = async () => {
-    return await client.create(token, IInitializeRequest.default());
-  };
+  const createGame = useCallback(async () => {
+    if (token) {
+      return await client.create(token, IInitializeRequest.default());
+    } else {
+      const token = await login();
+      if (token) {
+        return await client.create(token, IInitializeRequest.default());
+      }
+
+      throw new Error("An Error occurred creating Game");
+    }
+  }, [token]);
 
   const joinGame = useCallback(
     async (gameId: string) => {
@@ -83,14 +94,11 @@ export default function HathoraContextProvider({ children }: AuthContextProvider
     [token, connect]
   );
 
-  const startGame = useCallback(
-    async (gameId: string) => {
-      if (connection) {
-        await connection.startGame({});
-      }
-    },
-    [token, connection]
-  );
+  const startGame = useCallback(async () => {
+    if (connection) {
+      await connection.startGame({});
+    }
+  }, [token, connection]);
 
   return (
     <HathoraContext.Provider
