@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.home{
+  /* background: url("../src/assets/Background.png"); */
+  background-size: contain;
+  background-repeat: no-repeat;
+  
+  /* background-color: black; */
+
+}
