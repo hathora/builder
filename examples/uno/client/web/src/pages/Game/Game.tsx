@@ -5,6 +5,7 @@ import { Dialog, Transition } from "@headlessui/react";
 import { useHathoraContext } from "../../context/GameContext";
 import UnoCard from "../../components/UnoCard/UnoCard";
 import MiniCardsRow from "../../components/MinICardCount/MiniCard";
+import Logo from "../../assets/hathora-hammer-logo-light.png";
 
 export default function Game() {
   const { gameId } = useParams();
@@ -44,25 +45,34 @@ export default function Game() {
   return (
     <>
       <div className="flex flex-row h-full">
-        <div className="w-64 flex flex-col overflow-y-auto bg-slate-200 p-5">
-          <h2 className="text-5xl tracking-tight font-bold text-gray-900">Players</h2>
+        <div className="w-1/3 sm:w-2/5 lg:w-1/5 flex flex-col overflow-y-auto bg-slate-200 p-5">
+          <div className="flex w-full justify-center items-center flex-col">
+            <img src={Logo} className={"w-1/2"} />
+            <div>
+              Powered By <strong>Hathora</strong>
+            </div>
+          </div>
+          <h2 className="mt-5 text-3xl tracking-tight font-bold text-gray-900">Players in lobby</h2>
           <div className="pt-5">
             {playerState?.players.map((player) => (
               <div
                 key={player.id}
                 className={`bg-slate-500 text-white shadow shadow-gray-600 p-3 rounded mb-2 ${
-                  player.id === playerState?.turn ? "bg-orange-500 border-white border-2" : ""
+                  player.id === playerState?.turn ? "bg-green-600" : ""
                 }`}
               >
                 {getUserName(player.id)} {player.id === user?.id ? "(You)" : ""}
-                <div className="mt-5 flex items-end justify-end">
+                <div className="mt-5 flex items-end">
                   <MiniCardsRow count={player.numCards} />
+                </div>
+                <div className="flex justify-end">
+                  <strong>{player.id === playerState?.turn ? "Current player" : ""}</strong>
                 </div>
               </div>
             ))}
           </div>
         </div>
-        <div className="pt-5 flex-1 flex-col bg-gray-100">
+        <div className="pt-5 flex-1 flex-col bg-gray-100 overflow-scroll pb-44">
           {isGameActive ? (
             <>
               <div className="flex justify-end items-end w-full pr-5">
@@ -73,15 +83,16 @@ export default function Game() {
                   Draw Card
                 </button>
               </div>
-              <div className="flex justify-center items-center h-1/2 flex-col">
+              <div className="flex justify-center items-center h-1/2 overflow-scroll flex-col">
                 <div className="text-lg font-semibold">Pile</div>
                 {pile?.color !== undefined && pile?.value && <UnoCard color={pile?.color} value={pile?.value} />}
               </div>
-              <div className="h-1/2 flex flex-col justify-center items-center">
-                <div className="text-lg font-semibold">Hand</div>
-                <div className="hand-row flex max-w-full flex-wrap">
+              <div className="h-1/2 flex flex-col justify-center items-center pb-10">
+                <div className="text-lg font-semibold">Current Hand</div>
+                <div className="hand-row flex max-w-full flex-wrap h-full pb-44">
                   {playerState?.hand?.map((card) => (
                     <UnoCard
+                      disabled={playerState?.turn !== user?.id}
                       key={`${card.value}_${card.color}`}
                       onClick={() => playCard(card)}
                       color={card.color}

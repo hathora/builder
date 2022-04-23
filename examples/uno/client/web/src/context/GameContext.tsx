@@ -37,7 +37,10 @@ export default function HathoraContextProvider({ children }: AuthContextProvider
   const [playerState, setPlayerState] = useState<UpdateArgs["state"]>();
   const [events, setEvents] = useState<UpdateArgs["events"]>();
   const [connectionError, setConnectionError] = useState<ConnectionFailure>();
-  const [playerNameMapping, setPlayerNameMapping] = useState<Record<string, UserData>>({});
+  const [playerNameMapping, setPlayerNameMapping] = useSessionStorage<Record<string, UserData>>(
+    `${client.appId}_player_mapping`,
+    {}
+  );
   const [user, setUserInfo] = useState<UserData>();
   const isLogginIn = useRef(false);
 

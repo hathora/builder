@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useHathoraContext } from "../../context/GameContext";
+import Logo from "../../assets/hathora-hammer-logo-light.png";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -8,23 +9,29 @@ export default function Home() {
   const [gameId, setGameId] = useState<string>();
 
   return (
-    <div className="h-full bg-slate-200 flex justify-center items-center">
-      <div className="flex flex-col rounded bg-slate-300 h-3/5 w-5/6 sm:w-3/4 md:w-1/2 lg:w-2/6shadow shadow-gray-400">
-        <div className="flex justify-center items-center h-4/6 w-full text-2xl lg:text-4xl md:text-2xl font-semibold">
-          Welcome to UNO by Hathora
+    <div className="h-full bg-slate-400  flex justify-center items-center">
+      <div className="flex flex-col rounded bg-gray-100 h-3/5 w-5/6 sm:w-2/3 lg:w-1/2 xl:w-2/5 shadow drop-shadow">
+        <div className="flex flex-col justify-center items-center h-4/6 w-full text-2xl lg:text-4xl md:text-2xl font-semibold">
+          <img src={Logo} style={{ width: 150 }} />
+          <div>
+            <strong>UNO</strong>
+          </div>
+          <div>
+            by <strong>Hathora</strong>
+          </div>
         </div>
-        <div className="flex flex-col rounded bg-slate-300 justify-center items-center h-2/6 w-full">
+        <div className="flex flex-col rounded bg-gray-100 justify-center items-center h-2/6 w-full">
           <div className="flex md:flex-row flex-col w-full lg:w-3/4 w-3/4 mb-10">
             <input
               onChange={(e) => setGameId(e.target.value)}
-              placeholder="game id here..."
-              className="w-full flex-1 px-5 py-3 placeholder-gray-500 focus:ring-indigo-500 focus:border-indigo-500 focus:border-r-0 border-gray-300 rounded-l md:rounder-r-0"
+              placeholder="Game ID here..."
+              className="w-full flex-1 px-5 shadow py-3 placeholder-gray-500 focus:ring-indigo-500 focus:border-indigo-500 focus:border-r-0 border-gray-300 rounded-l md:rounder-r-0 md:mb-0 mb-5"
             />
             <button
               onClick={() => {
                 navigate(`/game/${gameId}`);
               }}
-              className="block bg-orange-400 border border-orange-400 rounded-r p-2 text-xl font-semibold text-white text-center hover:bg-orange-500 h-fit"
+              className="block bg-orange-400 border border-orange-400 rounded-r p-2 text-xl font-semibold text-white text-center hover:bg-orange-500 shadow"
             >
               Join Existing Game
             </button>
