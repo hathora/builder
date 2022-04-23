@@ -1,14 +1,15 @@
-import { createContext, ReactNode, useCallback, useContext, useRef, useState } from "react";
+import { createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { HathoraClient, HathoraConnection, UpdateArgs } from "../../../.hathora/client";
 import { ConnectionFailure } from "../../../.hathora/failures";
 
 import useSessionStorage from "../hooks/useSessionStorage";
 
-import { IInitializeRequest } from "../../../../api/types";
+import { Card, IInitializeRequest } from "../../../../api/types";
+import { lookupUser, UserData } from "../../../../api/base";
 
-interface AuthContext {
+interface GameContext {
   token?: string;
-  login: () => Promise<string>;
+  login: () => Promise<string | undefined>;
   connect: (gameId: string) => HathoraConnection;
   disconnect: () => void;
   createGame: () => Promise<string | undefined>;
@@ -16,6 +17,11 @@ interface AuthContext {
   startGame: () => Promise<void>;
   playerState?: UpdateArgs["state"];
   connectionError?: ConnectionFailure;
+  playCard: (card: Card) => Promise<void>;
+  drawCard: () => Promise<void>;
+  endGame: () => void;
+  getUserName: (id: string) => string;
+  user?: UserData;
 }
 
 interface AuthContextProviderProps {
@@ -23,7 +29,7 @@ interface AuthContextProviderProps {
 }
 const client = new HathoraClient();
 
-const HathoraContext = createContext<AuthContext | null>(null);
+const HathoraContext = createContext<GameContext | null>(null);
 
 export default function HathoraContextProvider({ children }: AuthContextProviderProps) {
   const [token, setToken] = useSessionStorage<string>(client.appId);
@@ -31,12 +37,20 @@ export default function HathoraContextProvider({ children }: AuthContextProvider
   const [playerState, setPlayerState] = useState<UpdateArgs["state"]>();
   const [events, setEvents] = useState<UpdateArgs["events"]>();
   const [connectionError, setConnectionError] = useState<ConnectionFailure>();
+  const [playerNameMapping, setPlayerNameMapping] = useState<Record<string, UserData>>({});
+  const [user, setUserInfo] = useState<UserData>();
   const isLogginIn = useRef(false);
+
   const login = async () => {
     if (!isLogginIn.current) {
       try {
         isLogginIn.current = true;
         const token = await client.loginAnonymous();
+        if (token) {
+          const user = HathoraClient.getUserFromToken(token);
+          setUserInfo(user);
+          setPlayerNameMapping((current) => ({ ...current, [user.id]: user }));
+        }
         setToken(token);
         return token;
       } catch (e) {
@@ -82,7 +96,7 @@ export default function HathoraContextProvider({ children }: AuthContextProvider
         return await client.create(token, IInitializeRequest.default());
       }
 
-      throw new Error("An Error occurred creating Game");
+      // throw new Error("An Error occurred creating Game");
     }
   }, [token]);
 
@@ -100,9 +114,81 @@ export default function HathoraContextProvider({ children }: AuthContextProvider
     }
   }, [token, connection]);
 
+  const playCard = useCallback(
+    async (card: Card) => {
+      if (connection) {
+        await connection.playCard({ card });
+      }
+    },
+    [connection]
+  );
+
+  const drawCard = useCallback(async () => {
+    if (connection) {
+      await connection.drawCard({});
+    }
+  }, [connection]);
+
+  const endGame = () => {
+    setPlayerState(undefined);
+    connection?.disconnect();
+  };
+
+  useEffect(() => {
+    if (connectionError) {
+      alert(connectionError);
+    }
+  }, [connectionError]);
+
+  useEffect(() => {
+    if (playerState?.players?.length) {
+      playerState.players.map((player) => {
+        if (playerNameMapping[player.id]) {
+          lookupUser(player.id).then((response) => {
+            setPlayerNameMapping((curr) => ({ ...curr, [player.id]: response }));
+          });
+        }
+      });
+    }
+  }, [playerState?.players, playerNameMapping]);
+
+  const getUserName = useCallback(
+    (userId: string) => {
+      if (playerNameMapping[userId]) {
+        return playerNameMapping[userId].name;
+      } else {
+        lookupUser(userId).then((response) => {
+          setPlayerNameMapping((curr) => ({ ...curr, [userId]: response }));
+        });
+        return userId;
+      }
+    },
+    [playerNameMapping]
+  );
+
+  useEffect(() => {
+    if (token) {
+      setUserInfo(HathoraClient.getUserFromToken(token));
+    }
+  }, [token]);
   return (
     <HathoraContext.Provider
-      value={{ token, login, connect, joinGame, disconnect, createGame, playerState, connectionError, startGame }}
+      value={{
+        token,
+        login,
+        connect,
+        joinGame,
+        disconnect,
+        createGame,
+        playerState,
+        connectionError,
+        startGame,
+        playCard,
+        drawCard,
+        user,
+        endGame,
+        getUserName,
+      }}
     >
       {children}
     </HathoraContext.Provider>
