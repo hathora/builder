@@ -35,7 +35,6 @@ const HandleConnection = async (prom: Promise<Response>) => {
   const response = await prom;
 
   if (response.type === "error") {
-    console.log("calling toast");
     toast.error(response.error, {
       position: "top-center",
       autoClose: 3000,
@@ -165,7 +164,7 @@ export default function HathoraContextProvider({ children }: AuthContextProvider
   useEffect(() => {
     if (playerState?.players?.length) {
       playerState.players.map((player) => {
-        if (playerNameMapping[player.id]) {
+        if (!Boolean(playerNameMapping[player.id])) {
           lookupUser(player.id).then((response) => {
             setPlayerNameMapping((curr) => ({ ...curr, [player.id]: response }));
           });
@@ -176,7 +175,7 @@ export default function HathoraContextProvider({ children }: AuthContextProvider
 
   const getUserName = useCallback(
     (userId: string) => {
-      if (playerNameMapping[userId]) {
+      if (Boolean(playerNameMapping[userId])) {
         return playerNameMapping[userId].name;
       } else {
         lookupUser(userId).then((response) => {
@@ -199,7 +198,7 @@ export default function HathoraContextProvider({ children }: AuthContextProvider
       if (playerState?.turn === user?.id) {
         toast.success(`It's you turn`, { position: "top-center", hideProgressBar: true });
       } else {
-        toast.info(`it is ${getUserName(playerState?.turn)}'s turn`);
+        toast.info(`it is ${getUserName(playerState?.turn)}'s turn`, { position: "top-center", hideProgressBar: true });
       }
     }
   }, [playerState?.turn]);
@@ -223,7 +222,7 @@ export default function HathoraContextProvider({ children }: AuthContextProvider
       }}
     >
       {children}
-      <ToastContainer />
+      <ToastContainer autoClose={2000} limit={1} newestOnTop={true} pauseOnFocusLoss={false} />
     </HathoraContext.Provider>
   );
 }
