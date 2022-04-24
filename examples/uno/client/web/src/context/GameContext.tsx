@@ -1,11 +1,11 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { HathoraClient, HathoraConnection, UpdateArgs } from "../../../.hathora/client";
 import { ConnectionFailure } from "../../../.hathora/failures";
-
+import { ToastContainer, toast } from "react-toastify";
 import useSessionStorage from "../hooks/useSessionStorage";
 
 import { Card, IInitializeRequest } from "../../../../api/types";
-import { lookupUser, UserData } from "../../../../api/base";
+import { lookupUser, UserData, Response } from "../../../../api/base";
 
 interface GameContext {
   token?: string;
@@ -31,6 +31,25 @@ const client = new HathoraClient();
 
 const HathoraContext = createContext<GameContext | null>(null);
 
+const HandleConnection = async (prom: Promise<Response>) => {
+  const response = await prom;
+
+  if (response.type === "error") {
+    console.log("calling toast");
+    toast.error(response.error, {
+      position: "top-center",
+      autoClose: 3000,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
+  }
+
+  return response;
+};
+
 export default function HathoraContextProvider({ children }: AuthContextProviderProps) {
   const [token, setToken] = useSessionStorage<string>(client.appId);
   const [connection, setConnection] = useState<HathoraConnection>();
@@ -42,12 +61,12 @@ export default function HathoraContextProvider({ children }: AuthContextProvider
     {}
   );
   const [user, setUserInfo] = useState<UserData>();
-  const isLogginIn = useRef(false);
+  const isLoginIn = useRef(false);
 
   const login = async () => {
-    if (!isLogginIn.current) {
+    if (!isLoginIn.current) {
       try {
-        isLogginIn.current = true;
+        isLoginIn.current = true;
         const token = await client.loginAnonymous();
         if (token) {
           const user = HathoraClient.getUserFromToken(token);
@@ -59,7 +78,7 @@ export default function HathoraContextProvider({ children }: AuthContextProvider
       } catch (e) {
         console.error(e);
       } finally {
-        isLogginIn.current = false;
+        isLoginIn.current = false;
       }
     }
   };
@@ -113,14 +132,14 @@ export default function HathoraContextProvider({ children }: AuthContextProvider
 
   const startGame = useCallback(async () => {
     if (connection) {
-      await connection.startGame({});
+      await HandleConnection(connection.startGame({}));
     }
   }, [token, connection]);
 
   const playCard = useCallback(
     async (card: Card) => {
       if (connection) {
-        await connection.playCard({ card });
+        await HandleConnection(connection.playCard({ card }));
       }
     },
     [connection]
@@ -128,7 +147,7 @@ export default function HathoraContextProvider({ children }: AuthContextProvider
 
   const drawCard = useCallback(async () => {
     if (connection) {
-      await connection.drawCard({});
+      await HandleConnection(connection.drawCard({}));
     }
   }, [connection]);
 
@@ -174,6 +193,16 @@ export default function HathoraContextProvider({ children }: AuthContextProvider
       setUserInfo(HathoraClient.getUserFromToken(token));
     }
   }, [token]);
+
+  useEffect(() => {
+    if (playerState?.turn) {
+      if (playerState?.turn === user?.id) {
+        toast.success(`It's you turn`, { position: "top-center", hideProgressBar: true });
+      } else {
+        toast.info(`it is ${getUserName(playerState?.turn)}'s turn`);
+      }
+    }
+  }, [playerState?.turn]);
   return (
     <HathoraContext.Provider
       value={{
@@ -194,6 +223,7 @@ export default function HathoraContextProvider({ children }: AuthContextProvider
       }}
     >
       {children}
+      <ToastContainer />
     </HathoraContext.Provider>
   );
 }
