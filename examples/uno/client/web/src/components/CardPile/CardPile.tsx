@@ -13,7 +13,7 @@ export default function CardPile() {
         {pile?.color !== undefined && pile?.value && (
           <div className="flex flex-col">
             <div className="text-lg font-semibold text-center">Pile</div>
-            <UnoCard color={pile?.color} value={pile?.value} />
+            <UnoCard color={pile?.color} value={pile?.value} cursor="initial" />
           </div>
         )}
         {

@@ -51,7 +51,10 @@ export default function Game() {
           <div className="flex flex-row justify-center items-center">
             <img src={Logo} style={{ height: 50 }} />
             <div>
-              Powered By <strong>Hathora</strong>
+              Powered By{" "}
+              <strong>
+                <a href="https://github.com/hathora/hathora">Hathora</a>
+              </strong>
             </div>
           </div>
         </div>

@@ -9,7 +9,7 @@ let DISPLAY_COLORS = {
   [Color.YELLOW]: "#fcda49",
 };
 
-const CardWrapper = styled.div<{ colorV: Color; disabled?: boolean }>`
+const CardWrapper = styled.div<{ colorV: Color; disabled?: boolean; cursor?: string }>`
   background-color: ${({ colorV }) => DISPLAY_COLORS[colorV]};
   opacity: ${({ disabled }) => (disabled ? 0.5 : "initial")};
   ${BaseCard}
@@ -20,14 +20,17 @@ const CardValue = ({
   value,
   onClick,
   disabled,
+  cursor,
 }: {
   disabled?: boolean;
   color: Color;
   value: number;
   onClick?: () => void;
+  cursor?: string;
 }) => {
   return (
     <CardWrapper
+      cursor={cursor}
       disabled={disabled}
       onClick={!disabled ? onClick : undefined}
       className="mx-2 md:mx-3 mt-2"

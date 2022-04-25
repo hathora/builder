@@ -1,11 +1,11 @@
 import { css } from "styled-components";
 
-export const BaseCard = css`
+export const BaseCard = css<{ cursor?: string }>`
   line-height: 75px;
   width: 120px;
   height: 160px;
   text-align: center;
-  cursor: pointer;
+  cursor: ${({ cursor }) => cursor ?? "pointer"};
   border: 2px solid white;
   display: flex;
   border-radius: 8px;
