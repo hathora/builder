@@ -8,7 +8,7 @@ export default function CardPile() {
   const pile = playerState?.pile;
 
   return (
-    <div className="flex justify-center items-center h-1/2 overflow-scroll flex-col">
+    <div className="flex justify-center items-center mb-10 overflow-scroll flex-col">
       <div className="flex">
         {pile?.color !== undefined && pile?.value && (
           <div className="flex flex-col">
