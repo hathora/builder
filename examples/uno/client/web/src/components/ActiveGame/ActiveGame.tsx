@@ -15,10 +15,10 @@ export default function ActiveGame() {
         ) : (
           <OpponentHand
             key={player.id}
-            active={playerState?.turn === user?.id}
+            active={playerState?.turn === player?.id}
             name={getUserName(player.id)}
             cardCount={player?.numCards}
-            disabled={playerState?.turn !== user?.id}
+            disabled={playerState?.turn !== player?.id}
           />
         )
       )}
