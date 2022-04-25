@@ -57,7 +57,7 @@ export default function Game() {
         </div>
         <div className="pt-5 flex-1 flex-col bg-gray-100 overflow-scroll pb-44">
           <CopyToClipboard text={gameId || ""} onCopy={() => toast.success("Copied Room code to clipboard!")}>
-            <div className="pl-5 text-md font-semibold flex items-center" onClick={() => {}}>
+            <div className="pl-5 mb-5 text-md font-semibold flex items-center" onClick={() => {}}>
               Room Code: {gameId} <ClipboardCopyIcon height={20} className={"h-fit mx-2"} />
             </div>
           </CopyToClipboard>
