@@ -4,7 +4,7 @@ import { useHathoraContext } from "../../context/GameContext";
 export default function PlayerList() {
   const { playerState, user, getUserName } = useHathoraContext();
   return (
-    <div className="pt-5 flex flex-row">
+    <div className="pt-3 flex flex-row">
       {playerState?.players.map((player) => (
         <div
           key={player.id}
