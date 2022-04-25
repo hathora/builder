@@ -6,7 +6,7 @@ export default function GameHand() {
 
   return (
     <div className="flex flex-col">
-      <div className="text-lg font-semibold text-center">
+      <div className="text-lg font-semibold px-6">
         {user?.id === playerState?.turn && <span className="text-2xl">➡️</span>} {user?.id && getUserName(user?.id)}{" "}
         (You)
       </div>

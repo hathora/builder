@@ -13,7 +13,7 @@ export default function OpponentHand({
 }) {
   return (
     <div className="flex flex-col">
-      <div className="text-lg font-semibold text-center">
+      <div className="text-lg font-semibold px-6">
         {active && <span className="text-2xl">➡️</span>} {name}
       </div>
       <div className="flex flex-row px-2 w-full overflow-x-auto hide-scroll-bar pb-8">
