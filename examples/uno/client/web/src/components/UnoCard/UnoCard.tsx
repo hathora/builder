@@ -10,8 +10,8 @@ let DISPLAY_COLORS = {
 
 const CardWrapper = styled.div<{ colorV: Color; disabled?: boolean }>`
   line-height: 75px;
-  width: calc(100vw / 10);
-  height: calc(100vw / 7);
+  width: calc(100vw / 13);
+  height: calc(100vw / 10);
   text-align: center;
   cursor: pointer;
   border: 2px solid white;

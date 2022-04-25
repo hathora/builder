@@ -4,11 +4,11 @@ import { useHathoraContext } from "../../context/GameContext";
 export default function PlayerList() {
   const { playerState, user, getUserName } = useHathoraContext();
   return (
-    <div className="pt-5">
+    <div className="pt-5 flex flex-row">
       {playerState?.players.map((player) => (
         <div
           key={player.id}
-          className={`bg-slate-500 text-white shadow shadow-gray-600 p-3 rounded mb-2 ${
+          className={`bg-slate-500 text-white shadow shadow-gray-600 p-3 rounded mb-2 mx-2 ${
             player.id === playerState?.turn ? "bg-green-600" : ""
           }`}
         >

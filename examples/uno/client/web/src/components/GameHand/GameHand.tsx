@@ -2,12 +2,14 @@ import UnoCard from "../UnoCard/UnoCard";
 import { useHathoraContext } from "../../context/GameContext";
 
 export default function GameHand() {
-  const { playerState, playCard, user } = useHathoraContext();
+  const { playerState, playCard, user, getUserName } = useHathoraContext();
 
   return (
-    <div className="h-1/2 flex flex-col justify-center items-center pb-10">
-      <div className="text-lg font-semibold">Current Hand</div>
-      <div className="hand-row flex max-w-full flex-wrap h-full pb-44">
+    <div className="flex flex-col justify-center items-center pb-5">
+      <div className="text-lg font-semibold text-center">
+        {user?.id === playerState?.turn && <span className="text-2xl">➡️</span>} {user?.id && getUserName(user?.id)}
+      </div>
+      <div className="hand-row flex max-w-full flex-wrap h-full pb-10">
         {playerState?.hand?.map((card) => (
           <UnoCard
             disabled={playerState?.turn !== user?.id}

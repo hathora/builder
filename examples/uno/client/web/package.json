@@ -11,6 +11,7 @@
     "@headlessui/react": "^1.5.0",
     "@heroicons/react": "^1.0.6",
     "react": "^18.0.0",
+    "react-copy-to-clipboard": "^5.1.0",
     "react-dom": "^18.0.0",
     "react-router-dom": "^6.3.0",
     "react-toastify": "^8.2.0",
@@ -19,6 +20,7 @@
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.0",
     "@types/react": "^18.0.0",
+    "@types/react-copy-to-clipboard": "^5.0.2",
     "@types/react-dom": "^18.0.0",
     "@types/react-router-dom": "^5.3.3",
     "@types/styled-components": "^5.1.25",
