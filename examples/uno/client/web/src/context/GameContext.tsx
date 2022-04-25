@@ -22,6 +22,8 @@ interface GameContext {
   endGame: () => void;
   getUserName: (id: string) => string;
   user?: UserData;
+  connecting?: boolean;
+  loggingIn?: boolean;
 }
 
 interface AuthContextProviderProps {
@@ -55,6 +57,8 @@ export default function HathoraContextProvider({ children }: AuthContextProvider
   const [playerState, setPlayerState] = useState<UpdateArgs["state"]>();
   const [events, setEvents] = useState<UpdateArgs["events"]>();
   const [connectionError, setConnectionError] = useState<ConnectionFailure>();
+  const [connecting, setConnecting] = useState<boolean>();
+  const [loggingIn, setLoggingIn] = useState<boolean>();
   const [playerNameMapping, setPlayerNameMapping] = useSessionStorage<Record<string, UserData>>(
     `${client.appId}_player_mapping`,
     {}
@@ -65,6 +69,7 @@ export default function HathoraContextProvider({ children }: AuthContextProvider
   const login = async () => {
     if (!isLoginIn.current) {
       try {
+        setLoggingIn(true);
         isLoginIn.current = true;
         const token = await client.loginAnonymous();
         if (token) {
@@ -78,19 +83,25 @@ export default function HathoraContextProvider({ children }: AuthContextProvider
         console.error(e);
       } finally {
         isLoginIn.current = false;
+        setLoggingIn(false);
       }
     }
   };
 
   const connect = useCallback(
     (stateId: string) => {
+      setConnecting(true);
       const connection = client.connect(
         token,
         stateId,
         ({ state }) => {
           setPlayerState(state);
+          setConnecting(false);
         },
-        setConnectionError
+        (e) => {
+          setConnectionError(e);
+          setConnecting(false);
+        }
       );
       setConnection(connection);
       return connection;
@@ -197,6 +208,7 @@ export default function HathoraContextProvider({ children }: AuthContextProvider
         token,
         login,
         connect,
+        connecting,
         joinGame,
         disconnect,
         createGame,
@@ -205,6 +217,7 @@ export default function HathoraContextProvider({ children }: AuthContextProvider
         startGame,
         playCard,
         drawCard,
+        loggingIn,
         user,
         endGame,
         getUserName,

@@ -13,7 +13,7 @@ import QRCode from "react-qr-code";
 
 export default function Game() {
   const { gameId } = useParams();
-  const { disconnect, joinGame, playerState, token, user, login, startGame, endGame, getUserName } =
+  const { disconnect, joinGame, playerState, token, user, login, startGame, endGame, getUserName, connecting } =
     useHathoraContext();
   const navigate = useNavigate();
   let [isOpen, setIsOpen] = useState(false);
@@ -59,37 +59,46 @@ export default function Game() {
             </div>
           </div>
         </div>
-        <div className="pt-5 flex-1 flex-col bg-gray-100 overflow-x-hidden overflow-y-scroll pb-44">
-          {isGameActive ? (
-            <ActiveGame />
-          ) : (
-            <>
-              <div className="flex flex-col h-full justify-center items-center mb-2">
-                <h2 className="text-xl tracking-tight font-bold text-gray-900 mb-2">Invite Friends</h2>
-                <CopyToClipboard
-                  text={window.location.href}
-                  onCopy={() => toast.success("Copied Room code to clipboard!")}
-                >
-                  <div className="cursor-pointer">
-                    <QRCode value={window.location.href} />
+        {!connecting && token ? (
+          <div className="pt-5 flex-1 flex-col bg-gray-100 overflow-x-hidden overflow-y-scroll pb-44">
+            {isGameActive ? (
+              <ActiveGame />
+            ) : (
+              <>
+                <div className="flex flex-col h-full justify-center items-center mb-2">
+                  <h2 className="text-xl tracking-tight font-bold text-gray-900 mb-2">Invite Friends</h2>
+                  <CopyToClipboard
+                    text={window.location.href}
+                    onCopy={() => toast.success("Copied Room code to clipboard!")}
+                  >
+                    <div className="cursor-pointer">
+                      <QRCode value={window.location.href} />
 
-                    <div className="pl-5 mt-3 mb-3 text-md font-semibold flex items-center cursor-pointer">
-                      Room Code: {gameId} <ClipboardCopyIcon height={20} className={"h-fit mx-2"} />
+                      <div className="pl-5 mt-3 mb-3 text-md font-semibold flex items-center cursor-pointer">
+                        Room Code: {gameId} <ClipboardCopyIcon height={20} className={"h-fit mx-2"} />
+                      </div>
                     </div>
-                  </div>
-                </CopyToClipboard>
-                <h2 className="text-xl tracking-tight font-bold text-gray-900 mt-3">Players in lobby</h2>
-                <PlayerList />
-                <button
-                  onClick={startGame}
-                  className="mt-3 block bg-orange-400 border border-orange-400 rounded p-2 text-xl font-semibold text-white text-center hover:bg-orange-500 h-fit"
-                >
-                  Let's Start the Game
-                </button>
-              </div>
-            </>
-          )}
-        </div>
+                  </CopyToClipboard>
+                  <h2 className="text-xl tracking-tight font-bold text-gray-900 mt-3">Players in lobby</h2>
+                  <PlayerList />
+                  <button
+                    onClick={startGame}
+                    className="mt-3 block bg-orange-400 border border-orange-400 rounded p-2 text-xl font-semibold text-white text-center hover:bg-orange-500 h-fit"
+                  >
+                    Let's Start the Game
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        ) : (
+          <div className="flex h-full justify-center items-center">
+            <div
+              className="border-t-orange-400 animate-spin inline-block w-32 h-32 border-8 rounded-full"
+              role="status"
+            ></div>
+          </div>
+        )}
       </div>
       <WinModal
         isOpen={isOpen}

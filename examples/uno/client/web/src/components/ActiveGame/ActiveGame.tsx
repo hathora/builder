@@ -6,6 +6,7 @@ import OpponentHand from "../OpponentHand/OpenentHand";
 export default function ActiveGame() {
   const { playerState, user, getUserName } = useHathoraContext();
   const currentUserIndex = playerState?.players.findIndex((p) => p.id === user?.id);
+
   const players = [
     ...(playerState?.players.slice(currentUserIndex || 0, playerState.players.length) || []),
     ...(playerState?.players.slice(0, currentUserIndex) || []),
