@@ -157,7 +157,7 @@ export default function HathoraContextProvider({ children }: AuthContextProvider
 
   useEffect(() => {
     if (connectionError) {
-      alert(connectionError);
+      toast.error(connectionError?.message);
     }
   }, [connectionError]);
 

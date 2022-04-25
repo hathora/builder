@@ -21,7 +21,7 @@ export default function Home() {
           </div>
         </div>
         <div className="flex flex-col rounded bg-gray-100 justify-center items-center h-2/6 w-full">
-          <div className="flex md:flex-row flex-col w-full lg:w-3/4 w-3/4 mb-10">
+          <div className="flex md:flex-row flex-col w-full lg:w-3/4 w-3/4 md:mb-10 mb-3">
             <input
               onChange={(e) => setGameId(e.target.value)}
               placeholder="Room code here..."

@@ -9,18 +9,19 @@ export default function ActiveGame() {
   return (
     <>
       <CardPile />
-      <GameHand />
-      {playerState?.players
-        ?.filter((p) => user?.id !== p.id)
-        .map((user) => (
+      {playerState?.players.map((player) =>
+        player.id === user?.id ? (
+          <GameHand />
+        ) : (
           <OpponentHand
-            key={user.id}
+            key={player.id}
             active={playerState?.turn === user?.id}
-            name={getUserName(user.id)}
-            cardCount={user?.numCards}
+            name={getUserName(player.id)}
+            cardCount={player?.numCards}
             disabled={playerState?.turn !== user?.id}
           />
-        ))}
+        )
+      )}
     </>
   );
 }

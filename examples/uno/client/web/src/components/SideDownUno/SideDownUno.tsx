@@ -1,23 +1,10 @@
 import styled from "styled-components";
+import { BaseCard } from "../BaseCard/BaseCard";
 
 const CardWrapper = styled.div<{ disabled?: boolean; active?: boolean }>`
-  line-height: 75px;
-  width: calc(100vw / 13);
-  height: calc(100vw / 10);
-  text-align: center;
-  cursor: pointer;
-  border: 2px solid white;
-  outline: 1px solid black;
-  display: flex;
-  border-radius: 8px;
-  justify-content: center;
-  align-items: center;
-  font-size: 3rem;
-  color: white;
-  text-shadow: 1px 2px #000000;
-  box-shadow: 2px 2px 0px 0px black;
   background-color: ${({ active }) => (active ? "green" : "gray")};
   opacity: ${({ disabled }) => (disabled ? 0.5 : "initial")};
+  ${BaseCard}
 `;
 
 const SideDownUno = ({
