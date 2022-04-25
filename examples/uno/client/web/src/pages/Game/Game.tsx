@@ -46,9 +46,9 @@ export default function Game() {
 
   return (
     <>
-      <div className="flex flex-col h-full">
-        <div className="flex flex-row overflow-y-auto bg-slate-200 p-5">
-          <div className="flex justify-center items-center flex-col">
+      <div className="flex flex-col h-full overflow-scroll md:overflow-hidden">
+        <div className="flex flex-row bg-slate-200 p-2 md:p-5">
+          <div className="flex flex-row justify-center items-center">
             <img src={Logo} style={{ height: 50 }} />
             <div>
               Powered By <strong>Hathora</strong>
