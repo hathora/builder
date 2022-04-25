@@ -13,7 +13,7 @@ export default function ActiveGame() {
         .filter((player) => player.numCards)
         .map((player) =>
           player.id === user?.id ? (
-            <GameHand />
+            <GameHand key={user.id} />
           ) : (
             <OpponentHand
               key={player.id}
