@@ -24,7 +24,7 @@ export default function Home() {
           <div className="flex md:flex-row flex-col w-full lg:w-3/4 w-3/4 mb-10">
             <input
               onChange={(e) => setGameId(e.target.value)}
-              placeholder="Game ID here..."
+              placeholder="Room code here..."
               className="w-full flex-1 px-5 shadow py-3 placeholder-gray-500 focus:ring-indigo-500 focus:border-indigo-500 focus:border-r-0 border-gray-300 rounded-l md:rounder-r-0 md:mb-0 mb-5"
             />
             <button
