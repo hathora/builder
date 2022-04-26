@@ -87,7 +87,7 @@ export class HathoraClient {
         socket.send(
           new Writer()
             .writeString(token)
-            .writeUInt8(numPlayers)
+            .writeUVarint(numPlayers)
             .writeBuffer(IInitializeRequest.encode(request).toBuffer())
             .toBuffer()
         );
