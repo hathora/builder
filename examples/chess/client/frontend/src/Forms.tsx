@@ -1,8 +1,7 @@
-import React, { Fragment, useState, useContext } from "react";
+import { Fragment, useState, useContext } from "react";
 import { toast } from "react-toastify";
-import { Dialog, Listbox, Switch, Transition } from "@headlessui/react";
-import { ArrowUpIcon, ArrowDownIcon, CheckIcon, PlusIcon, SelectorIcon, XIcon } from "@heroicons/react/outline";
-import { LightningBoltIcon } from "@heroicons/react/solid";
+import { Listbox, Transition } from "@headlessui/react";
+import { CheckIcon, SelectorIcon} from "@heroicons/react/outline";
 import { Response } from "../../../api/base";
 import { IInitializeRequest, IJoinGameRequest, IMovePieceRequest } from "../../../api/types";
 import * as T from "../../../api/types";
@@ -15,16 +14,13 @@ type MethodProps<T> = {
   children: (value: T, update: (value: T) => void) => JSX.Element;
 };
 type BaseProps<T> = { value: T; update: (value: T) => void };
-type ContainerProps<T> = { initialVal: T; children: (value: T, update: (value: T) => void) => JSX.Element };
-type ArrayProps<T> = BaseProps<T[]> & ContainerProps<T>;
-type OptionalProps<T> = BaseProps<T | undefined> & ContainerProps<T>;
 type EnumProps = BaseProps<number> & { enumType: object };
 
 function classNames(...classes: string[]) {
   return classes.join(" ");
 }
 
-export function MethodForm<T>({  submit, initialize, children }: MethodProps<T>) {
+export function MethodForm<T>({ submit, initialize, children }: MethodProps<T>) {
   const [value, setValue] = useState<T>(initialize());
   return (
     <div className="p-3 mb-3 ">
@@ -45,88 +41,6 @@ export function MethodForm<T>({  submit, initialize, children }: MethodProps<T>)
         </button>
       </div>
     </div>
-  );
-}
-
-function ArrayInput<T>({ value, update, initialVal, children }: ArrayProps<T>) {
-  function swapArgs(i1: number, i2: number) {
-    [value[i1], value[i2]] = [value[i2], value[i1]];
-    update(value);
-  }
-  function deleteArg(i: number) {
-    value.splice(i, 1);
-    update(value);
-  }
-  return (
-    <div className="array-input">
-      {value.map((item, i) => (
-        <div key={i} className="flex mb-1 array-item">
-          {children(item, (val) => update(Object.assign(value, { [i]: val })))}
-          <button
-            type="button"
-            disabled={i === 0}
-            onClick={() => swapArgs(i, i - 1)}
-            className="inline-flex items-center ml-1 mt-0.5 p-1 h-8 border border-transparent rounded-md shadow-sm
-                    text-sm font-medium text-gray-700 bg-gray-300 hover:bg-gray-400 hover:text-gray-900
-                    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-200
-                    disabled:text-gray-500 disabled:cursor-auto disabled:pointer-events-none"
-          >
-            <ArrowUpIcon className="w-5 h-5 fill-current" aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            disabled={i === value.length - 1}
-            onClick={() => swapArgs(i, i + 1)}
-            className="inline-flex items-center ml-1 mt-0.5 p-1 h-8 border border-transparent rounded-md shadow-sm
-                    text-sm font-medium text-gray-700 bg-gray-300 hover:bg-gray-400 hover:text-gray-900
-                    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-200
-                    disabled:text-gray-500 disabled:cursor-auto disabled:pointer-events-none"
-          >
-            <ArrowDownIcon className="w-5 h-5 fill-current" aria-hidden="true" />
-          </button>
-
-          <button
-            type="button"
-            onClick={() => deleteArg(i)}
-            className="inline-flex items-center ml-1 mt-0.5 p-1 h-8 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-700 bg-gray-300 hover:bg-gray-400 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            <XIcon className="w-5 h-5 fill-current" aria-hidden="true" />
-          </button>
-        </div>
-      ))}
-      <button
-        type="button"
-        onClick={() => update(value.concat(initialVal))}
-        className="inline-flex items-center p-1 text-sm font-medium text-gray-700 bg-gray-300 border border-transparent rounded-md shadow-sm hover:bg-gray-400 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-      >
-        <PlusIcon className="w-4 h-4 fill-current" aria-hidden="true" />
-        Add
-      </button>
-    </div>
-  );
-}
-
-function OptionalInput<T>({ value, update, initialVal, children }: OptionalProps<T>) {
-  return (
-    <>
-      <Switch
-        checked={value !== undefined}
-        onChange={() => (value === undefined ? update(initialVal) : update(undefined))}
-        className={classNames(
-          value !== undefined ? "bg-indigo-600" : "bg-gray-400",
-          "relative inline-flex items-center h-6 rounded-full w-11 mb-2"
-        )}
-      >
-        <span className="sr-only">Toggle Input Value</span>
-        <span
-          className={classNames(
-            value !== undefined ? "translate-x-6" : "translate-x-1",
-            "inline-block w-4 h-4 transform bg-white rounded-full"
-          )}
-        />
-      </Switch>
-      <div>{value !== undefined ? children(value, (val) => update(val)) : ""}</div>
-    </>
   );
 }
 
@@ -198,49 +112,6 @@ function StringInput({ value, update }: BaseProps<string>) {
   );
 }
 
-function IntInput({ value, update }: BaseProps<number>) {
-  return (
-    <input
-      type="number"
-      value={value}
-      onChange={(e) => update(parseInt(e.target.value))}
-      className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-    />
-  );
-}
-
-function FloatInput({ value, update }: BaseProps<number>) {
-  return (
-    <input
-      type="number"
-      value={value}
-      onChange={(e) => update(Number(e.target.value))}
-      className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-    />
-  );
-}
-
-function BooleanInput({ value, update }: BaseProps<boolean>) {
-  return (
-    <Switch
-      checked={value}
-      onChange={(newValue) => update(newValue)}
-      className={classNames(
-        value ? "bg-indigo-600" : "bg-gray-400",
-        "relative inline-flex items-center h-6 rounded-full w-11"
-      )}
-    >
-      <span className="sr-only">Enable notifications</span>
-      <span
-        className={classNames(
-          value ? "translate-x-6" : "translate-x-1",
-          "inline-block w-4 h-4 transform bg-white rounded-full"
-        )}
-      />
-    </Switch>
-  );
-}
-
 function PieceInput({ value, update }: BaseProps<T.Piece>) {
   return (
     <div className="gap-2 p-2 ml-2 border border-gray-300 rounded-md">
@@ -275,37 +146,6 @@ function PlayerInput({ value, update }: BaseProps<T.Player>) {
   );
 }
 
-function PlayerStateInput({ value, update }: BaseProps<T.PlayerState>) {
-  return (
-    <div className="gap-2 p-2 ml-2 border border-gray-300 rounded-md">
-      <div className="col-span-6 sm:col-span-4">
-        <label className="block mb-1 text-sm font-medium text-gray-700">board</label>
-        <ArrayInput<T.Piece>
-          value={value.board}
-          update={(v) => update({ ...value, board: v })}
-          initialVal={T.Piece.default()}
-        >
-          {(value, update) => <PieceInput value={value} update={update} />}
-        </ArrayInput>
-      </div>
-      <div className="col-span-6 sm:col-span-4">
-        <label className="block mb-1 text-sm font-medium text-gray-700">status</label>
-        <EnumInput value={value.status} update={(v) => update({ ...value, status: v })} enumType={T.GameStatus} />
-      </div>
-      <div className="col-span-6 sm:col-span-4">
-        <label className="block mb-1 text-sm font-medium text-gray-700">players</label>
-        <ArrayInput<T.Player>
-          value={value.players}
-          update={(v) => update({ ...value, players: v })}
-          initialVal={T.Player.default()}
-        >
-          {(value, update) => <PlayerInput value={value} update={update} />}
-        </ArrayInput>
-      </div>
-    </div>
-  );
-}
-
 export function InitializeForm({ submit }: { submit: (value: IInitializeRequest) => void }) {
   const [value, update] = useState<IInitializeRequest>(IInitializeRequest.default());
   return (
@@ -324,12 +164,8 @@ export function InitializeForm({ submit }: { submit: (value: IInitializeRequest)
 export function JoinGameButton() {
   const { connection } = useContext(HathoraContext)!;
   return (
-    <MethodForm<IJoinGameRequest>
-      submit={connection.joinGame.bind(connection)}
-      initialize={IJoinGameRequest.default}
-    >
+    <MethodForm<IJoinGameRequest> submit={connection.joinGame.bind(connection)} initialize={IJoinGameRequest.default}>
       {(value, update) => <div className="grid grid-cols-6 gap-2 pl-2 ml-2 border-l border-gray-300"></div>}
     </MethodForm>
   );
 }
-

@@ -1,29 +1,7 @@
-// import { useState } from "react";
-// import logo from "./logo.svg";
-// import "./App.css";
-// import Home from "./Pages/Home";
-// import { BrowserRouter as Router, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
-// import Game from "./Pages/Game";
-
-// const App = () => {
-//   return (
-//     <Router>
-//       {/* <Nav /> */}
-//       <Routes>
-//         <Route path="/" element={<Home />} />
-//         <Route path="/game" element={<Game />} />
-//       </Routes>
-//     </Router>
-//   );
-// };
-
-// export default App;
-
-import React, { useEffect, useState } from "react";
-import { BrowserRouter, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
-import { ToastContainer, Zoom, toast } from "react-toastify";
-import { EyeIcon, LightningBoltIcon, UserCircleIcon } from "@heroicons/react/solid";
-import { getUserDisplayName, UserData } from "../../../api/base";
+import  { useEffect, useState } from "react";
+import {  Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
+import {  toast } from "react-toastify";
+import {  UserData } from "../../../api/base";
 import { IInitializeRequest } from "../../../api/types";
 import { HathoraClient, HathoraConnection, UpdateArgs } from "../../.hathora/client";
 import { ConnectionFailure } from "../../.hathora/failures";
@@ -33,7 +11,6 @@ import { State } from "./State";
 import NavBar from "./components/navbar";
 
 import Input from "./components/inputField";
-import KnightIcon from "./assets/Knight.svg";
 
 import "react-toastify/dist/ReactToastify.css";
 
@@ -131,8 +108,6 @@ function Login({ setToken }: { setToken: (token: string) => void }) {
 }
 
 function Home({ onConnect }: { onConnect: (request: IInitializeRequest) => void }) {
-  const [stateId, setStateId] = useState<string>("");
-  const navigate = useNavigate();
   return (
     <div>
       <div>
