@@ -1,5 +1,5 @@
-import MiniCardsRow from "../MinICardCount/MiniCard";
-import { useHathoraContext } from "../../context/GameContext";
+import { useHathoraContext } from "../context/GameContext";
+import MiniCardsRow from "./MiniCard";
 
 export default function PlayerList() {
   const { playerState, user, getUserName } = useHathoraContext();

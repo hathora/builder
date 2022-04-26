@@ -1,7 +1,7 @@
-import CardPile from "../CardPile/CardPile";
-import GameHand from "../GameHand/GameHand";
-import { useHathoraContext } from "../../context/GameContext";
-import OpponentHand from "../OpponentHand/OpenentHand";
+import { useHathoraContext } from "../context/GameContext";
+import CardPile from "./CardPile";
+import GameHand from "./GameHand";
+import OpponentHand from "./OpenentHand";
 
 export default function ActiveGame() {
   const { playerState, user, getUserName } = useHathoraContext();

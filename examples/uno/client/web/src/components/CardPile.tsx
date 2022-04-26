@@ -1,6 +1,6 @@
-import UnoCard from "../UnoCard/UnoCard";
-import { useHathoraContext } from "../../context/GameContext";
-import SideDownUno from "../SideDownUno/SideDownUno";
+import { useHathoraContext } from "../context/GameContext";
+import UnoCard from "./UnoCard";
+import SideDownUno from "./SideDownUno";
 
 export default function CardPile() {
   const { playerState, drawCard } = useHathoraContext();

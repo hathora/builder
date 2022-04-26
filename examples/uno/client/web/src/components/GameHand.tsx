@@ -1,5 +1,5 @@
-import UnoCard from "../UnoCard/UnoCard";
-import { useHathoraContext } from "../../context/GameContext";
+import { useHathoraContext } from "../context/GameContext";
+import UnoCard from "./UnoCard";
 
 export default function GameHand() {
   const { playerState, playCard, user, getUserName } = useHathoraContext();

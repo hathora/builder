@@ -1,6 +1,6 @@
-import { Color } from "../../../../../api/types";
 import styled from "styled-components";
-import { BaseCard } from "../BaseCard/BaseCard";
+import { Color } from "../../../../api/types";
+import { BaseCard } from "./BaseCard";
 
 let DISPLAY_COLORS = {
   [Color.RED]: "#e16c6c",

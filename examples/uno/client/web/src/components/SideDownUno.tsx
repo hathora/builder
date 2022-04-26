@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { BaseCard } from "../BaseCard/BaseCard";
+import { BaseCard } from "./BaseCard";
 
 const CardWrapper = styled.div<{ disabled?: boolean; active?: boolean }>`
   background-color: ${({ active }) => (active ? "green" : "gray")};

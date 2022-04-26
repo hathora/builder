@@ -1,4 +1,3 @@
-import { Color } from "../../../../../api/types";
 import styled from "styled-components";
 
 const CardWrapper = styled.div`

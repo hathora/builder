@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useHathoraContext } from "../../context/GameContext";
-import Logo from "../../assets/hathora-hammer-logo-light.png";
+import { useHathoraContext } from "../context/GameContext";
+import Logo from "../assets/hathora-hammer-logo-light.png";
 
 export default function Home() {
   const navigate = useNavigate();

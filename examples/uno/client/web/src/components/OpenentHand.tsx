@@ -1,4 +1,4 @@
-import SideDownUno from "../SideDownUno/SideDownUno";
+import SideDownUno from "./SideDownUno";
 
 export default function OpponentHand({
   cardCount,
