@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { BrowserRouter, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import { ToastContainer, Zoom, toast } from "react-toastify";
-import { EyeIcon, LightningBoltIcon, UserCircleIcon } from "@heroicons/react/solid";
+import { LightningBoltIcon, UserCircleIcon } from "@heroicons/react/solid";
 {{#if auth.google}}
 import { GoogleLogin } from "react-google-login";
 {{/if}}
@@ -63,12 +63,7 @@ function App() {
                 />
               }
             />
-            <Route
-              path="/"
-              element={
-                <Home onConnect={async (request) => navigate(`/state/${await client.create(token, request)}`)} />
-              }
-            />
+            <Route path="/" element={<Home token={token} connect={(stateId) => navigate(`/state/${stateId}`)} />} />
             <Route path="*" element={<div>Not Found</div>} />
           </Routes>
         )}
@@ -154,35 +149,121 @@ function Login({ setToken }: { setToken: (token: string) => void }) {
   );
 }
 
-function Home({ onConnect }: { onConnect: (request: IInitializeRequest) => void }) {
-  const [stateId, setStateId] = useState<string>("");
-  const navigate = useNavigate();
+function Home({ token, connect }: { token: string; connect: (stateId: string) => void }) {
   return (
     <div className="flex flex-col w-full md:justify-center">
       <div className="w-6/12 m-auto">
         <h2 className="text-xl font-semibold text-gray-900">Home</h2>
         <div className="flex flex-col mt-2">
           <div className="w-6/12 mb-4">
-            <InitializeForm submit={onConnect} />
+            <InitializeForm>
+              {(value) => (
+                <>
+                  <CreateNewForm token={token} connect={connect} value={value} />
+                  <div className="m-2">OR</div>
+                  <FindMatchForm token={token} connect={connect} value={value} />
+                </>
+              )}
+            </InitializeForm>
           </div>
+          <hr />
+          <br />
           <div className="w-6/12">
-            <input
-              type="text"
-              value={stateId}
-              onChange={(e) => setStateId(e.target.value)}
-              className="block w-full mb-2 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-            <button
-              type="button"
-              onClick={() => navigate(`/state/${stateId}`)}
-              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Join Existing
-            </button>
+            <JoinExistingForm />
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+function CreateNewForm({
+  token,
+  connect,
+  value,
+}: {
+  token: string;
+  connect: (stateId: string) => void;
+  value: IInitializeRequest;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={async () => {
+        const stateId = await client.create(token, value);
+        connect(stateId);
+      }}
+      className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+    >
+      Create New
+    </button>
+  );
+}
+
+function FindMatchForm({
+  token,
+  connect,
+  value,
+}: {
+  token: string;
+  connect: (stateId: string) => void;
+  value: IInitializeRequest;
+}) {
+  const [numPlayers, setNumPlayers] = useState<number>(2);
+  const [playersFound, setPlayersFound] = useState<number>(0);
+  const [isFinding, setFinding] = useState<boolean>(false);
+  return (
+    <>
+      <label className="mr-1">Player Count</label>
+      <input
+        type="number"
+        value={numPlayers}
+        onChange={(e) => setNumPlayers(parseInt(e.target.value))}
+        className="mr-2 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+      />
+      <button
+        type="button"
+        disabled={isFinding}
+        onClick={async () => {
+          setFinding(true);
+          const stateId = await client.findMatch(token, value, numPlayers, setPlayersFound);
+          setFinding(false);
+          connect(stateId);
+        }}
+        className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+      >
+        {!isFinding ? (
+          <span>Find Match</span>
+        ) : (
+          <span>
+            Finding {playersFound}/{numPlayers}...
+          </span>
+        )}
+      </button>
+    </>
+  );
+}
+
+function JoinExistingForm() {
+  const navigate = useNavigate();
+  const [stateId, setStateId] = useState<string>("");
+  return (
+    <>
+      <input
+        type="text"
+        value={stateId}
+        placeholder="Room code"
+        onChange={(e) => setStateId(e.target.value)}
+        className="mr-2 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+      />
+      <button
+        type="button"
+        onClick={() => navigate(`/state/${stateId}`)}
+        className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+      >
+        Join Existing
+      </button>
+    </>
   );
 }
 

@@ -17,6 +17,8 @@ import {
 import { ConnectionFailure, transformCoordinatorFailure } from "./failures";
 import { computePatch } from "./patch";
 
+const MATCHMAKER_HOST = "localhost:8080";
+
 export type StateId = string;
 export type UpdateArgs = { stateId: StateId; state: UserState; updatedAt: number; events: string[] };
 
@@ -69,6 +71,41 @@ export class HathoraClient {
           .toBuffer()
       );
     return new HathoraConnection(stateId, socket, onUpdate);
+  }
+
+  public async findMatch(
+    token: string,
+    request: IInitializeRequest,
+    numPlayers: number,
+    onUpdate: (playersFound: number) => void
+  ): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      const socket = new WebSocket(`ws://${MATCHMAKER_HOST}/${this.appId}`);
+      socket.binaryType = "arraybuffer";
+      socket.onclose = reject;
+      socket.onopen = () =>
+        socket.send(
+          new Writer()
+            .writeString(token)
+            .writeUInt8(numPlayers)
+            .writeBuffer(IInitializeRequest.encode(request).toBuffer())
+            .toBuffer()
+        );
+      socket.onmessage = ({ data }) => {
+        if (!(data instanceof ArrayBuffer)) {
+          return;
+        }
+        const reader = new Reader(new Uint8Array(data));
+        const type = reader.readUInt8();
+        if (type === 0) {
+          onUpdate(reader.readUVarint());
+        } else if (type === 1) {
+          resolve(reader.readString());
+        } else {
+          console.error("Unknown message type", type);
+        }
+      };
+    });
   }
 }
 
