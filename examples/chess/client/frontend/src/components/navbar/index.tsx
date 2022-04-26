@@ -9,7 +9,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [colorTheme, setTheme] = useDarkMode();
   return (
-    <nav className="shadow px-5 lg:px-10 py-4 bg-white flex justify-between fixed w-full items-center">
+    <nav className="shadow px-5 lg:px-10 py-4 bg-white  flex justify-between fixed w-full items-center">
       
       <div className="flex items-center" onClick={() => navigate("/")}>
         <img src={Logo} alt="Hathora Logo" className="w-10 w-10" />

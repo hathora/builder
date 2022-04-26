@@ -5,13 +5,17 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:css": "postcss ./src/tailwind.css -o ./src/App.css"
   },
   "dependencies": {
     "@headlessui/react": "^1.5.0",
     "@heroicons/react": "^1.0.6",
     "@types/react-router-dom": "^5.3.3",
+    "chess.js": "^0.13.1",
+    "postcss-cli": "^9.1.0",
     "react": "^18.0.0",
+    "react-chessboard": "^1.2.2",
     "react-dom": "^18.0.0",
     "react-router-dom": "^6.3.0",
     "react-toastify": "^8.2.0"

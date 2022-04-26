@@ -4,6 +4,7 @@ import KnightIcon from "../assets/Knight.svg";
 import { HathoraClient, HathoraConnection, UpdateArgs } from "../../../.hathora/client";
 import { ToastContainer, Zoom, toast } from "react-toastify";
 
+
 import { BrowserRouter, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 
 
@@ -37,7 +38,9 @@ const Home = () => {
           progress: undefined,
         })
       );
+      
   };
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setStateId(e.target.value);

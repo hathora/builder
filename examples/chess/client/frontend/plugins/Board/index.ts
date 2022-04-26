@@ -1,9 +1,8 @@
-import { DragEvent, TouchEvent } from "react";
 import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
-import { Board, Color, Piece, PieceType, PlayerState } from "../../../../../api/types";
-import { UserData } from "../../../../../api/base";
-import { HathoraConnection } from "../../../../.hathora/client";
+import { Board, Color, Piece, PieceType, PlayerState } from "../../../../api/types";
+import { UserData } from "../../../../api/base";
+import { HathoraConnection } from "../../../.hathora/client";
 import "chessboard-element";
 
 export default class BoardEl extends LitElement {
@@ -14,23 +13,19 @@ export default class BoardEl extends LitElement {
 
   render() {
     const color = this.state.players.find((p) => p.id === this.user.id)?.color;
-    return html`<div style="max-width: 600px">
+    return html`<div style="max-width: 700px">
       <chess-board draggable-pieces orientation=${color === Color.BLACK ? "black" : "white"}></chess-board>
     </div>`;
   }
 
   firstUpdated() {
     const board = this.shadowRoot?.querySelector("chess-board");
-    board!.addEventListener("drop", async (ev: any) => {
-      const newEvent = ev;
-      //@ts-ignore
-      const res = await this.client.movePiece({ from: ev.detail.source, to: ev.detail.target });
-      console.log({ res });
-      console.log({ ev });
-
+    board!.addEventListener("drop", async (e: any) => {
+      // @ts-ignore
+      const res = await this.client.movePiece({ from: e.detail.source, to: e.detail.target });
       if (res.type === "error") {
-        //@ts-ignore
-        board?.setPosition(ev.detail.oldPosition);
+        // @ts-ignore
+        board?.setPosition(e.detail.oldPosition);
         this.dispatchEvent(new CustomEvent("error", { detail: res.error }));
       }
     });
@@ -41,6 +36,7 @@ export default class BoardEl extends LitElement {
     const position = this.val.reduce((x, piece) => {
       return Object.assign(x, { [piece.square]: pieceToString(piece) });
     }, {});
+    // @ts-ignore
     board?.setPosition(position);
   }
 }

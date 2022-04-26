@@ -21,6 +21,8 @@ export default class BoardEl extends LitElement {
   firstUpdated() {
     const board = this.shadowRoot?.querySelector("chess-board");
     board!.addEventListener("drop", async (e) => {
+      console.log({e});
+      
       const res = await this.client.movePiece({ from: e.detail.source, to: e.detail.target });
       if (res.type === "error") {
         board?.setPosition(e.detail.oldPosition);

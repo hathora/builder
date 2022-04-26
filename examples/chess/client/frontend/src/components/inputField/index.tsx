@@ -11,7 +11,7 @@ const Input = () => {
   const [colorTheme, setTheme] = useDarkMode();
   return (
     <label className="relative text-gray-400 focus-within:text-gray-600 block">
-      {colorTheme === "light" ? (
+      {colorTheme === "dark" ? (
         <img
           src={CopyIcon}
           alt="Copy Dark Link ICON "
