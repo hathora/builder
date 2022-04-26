@@ -225,16 +225,16 @@ function Main({ user, connection, connectionError, updateArgs, onConnect, onDisc
   return (
     <HathoraContext.Provider value={{ user, connection, ...updateArgs, pluginsAsObjects }}>
       <div>
-        <div className="grid grid-cols-1 md:grid-cols-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 bg-white dark:bg-black">
           <div className="col-span-2">
             <State />
           </div>
           <div className="flex flex-col ">
             <div>
-              <div className="text-6xl font-bold text-indingo uppercase">
+              <div className="text-6xl font-bold text-indingo dark:text-white uppercase">
                 CH<span className="text-wine">ESS</span>
               </div>
-              <div className="text-6xl font-bold text-indingo uppercase">
+              <div className="text-6xl font-bold text-indingo dark:text-white uppercase">
                 <span className="text-wine">Hath</span>ora
               </div>
             </div>

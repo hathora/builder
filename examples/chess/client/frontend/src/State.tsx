@@ -90,6 +90,7 @@ function OptionalDisplay<T>(props: { value: T | undefined; children: (value: T) 
   return <span className="optional-display">{props.children(props.value)}</span>;
 }
 
+
 function EnumDisplay(props: { value: number; enum: object }) {
   const labels = Object.entries(props.enum)
     .filter(([_, value]) => typeof value === "number")
@@ -211,18 +212,19 @@ function PieceDisplay({ value }: { value: T.Piece }) {
 }
 
 function PlayerDisplay({ value }: { value: T.Player }) {
-  return <div className="border rounded object-display">{value.id}</div>;
+  return <div className=" text-indingo dark:text-white object-display">{value.id}</div>;
 }
 
 function PlayerStateDisplay({ value }: { value: T.PlayerState }) {
   return (
-    <div className="">
-      <div className="grid grid-cols-1 grid-cols-4">
+    <div className="h-screen">
+      <div className="grid grid-cols-1 grid-cols-4 ">
         <div>
           <ArrayPlayerDisplay<T.Player> value={value.players}>
             {(value) => (
               <div>
-                <div className="shadow bg-white dark:bg-black shadow-md p-2">
+                <div className="shadow bg-white dark:bg-black shadow-md p-2 relative">
+                  <div className="absolute h-3 w-3 bg-gray right-5 top-2"></div>
                   <img src={PawnIcon} alt="Knight Icon" />
                 </div>
                 <PlayerDisplay value={value} />
@@ -247,7 +249,7 @@ export function State() {
   const { state: value } = useContext(HathoraContext)!;
 
   return (
-    <div className="w-full font-mono text-gray-700  state-display">
+    <div className="w-full font-mono text-gray-700 dark:text-white  state-display">
       <PlayerStateDisplay value={value} />
     </div>
   );
