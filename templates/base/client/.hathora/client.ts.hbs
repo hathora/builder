@@ -92,10 +92,7 @@ export class HathoraClient {
             .toBuffer()
         );
       socket.onmessage = ({ data }) => {
-        if (!(data instanceof ArrayBuffer)) {
-          return;
-        }
-        const reader = new Reader(new Uint8Array(data));
+        const reader = new Reader(new Uint8Array(data as ArrayBuffer));
         const type = reader.readUInt8();
         if (type === 0) {
           onUpdate(reader.readUVarint());
