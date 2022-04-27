@@ -1,9 +1,10 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState } from "react";
-import { ToastContainer, toast } from "react-toastify";
-import { useSessionstorageState } from "rooks";
-import { HathoraClient, HathoraConnection } from "../../../.hathora/client";
+import { HathoraClient, HathoraConnection, UpdateArgs } from "../../../.hathora/client";
 import { ConnectionFailure } from "../../../.hathora/failures";
-import { Card, PlayerState, IInitializeRequest } from "../../../../api/types";
+import { ToastContainer, toast } from "react-toastify";
+import useSessionStorage from "../hooks/useSessionStorage";
+
+import { Card, IInitializeRequest } from "../../../../api/types";
 import { lookupUser, UserData, Response } from "../../../../api/base";
 
 interface GameContext {
@@ -11,10 +12,10 @@ interface GameContext {
   login: () => Promise<string | undefined>;
   connect: (gameId: string) => HathoraConnection;
   disconnect: () => void;
-  createGame: () => Promise<string>;
+  createGame: () => Promise<string | undefined>;
   joinGame: (gameId: string) => Promise<void>;
   startGame: () => Promise<void>;
-  playerState?: PlayerState;
+  playerState?: UpdateArgs["state"];
   connectionError?: ConnectionFailure;
   playCard: (card: Card) => Promise<void>;
   drawCard: () => Promise<void>;
@@ -25,14 +26,14 @@ interface GameContext {
   loggingIn?: boolean;
 }
 
-interface HathoraContextProviderProps {
+interface AuthContextProviderProps {
   children: ReactNode | ReactNode[];
 }
 const client = new HathoraClient();
 
 const HathoraContext = createContext<GameContext | null>(null);
 
-const handleResponse = async (prom: Promise<Response>) => {
+const HandleConnection = async (prom: Promise<Response>) => {
   const response = await prom;
 
   if (response.type === "error") {
@@ -50,15 +51,15 @@ const handleResponse = async (prom: Promise<Response>) => {
   return response;
 };
 
-export default function HathoraContextProvider({ children }: HathoraContextProviderProps) {
-  const [token, setToken] = useSessionstorageState<string>(client.appId);
+export default function HathoraContextProvider({ children }: AuthContextProviderProps) {
+  const [token, setToken] = useSessionStorage<string>(client.appId);
   const [connection, setConnection] = useState<HathoraConnection>();
-  const [playerState, setPlayerState] = useState<PlayerState>();
-  const [events, setEvents] = useState<string[]>();
+  const [playerState, setPlayerState] = useState<UpdateArgs["state"]>();
+  const [events, setEvents] = useState<UpdateArgs["events"]>();
   const [connectionError, setConnectionError] = useState<ConnectionFailure>();
   const [connecting, setConnecting] = useState<boolean>();
   const [loggingIn, setLoggingIn] = useState<boolean>();
-  const [playerNameMapping, setPlayerNameMapping] = useSessionstorageState<Record<string, UserData>>(
+  const [playerNameMapping, setPlayerNameMapping] = useSessionStorage<Record<string, UserData>>(
     `${client.appId}_player_mapping`,
     {}
   );
@@ -120,16 +121,20 @@ export default function HathoraContextProvider({ children }: HathoraContextProvi
 
   const createGame = useCallback(async () => {
     if (token) {
-      return client.create(token, IInitializeRequest.default());
+      return await client.create(token, IInitializeRequest.default());
     } else {
-      const token = await login()!;
-      return client.create(token, IInitializeRequest.default());
+      const token = await login();
+      if (token) {
+        return await client.create(token, IInitializeRequest.default());
+      }
+
+      // throw new Error("An Error occurred creating Game");
     }
   }, [token]);
 
   const joinGame = useCallback(
     async (gameId: string) => {
-      const connection = connect(gameId);
+      const connection = await connect(gameId);
       await connection.joinGame({});
     },
     [token, connect]
@@ -137,14 +142,14 @@ export default function HathoraContextProvider({ children }: HathoraContextProvi
 
   const startGame = useCallback(async () => {
     if (connection) {
-      await handleResponse(connection.startGame({}));
+      await HandleConnection(connection.startGame({}));
     }
   }, [token, connection]);
 
   const playCard = useCallback(
     async (card: Card) => {
       if (connection) {
-        await handleResponse(connection.playCard({ card }));
+        await HandleConnection(connection.playCard({ card }));
       }
     },
     [connection]
@@ -152,7 +157,7 @@ export default function HathoraContextProvider({ children }: HathoraContextProvi
 
   const drawCard = useCallback(async () => {
     if (connection) {
-      await handleResponse(connection.drawCard({}));
+      await HandleConnection(connection.drawCard({}));
     }
   }, [connection]);
 
@@ -234,7 +239,7 @@ export default function HathoraContextProvider({ children }: HathoraContextProvi
 export function useHathoraContext() {
   const context = useContext(HathoraContext);
   if (!context) {
-    throw new Error("Component must be within the HathoraContext");
+    throw new Error("Component must be within the Auth Context");
   }
   return context;
 }
