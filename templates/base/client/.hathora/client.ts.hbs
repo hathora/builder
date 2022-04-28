@@ -17,7 +17,7 @@ import {
 import { ConnectionFailure, transformCoordinatorFailure } from "./failures";
 import { computePatch } from "./patch";
 
-const MATCHMAKER_HOST = "localhost:8080";
+const MATCHMAKER_HOST = "matchmaker.hathora.dev";
 
 export type StateId = string;
 export type UpdateArgs = { stateId: StateId; state: UserState; updatedAt: number; events: string[] };
@@ -80,7 +80,7 @@ export class HathoraClient {
     onUpdate: (playersFound: number) => void
   ): Promise<string> {
     return new Promise<string>((resolve, reject) => {
-      const socket = new WebSocket(`ws://${MATCHMAKER_HOST}/${this.appId}`);
+      const socket = new WebSocket(`wss://${MATCHMAKER_HOST}/${this.appId}`);
       socket.binaryType = "arraybuffer";
       socket.onclose = reject;
       socket.onopen = () =>
