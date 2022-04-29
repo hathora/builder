@@ -17,7 +17,7 @@ import {
 import { ConnectionFailure, transformCoordinatorFailure } from "./failures";
 import { computePatch } from "./patch";
 
-const MATCHMAKER_HOST = "matchmaker.hathora.dev";
+const MATCHMAKER_HOST = "{{matchmakerHost}}";
 
 export type StateId = string;
 export type UpdateArgs = { stateId: StateId; state: UserState; updatedAt: number; events: string[] };
