@@ -256,7 +256,8 @@ export function InitializeForm({ children }: { children: (value: IInitializeRequ
   return (
     <>
       {{#unless (isEmpty initializeArgs.properties)}}
-      <div className="p-3 mb-3 bg-gray-100 shadow sm:rounded-md">
+      <div className="font-semibold ml-3 mt-1">Configure game settings</div>
+      <div className="mb-3 bg-gray-100">
         {{> renderForm initializeArgs}}
       </div>
       {{/unless}}

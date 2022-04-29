@@ -105,7 +105,7 @@ function Login({ setToken }: { setToken: (token: string) => void }) {
   return (
     <div className="flex flex-col w-full md:justify-center">
       <div className="w-6/12 m-auto">
-        <h2 className="text-xl font-semibold text-gray-900">Login</h2>
+        <h2 className="text-2xl font-semibold text-gray-900">Login</h2>
         <div className="flex flex-col mt-2">
 {{#each auth}}
 {{#if (eq @key "anonymous")}}
@@ -160,7 +160,7 @@ function Home({ token, connect }: { token: string; connect: (stateId: string) =>
   return (
     <div className="flex flex-col w-full md:justify-center">
       <div className="w-6/12 m-auto">
-        <h2 className="text-xl font-semibold text-gray-900">Home</h2>
+        <h2 className="text-2xl font-semibold text-gray-900">Home</h2>
         {isFinding ? (
           <div className="flex flex-row text-xl pt-8 align-middle">
             <svg
@@ -179,8 +179,8 @@ function Home({ token, connect }: { token: string; connect: (stateId: string) =>
                 fill="currentFill"
               />
             </svg>
-            <span>
-              Finding {playersFound}/{numPlayers}...
+            <span className="text-l">
+              Matching players... ({playersFound}/{numPlayers} found)
             </span>
             <XCircleIcon className="w-7 h-7 ml-2 cursor-pointer" color="indigo" onClick={() => location.reload()} />
           </div>
@@ -225,9 +225,8 @@ function Home({ token, connect }: { token: string; connect: (stateId: string) =>
                 )}
               </InitializeForm>
             </div>
-            <hr />
-            <br />
-            <div className="w-6/12">
+            <hr className="mt-2" />
+            <div className="w-6/12 mt-6">
               <input
                 type="text"
                 value={stateId}
