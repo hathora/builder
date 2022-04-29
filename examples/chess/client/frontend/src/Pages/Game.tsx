@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useParams, Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import { CopyToClipboard } from "react-copy-to-clipboard";
 import { UserData } from "../../../../api/base";
 import { HathoraConnection, UpdateArgs } from "../../../.hathora/client";
 import { ConnectionFailure } from "../../../.hathora/failures";
@@ -8,6 +9,7 @@ import DarkModeToggler from "../components/darkModeToggle";
 import { HathoraContext } from "./../context";
 import { JoinGameButton } from "./../Forms";
 import { State } from "./../State";
+import { ClipboardCopyIcon } from "@heroicons/react/outline";
 
 type MainProps = {
   user: UserData;
@@ -50,14 +52,16 @@ function Game({ user, connection, connectionError, updateArgs, onConnect, onDisc
   return (
     <HathoraContext.Provider value={{ user, connection, ...updateArgs, pluginsAsObjects }}>
       <div className="bg-white dark:bg-black h-screen relative">
+        {/* Dark/Mode toggler */}
         <div className="fixed bottom-2 md:top-2 right-2">
           <DarkModeToggler />
         </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 bg-white dark:bg-black">
           <div className="col-span-2">
             <State />
           </div>
-          <div className="flex flex-col ">
+          <div className="flex flex-col my-3 md:my-0">
             <div>
               <div className="text-6xl font-bold text-indingo dark:text-white uppercase">
                 CH<span className="text-wine">ESS</span>
@@ -69,7 +73,15 @@ function Game({ user, connection, connectionError, updateArgs, onConnect, onDisc
             <div className="flex gap-2 items-center">
               <JoinGameButton />
               <div>
-                <Link to={location.pathname}>Copy link</Link>
+                <CopyToClipboard
+                  text={window.location.href}
+                  onCopy={() => toast.success("Game code successfully copied!")}
+                >
+
+                    <div className="  text-sm dark:text-white font-semibold flex items-center cursor-pointer">
+                      Copy Game Code: {stateId} <ClipboardCopyIcon height={20} className={"h-fit mx-2"} />
+                  </div>
+                </CopyToClipboard>
               </div>
             </div>
           </div>
