@@ -1,4 +1,5 @@
 const path = require("path");
+
 module.exports = {
   content: ["./src/**/*.{html,js,tsx,ts}", "./index.{html,js}", "./App.tsx"].map((str) =>
     path.relative(process.cwd(), path.resolve(__dirname, str))

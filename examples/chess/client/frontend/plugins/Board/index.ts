@@ -13,7 +13,7 @@ export default class BoardEl extends LitElement {
 
   render() {
     const color = this.state.players.find((p) => p.id === this.user.id)?.color;
-    return html`<div style="max-width: 700px">
+    return html`<div style="max-width: 500px">
       <chess-board draggable-pieces orientation=${color === Color.BLACK ? "black" : "white"}></chess-board>
     </div>`;
   }

@@ -1,14 +1,18 @@
-import React from "react";
+import React, {useState} from "react";
 import CopyIcon from "../../assets/copy.svg";
 import useDarkMode from "../../hook/useDarkMode";
 import CopyLightIcon from "../../assets/copylight.svg";
-
-// interface InputChange{
-//   onChange : ()=> void
-// }
+import { useNavigate } from "react-router-dom";
 
 const Input = () => {
-  const [colorTheme, setTheme] = useDarkMode();
+  const [colorTheme] = useDarkMode();
+  const [stateId, setStateId] = useState<string>("");
+  const navigate = useNavigate()
+  const handleLinkInput = (e: React.FormEvent<HTMLInputElement>)=>{
+    setStateId(e.currentTarget.value)
+    navigate(`/state/${stateId}`)
+  }
+
   return (
     <label className="relative text-gray-400 focus-within:text-gray-600 block">
       {colorTheme === "dark" ? (
@@ -28,6 +32,8 @@ const Input = () => {
       <input
         type="text"
         name="link"
+        value={stateId}
+        onChange={handleLinkInput }
         id="link"
         placeholder="Enter a link"
         className="form-input border border-indingo py-2 rounded px-4 bg-white dark:bg-black dark:border-white placeholder-gray-400 text-gray-500 dark:text-white appearance-none block pl-8 focus:outline-none"
