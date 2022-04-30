@@ -43,6 +43,9 @@ export class Impl implements Methods<InternalState> {
     if (state.smallBlindAmt > 0) {
       return Response.error("Already started");
     }
+    if (state.players.length >= 8) {
+      return Response.error("Maximum player count reached");
+    }
     state.players.push(createPlayer(userId));
     return Response.ok();
   }
