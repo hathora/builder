@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation, useParams, Link } from "react-router-dom";
+import {  useParams, } from "react-router-dom";
 import { toast } from "react-toastify";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { UserData } from "../../../../api/base";
@@ -21,12 +21,11 @@ type MainProps = {
 };
 
 function Game({ user, connection, connectionError, updateArgs, onConnect, onDisconnect }: MainProps) {
-  const { stateId } = useParams();
-  const location = useLocation();
+  // const { stateId } = useParams();
   const [pluginsAsObjects, setPluginsAsObjects] = useState(false);
   useEffect(() => {
     if (connection === undefined) {
-      onConnect(stateId!);
+      // onConnect(stateId!);
     }
     return onDisconnect;
   }, [connection]);
@@ -79,7 +78,7 @@ function Game({ user, connection, connectionError, updateArgs, onConnect, onDisc
                 >
 
                     <div className="  text-sm dark:text-white font-semibold flex items-center cursor-pointer">
-                      Copy Game Code: {stateId} <ClipboardCopyIcon height={20} className={"h-fit mx-2"} />
+                      {/* Copy Game Code: {stateId} <ClipboardCopyIcon height={20} className={"h-fit mx-2"} /> */}
                   </div>
                 </CopyToClipboard>
               </div>

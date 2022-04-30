@@ -1,4 +1,4 @@
-import { DragEvent, TouchEvent } from "react";
+// @ts-ignore
 import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
 import { Board, Color, Piece, PieceType, PlayerState } from "../../../../../api/types";
@@ -41,6 +41,7 @@ export default class BoardEl extends LitElement {
     const position = this.val.reduce((x, piece) => {
       return Object.assign(x, { [piece.square]: pieceToString(piece) });
     }, {});
+    // @ts-ignore
     board?.setPosition(position);
   }
 }

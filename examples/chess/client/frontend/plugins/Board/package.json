@@ -2,7 +2,7 @@
   "type": "module",
   "dependencies": {
     "chessboard-element": "^1.2.0",
-    "lit": "^2.0.2"
+    "lit": "^2.2.3"
   },
   "devDependencies": {
     "typescript": "^4.5.2"
