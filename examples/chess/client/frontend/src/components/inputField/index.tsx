@@ -8,10 +8,15 @@ const Input = () => {
   const [colorTheme] = useDarkMode();
   const [stateId, setStateId] = useState<string>("");
   const navigate = useNavigate()
-  const handleLinkInput = (e: React.FormEvent<HTMLInputElement>)=>{
-    setStateId(e.currentTarget.value)
-    navigate(`/state/${stateId}`)
-  }
+
+  const handleLinkInput = ({ currentTarget }: React.FormEvent<HTMLInputElement>) => {
+    const { value } = currentTarget;
+    setStateId(value);
+    
+    if (value) {
+      navigate(`/state/${value}`);
+    }
+  };
 
   return (
     <label className="relative text-gray-400 focus-within:text-gray-600 block">

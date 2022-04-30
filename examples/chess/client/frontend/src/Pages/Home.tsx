@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { IInitializeRequest } from "../../../../api/types";
 import { InitializeForm } from "../Forms";
 import Input from "../components/inputField";
@@ -11,7 +10,7 @@ const Home = ({ onConnect }: { onConnect: (request: IInitializeRequest) => void 
       <NavBar />
 
       <div>
-        <div className="flex home bg-white dark:bg-black flex-col h-screen pt-28 items-center  transition duration-500">
+        <div className="flex home bg-white dark:bg-black flex-col h-screen items-center justify-center  transition duration-500">
           <h1 className="uppercase text-6xl lg:text-8xl xl:text-9xl  font-bold text-indingo dark:text-white">
             <span className="">Ch</span>
             <span className="text-wine">ess</span>

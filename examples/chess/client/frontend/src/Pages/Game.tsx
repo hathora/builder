@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import {  useParams, Link, } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { UserData } from "../../../../api/base";
 import { HathoraConnection, UpdateArgs } from "../../../.hathora/client";
@@ -8,7 +8,10 @@ import DarkModeToggler from "../components/darkModeToggle";
 import { HathoraContext } from "./../context";
 import { JoinGameButton } from "./../Forms";
 import { State } from "./../State";
-import LoadersIcon from '../assets/loaders.svg'
+import LoadersIcon from "../assets/loaderDisk.svg";
+import { CopyToClipboard } from "react-copy-to-clipboard";
+// import {ClipboardCopyIcon} from '@heroicons/react'
+
 type MainProps = {
   user: UserData;
   connection: HathoraConnection | undefined;
@@ -20,6 +23,7 @@ type MainProps = {
 
 function Game({ user, connection, connectionError, updateArgs, onConnect, onDisconnect }: MainProps) {
   const { stateId } = useParams();
+
   const [pluginsAsObjects, setPluginsAsObjects] = useState(false);
   useEffect(() => {
     if (connection === undefined) {
@@ -39,7 +43,7 @@ function Game({ user, connection, connectionError, updateArgs, onConnect, onDisc
   if (connection === undefined || updateArgs === undefined) {
     return (
       <div className="flex justify-center items-center h-screen text-black font-bold text-2xl dark:bg-black dark:text-white">
-        <img src={LoadersIcon} alt="Loader Icon"  />
+        <img src={LoadersIcon} alt="Loader Icon" />
       </div>
     );
   }
@@ -68,16 +72,11 @@ function Game({ user, connection, connectionError, updateArgs, onConnect, onDisc
             <div className="flex gap-2 items-center">
               <JoinGameButton />
               <div>
-                {/* <CopyToClipboard
-                  text={window.location.href}
-                  onCopy={() => toast.success("Game code successfully copied!")}
-                > */}
-
-                    <div className="  text-sm dark:text-white font-semibold flex items-center cursor-pointer">
-                      {/* Copy Game Code: {stateId} <ClipboardCopyIcon height={20} className={"h-fit mx-2"} /> */}
+                <CopyToClipboard text={stateId || ""} onCopy={() => toast.success("Game code successfully copied!")}>
+                  <div className="  text-sm dark:text-white font-semibold flex items-center cursor-pointer">
+                    Copy Game Code: {stateId}
                   </div>
-                {/* </CopyToClipboard> */}
-                <Link to={location.pathname}>Copy link</Link>
+                </CopyToClipboard>
               </div>
             </div>
           </div>

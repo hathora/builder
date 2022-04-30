@@ -1,33 +1,23 @@
-import React, { useRef, useLayoutEffect, useContext, useState, useEffect } from "react";
+import React, { useRef, useLayoutEffect, useContext,  useEffect } from "react";
 import { toast } from "react-toastify";
-import { ChevronRightIcon, ChevronDownIcon, MinusSmIcon, PlusSmIcon, UserCircleIcon } from "@heroicons/react/solid";
-import { getUserDisplayName, lookupUser, UserData } from "../../../api/base";
+import { UserData } from "../../../api/base";
 import * as T from "../../../api/types";
 import { HathoraConnection } from "../../.hathora/client";
 import BoardPlugin from "./plugins/Board/index";
 import { HathoraContext } from "./context";
 import PawnIcon from "./assets/pawn.svg";
-import PlayerDisplay from './components/player'
+import PlayerDisplay from "./components/player";
 
 window.customElements.define("board-plugin", BoardPlugin);
 
-function KVDisplay(props: { label: string; typeString: string; children: JSX.Element }) {
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
-  let icon;
-  if (isCollapsed) {
-    icon = <ChevronRightIcon className="w-3 h-3 fill-current" aria-hidden="true" />;
-  } else {
-    icon = <ChevronDownIcon className="w-3 h-3 fill-current" aria-hidden="true" />;
-  }
+const KVDisplay=(props: { label: string; typeString: string; children: JSX.Element })=> {
   return (
     <div className="p-1 m-1 kv-display bg-white dark:bg-black">
-      <span className="mr-1 align-middle">
-      </span>
+      <span className="mr-1 align-middle"></span>
       <span className="group">
         <span className="hidden text-sm italic text-gray-500 group-hover:inline">({props.typeString}) </span>
         <span className="font-bold">{props.label}: </span>
       </span>
-      {isCollapsed ? "..." : props.children}
     </div>
   );
 }
@@ -80,7 +70,7 @@ function ArrayPlayerDisplay<T>(props: { value: T[]; children: (value: T) => JSX.
   );
 }
 
-function EnumDisplay(props: { value: number; enum: object }) {
+const EnumDisplay=(props: { value: number; enum: object })=> {
   const labels = Object.entries(props.enum)
     .filter(([_, value]) => typeof value === "number")
     .map(([label, _]) => label);
@@ -97,15 +87,11 @@ function EnumDisplay(props: { value: number; enum: object }) {
   }
 }
 
-
 function StringDisplay({ value }: { value: string }) {
   return <span className="string-display">"{value}"</span>;
 }
 function PluginDisplay<T>(props: { value: T; component: string; children: (value: T) => JSX.Element }) {
   const { connection, user, state, updatedAt, pluginsAsObjects } = useContext(HathoraContext)!;
-  useEffect(() => {
-    console.log({ HathoraContext });
-  }, []);
 
   const ref = useRef<{ val: T; client: HathoraConnection; user: UserData; state: T.PlayerState; updatedAt: number }>();
   const displayError = (e: CustomEvent) => toast.error(e.detail);
@@ -144,7 +130,6 @@ function PieceDisplay({ value }: { value: T.Piece }) {
     </div>
   );
 }
-
 
 function PlayerStateDisplay({ value }: { value: T.PlayerState }) {
   return (

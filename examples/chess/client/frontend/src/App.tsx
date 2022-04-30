@@ -2,7 +2,6 @@ import Game from './Pages/Game';
 import Home from './Pages/Home';
 import Login from './components/login';
 import {
-  BrowserRouter as Router,
   Route,
   Routes,
   useLocation,
@@ -10,20 +9,13 @@ import {
   } from 'react-router-dom';
 import { ConnectionFailure } from '../../.hathora/failures';
 import { HathoraClient, HathoraConnection, UpdateArgs } from '../../.hathora/client';
-import { HathoraContext } from './context';
-import { IInitializeRequest } from '../../../api/types';
-import { InitializeForm, JoinGameButton } from './Forms';
-import { State } from './State';
-import { toast } from 'react-toastify';
 import { useEffect, useState } from 'react';  
 import 'react-toastify/dist/ReactToastify.css';
-// components
 
-// Pages
 
 const client = new HathoraClient();
 
-export default function App() {
+ const App=()=> {
   const [token, setToken] = useState<string | undefined>(sessionStorage.getItem(client.appId) ?? undefined);
   const [connection, setConnection] = useState<HathoraConnection>();
   const [updateArgs, setUpdateArgs] = useState<UpdateArgs>();
@@ -86,3 +78,5 @@ export default function App() {
     </div>
   );
 }
+
+export default App;
