@@ -3,7 +3,6 @@ import { HathoraClient } from "../../../../.hathora/client";
 
 
 const client = new HathoraClient();
-console.log({client});
 
 
 const  Login=({ setToken }: { setToken: (token: string) => void }) =>{
@@ -20,7 +19,6 @@ const  Login=({ setToken }: { setToken: (token: string) => void }) =>{
                     .then((token) => {
                       sessionStorage.setItem(client.appId, token);
                       setToken(token);
-                      console.log({token});
                       
                     })
                     .catch((e) => toast.error("Authentication error: " + e.reason))

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { UserData } from "../../../api/base";
 import { IInitializeRequest } from "../../../api/types";
@@ -38,15 +38,14 @@ export default function App() {
   const user = token !== undefined ? HathoraClient.getUserFromToken(token) : undefined;
 
   return (
-    <>
+    <Router>
       <div id="app bg:white dark:bg-black">
         {token === undefined || user === undefined ? (
           <Login setToken={setToken} />
         ) : (
-          <Routes>
-            <Route
-              path="/state/:stateId"
-              element={
+          <Router>
+            <Routes>
+              <Route path="/state/:stateId">
                 <Game
                   user={user}
                   connection={connection}
@@ -64,18 +63,18 @@ export default function App() {
                     }
                   }}
                 />
-              }
-            />
-            <Route
+              </Route>
+              {/* <Route
               path="/"
               element={
                 <Home onConnect={async (request) => navigate(`/state/${await client.create(token, request)}`)} />
               }
             />
-            <Route path="*" element={<div>Not Found</div>} />
-          </Routes>
+            <Route path="*" element={<div>Not Found</div>} /> */}
+            </Routes>
+          </Router>
         )}
       </div>
-    </>
+    </Router>
   );
 }

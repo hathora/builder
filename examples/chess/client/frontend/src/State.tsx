@@ -198,7 +198,7 @@ function PlayerStateDisplay({ value }: { value: T.PlayerState }) {
           </PluginDisplay>
         </div>
       </div>
-      <div className="text-center text-xl my-3 md:my-1 font-bold uppercase">
+      <div className="text-center font-bold uppercase">
         <EnumDisplay value={value.status} enum={T.GameStatus} />
       </div>
     </div>
