@@ -8,7 +8,7 @@ import DarkModeToggler from "../components/darkModeToggle";
 import { HathoraContext } from "./../context";
 import { JoinGameButton } from "./../Forms";
 import { State } from "./../State";
-
+import LoadersIcon from '../assets/loaders.svg'
 type MainProps = {
   user: UserData;
   connection: HathoraConnection | undefined;
@@ -39,7 +39,7 @@ function Game({ user, connection, connectionError, updateArgs, onConnect, onDisc
   if (connection === undefined || updateArgs === undefined) {
     return (
       <div className="flex justify-center items-center h-screen text-black font-bold text-2xl dark:bg-black dark:text-white">
-        Loading...
+        <img src={LoadersIcon} alt="Loader Icon"  />
       </div>
     );
   }

@@ -25,9 +25,6 @@ export default class BoardEl extends LitElement {
       const newEvent = ev;
       //@ts-ignore
       const res = await this.client.movePiece({ from: ev.detail.source, to: ev.detail.target });
-      console.log({ res });
-      console.log({ ev });
-
       if (res.type === "error") {
         //@ts-ignore
         board?.setPosition(ev.detail.oldPosition);

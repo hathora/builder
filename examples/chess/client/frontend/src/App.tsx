@@ -7,7 +7,6 @@ import {
   Routes,
   useLocation,
   useNavigate,
-  useParams
   } from 'react-router-dom';
 import { ConnectionFailure } from '../../.hathora/failures';
 import { HathoraClient, HathoraConnection, UpdateArgs } from '../../.hathora/client';
@@ -16,8 +15,7 @@ import { IInitializeRequest } from '../../../api/types';
 import { InitializeForm, JoinGameButton } from './Forms';
 import { State } from './State';
 import { toast } from 'react-toastify';
-import { useEffect, useState } from 'react';
-import { UserData } from '../../../api/base';
+import { useEffect, useState } from 'react';  
 import 'react-toastify/dist/ReactToastify.css';
 // components
 
@@ -71,33 +69,18 @@ export default function App() {
               />
             }
           >
-            {/* <Game
-              user={user}
-              connection={connection}
-              updateArgs={updateArgs}
-              connectionError={connectionError}
-              onConnect={(stateId) => setConnection(client.connect(token, stateId, setUpdateArgs, setConnectionError))}
-              onDisconnect={() => {
-                if (connection !== undefined) {
-                  connection.disconnect();
-                  setConnection(undefined);
-                  setUpdateArgs(undefined);
-                  setConnectionError(undefined);
-                }
-              }}
-            /> */}
           </Route>
           <Route
             path="/"
             element={<Home onConnect={async (request) => navigate(`/state/${await client.create(token, request)}`)} />}
           />
-          {/* <Route
+          <Route
               path="/"
               element={
                 <Home onConnect={async (request) => navigate(`/state/${await client.create(token, request)}`)} />
               }
             />
-            <Route path="*" element={<div>Not Found</div>} /> */}
+            <Route path="*" element={<div className='flex justify-center items-center bg-white dark:bg-black'>Not Found</div>} />
         </Routes>
       )}
     </div>

@@ -1,5 +1,5 @@
 import React, { useRef, useLayoutEffect, useContext, useState, useEffect } from "react";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import { ChevronRightIcon, ChevronDownIcon, MinusSmIcon, PlusSmIcon, UserCircleIcon } from "@heroicons/react/solid";
 import { getUserDisplayName, lookupUser, UserData } from "../../../api/base";
 import * as T from "../../../api/types";
@@ -7,6 +7,7 @@ import { HathoraConnection } from "../../.hathora/client";
 import BoardPlugin from "./plugins/Board/index";
 import { HathoraContext } from "./context";
 import PawnIcon from "./assets/pawn.svg";
+import PlayerDisplay from './components/player'
 
 window.customElements.define("board-plugin", BoardPlugin);
 
@@ -21,9 +22,6 @@ function KVDisplay(props: { label: string; typeString: string; children: JSX.Ele
   return (
     <div className="p-1 m-1 kv-display bg-white dark:bg-black">
       <span className="mr-1 align-middle">
-        <button type="button" onClick={() => setIsCollapsed(!isCollapsed)}>
-          {icon}
-        </button>
       </span>
       <span className="group">
         <span className="hidden text-sm italic text-gray-500 group-hover:inline">({props.typeString}) </span>
@@ -99,31 +97,6 @@ function EnumDisplay(props: { value: number; enum: object }) {
   }
 }
 
-function UserIdDisplay({ player }: { player: string }) {
-  const [userData, setUserData] = useState<UserData>();
-  const { user } = useContext(HathoraContext)!;
-  useEffect(() => {
-    lookupUser(player).then(setUserData);
-  }, [player]);
-  const renderDisplayText = (displayName: string) => (
-    <span className="flex items-center user-display">{displayName}</span>
-  );
-  if (userData === undefined) {
-    return <div className="max-w-md p-1 m-1 text-center">{renderDisplayText(player)}</div>;
-  }
-  return (
-    <div className="max-w-md p-1 m-1">
-      <div className="flex items-center text-center font-semibold dark:text-white">
-        {/* if it's the player, returns You-name */}
-        {userData.id === user.id ? (
-          <div>You:{renderDisplayText(getUserDisplayName(userData))}</div>
-        ) : (
-          <div>{renderDisplayText(getUserDisplayName(userData))}</div>
-        )}
-      </div>
-    </div>
-  );
-}
 
 function StringDisplay({ value }: { value: string }) {
   return <span className="string-display">"{value}"</span>;
@@ -172,9 +145,6 @@ function PieceDisplay({ value }: { value: T.Piece }) {
   );
 }
 
-function PlayerDisplay({ value }: { value: T.Player }) {
-  return <UserIdDisplay player={value.id} />;
-}
 
 function PlayerStateDisplay({ value }: { value: T.PlayerState }) {
   return (
