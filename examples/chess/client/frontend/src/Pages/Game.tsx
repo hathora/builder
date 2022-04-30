@@ -19,11 +19,11 @@ type MainProps = {
 };
 
 function Game({ user, connection, connectionError, updateArgs, onConnect, onDisconnect }: MainProps) {
-  // const { stateId } = useParams();
+  const { stateId } = useParams();
   const [pluginsAsObjects, setPluginsAsObjects] = useState(false);
   useEffect(() => {
     if (connection === undefined) {
-      // onConnect(stateId!);
+      onConnect(stateId!);
     }
     return onDisconnect;
   }, [connection]);
