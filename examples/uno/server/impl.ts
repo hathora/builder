@@ -66,7 +66,7 @@ export class Impl implements Methods<InternalState> {
     if (hand.userId !== userId) {
       return Response.error("Not your turn");
     }
-    if (request.card.color != state.pile!.color && request.card.value != state.pile!.value) {
+    if (request.card.color !== state.pile.color && request.card.value !== state.pile.value) {
       return Response.error("Doesn't match top of pile");
     }
     const cards = hand.cards;

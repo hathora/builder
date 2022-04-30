@@ -23,8 +23,6 @@ npm install -g hathora
 To start, create a directory called `uno-tutorial` and create a `hathora.yml` file inside with the following contents:
 
 ```yml
-# hathora.yml
-
 types:
   Color:
     - RED
@@ -34,10 +32,13 @@ types:
   Card:
     value: int
     color: Color
+  Player:
+    id: UserId
+    numCards: int
   PlayerState:
     hand: Card[]
-    players: UserId[]
-    turn: UserId
+    players: Player[]
+    turn: UserId?
     pile: Card?
     winner: UserId?
 
@@ -90,7 +91,7 @@ export class Impl implements Methods<InternalState> {
     return {
       hand: [],
       players: [],
-      turn: "",
+      turn: undefined,
       pile: undefined,
       winner: undefined,
     };
@@ -133,19 +134,18 @@ import {
   IDrawCardRequest,
   Card,
   Color,
+  IInitializeRequest,
 } from "../api/types";
 
 type InternalState = {
   deck: Card[];
-  hands: Map<UserId, Card[]>;
-  players: UserId[];
+  hands: { userId: UserId; cards: Card[] }[];
+  turnIdx: number;
   pile?: Card;
-  turn: UserId;
-  winner?: UserId;
 };
 
 export class Impl implements Methods<InternalState> {
-  initialize(userId: UserId, ctx: Context): InternalState {
+  initialize(ctx: Context, request: IInitializeRequest): InternalState {
     // create the initial version of our state
     const deck = [];
     for (let i = 2; i <= 9; i++) {
@@ -154,59 +154,62 @@ export class Impl implements Methods<InternalState> {
       deck.push({ value: i, color: Color.GREEN });
       deck.push({ value: i, color: Color.YELLOW });
     }
-    return { deck, players: [], hands: new Map() };
+    return { deck, hands: [], turnIdx: 0 };
   }
   joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {
     // append the user who called the method
-    state.players.push(userId);
+    state.hands.push({ userId, cards: [] });
     return Response.ok();
   }
   startGame(state: InternalState, userId: UserId, ctx: Context, request: IStartGameRequest): Response {
-    // shuffle the deck, give each player 7 cards, and start the pile
+    // shuffle the player order and deck
+    state.hands = ctx.chance.shuffle(state.hands);
     state.deck = ctx.chance.shuffle(state.deck);
-    state.players.forEach((playerId) => {
-      state.hands.set(playerId, []);
+    // give each player 7 cards
+    state.hands.forEach((hand) => {
       for (let i = 0; i < 7; i++) {
-        state.hands.get(playerId)!.push(state.deck.pop()!);
+        hand.cards.push(state.deck.pop()!);
       }
     });
+    // start the pile
     state.pile = state.deck.pop();
     return Response.ok();
   }
   playCard(state: InternalState, userId: UserId, ctx: Context, request: IPlayCardRequest): Response {
+    const { cards } = state.hands[state.turnIdx];
+    const cardIdx = cards.findIndex((card) => card.value == request.card.value && card.color == request.card.color);
+    if (cardIdx < 0) {
+      return Response.error("Card not in hand");
+    }
     // remove from hand
-    const hand = state.hands.get(userId)!;
-    const cardIdx = hand.findIndex((card) => card.value == request.card.value && card.color == request.card.color);
-    hand.splice(cardIdx, 1);
+    cards.splice(cardIdx, 1);
     // update pile
     state.pile = request.card;
-    // check if won
-    if (hand.length == 0) {
-      state.winner = userId;
-      return Response.ok();
-    }
     // upate turn
-    const currIdx = state.players.indexOf(state.turn);
-    const nextIdx = (currIdx + 1) % state.players.length;
-    state.turn = state.players[nextIdx];
+    state.turnIdx = (state.turnIdx + 1) % state.hands.length;
     return Response.ok();
   }
   drawCard(state: InternalState, userId: UserId, ctx: Context, request: IDrawCardRequest): Response {
     // add the top card to the player's hand
-    state.hands.get(userId)!.push(state.deck.pop()!);
+    const hand = state.hands[state.turnIdx];
+    if (hand.userId !== userId) {
+      return Response.error("Not your turn");
+    }
+    hand.cards.push(state.deck.pop()!);
     return Response.ok();
   }
   getUserState(state: InternalState, userId: UserId): PlayerState {
     // compute the user state from the internal state
     return {
-      hand: state.hands.get(userId) ?? [], // only return this user's hand
-      players: state.players,
-      turn: state.turn,
+      hand: state.hands.find((hand) => hand.userId === userId)?.cards ?? [],
+      players: state.hands.map((hand) => ({ id: hand.userId, numCards: hand.cards.length })),
+      turn: state.pile !== undefined ? state.hands[state.turnIdx].userId : undefined,
       pile: state.pile,
-      winner: state.winner,
+      winner: state.hands.find((hand) => hand.cards.length === 0)?.userId,
     };
   }
 }
+
 ```
 
 See [here](methods) for more details about how server methods works.
@@ -225,10 +228,10 @@ One problem with our current backend implementation is that there is no validati
 // impl.ts
 
   joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {
-    if (state.players.find((playerId) => playerId === userId) !== undefined) {
+    if (state.hands.find((hand) => hand.userId === userId) !== undefined) {
       return Response.error("Already joined");
     }
-    state.players.push(userId);
+    state.hands.push({ userId, cards: [] });
     return Response.ok();
   }
 ```
