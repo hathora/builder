@@ -169,6 +169,16 @@ export const {{@key}} = {
 };
 {{else if (eq type "union")}}
 export const {{@key}} = {
+  default(): {{@key}} {
+    return {
+      {{#each options}}
+      {{#if @first}}
+      type: "{{@key}}",
+      val: {{> renderDefault}},
+      {{/if}}
+      {{/each}}
+    };
+  },
   values() {
     return [{{#each options}}"{{@key}}"{{#unless @last}}, {{/unless}}{{/each}}];
   },
@@ -238,11 +248,7 @@ undefined
 {{~else if (eq type "object")}}
 {{typeString}}.default()
 {{~else if (eq type "union")}}
-{{#each options}}
-{{#if @first}}
-{ type: "{{@key}}", val: {{> renderDefault}} }
-{{~/if}}
-{{/each}}
+{{typeString}}.default()
 {{~else if (eq type "plugin")}}
 {{> renderDefault item}}
 {{/if}}
