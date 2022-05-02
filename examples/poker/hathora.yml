@@ -3,6 +3,10 @@ types:
     - WAITING
     - FOLDED
     - PLAYED
+  RoundStatus:
+    - WAITING
+    - ACTIVE
+    - COMPLETED
   Card:
     rank: string
     suit: string
@@ -17,6 +21,7 @@ types:
     dealer: UserId?
     activePlayer: UserId?
     revealedCards: Card[]
+    roundStatus: RoundStatus
 
 methods:
   joinGame:
@@ -31,6 +36,6 @@ methods:
 
 auth:
   anonymous: {}
-  
+
 userState: PlayerState
 error: string

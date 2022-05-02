@@ -1,52 +1,22 @@
-import styled from "styled-components";
-import {useEffect, useState} from "react";
-import {useHathoraContext} from "../context/GameContext";
-import {useParams} from "react-router-dom";
-
-
-const PlayerBoard = styled.div`
-  background-color: green;
-  height: 100vh;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  
-`
-const PokerTable = styled.div`
-    width: 50vw;
-    height: 50vw;
-    border-radius: 48%;
-    background-color: saddlebrown;
-  
-    @media(max-width: 486px) {
-      width: 70vw;
-      height: 40vw;
-    }
-`
+import { useHathoraContext } from "../context/GameContext";
+import { useParams } from "react-router-dom";
+import useAutoJoinGame from "../hooks/useAutoJoinGame";
+import Lobby from "../components/Lobby";
+import ActiveGame from "../components/ActiveGame";
+import { RoundStatus } from "../../../../api/types";
+import Loader from "../components/PageLoader";
 
 export default function Game() {
-    const { gameId } = useParams();
-    const { disconnect, joinGame, playerState, token, user, login, endGame, getUserName, connecting } =
-        useHathoraContext();
-    const [isOpen, setIsOpen] = useState(false);
+  const { gameId } = useParams();
+  const { playerState } = useHathoraContext();
 
-    useEffect(() => {
-        // auto join the game once on this page
-        if (gameId && token && !playerState?.players?.find((p) => p.id === user?.id)) {
-            joinGame(gameId).catch(console.error);
-        }
+  useAutoJoinGame(gameId);
 
-        if (!token) {
-            // log the user in if they aren't already logged in
-            login();
-        }
-        return disconnect;
-    }, [gameId, token]);
+  if (playerState?.roundStatus === RoundStatus.WAITING) {
+    return <Lobby />;
+  } else if (playerState?.roundStatus === RoundStatus.ACTIVE || playerState?.roundStatus === RoundStatus.COMPLETED) {
+    return <ActiveGame />;
+  }
 
-    return playerState. <PlayerBoard>
-        {JSON.stringify(playerState, null, 2)}
-        <PokerTable/>
-    </PlayerBoard>
+  return <Loader />;
 }

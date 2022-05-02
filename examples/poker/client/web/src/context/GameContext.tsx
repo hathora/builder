@@ -1,10 +1,10 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState } from "react";
-import { ToastContainer, toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import { useSessionstorageState } from "rooks";
 import { HathoraClient, HathoraConnection } from "../../../.hathora/client";
 import { ConnectionFailure } from "../../../.hathora/failures";
-import { PlayerState, IInitializeRequest } from "../../../../api/types";
-import { lookupUser, UserData, Response } from "../../../../api/base";
+import { IInitializeRequest, PlayerState, RoundStatus } from "../../../../api/types";
+import { lookupUser, Response, UserData } from "../../../../api/base";
 
 interface GameContext {
   token?: string;
@@ -21,6 +21,9 @@ interface GameContext {
   user?: UserData;
   connecting?: boolean;
   loggingIn?: boolean;
+  fold: () => Promise<void>;
+  call: () => Promise<void>;
+  raise: (amount: number) => Promise<void>;
 }
 
 interface HathoraContextProviderProps {
@@ -30,10 +33,10 @@ const client = new HathoraClient();
 
 const HathoraContext = createContext<GameContext | null>(null);
 
-const handleResponse = async (prom: Promise<Response>) => {
+const handleResponse = async (prom?: Promise<Response>) => {
   const response = await prom;
 
-  if (response.type === "error") {
+  if (response?.type === "error") {
     toast.error(response.error, {
       position: "top-center",
       autoClose: 1000,
@@ -49,7 +52,7 @@ const handleResponse = async (prom: Promise<Response>) => {
 };
 
 export default function HathoraContextProvider({ children }: HathoraContextProviderProps) {
-  const [token, setToken] = useSessionstorageState<string>(client.appId);
+  const [token, setToken] = useSessionstorageState<string>(client.appId, "");
   const [connection, setConnection] = useState<HathoraConnection>();
   const [playerState, setPlayerState] = useState<PlayerState>();
   const [events, setEvents] = useState<string[]>();
@@ -120,7 +123,7 @@ export default function HathoraContextProvider({ children }: HathoraContextProvi
     if (token) {
       return client.create(token, IInitializeRequest.default());
     } else {
-      const token = await login() ?? '';
+      const token = (await login()) ?? "";
 
       return client.create(token, IInitializeRequest.default());
     }
@@ -136,10 +139,29 @@ export default function HathoraContextProvider({ children }: HathoraContextProvi
 
   const startGame = useCallback(async () => {
     if (connection) {
-      await handleResponse(connection.startGame({ startingChips: 10000, startingBlind: 10}));
+      await handleResponse(connection.startGame({ startingChips: 10000, startingBlind: 10 }));
+      await handleResponse(connection.startRound({}));
     }
   }, [token, connection]);
 
+  const fold = useCallback(async () => {
+    if (connection) {
+      await handleResponse(connection.fold({}));
+    }
+  }, [token, connection]);
+
+  const raise = useCallback(
+    async (amount: number) => {
+      await handleResponse(connection?.raise({ amount }));
+    },
+    [token, connection]
+  );
+
+  const call = useCallback(async () => {
+    if (connection) {
+      await handleResponse(connection.call({}));
+    }
+  }, [token, connection]);
 
   const endGame = () => {
     setPlayerState(undefined);
@@ -173,14 +195,17 @@ export default function HathoraContextProvider({ children }: HathoraContextProvi
   }, [token]);
 
   useEffect(() => {
-    if (playerState?.activePlayer) {
+    if (playerState?.activePlayer && playerState.roundStatus === RoundStatus.ACTIVE) {
       if (playerState?.activePlayer === user?.id) {
         toast.success(`It's you turn`, { position: "top-center", hideProgressBar: true });
       } else {
-        toast.info(`it is ${getUserName(playerState?.activePlayer)}'s turn`, { position: "top-center", hideProgressBar: true });
+        toast.info(`it is ${getUserName(playerState?.activePlayer)}'s turn`, {
+          position: "top-center",
+          hideProgressBar: true,
+        });
       }
     }
-  }, [playerState?.activePlayer]);
+  }, [playerState?.activePlayer, playerState?.roundStatus]);
 
   return (
     <HathoraContext.Provider
@@ -199,6 +224,9 @@ export default function HathoraContextProvider({ children }: HathoraContextProvi
         user,
         endGame,
         getUserName,
+        fold,
+        raise,
+        call,
       }}
     >
       {children}
