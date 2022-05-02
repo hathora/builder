@@ -102,7 +102,7 @@ export class Impl implements Methods<InternalState> {
       players: state.hands.map((hand) => ({ id: hand.userId, numCards: hand.cards.length })),
       turn: state.pile !== undefined ? state.hands[state.turnIdx].userId : undefined,
       pile: state.pile,
-      winner: state.hands.find((hand) => hand.cards.length === 0)?.userId,
+      winner: state.pile !== undefined ? state.hands.find((hand) => hand.cards.length === 0)?.userId : undefined,
     };
   }
 }
