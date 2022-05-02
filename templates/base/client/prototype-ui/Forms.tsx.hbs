@@ -499,9 +499,11 @@ boolean
 false
 {{~else if (eq type "optional")}}
 undefined
-{{~else if (eq type "object")}}
-T.{{typeString}}.default()
 {{~else if (eq type "plugin")}}
 {{> renderDefault item}}
+{{~else if (eq type "object")}}
+T.{{typeString}}.default()
+{{~else if (eq type "union")}}
+T.{{typeString}}.default()
 {{/if}}
 {{/inline}}
