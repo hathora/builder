@@ -24,20 +24,17 @@ const PlayerBoard = styled.div`
 `;
 
 const PokerTable = styled.div`
-  width: 80%;
+  margin-top: 80px;
+  width: 600px;
   position: relative;
-  height: 400px;
-  @media (min-width: 1201px) {
-    width: 850px;
-    height: 450px;
-  }
+  height: 600px;
+
   display: flex;
-  padding: 2%;
   align-items: center;
   justify-content: center;
   flex-direction: row;
   margin-bottom: 5rem;
-  border-radius: 60%;
+  border-radius: 50%;
   background-color: #154b0a;
   border: 0.75rem solid #6b342b;
 
@@ -46,6 +43,13 @@ const PokerTable = styled.div`
     height: 200px;
     border-radius: 5vw;
     margin-bottom: 2rem;
+  }
+
+  .position-hold {
+    transition: transform 2s linear;
+    position: absolute;
+    left: 200px; /* calculate circle width / 2 - .square width / 2 */
+    top: 250px;
   }
 
   playing-card {
@@ -68,9 +72,10 @@ const CalculatePlayerPosition = (index: number, size: number) => {
 };
 
 const OpponentWrapper = styled.div<{ index: number; size: number }>`
-  position: absolute;
   background-color: white;
-  ${({ index, size }) => CalculatePlayerPosition(index, size)}
+  min-width: 250px;
+  position: absolute;
+  left: 0;
 `;
 
 const rankConversion: Record<string, string> = {
@@ -91,8 +96,8 @@ const rankConversion: Record<string, string> = {
 
 const BuildCircle = (num: number) => {
   const type = 1;
-  let radius = "100"; //distance from center
-  let start = -90; //shift start from 0
+  let radius = "300"; //distance from center
+  let start = -270; //shift start from 0
   let slice = (360 * type) / num;
 
   let items = [];
@@ -131,6 +136,7 @@ export default function ActiveGame() {
     raise(raiseAmount);
   };
 
+  const circles = BuildCircle(players.length);
   // @ts-ignore
   return (
     <div className="bg-slate-100 flex flex-col py-5 items-center justify-center">
@@ -141,54 +147,95 @@ export default function ActiveGame() {
             {playerState?.revealedCards.map((card, index) => (
               <playing-card key={index} rank={rankConversion[card.rank]} suit={card.suit[0]}></playing-card>
             ))}
-            {!isMobile &&
-              players.map((player, index) => (
-                <OpponentWrapper
-                  key={player.id}
-                  className="rounded border shadow p-3 text-xs"
-                  index={index}
-                  size={players.length}
-                >
-                  <div>{getUserName(player?.id)}</div>
-                  <div>In Pot: {player.chipsInPot}</div>
-                  <div>Chips: {player.chipCount}</div>
-                </OpponentWrapper>
-              ))}
+            {!isMobile && (
+              <div className="position-hold">
+                {players.map((player, index) => {
+                  const css = circles[index];
+
+                  return (
+                    <OpponentWrapper
+                      style={{
+                        transform:
+                          "rotate(" +
+                          css.rotate +
+                          "deg) translate(" +
+                          css.radius +
+                          "px) rotate(" +
+                          css.rotateReverse +
+                          "deg)",
+                      }}
+                      key={player.id}
+                      className={`rounded border shadow p-3 text-xs ${
+                        player.id === playerState?.activePlayer ? "border-orange-400 border-4 shadow-orange-800" : ""
+                      }`}
+                      index={index}
+                      size={players.length}
+                    >
+                      <div className="flex flex-col">
+                        <div className="font-bold">{getUserName(player.id)}</div>
+                        {player.id === playerState?.activePlayer ? "(Current Player)" : ""}
+                      </div>
+                      <div className="flex flex-col">
+                        <div>
+                          <span className="font-bold">In pot:</span> ${player.chipsInPot}{" "}
+                        </div>
+                        <div>
+                          <span className="font-bold">Chips:</span> ${player.chipCount}{" "}
+                        </div>
+                      </div>
+                      <div className="flex">
+                        {player?.cards?.map((card, index) => (
+                          <playing-card
+                            // @ts-ignore need to type the global declaration
+                            style={{ "--card-size": "2rem" }}
+                            key={index}
+                            rank={rankConversion[card.rank]}
+                            suit={card.suit[0]}
+                          ></playing-card>
+                        ))}
+                      </div>
+                    </OpponentWrapper>
+                  );
+                })}
+              </div>
+            )}
           </PokerTable>
         </div>
         {isMobile && (
           <div className="flex w-full px-2 flex-col">
-            {players.map((player) => (
-              <div
-                className={`w-full bg-white p-3 rounded border shadow drop-shadow mb-5 ${
-                  player.id === playerState?.activePlayer ? "border-blue-800 shadow-blue-800" : ""
-                }`}
-              >
-                <div className="flex">
-                  <div className="font-bold">{getUserName(player.id)}</div>
-                  {player.id === playerState?.activePlayer ? "(Current Player)" : ""}
-                </div>
-                <div className="flex flex-col">
-                  <div>
-                    <span className="font-bold">In pot:</span> ${player.chipsInPot}{" "}
+            {players
+              .filter((player) => player)
+              .map((player) => (
+                <div
+                  className={`w-full bg-white p-3 rounded border shadow drop-shadow mb-5 ${
+                    player.id === playerState?.activePlayer ? "border-blue-800 shadow-blue-800" : ""
+                  }`}
+                >
+                  <div className="flex">
+                    <div className="font-bold">{getUserName(player.id)}</div>
+                    {player.id === playerState?.activePlayer ? "(Current Player)" : ""}
                   </div>
-                  <div>
-                    <span className="font-bold">Chips:</span> ${player.chipCount}{" "}
+                  <div className="flex flex-col">
+                    <div>
+                      <span className="font-bold">In pot:</span> ${player.chipsInPot}{" "}
+                    </div>
+                    <div>
+                      <span className="font-bold">Chips:</span> ${player.chipCount}{" "}
+                    </div>
+                  </div>
+                  <div className="flex">
+                    {player?.cards?.map((card, index) => (
+                      <playing-card
+                        // @ts-ignore need to type the global declaration
+                        style={{ "--card-size": "2rem" }}
+                        key={index}
+                        rank={rankConversion[card.rank]}
+                        suit={card.suit[0]}
+                      ></playing-card>
+                    ))}
                   </div>
                 </div>
-                <div className="flex">
-                  {player?.cards?.map((card, index) => (
-                    <playing-card
-                      // @ts-ignore need to type the global declaration
-                      style={{ "--card-size": "2rem" }}
-                      key={index}
-                      rank={rankConversion[card.rank]}
-                      suit={card.suit[0]}
-                    ></playing-card>
-                  ))}
-                </div>
-              </div>
-            ))}
+              ))}
           </div>
         )}
         {isMobile && <ActivePot />}
