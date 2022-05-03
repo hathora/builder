@@ -4,8 +4,13 @@ import QRCode from "react-qr-code";
 import { ClipboardCopyIcon } from "@heroicons/react/outline";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import { RoundStatus } from "../../../../api/types";
 
-export default function Lobby() {
+interface LobbyProps {
+  status: RoundStatus;
+}
+
+export default function Lobby({ status }: LobbyProps) {
   const { gameId } = useParams();
   const navigate = useNavigate();
   const { playerState, getUserName, startGame, endGame } = useHathoraContext();
@@ -39,7 +44,7 @@ export default function Lobby() {
             disabled={playerCount < 2}
             className="mt-3 w-full block bg-blue-800 border border-blue-800 rounded p-2 text-xl font-semibold text-white text-center hover:bg-blue-900 h-fit"
           >
-            Start Game
+            {status === RoundStatus.ACTIVE ? "Start Game" : "Start Round"}
           </button>
           <button
             onClick={() => {

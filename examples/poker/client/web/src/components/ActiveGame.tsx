@@ -97,7 +97,7 @@ const rankConversion: Record<string, string> = {
 const BuildCircle = (num: number) => {
   const type = 1;
   let radius = "300"; //distance from center
-  let start = -270; //shift start from 0
+  let start = -90; //shift start from 0
   let slice = (360 * type) / num;
 
   let items = [];

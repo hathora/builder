@@ -137,12 +137,20 @@ export default function HathoraContextProvider({ children }: HathoraContextProvi
     [token, connect]
   );
 
-  const startGame = useCallback(async () => {
+  const startRound = useCallback(async () => {
     if (connection) {
-      await handleResponse(connection.startGame({ startingChips: 10000, startingBlind: 10 }));
       await handleResponse(connection.startRound({}));
     }
-  }, [token, connection]);
+  }, [connection]);
+
+  const startGame = useCallback(async () => {
+    if (connection) {
+      if (playerState?.roundStatus === RoundStatus.WAITING) {
+        await handleResponse(connection.startGame({ startingChips: 10000, startingBlind: 10 }));
+      }
+      await startRound();
+    }
+  }, [connection, playerState]);
 
   const fold = useCallback(async () => {
     if (connection) {
