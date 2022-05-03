@@ -13,6 +13,8 @@
     "@heroicons/react": "^1.0.6",
     "@types/react-router-dom": "^5.3.3",
     "chess.js": "^0.13.1",
+    "chessboard-element": "^1.2.0",
+    "lit": "^2.2.3",
     "postcss-cli": "^9.1.0",
     "react": "^18.0.0",
     "react-chessboard": "^1.2.2",
