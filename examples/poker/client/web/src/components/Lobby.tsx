@@ -13,7 +13,7 @@ interface LobbyProps {
 export default function Lobby({ status }: LobbyProps) {
   const { gameId } = useParams();
   const navigate = useNavigate();
-  const { playerState, getUserName, startGame, endGame } = useHathoraContext();
+  const { playerState, getUserName, startGame, endGame, user } = useHathoraContext();
 
   const playerCount = playerState?.players?.length ?? 0;
 
@@ -32,7 +32,9 @@ export default function Lobby({ status }: LobbyProps) {
         <div className="text-xl font-bold">Players in Lobby</div>
         {playerState?.players?.map((player) => (
           <div key={player.id} className="py-2 px-3 bg-slate-200 mx-1 border rounded border-solid shadow-gray-600 my-3">
-            <div className="font-semibold">Name: {getUserName(player.id)}</div>
+            <div className="font-semibold">
+              {player.id === user?.id ? "⭐ " : ""} Name: {getUserName(player.id)}
+            </div>
             <div className="flex">
               <span className="font-semibold mr-1">Chip Count:</span>${player.chipCount}
             </div>
@@ -44,7 +46,7 @@ export default function Lobby({ status }: LobbyProps) {
             disabled={playerCount < 2}
             className="mt-3 w-full block bg-blue-800 border border-blue-800 rounded p-2 text-xl font-semibold text-white text-center hover:bg-blue-900 h-fit"
           >
-            {status === RoundStatus.ACTIVE ? "Start Game" : "Start Round"}
+            {status === RoundStatus.WAITING ? "Start Game" : "Start Round"}
           </button>
           <button
             onClick={() => {

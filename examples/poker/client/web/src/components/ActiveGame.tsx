@@ -5,6 +5,7 @@ import styled, { css } from "styled-components";
 import { useState } from "react";
 import ActivePot from "./ActivePot";
 import { useWindowSize } from "rooks";
+import { rankConversion } from "../constants/rankConversion";
 
 const PlayerBoard = styled.div`
   height: 100vh;
@@ -62,37 +63,12 @@ const PokerTable = styled.div`
   }
 `;
 
-const CalculatePlayerPosition = (index: number, size: number) => {
-  if (size === 2) {
-    return css`
-      top: -20%;
-      right: 45%;
-    `;
-  }
-};
-
 const OpponentWrapper = styled.div<{ index: number; size: number }>`
   background-color: white;
   min-width: 250px;
   position: absolute;
   left: 0;
 `;
-
-const rankConversion: Record<string, string> = {
-  Two: "2",
-  Three: "3",
-  Four: "4",
-  Five: "5",
-  Six: "6",
-  Seven: "7",
-  Eight: "8",
-  Nine: "9",
-  Ten: "10",
-  Jack: "J",
-  Queen: "Q",
-  King: "K",
-  Ace: "A",
-};
 
 const BuildCircle = (num: number) => {
   const type = 1;
@@ -116,6 +92,18 @@ const BuildCircle = (num: number) => {
   return items;
 };
 
+const PotWrapper = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  display: flex;
+
+  @media (max-width: 486px) {
+    top: 0;
+  }
+`;
+
 export default function ActiveGame() {
   const { playerState, user, raise, fold, call, getUserName } = useHathoraContext();
   const [raiseAmount, setRaiseAmount] = useState(100);
@@ -129,21 +117,25 @@ export default function ActiveGame() {
   const players = [
     ...(playerState?.players.slice(currentUserIndex || 0, playerState.players.length) || []),
     ...(playerState?.players.slice(0, currentUserIndex) || []),
-  ].filter((p) => p.id !== user?.id);
+  ];
 
-  console.log(players, playerState?.players, currentUserIndex, user);
   const handleRaise = () => {
     raise(raiseAmount);
   };
 
   const circles = BuildCircle(players.length);
+  const pot = playerState?.players?.reduce((accum, player) => accum + player.chipsInPot, 0) ?? 0;
+
   // @ts-ignore
   return (
     <div className="bg-slate-100 flex flex-col py-5 items-center justify-center">
-      {!isMobile && <ActivePot />}
+      {/*{!isMobile && <ActivePot />}*/}
       <PlayerBoard>
         <div className="w-full flex item-center justify-center">
           <PokerTable>
+            <PotWrapper className="justify-center items-center text-white font-semibold">
+              Current Pot: ${pot}
+            </PotWrapper>
             {playerState?.revealedCards.map((card, index) => (
               <playing-card key={index} rank={rankConversion[card.rank]} suit={card.suit[0]}></playing-card>
             ))}
@@ -172,7 +164,10 @@ export default function ActiveGame() {
                       size={players.length}
                     >
                       <div className="flex flex-col">
-                        <div className="font-bold">{getUserName(player.id)}</div>
+                        <div className="font-bold">
+                          {player.id === user?.id ? "⭐ " : ""}
+                          {getUserName(player.id)}
+                        </div>
                         {player.id === playerState?.activePlayer ? "(Current Player)" : ""}
                       </div>
                       <div className="flex flex-col">
@@ -208,11 +203,14 @@ export default function ActiveGame() {
               .map((player) => (
                 <div
                   className={`w-full bg-white p-3 rounded border shadow drop-shadow mb-5 ${
-                    player.id === playerState?.activePlayer ? "border-blue-800 shadow-blue-800" : ""
+                    player.id === playerState?.activePlayer ? "border-orange-400 border-4 shadow-orange-800" : ""
                   }`}
                 >
-                  <div className="flex">
-                    <div className="font-bold">{getUserName(player.id)}</div>
+                  <div className="flex flex-col">
+                    <div className="font-bold">
+                      {player.id === user?.id ? "⭐ " : ""}
+                      {getUserName(player.id)}
+                    </div>
                     {player.id === playerState?.activePlayer ? "(Current Player)" : ""}
                   </div>
                   <div className="flex flex-col">
@@ -239,11 +237,6 @@ export default function ActiveGame() {
           </div>
         )}
         {isMobile && <ActivePot />}
-        <div className="flex">
-          {currentUser?.cards.map((card) => (
-            <playing-card rank={rankConversion[card.rank]} suit={card.suit[0]}></playing-card>
-          ))}
-        </div>
         <div className="flex md:flex-row flex-col w-full mt-3 px-5">
           <input
             value={raiseAmount}
