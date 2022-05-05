@@ -1,15 +1,17 @@
 #!/usr/bin/env node
 
-import yargs from "yargs/yargs";
-import { hideBin } from "yargs/helpers";
-import chalk from "chalk";
-
+import fs from "fs";
 import { createHash } from "crypto";
 import { outputFileSync, existsSync, readdirSync, copySync } from "fs-extra";
 import { join } from "path";
 import { pathToFileURL } from "url";
+import yargs from "yargs/yargs";
+import { hideBin } from "yargs/helpers";
+import chalk from "chalk";
 import shelljs from "shelljs";
 import { v4 as uuidv4 } from "uuid";
+import tar from "tar";
+import FormData from "form-data";
 import dotenv from "dotenv";
 import { createServer, build as buildClient } from "vite";
 import { build as buildServer } from "esbuild";
@@ -245,6 +247,16 @@ yargs(hideBin(process.argv))
     describe: "Creates a plugin",
     handler: (argv) => {
       generate(rootDir, `templates/plugin/${argv.lib}`, { val: argv.type as string });
+    },
+  })
+  .command({
+    command: "deploy",
+    describe: "Deploys application to Hathora Cloud",
+    handler: (_argv) => {
+      const tarFile = tar.create({ cwd: "./", filter: (path) => !path.includes("node_modules") }, [rootDir]);
+      const form = new FormData();
+      form.append("file", tarFile, "asdf.tar");
+      form.submit("http://192.168.1.163:9000/upload");
     },
   })
   .demandCommand()
