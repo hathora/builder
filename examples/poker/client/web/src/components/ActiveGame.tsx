@@ -1,11 +1,11 @@
 import { useHathoraContext } from "../context/GameContext";
 import "playing-card";
 
-import styled, { css } from "styled-components";
+import styled from "styled-components";
 import { useState } from "react";
-import ActivePot from "./ActivePot";
 import { useWindowSize } from "rooks";
 import { rankConversion } from "../constants/rankConversion";
+import { PlayerStatus, RoundStatus } from "../../../../api/types";
 
 const PlayerBoard = styled.div`
   height: 100vh;
@@ -94,7 +94,7 @@ const BuildCircle = (num: number) => {
 
 const PotWrapper = styled.div`
   position: absolute;
-  top: 50%;
+  top: 35%;
   left: 0;
   width: 100%;
   display: flex;
@@ -105,14 +105,13 @@ const PotWrapper = styled.div`
 `;
 
 export default function ActiveGame() {
-  const { playerState, user, raise, fold, call, getUserName } = useHathoraContext();
+  const { playerState, user, raise, fold, call, getUserName, startRound } = useHathoraContext();
   const [raiseAmount, setRaiseAmount] = useState(100);
 
   const { outerWidth } = useWindowSize();
   const isMobile = (outerWidth || 0) <= 486;
 
   const currentUserIndex = playerState?.players.findIndex((p) => p.id === user?.id) ?? 0;
-  const currentUser = currentUserIndex !== undefined ? playerState?.players[currentUserIndex] : undefined;
 
   const players = [
     ...(playerState?.players.slice(currentUserIndex || 0, playerState.players.length) || []),
@@ -125,11 +124,22 @@ export default function ActiveGame() {
 
   const circles = BuildCircle(players.length);
   const pot = playerState?.players?.reduce((accum, player) => accum + player.chipsInPot, 0) ?? 0;
+  const isRoundOver = playerState?.roundStatus === RoundStatus.COMPLETED;
 
-  // @ts-ignore
+  console.log(playerState);
+
   return (
     <div className="bg-slate-100 flex flex-col py-5 items-center justify-center">
-      {/*{!isMobile && <ActivePot />}*/}
+      {isRoundOver && (
+        <div className="w-full flex justify-end px-5">
+          <button
+            onClick={startRound}
+            className="block md:w-1/5 bg-orange-600 border border-orange-600 rounded lg:rounded-r lg:rounded-l-0 p-2 text-xl font-semibold text-white text-center hover:bg-orange-900 shadow"
+          >
+            Start Round
+          </button>
+        </div>
+      )}
       <PlayerBoard>
         <div className="w-full flex item-center justify-center">
           <PokerTable>
@@ -168,7 +178,10 @@ export default function ActiveGame() {
                           {player.id === user?.id ? "⭐ " : ""}
                           {getUserName(player.id)}
                         </div>
-                        {player.id === playerState?.activePlayer ? "(Current Player)" : ""}
+                        {player.id === playerState?.activePlayer && player.status !== PlayerStatus.WON
+                          ? "(Current Player)"
+                          : ""}
+                        {player.status === PlayerStatus.WON ? "(Winner)" : ""}
                       </div>
                       <div className="flex flex-col">
                         <div>
@@ -197,7 +210,7 @@ export default function ActiveGame() {
           </PokerTable>
         </div>
         {isMobile && (
-          <div className="flex w-full px-2 flex-col">
+          <div className="flex w-full px-5 flex-col">
             {players
               .filter((player) => player)
               .map((player) => (
@@ -211,7 +224,10 @@ export default function ActiveGame() {
                       {player.id === user?.id ? "⭐ " : ""}
                       {getUserName(player.id)}
                     </div>
-                    {player.id === playerState?.activePlayer ? "(Current Player)" : ""}
+                    {player.id === playerState?.activePlayer && player.status !== PlayerStatus.WON
+                      ? "(Current Player)"
+                      : ""}
+                    {player.status === PlayerStatus.WON ? "(Winner)" : ""}
                   </div>
                   <div className="flex flex-col">
                     <div>
@@ -236,36 +252,39 @@ export default function ActiveGame() {
               ))}
           </div>
         )}
-        {isMobile && <ActivePot />}
-        <div className="flex md:flex-row flex-col w-full mt-3 px-5">
-          <input
-            value={raiseAmount}
-            onChange={(e) => setRaiseAmount(parseInt(e.target.value))}
-            type="number"
-            placeholder="Raise"
-            className="w-full flex-1 px-5 shadow py-3 placeholder-gray-500 focus:ring-indigo-500 focus:border-indigo-500 focus:border-r-0 border-gray-300 rounded-l md:rounder-r-0 md:mb-0 mb-5"
-          />
-          <button
-            onClick={handleRaise}
-            className="block md:w-1/3 bg-green-600 border border-green-600 rounded lg:rounded-r lg:rounded-l-0 p-2 text-xl font-semibold text-white text-center hover:bg-green-900 shadow"
-          >
-            Raise
-          </button>
-        </div>
-        <div className="flex w-full flex-col md:flex-row px-5 items-center mb-5">
-          <button
-            onClick={call}
-            className="mt-3 md:mr-1 w-full block bg-blue-800 border border-blue-800 rounded p-2 text-xl font-semibold text-white text-center hover:bg-blue-900 h-fit"
-          >
-            Call
-          </button>
-          <button
-            onClick={fold}
-            className="mt-3 md:ml-1 w-full block bg-red-800 border border-red-800 rounded p-2 text-xl font-semibold text-white text-center hover:bg-red-900 h-fit"
-          >
-            Fold
-          </button>
-        </div>
+        {playerState?.roundStatus === RoundStatus.ACTIVE && (
+          <>
+            <div className="flex md:flex-row flex-col w-full mt-3 px-5">
+              <input
+                value={raiseAmount}
+                onChange={(e) => setRaiseAmount(parseInt(e.target.value))}
+                type="number"
+                placeholder="Raise"
+                className="w-full flex-1 px-5 shadow py-3 placeholder-gray-500 focus:ring-indigo-500 focus:border-indigo-500 focus:border-r-0 border-gray-300 rounded-l md:rounder-r-0 md:mb-0 mb-5"
+              />
+              <button
+                onClick={handleRaise}
+                className="block md:w-1/3 bg-green-600 border border-green-600 rounded lg:rounded-r lg:rounded-l-0 p-2 text-xl font-semibold text-white text-center hover:bg-green-900 shadow"
+              >
+                Raise
+              </button>
+            </div>
+            <div className="flex w-full flex-col md:flex-row px-5 items-center mb-5">
+              <button
+                onClick={call}
+                className="mt-3 md:mr-1 w-full block bg-blue-800 border border-blue-800 rounded p-2 text-xl font-semibold text-white text-center hover:bg-blue-900 h-fit"
+              >
+                Call
+              </button>
+              <button
+                onClick={fold}
+                className="mt-3 md:ml-1 w-full block bg-red-800 border border-red-800 rounded p-2 text-xl font-semibold text-white text-center hover:bg-red-900 h-fit"
+              >
+                Fold
+              </button>
+            </div>
+          </>
+        )}
       </PlayerBoard>
     </div>
   );

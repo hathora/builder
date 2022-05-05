@@ -3,6 +3,8 @@ types:
     - WAITING
     - FOLDED
     - PLAYED
+    - WON
+    - LOST
   RoundStatus:
     - WAITING
     - ACTIVE

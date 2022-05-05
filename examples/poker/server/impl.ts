@@ -129,12 +129,9 @@ export class Impl implements Methods<InternalState> {
     return Response.ok();
   }
   getUserState(state: InternalState, userId: UserId): PlayerState {
-    const showdown =
-      filterPlayers(state.players, PlayerStatus.WAITING).length === 0 &&
-      filterPlayers(state.players, PlayerStatus.PLAYED).length > 1;
     return {
       players: state.players?.map((player) => {
-        const shouldReveal = player.id === userId || (showdown && player.status === PlayerStatus.PLAYED);
+        const shouldReveal = player.id === userId || state.roundStatus === RoundStatus.COMPLETED;
         return {
           ...player,
           cards: shouldReveal ? player.cards.map((card) => ({ rank: card[0], suit: card[1] })) : [],
@@ -215,8 +212,17 @@ function advanceRound(state: InternalState) {
 function distributeWinnings(players: InternalPlayerInfo[], winners: InternalPlayerInfo[]) {
   // TODO: handle case where pot isn't evenly divisible by the number of winners
   const pot = players.reduce((sum, player) => sum + player.chipsInPot, 0);
-  winners.forEach((winner) => (winner.chipCount += Math.floor(pot / winners.length)));
-  players.forEach((player) => (player.chipsInPot = 0));
+  winners.forEach((winner) => {
+    winner.chipCount += Math.floor(pot / winners.length);
+    winner.status = PlayerStatus.WON;
+  });
+
+  players.forEach((player) => {
+    if (!winners.find((winner) => winner.id === player.id)) {
+      player.status = PlayerStatus.LOST;
+    }
+    player.chipsInPot = 0;
+  });
 }
 
 function filterPlayers(players: InternalPlayerInfo[], status: PlayerStatus, eq: boolean = true) {

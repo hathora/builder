@@ -12,9 +12,9 @@ export default function Game() {
 
   useAutoJoinGame(gameId);
 
-  if (playerState?.roundStatus === RoundStatus.WAITING || playerState?.roundStatus === RoundStatus.COMPLETED) {
+  if (playerState?.roundStatus === RoundStatus.WAITING) {
     return <Lobby status={playerState?.roundStatus} />;
-  } else if (playerState?.roundStatus === RoundStatus.ACTIVE) {
+  } else if (playerState?.roundStatus === RoundStatus.ACTIVE || playerState?.roundStatus === RoundStatus.COMPLETED) {
     return <ActiveGame />;
   }
 

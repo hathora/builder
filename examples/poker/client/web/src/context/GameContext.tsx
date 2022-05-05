@@ -14,6 +14,7 @@ interface GameContext {
   createGame: () => Promise<string | undefined>;
   joinGame: (gameId: string) => Promise<void>;
   startGame: () => Promise<void>;
+  startRound: () => Promise<void>;
   playerState?: PlayerState;
   connectionError?: ConnectionFailure;
   endGame: () => void;
@@ -228,6 +229,7 @@ export default function HathoraContextProvider({ children }: HathoraContextProvi
         playerState,
         connectionError,
         startGame,
+        startRound,
         loggingIn,
         user,
         endGame,
