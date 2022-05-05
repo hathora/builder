@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useWindowSize } from "rooks";
 import { rankConversion } from "../constants/rankConversion";
 import { PlayerStatus, RoundStatus } from "../../../../api/types";
+import { useNavigate } from "react-router-dom";
 
 const PlayerBoard = styled.div`
   height: 100vh;
@@ -105,13 +106,14 @@ const PotWrapper = styled.div`
 `;
 
 export default function ActiveGame() {
-  const { playerState, user, raise, fold, call, getUserName, startRound } = useHathoraContext();
+  const { playerState, user, raise, fold, call, getUserName, startRound, endGame } = useHathoraContext();
   const [raiseAmount, setRaiseAmount] = useState(100);
 
   const { outerWidth } = useWindowSize();
   const isMobile = (outerWidth || 0) <= 486;
 
   const currentUserIndex = playerState?.players.findIndex((p) => p.id === user?.id) ?? 0;
+  const navigate = useNavigate();
 
   const players = [
     ...(playerState?.players.slice(currentUserIndex || 0, playerState.players.length) || []),
@@ -125,8 +127,6 @@ export default function ActiveGame() {
   const circles = BuildCircle(players.length);
   const pot = playerState?.players?.reduce((accum, player) => accum + player.chipsInPot, 0) ?? 0;
   const isRoundOver = playerState?.roundStatus === RoundStatus.COMPLETED;
-
-  console.log(playerState);
 
   return (
     <div className="bg-slate-100 flex flex-col py-5 items-center justify-center">
@@ -260,7 +260,7 @@ export default function ActiveGame() {
                 onChange={(e) => setRaiseAmount(parseInt(e.target.value))}
                 type="number"
                 placeholder="Raise"
-                className="w-full flex-1 px-5 shadow py-3 placeholder-gray-500 focus:ring-indigo-500 focus:border-indigo-500 focus:border-r-0 border-gray-300 rounded-l md:rounder-r-0 md:mb-0 mb-5"
+                className="w-full flex-1 px-5 shadow py-3 placeholder-gray-500 focus:ring-indigo-500 focus:border-indigo-500 focus:border-r-0 border-gray-300 rounded-l md:rounder-r-0 md:mb-0 mb-5 md:ml-1"
               />
               <button
                 onClick={handleRaise}
@@ -269,7 +269,7 @@ export default function ActiveGame() {
                 Raise
               </button>
             </div>
-            <div className="flex w-full flex-col md:flex-row px-5 items-center mb-5">
+            <div className="flex w-full flex-col md:flex-row px-5 items-center mb-3">
               <button
                 onClick={call}
                 className="mt-3 md:mr-1 w-full block bg-blue-800 border border-blue-800 rounded p-2 text-xl font-semibold text-white text-center hover:bg-blue-900 h-fit"
@@ -285,6 +285,17 @@ export default function ActiveGame() {
             </div>
           </>
         )}
+        <div className={"w-full px-5 pb-3"}>
+          <button
+            onClick={() => {
+              endGame();
+              navigate("/");
+            }}
+            className="block w-full bg-red-600 border border-red-600 rounded lg:rounded-r lg:rounded-l-0 p-2 text-xl font-semibold text-white text-center hover:bg-red-900 shadow"
+          >
+            Leave Game
+          </button>
+        </div>
       </PlayerBoard>
     </div>
   );
