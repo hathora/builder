@@ -1,9 +1,8 @@
 <p align="center">
   <a href="https://hathora.dev" target="_blank" rel="noopener noreferrer">
-    <img src="https://uploads-ssl.webflow.com/6257361ae96887d2c8c7faa8/6266fdf044a3635e060499d7_Hathora_logo_with_name.png" alt="Hathora logo">
+    <img width="360" src="https://uploads-ssl.webflow.com/6257361ae96887d2c8c7faa8/6266fdf044a3635e060499d7_Hathora_logo_with_name.png" alt="Hathora logo">
   </a>
 </p>
-<br/>
 <p align="center">
   <a href="https://npmjs.com/package/hathora"><img src="https://badge.fury.io/js/hathora.svg" alt="npm version"></a>
   <a href="https://nodejs.org/en/about/releases/"><img src="https://img.shields.io/node/v/hathora.svg" alt="node compatibility"></a>
