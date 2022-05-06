@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://hathora.dev" target="_blank" rel="noopener noreferrer">
-    <img width="180" src="https://uploads-ssl.webflow.com/6257361ae96887d2c8c7faa8/62573911ac5f45a3c261baee_hathora%20desktop.png" alt="Hathora logo">
+    <img src="https://uploads-ssl.webflow.com/6257361ae96887d2c8c7faa8/6266fdf044a3635e060499d7_Hathora_logo_with_name.png" alt="Hathora logo">
   </a>
 </p>
 <br/>
