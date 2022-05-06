@@ -1,4 +1,3 @@
-import React from "react";
 import { useHathoraContext } from "../context/GameContext";
 
 export default function ActivePot() {

@@ -206,7 +206,7 @@ export default function HathoraContextProvider({ children }: HathoraContextProvi
   useEffect(() => {
     if (playerState?.activePlayer && playerState.roundStatus === RoundStatus.ACTIVE) {
       if (playerState?.activePlayer === user?.id) {
-        toast.success(`It's you turn`, { position: "top-center", hideProgressBar: true });
+        toast.success(`It's your turn`, { position: "top-center", hideProgressBar: true });
       } else {
         toast.info(`it is ${getUserName(playerState?.activePlayer)}'s turn`, {
           position: "top-center",

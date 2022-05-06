@@ -18,6 +18,7 @@
     "react-router-dom": "^6.3.0",
     "react-toastify": "^8.2.0",
     "rooks": "^5.11.0",
+    "classnames": "^2.3.1",
     "styled-components": "^5.3.5"
   },
   "devDependencies": {

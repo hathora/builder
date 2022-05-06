@@ -130,7 +130,7 @@ export class Impl implements Methods<InternalState> {
   }
   getUserState(state: InternalState, userId: UserId): PlayerState {
     return {
-      players: state.players?.map((player) => {
+      players: state.players.map((player) => {
         const shouldReveal = player.id === userId || state.roundStatus === RoundStatus.COMPLETED;
         return {
           ...player,
@@ -140,7 +140,7 @@ export class Impl implements Methods<InternalState> {
       roundStatus: state.roundStatus,
       dealer: state.players.length > 0 ? state.players[state.dealerIdx].id : undefined,
       activePlayer: state.players.length > 0 ? state.players[state.activePlayerIdx].id : undefined,
-      revealedCards: state.revealedCards?.map((card) => ({ rank: card[0], suit: card[1] })),
+      revealedCards: state.revealedCards.map((card) => ({ rank: card[0], suit: card[1] })),
     };
   }
 }
