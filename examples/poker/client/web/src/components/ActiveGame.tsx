@@ -7,6 +7,7 @@ import { useWindowSize } from "rooks";
 import { useHathoraContext } from "../context/GameContext";
 import { rankConversion } from "../constants/rankConversion";
 import { PlayerStatus, RoundStatus } from "../../../../api/types";
+import classNames from "classnames";
 
 const PlayerBoard = styled.div`
   height: 100vh;
@@ -112,11 +113,10 @@ export default function ActiveGame() {
   const { outerWidth } = useWindowSize();
   const isMobile = (outerWidth || 0) <= 486;
 
-  const currentUserIndex = playerState?.players.findIndex((p) => p.id === user?.id) ?? 0;
-  const currentUser = playerState?.players[currentUserIndex];
+  const currentUserIndex = playerState?.players.findIndex((p) => p.id === user?.id);
+  const currentUser = currentUserIndex !== undefined ? playerState?.players[currentUserIndex] : undefined;
 
-  const navigate = useNavigate();
-
+  console.log("currentUser", currentUser, playerState, user?.id);
   const players = [
     ...(playerState?.players.slice(currentUserIndex || 0, playerState.players.length) || []),
     ...(playerState?.players.slice(0, currentUserIndex) || []),
@@ -132,9 +132,9 @@ export default function ActiveGame() {
   const isRoundActive = playerState?.roundStatus === RoundStatus.ACTIVE;
   const maxChipsInPot =
     playerState?.players.reduce((max, player) => (player.chipsInPot > max ? player.chipsInPot : max), 0) || 0;
-  console.log(maxChipsInPot, currentUser);
-  const callAmount = maxChipsInPot - (currentUser?.chipsInPot ?? 0);
 
+  const callAmount = maxChipsInPot - (currentUser?.chipsInPot ?? 0);
+  const isCurrentPlayer = playerState?.activePlayer === currentUser?.id;
   return (
     <div className="bg-slate-100 flex flex-col py-5 items-center justify-center">
       <PlayerBoard>
@@ -247,51 +247,75 @@ export default function ActiveGame() {
               ))}
           </div>
         )}
-        <div className="flex flex-col w-full md:w-3/4 lg:w-1/2">
-          {playerState?.roundStatus === RoundStatus.ACTIVE && (
-            <>
-              <div className="flex md:flex-row flex-col w-full mt-3 px-5">
-                <input
-                  value={raiseAmount}
-                  onChange={(e) => setRaiseAmount(parseInt(e.target.value))}
-                  type="number"
-                  placeholder="Raise"
-                  className="w-full flex-1 px-5 shadow py-3 placeholder-gray-500 focus:ring-indigo-500 focus:border-indigo-500 focus:border-r-0 border-gray-300 rounded-l md:rounder-r-0 md:mb-0 mb-5 md:ml-1"
-                />
+        {currentUser && (
+          <div className="flex flex-col w-full md:w-3/4 lg:w-1/2">
+            {playerState?.roundStatus === RoundStatus.ACTIVE && (
+              <>
+                <div className="flex md:flex-row flex-col w-full mt-3 px-5">
+                  <input
+                    disabled={!isCurrentPlayer}
+                    value={raiseAmount}
+                    onChange={(e) => setRaiseAmount(parseInt(e.target.value))}
+                    type="number"
+                    placeholder="Raise"
+                    className="w-full flex-1 px-5 shadow py-3 placeholder-gray-500 focus:ring-indigo-500 focus:border-indigo-500 focus:border-r-0 border-gray-300 rounded md:mb-0 mb-5 md:mr-2"
+                  />
+                  <button
+                    disabled={!isCurrentPlayer}
+                    onClick={handleRaise}
+                    className={classNames(
+                      "block md:w-1/3 bg-green-600 border border-green-600 rounded lg:rounded-r lg:rounded-l-0 p-2 text-xl font-semibold text-white text-center shadow",
+                      {
+                        "opacity-50": !isCurrentPlayer,
+                        "hover:bg-green-900": isCurrentPlayer,
+                      }
+                    )}
+                  >
+                    Raise
+                  </button>
+                </div>
+                <div className="flex flex-col md:flex-row px-5 items-center mb-3 lg:w-50">
+                  <button
+                    disabled={!isCurrentPlayer}
+                    className={classNames(
+                      `mt-3 md:mr-1 w-full block bg-blue-800 border border-blue-800 rounded p-2 text-xl font-semibold text-white text-center h-fit`,
+                      {
+                        "opacity-50": !isCurrentPlayer,
+                        "hover:bg-blue-900": isCurrentPlayer,
+                      }
+                    )}
+                    onClick={call}
+                  >
+                    Call (${callAmount})
+                  </button>
+                  <button
+                    disabled={!isCurrentPlayer}
+                    onClick={fold}
+                    className={classNames(
+                      `mt-3 md:ml-1 w-full block bg-red-800 border border-red-800 rounded p-2 text-xl font-semibold text-white text-center h-fit`,
+                      {
+                        "opacity-50": !isCurrentPlayer,
+                        "hover:bg-red-900": isCurrentPlayer,
+                      }
+                    )}
+                  >
+                    Fold
+                  </button>
+                </div>
+              </>
+            )}
+            {isRoundOver && (
+              <div className="w-full px-5">
                 <button
-                  onClick={handleRaise}
-                  className="block md:w-1/3 bg-green-600 border border-green-600 rounded lg:rounded-r lg:rounded-l-0 p-2 text-xl font-semibold text-white text-center hover:bg-green-900 shadow"
+                  onClick={startRound}
+                  className="mt-3 md:mr-1 w-full block bg-orange-600 border border-orange-600 rounded p-2 text-xl font-semibold text-white text-center hover:bg-orange-900 h-fit"
                 >
-                  Raise
+                  Next Round
                 </button>
               </div>
-              <div className="flex flex-col md:flex-row px-5 items-center mb-3 lg:w-50">
-                <button
-                  onClick={call}
-                  className="mt-3 md:mr-1 w-full block bg-blue-800 border border-blue-800 rounded p-2 text-xl font-semibold text-white text-center hover:bg-blue-900 h-fit"
-                >
-                  Call (${callAmount})
-                </button>
-                <button
-                  onClick={fold}
-                  className="mt-3 md:ml-1 w-full block bg-red-800 border border-red-800 rounded p-2 text-xl font-semibold text-white text-center hover:bg-red-900 h-fit"
-                >
-                  Fold
-                </button>
-              </div>
-            </>
-          )}
-          {isRoundOver && (
-            <div className="w-full px-5">
-              <button
-                onClick={startRound}
-                className="mt-3 md:mr-1 w-full block bg-orange-600 border border-orange-600 rounded p-2 text-xl font-semibold text-white text-center hover:bg-orange-900 h-fit"
-              >
-                Next Round
-              </button>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </PlayerBoard>
     </div>
   );
