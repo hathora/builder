@@ -355,7 +355,7 @@ function {{@key}}Input({ value, update }: BaseProps<T.{{@key}}>) {
 }
 
 {{else if (eq type "union")}}
-function {{@key}}Input({ value, update }: BaseProps<{{@key}}>) {
+function {{@key}}Input({ value, update }: BaseProps<T.{{@key}}>) {
   return (
     <div>
       <Listbox
@@ -380,7 +380,7 @@ function {{@key}}Input({ value, update }: BaseProps<{{@key}}>) {
 
           <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
             <Listbox.Options className="absolute z-10 w-full max-w-xs py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-56 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-              { {{@key}}.values().map((val, i) => (
+              { T.{{@key}}.values().map((val, i) => (
                 <Listbox.Option
                   key={i}
                   value={val}
@@ -499,9 +499,11 @@ boolean
 false
 {{~else if (eq type "optional")}}
 undefined
-{{~else if (eq type "object")}}
-T.{{typeString}}.default()
 {{~else if (eq type "plugin")}}
 {{> renderDefault item}}
+{{~else if (eq type "object")}}
+T.{{typeString}}.default()
+{{~else if (eq type "union")}}
+T.{{typeString}}.default()
 {{/if}}
 {{/inline}}

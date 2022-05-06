@@ -32,6 +32,7 @@ Hathora comes with the following features out of the box:
   - Easy to use remote procedure calls (RPCs)
 - Declarative [API format](type-driven-development.md) with code generation of typesafe data models and clients
 - Development server with built in [prototyping interface](type-driven-development.md?id=prototype-ui)
+- Built in [matchmaking](state.md?id=lifecycle) service
 - Various built in [authentication providers](auth.md)
 - Automatic [persistence](state.md?id=persistence) of server state
 - Horizontally scalable [architecture](architecture.md)

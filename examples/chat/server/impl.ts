@@ -1,27 +1,19 @@
 import { Methods, Context } from "./.hathora/methods";
 import { Response } from "../api/base";
-import {
-  UserId,
-  RoomState,
-  IJoinRoomRequest,
-  ILeaveRoomRequest,
-  ISendPublicMessageRequest,
-  ISendPrivateMessageRequest,
-  IInitializeRequest,
-} from "../api/types";
+import { UserId, RoomState, ISendPublicMessageRequest, ISendPrivateMessageRequest } from "../api/types";
 
 export class Impl implements Methods<RoomState> {
-  initialize(ctx: Context, request: IInitializeRequest): RoomState {
+  initialize(): RoomState {
     return { users: [], messages: [] };
   }
-  joinRoom(state: RoomState, userId: string, ctx: Context, request: IJoinRoomRequest): Response {
+  joinRoom(state: RoomState, userId: string): Response {
     if (state.users.includes(userId)) {
       return Response.error("Already joined");
     }
     state.users.push(userId);
     return Response.ok();
   }
-  leaveRoom(state: RoomState, userId: string, ctx: Context, request: ILeaveRoomRequest): Response {
+  leaveRoom(state: RoomState, userId: string): Response {
     if (!state.users.includes(userId)) {
       return Response.error("Not joined");
     }

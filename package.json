@@ -1,6 +1,6 @@
 {
   "name": "hathora",
-  "version": "0.7.9",
+  "version": "0.7.13",
   "description": "Multiplayer game framework",
   "bin": "./cli.js",
   "files": [
@@ -16,8 +16,8 @@
     "@node-loader/core": "2.0.0",
     "chalk": "4.1.2",
     "dotenv": "16.0.0",
-    "esbuild": "0.14.36",
-    "fs-extra": "10.0.1",
+    "esbuild": "0.14.38",
+    "fs-extra": "10.1.0",
     "handlebars": "4.7.7",
     "hot-esm": "1.4.1",
     "js-yaml": "4.1.0",
@@ -25,20 +25,20 @@
     "ts-node": "10.7.0",
     "update-notifier": "5.1.0",
     "uuid": "8.3.2",
-    "vite": "2.9.5",
+    "vite": "2.9.8",
     "yargs": "17.4.1",
-    "zod": "3.14.4"
+    "zod": "3.15.1"
   },
   "devDependencies": {
     "@types/fs-extra": "9.0.13",
     "@types/js-yaml": "4.0.5",
-    "@types/node": "17.0.24",
+    "@types/node": "17.0.31",
     "@types/shelljs": "0.8.11",
     "@types/update-notifier": "5.1.0",
     "@types/uuid": "8.3.4",
     "@types/yargs": "17.0.10",
     "prettier": "2.6.2",
-    "typescript": "4.6.3"
+    "typescript": "4.6.4"
   },
   "engines": {
     "node": ">=16.12"
@@ -58,7 +58,7 @@
   "bugs": {
     "url": "https://github.com/hathora/hathora/issues"
   },
-  "homepage": "https://github.com/hathora/hathora#readme",
+  "homepage": "https://www.hathora.dev",
   "scripts": {
     "test": "./scripts/run-all-examples.sh",
     "test:one": "./scripts/test-example.sh",
