@@ -116,7 +116,6 @@ export default function ActiveGame() {
   const currentUserIndex = playerState?.players.findIndex((p) => p.id === user?.id);
   const currentUser = currentUserIndex !== undefined ? playerState?.players[currentUserIndex] : undefined;
 
-  console.log("currentUser", currentUser, playerState, user?.id);
   const players = [
     ...(playerState?.players.slice(currentUserIndex || 0, playerState.players.length) || []),
     ...(playerState?.players.slice(0, currentUserIndex) || []),
