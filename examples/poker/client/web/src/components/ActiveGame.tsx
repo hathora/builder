@@ -113,6 +113,8 @@ export default function ActiveGame() {
   const isMobile = (outerWidth || 0) <= 486;
 
   const currentUserIndex = playerState?.players.findIndex((p) => p.id === user?.id) ?? 0;
+  const currentUser = playerState?.players[currentUserIndex];
+
   const navigate = useNavigate();
 
   const players = [
@@ -127,19 +129,14 @@ export default function ActiveGame() {
   const circles = BuildCircle(players.length);
   const pot = playerState?.players?.reduce((accum, player) => accum + player.chipsInPot, 0) ?? 0;
   const isRoundOver = playerState?.roundStatus === RoundStatus.COMPLETED;
+  const isRoundActive = playerState?.roundStatus === RoundStatus.ACTIVE;
+  const maxChipsInPot =
+    playerState?.players.reduce((max, player) => (player.chipsInPot > max ? player.chipsInPot : max), 0) || 0;
+  console.log(maxChipsInPot, currentUser);
+  const callAmount = maxChipsInPot - (currentUser?.chipsInPot ?? 0);
 
   return (
     <div className="bg-slate-100 flex flex-col py-5 items-center justify-center">
-      {isRoundOver && (
-        <div className="w-full flex justify-end px-5">
-          <button
-            onClick={startRound}
-            className="block md:w-1/5 bg-orange-600 border border-orange-600 rounded lg:rounded-r lg:rounded-l-0 p-2 text-xl font-semibold text-white text-center hover:bg-orange-900 shadow"
-          >
-            Start Round
-          </button>
-        </div>
-      )}
       <PlayerBoard>
         <div className="w-full flex item-center justify-center">
           <PokerTable>
@@ -224,10 +221,8 @@ export default function ActiveGame() {
                       {player.id === user?.id ? "⭐ " : ""}
                       {getUserName(player.id)}
                     </div>
-                    {player.id === playerState?.activePlayer && player.status !== PlayerStatus.WON
-                      ? "(Current Player)"
-                      : ""}
-                    {player.status === PlayerStatus.WON ? "(Winner)" : ""}
+                    {player.id === playerState?.activePlayer && isRoundActive ? "(Current Player)" : ""}
+                    {player.status === PlayerStatus.WON && isRoundOver ? "(Winner)" : ""}
                   </div>
                   <div className="flex flex-col">
                     <div>
@@ -275,7 +270,7 @@ export default function ActiveGame() {
                   onClick={call}
                   className="mt-3 md:mr-1 w-full block bg-blue-800 border border-blue-800 rounded p-2 text-xl font-semibold text-white text-center hover:bg-blue-900 h-fit"
                 >
-                  Call
+                  Call (${callAmount})
                 </button>
                 <button
                   onClick={fold}
@@ -285,6 +280,16 @@ export default function ActiveGame() {
                 </button>
               </div>
             </>
+          )}
+          {isRoundOver && (
+            <div className="w-full px-5">
+              <button
+                onClick={startRound}
+                className="mt-3 md:mr-1 w-full block bg-orange-600 border border-orange-600 rounded p-2 text-xl font-semibold text-white text-center hover:bg-orange-900 h-fit"
+              >
+                Next Round
+              </button>
+            </div>
           )}
         </div>
       </PlayerBoard>
