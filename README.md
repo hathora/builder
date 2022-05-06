@@ -1,7 +1,18 @@
-# Hathora - multiplayer game framework
+<p align="center">
+  <a href="https://hathora.dev" target="_blank" rel="noopener noreferrer">
+    <img width="180" src="https://uploads-ssl.webflow.com/6257361ae96887d2c8c7faa8/62573911ac5f45a3c261baee_hathora%20desktop.png" alt="Hathora logo">
+  </a>
+</p>
+<br/>
+<p align="center">
+  <a href="https://npmjs.com/package/hathora"><img src="https://badge.fury.io/js/hathora.svg" alt="npm version"></a>
+  <a href="https://nodejs.org/en/about/releases/"><img src="https://img.shields.io/node/v/hathora.svg" alt="node compatibility"></a>
+  <a href="https://github.com/hathora/hathora/actions/workflows/build.yml"><img src="https://github.com/hathora/hathora/actions/workflows/build.yml/badge.svg" alt="build status"></a>
+  <a href="https://discord.gg/6nVdeCBffR"><img src="https://img.shields.io/badge/chat-discord-blue?logo=discord" alt="discord chat"></a>
+</p>
+<br/>
 
-[![build](https://github.com/hathora/hathora/actions/workflows/build.yml/badge.svg)](https://github.com/hathora/hathora/actions/workflows/build.yml)
-[![npm version](https://badge.fury.io/js/hathora.svg)](https://www.npmjs.com/package/hathora)
+# Hathora - multiplayer game framework
 
 ## Overview
 
