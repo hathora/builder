@@ -304,7 +304,7 @@ export default function ActiveGame() {
               </>
             )}
             {isRoundOver && (
-              <div className="w-full px-5">
+              <div className="w-full px-5 mb-10">
                 <button
                   onClick={startRound}
                   className="mt-3 md:mr-1 w-full block bg-orange-600 border border-orange-600 rounded p-2 text-xl font-semibold text-white text-center hover:bg-orange-900 h-fit"
