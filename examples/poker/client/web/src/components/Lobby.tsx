@@ -7,6 +7,7 @@ import classNames from "classnames";
 
 import { useHathoraContext } from "../context/GameContext";
 import { RoundStatus } from "../../../../api/types";
+import { useState } from "react";
 
 interface LobbyProps {
   status: RoundStatus;
@@ -14,9 +15,12 @@ interface LobbyProps {
 
 export default function Lobby({ status }: LobbyProps) {
   const { gameId } = useParams();
-  const navigate = useNavigate();
+  const [buyIn, setBuyIn] = useState(10);
+  const [totalChips, setTotalChips] = useState(1000);
+
   const { playerState, getUserName, startGame, endGame, user } = useHathoraContext();
 
+  const newGame = playerState?.roundStatus === RoundStatus.WAITING;
   const playerCount = playerState?.players?.length ?? 0;
   const disableStartGame = playerCount < 2;
   return (
@@ -40,12 +44,30 @@ export default function Lobby({ status }: LobbyProps) {
             </div>
           </div>
         ))}
+        <div className="flex w-full flex-col  mx-1">
+          <p className="text-xs text-gray-700 mb-1">Total Chips</p>
+          <input
+            value={totalChips}
+            onChange={(e) => setTotalChips(parseInt(e.target.value))}
+            type="number"
+            placeholder="Starting Chips"
+            className="px-2 shadow py-2 border placeholder-gray-500 focus:ring-indigo-500 focus:border-indigo-500 focus:border-r-0 border-gray-300 rounded mb-3"
+          />
+          <p className="text-xs text-gray-700 mb-1">Buy In</p>
+          <input
+            value={buyIn}
+            onChange={(e) => setBuyIn(parseInt(e.target.value))}
+            type="number"
+            placeholder="Buy In"
+            className="px-2 shadow py-2 border placeholder-gray-500 focus:ring-indigo-500 focus:border-indigo-500 focus:border-r-0 border-gray-300 rounded mb-3"
+          />
+        </div>
         <div className="flex-col">
           {disableStartGame && (
             <p className="text-xs text-gray-700">Two players are required before starting the game</p>
           )}
           <button
-            onClick={startGame}
+            onClick={() => startGame(totalChips, buyIn)}
             disabled={disableStartGame}
             className={classNames(
               `mt-3 w-full block bg-blue-800 border border-blue-800 rounded p-2 text-xl font-semibold text-white text-center hover:bg-blue-900 h-fit`,

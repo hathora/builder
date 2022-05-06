@@ -9,6 +9,7 @@ import PlayerList from "./PlayerList";
 export default function Lobby() {
   const { gameId } = useParams();
   const { startGame } = useHathoraContext();
+
   return (
     <>
       <div className="flex flex-col h-full justify-center items-center mb-2">

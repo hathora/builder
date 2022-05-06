@@ -13,7 +13,7 @@ interface GameContext {
   disconnect: () => void;
   createGame: () => Promise<string | undefined>;
   joinGame: (gameId: string) => Promise<void>;
-  startGame: () => Promise<void>;
+  startGame: (totalChips: number, buyIn: number) => Promise<void>;
   startRound: () => Promise<void>;
   playerState?: PlayerState;
   connectionError?: ConnectionFailure;
@@ -144,14 +144,17 @@ export default function HathoraContextProvider({ children }: HathoraContextProvi
     }
   }, [connection]);
 
-  const startGame = useCallback(async () => {
-    if (connection) {
-      if (playerState?.roundStatus === RoundStatus.WAITING) {
-        await handleResponse(connection.startGame({ startingChips: 1000, startingBlind: 10 }));
+  const startGame = useCallback(
+    async (startingChips = 1000, startingBlind = 10) => {
+      if (connection) {
+        if (playerState?.roundStatus === RoundStatus.WAITING) {
+          await handleResponse(connection.startGame({ startingChips, startingBlind }));
+        }
+        await startRound();
       }
-      await startRound();
-    }
-  }, [connection, playerState]);
+    },
+    [connection, playerState]
+  );
 
   const fold = useCallback(async () => {
     if (connection) {
