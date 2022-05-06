@@ -147,7 +147,7 @@ export default function HathoraContextProvider({ children }: HathoraContextProvi
   const startGame = useCallback(async () => {
     if (connection) {
       if (playerState?.roundStatus === RoundStatus.WAITING) {
-        await handleResponse(connection.startGame({ startingChips: 10000, startingBlind: 10 }));
+        await handleResponse(connection.startGame({ startingChips: 1000, startingBlind: 10 }));
       }
       await startRound();
     }
