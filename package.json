@@ -58,7 +58,7 @@
   "bugs": {
     "url": "https://github.com/hathora/hathora/issues"
   },
-  "homepage": "https://github.com/hathora/hathora#readme",
+  "homepage": "https://www.hathora.dev",
   "scripts": {
     "test": "./scripts/run-all-examples.sh",
     "test:one": "./scripts/test-example.sh",
