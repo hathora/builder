@@ -1,16 +1,6 @@
 import { Methods, Context } from "./.hathora/methods";
 import { Response } from "../api/base";
-import {
-  UserId,
-  GameStatus,
-  Color,
-  Piece,
-  PlayerState,
-  IJoinGameRequest,
-  IMovePieceRequest,
-  PieceType,
-  IInitializeRequest,
-} from "../api/types";
+import { UserId, GameStatus, Color, Piece, PlayerState, IMovePieceRequest, PieceType } from "../api/types";
 import { Chess, ChessInstance, Piece as ChessPiece, Square } from "chess.js";
 
 type InternalUser = {
@@ -24,10 +14,10 @@ type InternalState = {
 };
 
 export class Impl implements Methods<InternalState> {
-  initialize(ctx: Context, request: IInitializeRequest): InternalState {
+  initialize(): InternalState {
     return { chess: new Chess(), users: [], turnCount: 0 };
   }
-  joinGame(state: InternalState, userId: string, ctx: Context, request: IJoinGameRequest): Response {
+  joinGame(state: InternalState, userId: string): Response {
     if (state.users.length === 0) {
       state.users.push({ id: userId, color: Color.WHITE });
     } else if (state.users.length === 1) {
@@ -52,7 +42,7 @@ export class Impl implements Methods<InternalState> {
     state.turnCount++;
     return Response.ok();
   }
-  getUserState(state: InternalState, userId: UserId): PlayerState {
+  getUserState(state: InternalState): PlayerState {
     return {
       board: state.chess.board().flatMap((pieces, i) => {
         return pieces.flatMap((piece, j) => (piece === null ? [] : convertPiece(piece, i, j)));

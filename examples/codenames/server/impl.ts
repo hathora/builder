@@ -2,18 +2,14 @@ import { Methods, Context } from "./.hathora/methods";
 import { Response } from "../api/base";
 import {
   UserId,
-  IJoinGameRequest,
-  IStartGameRequest,
   IGiveClueRequest,
   ISelectCardRequest,
-  IEndTurnRequest,
   PlayerState,
   Card,
   Color,
   PlayerInfo,
   GameStatus,
   TurnInfo,
-  IInitializeRequest,
 } from "../api/types";
 import { wordList } from "./words";
 
@@ -25,10 +21,10 @@ type InternalState = {
 };
 
 export class Impl implements Methods<InternalState> {
-  initialize(ctx: Context, request: IInitializeRequest): InternalState {
+  initialize(): InternalState {
     return { players: [], currentTurn: Color.YELLOW, cards: [] };
   }
-  joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {
+  joinGame(state: InternalState, userId: UserId): Response {
     if (getGameStatus(state.cards) !== GameStatus.NOT_STARTED) {
       return Response.error("Game already started");
     }
@@ -38,7 +34,7 @@ export class Impl implements Methods<InternalState> {
     state.players.push(createPlayer(userId));
     return Response.ok();
   }
-  startGame(state: InternalState, userId: UserId, ctx: Context, request: IStartGameRequest): Response {
+  startGame(state: InternalState, userId: UserId, ctx: Context): Response {
     if (getGameStatus(state.cards) === GameStatus.IN_PROGRESS) {
       return Response.error("Game is in progress");
     }
@@ -115,7 +111,7 @@ export class Impl implements Methods<InternalState> {
     }
     return Response.ok();
   }
-  endTurn(state: InternalState, userId: UserId, ctx: Context, request: IEndTurnRequest): Response {
+  endTurn(state: InternalState, userId: UserId): Response {
     if (getGameStatus(state.cards) !== GameStatus.IN_PROGRESS) {
       return Response.error("Game is over");
     }

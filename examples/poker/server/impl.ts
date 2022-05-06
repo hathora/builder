@@ -1,18 +1,6 @@
 import { Methods, Context } from "./.hathora/methods";
 import { Response } from "../api/base";
-import {
-  UserId,
-  PlayerState,
-  PlayerStatus,
-  PlayerInfo,
-  IJoinGameRequest,
-  IStartGameRequest,
-  IStartRoundRequest,
-  IFoldRequest,
-  ICallRequest,
-  IRaiseRequest,
-  IInitializeRequest,
-} from "../api/types";
+import { UserId, PlayerState, PlayerStatus, PlayerInfo, IStartGameRequest, IRaiseRequest } from "../api/types";
 import { Card, Cards, createDeck, drawCardsFromDeck, findHighestHands } from "@pairjacks/poker-cards";
 
 type InternalPlayerInfo = Omit<PlayerInfo, "cards"> & { cards: Cards };
@@ -26,7 +14,7 @@ type InternalState = {
 };
 
 export class Impl implements Methods<InternalState> {
-  initialize(ctx: Context, request: IInitializeRequest): InternalState {
+  initialize(): InternalState {
     return {
       players: [],
       dealerIdx: 0,
@@ -36,7 +24,7 @@ export class Impl implements Methods<InternalState> {
       deck: [],
     };
   }
-  joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {
+  joinGame(state: InternalState, userId: UserId): Response {
     if (state.players.find((player) => player.id === userId) !== undefined) {
       return Response.error("Already joined");
     }
@@ -66,7 +54,7 @@ export class Impl implements Methods<InternalState> {
     state.players.forEach((player) => (player.chipCount = request.startingChips));
     return Response.ok();
   }
-  startRound(state: InternalState, userId: UserId, ctx: Context, request: IStartRoundRequest): Response {
+  startRound(state: InternalState, userId: UserId, ctx: Context): Response {
     if (state.smallBlindAmt === 0) {
       return Response.error("Game not started");
     }
@@ -87,7 +75,7 @@ export class Impl implements Methods<InternalState> {
     });
     return Response.ok();
   }
-  fold(state: InternalState, userId: UserId, ctx: Context, request: IFoldRequest): Response {
+  fold(state: InternalState, userId: UserId): Response {
     const player = state.players[state.activePlayerIdx];
     if (player.id !== userId || player.status !== PlayerStatus.WAITING) {
       return Response.error("Not your turn");
@@ -96,7 +84,7 @@ export class Impl implements Methods<InternalState> {
     advanceRound(state);
     return Response.ok();
   }
-  call(state: InternalState, userId: UserId, ctx: Context, request: ICallRequest): Response {
+  call(state: InternalState, userId: UserId): Response {
     const player = state.players[state.activePlayerIdx];
     if (player.id !== userId || player.status !== PlayerStatus.WAITING) {
       return Response.error("Not your turn");

@@ -3,7 +3,6 @@ import { Response } from "../api/base";
 import {
   UserId,
   PlayerState,
-  IJoinGameRequest,
   IStartGameRequest,
   IProposeQuestRequest,
   IVoteForProposalRequest,
@@ -13,7 +12,6 @@ import {
   GameStatus,
   QuestAttempt,
   QuestStatus,
-  IInitializeRequest,
 } from "../api/types";
 
 type InternalQuestAttempt = {
@@ -53,10 +51,10 @@ const QUEST_CONFIGURATIONS = new Map([
 ]);
 
 export class Impl implements Methods<InternalState> {
-  initialize(ctx: Context, request: IInitializeRequest): InternalState {
+  initialize(): InternalState {
     return { players: [], roles: new Map(), quests: [] };
   }
-  joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {
+  joinGame(state: InternalState, userId: UserId): Response {
     if (state.players.find((player) => player === userId) !== undefined) {
       return Response.error("Already joined");
     }

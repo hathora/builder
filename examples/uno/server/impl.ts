@@ -1,16 +1,6 @@
 import { Methods, Context } from "./.hathora/methods";
 import { Response } from "../api/base";
-import {
-  UserId,
-  PlayerState,
-  IJoinGameRequest,
-  IStartGameRequest,
-  IPlayCardRequest,
-  IDrawCardRequest,
-  Card,
-  Color,
-  IInitializeRequest,
-} from "../api/types";
+import { UserId, PlayerState, IPlayCardRequest, Card, Color } from "../api/types";
 
 type InternalState = {
   deck: Card[];
@@ -20,7 +10,7 @@ type InternalState = {
 };
 
 export class Impl implements Methods<InternalState> {
-  initialize(ctx: Context, request: IInitializeRequest): InternalState {
+  initialize(): InternalState {
     const deck = [];
     for (let i = 2; i <= 9; i++) {
       deck.push({ value: i, color: Color.RED });
@@ -30,7 +20,7 @@ export class Impl implements Methods<InternalState> {
     }
     return { deck, hands: [], turnIdx: 0 };
   }
-  joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {
+  joinGame(state: InternalState, userId: UserId): Response {
     if (state.hands.find((hand) => hand.userId === userId) !== undefined) {
       return Response.error("Already joined");
     }
@@ -40,7 +30,7 @@ export class Impl implements Methods<InternalState> {
     state.hands.push({ userId, cards: [] });
     return Response.ok();
   }
-  startGame(state: InternalState, userId: UserId, ctx: Context, request: IStartGameRequest): Response {
+  startGame(state: InternalState, userId: UserId, ctx: Context): Response {
     if (state.pile !== undefined) {
       return Response.error("Already started");
     }
@@ -82,7 +72,7 @@ export class Impl implements Methods<InternalState> {
     state.turnIdx = (state.turnIdx + 1) % state.hands.length;
     return Response.ok();
   }
-  drawCard(state: InternalState, userId: UserId, ctx: Context, request: IDrawCardRequest): Response {
+  drawCard(state: InternalState, userId: UserId): Response {
     if (state.pile === undefined) {
       return Response.error("Game not started");
     }

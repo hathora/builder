@@ -1,20 +1,12 @@
 import { Methods, Context } from "./.hathora/methods";
 import { Response } from "../api/base";
-import {
-  UserId,
-  PlayerState,
-  IJoinGameRequest,
-  IChooseGestureRequest,
-  INextRoundRequest,
-  Gesture,
-  IInitializeRequest,
-} from "../api/types";
+import { UserId, PlayerState, IChooseGestureRequest, Gesture } from "../api/types";
 
 export class Impl implements Methods<PlayerState> {
-  initialize(ctx: Context, request: IInitializeRequest): PlayerState {
+  initialize(): PlayerState {
     return { round: 0 };
   }
-  joinGame(state: PlayerState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {
+  joinGame(state: PlayerState, userId: UserId): Response {
     if (state.player1?.id === userId || state.player2?.id === userId) {
       return Response.error("Already joined");
     }
@@ -49,7 +41,7 @@ export class Impl implements Methods<PlayerState> {
     }
     return Response.ok();
   }
-  nextRound(state: PlayerState, userId: UserId, ctx: Context, request: INextRoundRequest): Response {
+  nextRound(state: PlayerState, userId: UserId): Response {
     if (state.player1 === undefined || state.player2 === undefined) {
       return Response.error("Game not started");
     }
