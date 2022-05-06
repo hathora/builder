@@ -1,4 +1,3 @@
-import { useHathoraContext } from "../context/GameContext";
 import CopyToClipboard from "react-copy-to-clipboard";
 import QRCode from "react-qr-code";
 import { ClipboardCopyIcon } from "@heroicons/react/outline";
@@ -6,6 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import classNames from "classnames";
 
+import { useHathoraContext } from "../context/GameContext";
 import { RoundStatus } from "../../../../api/types";
 
 interface LobbyProps {

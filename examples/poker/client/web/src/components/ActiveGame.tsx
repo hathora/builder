@@ -1,12 +1,12 @@
-import { useHathoraContext } from "../context/GameContext";
 import "playing-card";
-
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { useState } from "react";
 import { useWindowSize } from "rooks";
+
+import { useHathoraContext } from "../context/GameContext";
 import { rankConversion } from "../constants/rankConversion";
 import { PlayerStatus, RoundStatus } from "../../../../api/types";
-import { useNavigate } from "react-router-dom";
 
 const PlayerBoard = styled.div`
   height: 100vh;
@@ -252,49 +252,51 @@ export default function ActiveGame() {
               ))}
           </div>
         )}
-        {playerState?.roundStatus === RoundStatus.ACTIVE && (
-          <>
-            <div className="flex md:flex-row flex-col w-full mt-3 px-5">
-              <input
-                value={raiseAmount}
-                onChange={(e) => setRaiseAmount(parseInt(e.target.value))}
-                type="number"
-                placeholder="Raise"
-                className="w-full flex-1 px-5 shadow py-3 placeholder-gray-500 focus:ring-indigo-500 focus:border-indigo-500 focus:border-r-0 border-gray-300 rounded-l md:rounder-r-0 md:mb-0 mb-5 md:ml-1"
-              />
-              <button
-                onClick={handleRaise}
-                className="block md:w-1/3 bg-green-600 border border-green-600 rounded lg:rounded-r lg:rounded-l-0 p-2 text-xl font-semibold text-white text-center hover:bg-green-900 shadow"
-              >
-                Raise
-              </button>
-            </div>
-            <div className="flex w-full flex-col md:flex-row px-5 items-center mb-3">
-              <button
-                onClick={call}
-                className="mt-3 md:mr-1 w-full block bg-blue-800 border border-blue-800 rounded p-2 text-xl font-semibold text-white text-center hover:bg-blue-900 h-fit"
-              >
-                Call
-              </button>
-              <button
-                onClick={fold}
-                className="mt-3 md:ml-1 w-full block bg-red-800 border border-red-800 rounded p-2 text-xl font-semibold text-white text-center hover:bg-red-900 h-fit"
-              >
-                Fold
-              </button>
-            </div>
-          </>
-        )}
-        <div className={"w-full px-5 pb-3"}>
-          <button
-            onClick={() => {
-              endGame();
-              navigate("/");
-            }}
-            className="block w-full bg-red-600 border border-red-600 rounded lg:rounded-r lg:rounded-l-0 p-2 text-xl font-semibold text-white text-center hover:bg-red-900 shadow"
-          >
-            Leave Game
-          </button>
+        <div className="flex flex-col w-full md:w-3/4 lg:w-1/2">
+          {playerState?.roundStatus === RoundStatus.ACTIVE && (
+            <>
+              <div className="flex md:flex-row flex-col w-full mt-3 px-5">
+                <input
+                  value={raiseAmount}
+                  onChange={(e) => setRaiseAmount(parseInt(e.target.value))}
+                  type="number"
+                  placeholder="Raise"
+                  className="w-full flex-1 px-5 shadow py-3 placeholder-gray-500 focus:ring-indigo-500 focus:border-indigo-500 focus:border-r-0 border-gray-300 rounded-l md:rounder-r-0 md:mb-0 mb-5 md:ml-1"
+                />
+                <button
+                  onClick={handleRaise}
+                  className="block md:w-1/3 bg-green-600 border border-green-600 rounded lg:rounded-r lg:rounded-l-0 p-2 text-xl font-semibold text-white text-center hover:bg-green-900 shadow"
+                >
+                  Raise
+                </button>
+              </div>
+              <div className="flex flex-col md:flex-row px-5 items-center mb-3 lg:w-50">
+                <button
+                  onClick={call}
+                  className="mt-3 md:mr-1 w-full block bg-blue-800 border border-blue-800 rounded p-2 text-xl font-semibold text-white text-center hover:bg-blue-900 h-fit"
+                >
+                  Call
+                </button>
+                <button
+                  onClick={fold}
+                  className="mt-3 md:ml-1 w-full block bg-red-800 border border-red-800 rounded p-2 text-xl font-semibold text-white text-center hover:bg-red-900 h-fit"
+                >
+                  Fold
+                </button>
+              </div>
+            </>
+          )}
+          <div className={"w-full px-5 pb-3 md:w-50"}>
+            <button
+              onClick={() => {
+                endGame();
+                navigate("/");
+              }}
+              className="block w-full bg-red-600 border border-red-600 rounded lg:rounded-r lg:rounded-l-0 p-2 text-xl font-semibold text-white text-center hover:bg-red-900 shadow"
+            >
+              Leave Game
+            </button>
+          </div>
         </div>
       </PlayerBoard>
     </div>

@@ -1,5 +1,6 @@
-import { useHathoraContext } from "../context/GameContext";
 import { useEffect } from "react";
+
+import { useHathoraContext } from "../context/GameContext";
 
 export default function useAutoJoinGame(gameId?: string) {
   const { disconnect, joinGame, playerState, token, user, login } = useHathoraContext();

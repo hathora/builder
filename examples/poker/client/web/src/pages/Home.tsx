@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import classNames from "classnames";
+
 import { useHathoraContext } from "../context/GameContext";
 import Logo from "../assets/hathora-hammer-logo-light.png";
 
@@ -28,10 +30,16 @@ export default function Home() {
               className="w-full flex-1 px-5 shadow py-3 border placeholder-gray-500 focus:ring-indigo-500 focus:border-indigo-500 focus:border-r-0 border-gray-300 rounded-l md:rounder-r-0 md:mb-0 mb-5"
             />
             <button
+              disabled={!gameId}
               onClick={() => {
-                navigate(`/game/${gameId}`);
+                gameId && navigate(`/game/${gameId}`);
               }}
-              className="block bg-blue-800 border border-blue-800 rounded-r p-2 text-xl font-semibold text-white text-center hover:bg-blue-900 shadow"
+              className={classNames(
+                `block bg-blue-800 border border-blue-800 rounded-r p-2 text-xl font-semibold text-white text-center hover:bg-blue-900 shadow`,
+                {
+                  "opacity-50": !gameId,
+                }
+              )}
             >
               Join Existing Game
             </button>
