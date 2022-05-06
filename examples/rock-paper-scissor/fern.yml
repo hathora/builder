@@ -1,0 +1,17 @@
+ids:
+  UserId
+
+types:
+  Gesture:
+    enum:
+      - ROCK
+      - PAPER
+      - SCISSOR
+  PlayerInfo:
+    id: UserId
+    score: integer
+    gesture: optional<Gesture>
+  PlayerState:
+    round: integer
+    player1: optional<PlayerInfo>
+    player2: optional<PlayerInfo>
