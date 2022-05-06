@@ -286,17 +286,6 @@ export default function ActiveGame() {
               </div>
             </>
           )}
-          <div className={"w-full px-5 pb-3 md:w-50"}>
-            <button
-              onClick={() => {
-                endGame();
-                navigate("/");
-              }}
-              className="block w-full bg-red-600 border border-red-600 rounded lg:rounded-r lg:rounded-l-0 p-2 text-xl font-semibold text-white text-center hover:bg-red-900 shadow"
-            >
-              Leave Game
-            </button>
-          </div>
         </div>
       </PlayerBoard>
     </div>

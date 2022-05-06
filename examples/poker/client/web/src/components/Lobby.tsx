@@ -56,15 +56,6 @@ export default function Lobby({ status }: LobbyProps) {
           >
             {status === RoundStatus.WAITING ? "Start Game" : "Start Round"}
           </button>
-          <button
-            onClick={() => {
-              endGame();
-              navigate("/");
-            }}
-            className="mt-3 w-full block bg-red-600 border border-red-600 rounded p-2 text-xl font-semibold text-white text-center hover:bg-blue-800 h-fit"
-          >
-            Leave Game
-          </button>
         </div>
       </div>
     </div>
