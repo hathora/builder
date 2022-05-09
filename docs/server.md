@@ -54,6 +54,18 @@ Methods receive four arguments as input:
 
 Based on these inputs, the method can validate whether the action is permitted, returning an error response if not. Otherwise, the method can mutate `state` as desired and return a success response. Any mutations that occur will ultimately be reflected in the client state via the `getUserState` function.
 
+### Context API
+
+```ts
+ctx.chance // a ChanceJs object for random-based operations
+
+ctx.time // the current time (ms since epoch)
+
+ctx.sendEvent(event: string, to: UserId) // send an event to a particular user
+
+ctx.broadcastEvent(event: string) // broadcast an event to all connected users
+```
+
 ## getUserState
 
 The `getUserState` function converts the internal state to the user state based on the userId.
