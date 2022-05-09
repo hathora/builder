@@ -5,6 +5,7 @@
     "strict": true,
     "target": "esnext",
     "moduleResolution": "node",
-    "isolatedModules": true
+    "isolatedModules": true,
+    "resolveJsonModule": true
   }
 }
