@@ -135,7 +135,7 @@ function build() {
   });
 }
 
-updateNotifier({ pkg: require("./package.json") }).notify({ defer: false });
+updateNotifier({ pkg: require("./package.json") }).notify({ defer: false, isGlobal: true });
 
 const rootDir = getProjectRoot(process.cwd());
 const clientDir = join(rootDir, "client");
