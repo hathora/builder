@@ -15,7 +15,6 @@
     "react": "^18.0.0",
     "react-copy-to-clipboard": "^5.1.0",
     "react-dom": "^18.0.0",
-    "react-pokercards": "^1.0.1",
     "react-qr-code": "^2.0.7",
     "react-router-dom": "^6.3.0",
     "react-toastify": "^8.2.0",
