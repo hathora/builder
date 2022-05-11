@@ -116,15 +116,19 @@ export default function ActiveGame() {
   const callAmount = maxChipsInPot - (currentUser?.chipsInPot ?? 0);
   const isCurrentPlayer = playerState?.activePlayer === currentUser?.id;
   return (
-    <div className="bg-slate-100 flex flex-col py-5 items-center justify-center">
+    <div className="flex flex-col items-center justify-center py-5 bg-slate-100">
       <PlayerBoard>
-        <div className="w-full flex item-center justify-center">
+        <div className="flex justify-center w-full item-center">
           <PokerTable>
-            <PotWrapper className="justify-center items-center text-white font-semibold">
+            <PotWrapper className="items-center justify-center font-semibold text-white">
               Current Pot: ${pot}
             </PotWrapper>
             {playerState?.revealedCards.map((card, index) => (
-                <CardComponent size={isMobile ? 40 : 80} key={index} card={`${rankConversion[card.rank]}${card.suit[0]}`}/>
+              <CardComponent
+                size={isMobile ? 40 : 80}
+                key={index}
+                card={`${rankConversion[card.rank]}${card.suit[0]}`}
+              />
             ))}
             {!isMobile && (
               <div className="position-hold">
@@ -170,7 +174,7 @@ export default function ActiveGame() {
                       </div>
                       <div className="flex">
                         {player?.cards?.map((card, index) => (
-                            <CardComponent key={index} card={`${rankConversion[card.rank]}${card.suit[0]}`}/>
+                          <CardComponent key={index} card={`${rankConversion[card.rank]}${card.suit[0]}`} />
                         ))}
                       </div>
                     </OpponentWrapper>
@@ -181,7 +185,7 @@ export default function ActiveGame() {
           </PokerTable>
         </div>
         {isMobile && (
-          <div className="flex w-full px-5 flex-col">
+          <div className="flex flex-col w-full px-5">
             {players
               .filter((player) => player)
               .map((player) => (
@@ -208,7 +212,7 @@ export default function ActiveGame() {
                   </div>
                   <div className="flex">
                     {player?.cards?.map((card, index) => (
-                      <CardComponent key={index} card={`${rankConversion[card.rank]}${card.suit[0]}`}/>
+                      <CardComponent key={index} card={`${rankConversion[card.rank]}${card.suit[0]}`} />
                     ))}
                   </div>
                 </div>
@@ -216,18 +220,18 @@ export default function ActiveGame() {
           </div>
         )}
         {currentUser && (
-          <div className={`flex flex-col w-full md:w-3/4 lg:w-1/2 ${isRoundOver ? 'md:mt-32' : ''}`}>
+          <div className={`flex flex-col w-full md:w-3/4 lg:w-1/2 ${isRoundOver ? "md:mt-32" : ""}`}>
             {playerState?.roundStatus === RoundStatus.ACTIVE && (
               <>
-                <div className="flex md:flex-row flex-col w-full mt-3 px-5">
-                  <div className="md:hidden font-semibold mb-2">Raise</div>
+                <div className="flex flex-col w-full px-5 mt-3 md:flex-row">
+                  <div className="mb-2 font-semibold md:hidden">Raise</div>
                   <input
                     disabled={!isCurrentPlayer}
                     value={raiseAmount}
                     onChange={(e) => setRaiseAmount(parseInt(e.target.value))}
                     type="number"
                     placeholder="Raise"
-                    className="w-full flex-1 px-5 shadow py-3 placeholder-gray-500 focus:ring-indigo-500 focus:border-indigo-500 focus:border-r-0 border-gray-300 rounded md:mb-0 mb-5 md:mr-2"
+                    className="flex-1 w-full px-5 py-3 mb-5 placeholder-gray-500 border-gray-300 rounded shadow focus:ring-indigo-500 focus:border-indigo-500 focus:border-r-0 md:mb-0 md:mr-2"
                   />
                   <button
                     disabled={!isCurrentPlayer}
@@ -243,7 +247,7 @@ export default function ActiveGame() {
                     Raise
                   </button>
                 </div>
-                <div className="flex flex-col md:flex-row px-5 items-center mb-3 lg:w-50">
+                <div className="flex flex-col items-center px-5 mb-3 md:flex-row lg:w-50">
                   <button
                     disabled={!isCurrentPlayer}
                     className={classNames(
@@ -277,7 +281,7 @@ export default function ActiveGame() {
               <div className="w-full px-5 mb-10">
                 <button
                   onClick={startRound}
-                  className="mt-3 md:mr-1 w-full block bg-orange-600 border border-orange-600 rounded p-2 text-xl font-semibold text-white text-center hover:bg-orange-900 h-fit"
+                  className="block w-full p-2 mt-3 text-xl font-semibold text-center text-white bg-orange-600 border border-orange-600 rounded md:mr-1 hover:bg-orange-900 h-fit"
                 >
                   Next Round
                 </button>
