@@ -247,10 +247,11 @@ export default function ActiveGame() {
           </div>
         )}
         {currentUser && (
-          <div className="flex flex-col w-full md:w-3/4 lg:w-1/2">
+          <div className={`flex flex-col w-full md:w-3/4 lg:w-1/2 ${isRoundOver ? 'md:mt-32' : ''}`}>
             {playerState?.roundStatus === RoundStatus.ACTIVE && (
               <>
                 <div className="flex md:flex-row flex-col w-full mt-3 px-5">
+                  <div className="md:hidden font-semibold mb-2">Raise</div>
                   <input
                     disabled={!isCurrentPlayer}
                     value={raiseAmount}

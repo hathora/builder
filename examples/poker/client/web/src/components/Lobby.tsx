@@ -64,7 +64,7 @@ export default function Lobby({ status }: LobbyProps) {
         </div>
         <div className="flex-col">
           {disableStartGame && (
-            <p className="text-xs text-gray-700">Two players are required before starting the game</p>
+            <p className="text-xs text-gray-700">At least two players are required before starting the game</p>
           )}
           <button
             onClick={() => startGame(totalChips, buyIn)}
