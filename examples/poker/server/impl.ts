@@ -1,6 +1,17 @@
-import { Methods, Context } from "./.hathora/methods";
+import { Context, Methods } from "./.hathora/methods";
 import { Response } from "../api/base";
-import { UserId, PlayerState, PlayerStatus, PlayerInfo, IStartGameRequest, IRaiseRequest } from "../api/types";
+import {
+  ICallRequest,
+  IFoldRequest,
+  IRaiseRequest,
+  IStartGameRequest,
+  IStartRoundRequest,
+  PlayerInfo,
+  PlayerState,
+  PlayerStatus,
+  RoundStatus,
+  UserId,
+} from "../api/types";
 import { Card, Cards, createDeck, drawCardsFromDeck, findHighestHands } from "@pairjacks/poker-cards";
 
 type InternalPlayerInfo = Omit<PlayerInfo, "cards"> & { cards: Cards };
@@ -9,6 +20,7 @@ type InternalState = {
   dealerIdx: number;
   activePlayerIdx: number;
   revealedCards: Cards;
+  roundStatus: RoundStatus;
   smallBlindAmt: number;
   deck: Cards;
 };
@@ -21,6 +33,7 @@ export class Impl implements Methods<InternalState> {
       activePlayerIdx: 0,
       revealedCards: [],
       smallBlindAmt: 0,
+      roundStatus: RoundStatus.WAITING,
       deck: [],
     };
   }
@@ -52,6 +65,7 @@ export class Impl implements Methods<InternalState> {
     }
     state.smallBlindAmt = request.startingBlind;
     state.players.forEach((player) => (player.chipCount = request.startingChips));
+
     return Response.ok();
   }
   startRound(state: InternalState, userId: UserId, ctx: Context): Response {
@@ -64,6 +78,7 @@ export class Impl implements Methods<InternalState> {
     state.dealerIdx = (state.dealerIdx + 1) % state.players.length;
     state.revealedCards = [];
     state.deck = ctx.chance.shuffle(createDeck() as Card[]);
+    state.roundStatus = RoundStatus.ACTIVE;
     makeBet(state.players[(state.dealerIdx + 1) % state.players.length], state.smallBlindAmt);
     makeBet(state.players[(state.dealerIdx + 2) % state.players.length], state.smallBlindAmt * 2);
     state.activePlayerIdx = (state.dealerIdx + 3) % state.players.length;
@@ -112,17 +127,15 @@ export class Impl implements Methods<InternalState> {
     return Response.ok();
   }
   getUserState(state: InternalState, userId: UserId): PlayerState {
-    const showdown =
-      filterPlayers(state.players, PlayerStatus.WAITING).length === 0 &&
-      filterPlayers(state.players, PlayerStatus.PLAYED).length > 1;
     return {
       players: state.players.map((player) => {
-        const shouldReveal = player.id === userId || (showdown && player.status === PlayerStatus.PLAYED);
+        const shouldReveal = player.id === userId || state.roundStatus === RoundStatus.COMPLETED;
         return {
           ...player,
           cards: shouldReveal ? player.cards.map((card) => ({ rank: card[0], suit: card[1] })) : [],
         };
       }),
+      roundStatus: state.roundStatus,
       dealer: state.players.length > 0 ? state.players[state.dealerIdx].id : undefined,
       activePlayer: state.players.length > 0 ? state.players[state.activePlayerIdx].id : undefined,
       revealedCards: state.revealedCards.map((card) => ({ rank: card[0], suit: card[1] })),
@@ -155,6 +168,7 @@ function advanceRound(state: InternalState) {
   // if there is only 1 player left, they are the winner
   if (activePlayers.length === 1) {
     distributeWinnings(state.players, [activePlayers[0]]);
+    state.roundStatus = RoundStatus.COMPLETED;
     return;
   }
   // advance to the next waiting player, if any
@@ -170,10 +184,12 @@ function advanceRound(state: InternalState) {
     const highestHands = findHighestHands(
       activePlayers.map((player) => ({ pocketCards: player.cards, communityCards: state.revealedCards }))
     );
+
     distributeWinnings(
       state.players,
       highestHands.map(({ candidateIndex }) => activePlayers[candidateIndex])
     );
+    state.roundStatus = RoundStatus.COMPLETED;
     return;
   }
   // if round is still in progress, reveal the next cards and reset the active player
@@ -194,8 +210,17 @@ function advanceRound(state: InternalState) {
 function distributeWinnings(players: InternalPlayerInfo[], winners: InternalPlayerInfo[]) {
   // TODO: handle case where pot isn't evenly divisible by the number of winners
   const pot = players.reduce((sum, player) => sum + player.chipsInPot, 0);
-  winners.forEach((winner) => (winner.chipCount += Math.floor(pot / winners.length)));
-  players.forEach((player) => (player.chipsInPot = 0));
+  winners.forEach((winner) => {
+    winner.chipCount += Math.floor(pot / winners.length);
+    winner.status = PlayerStatus.WON;
+  });
+
+  players.forEach((player) => {
+    if (!winners.find((winner) => winner.id === player.id)) {
+      player.status = PlayerStatus.LOST;
+    }
+    player.chipsInPot = 0;
+  });
 }
 
 function filterPlayers(players: InternalPlayerInfo[], status: PlayerStatus, eq: boolean = true) {

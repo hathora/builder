@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { useHathoraContext } from "../context/GameContext";
 import WinModal from "../components/WinModal";
 import Lobby from "../components/Lobby";
@@ -45,7 +45,9 @@ export default function Game() {
       <div className="flex flex-col h-full overflow-hidden ">
         <div className="flex flex-row bg-slate-200 p-2 md:p-5">
           <div className="flex flex-row justify-center items-center">
-            <img src={Logo} style={{ height: 50 }} />
+            <Link to={"/"}>
+              <img src={Logo} style={{ height: 50 }} />
+            </Link>
             <div>
               Powered By{" "}
               <strong>
