@@ -7,7 +7,7 @@ export const rankConversion: Record<string, string> = {
   Seven: "7",
   Eight: "8",
   Nine: "9",
-  Ten: "10",
+  Ten: "T",
   Jack: "J",
   Queen: "Q",
   King: "K",

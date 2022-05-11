@@ -1,13 +1,12 @@
-import "playing-card";
-import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { useState } from "react";
 import { useWindowSize } from "rooks";
+import classNames from "classnames";
 
 import { useHathoraContext } from "../context/GameContext";
+import { CardComponent } from "./CardComponent";
 import { rankConversion } from "../constants/rankConversion";
 import { PlayerStatus, RoundStatus } from "../../../../api/types";
-import classNames from "classnames";
 
 const PlayerBoard = styled.div`
   height: 100vh;
@@ -15,15 +14,6 @@ const PlayerBoard = styled.div`
   display: flex;
   align-items: center;
   flex-direction: column;
-
-  playing-card {
-    --card-size: 4rem;
-    margin: 0.5rem;
-
-    @media (max-width: 486px) {
-      --card-size: 3rem;
-    }
-  }
 `;
 
 const PokerTable = styled.div`
@@ -53,15 +43,6 @@ const PokerTable = styled.div`
     position: absolute;
     left: 200px; /* calculate circle width / 2 - .square width / 2 */
     top: 250px;
-  }
-
-  playing-card {
-    --card-size: 2rem;
-    margin: 0.5rem;
-
-    @media (max-width: 486px) {
-      --card-size: 1.2rem;
-    }
   }
 `;
 
@@ -143,7 +124,7 @@ export default function ActiveGame() {
               Current Pot: ${pot}
             </PotWrapper>
             {playerState?.revealedCards.map((card, index) => (
-              <playing-card key={index} rank={rankConversion[card.rank]} suit={card.suit[0]}></playing-card>
+                <CardComponent size={isMobile ? 40 : 80} key={index} card={`${rankConversion[card.rank]}${card.suit[0]}`}/>
             ))}
             {!isMobile && (
               <div className="position-hold">
@@ -189,13 +170,7 @@ export default function ActiveGame() {
                       </div>
                       <div className="flex">
                         {player?.cards?.map((card, index) => (
-                          <playing-card
-                            // @ts-ignore need to type the global declaration
-                            style={{ "--card-size": "2rem" }}
-                            key={index}
-                            rank={rankConversion[card.rank]}
-                            suit={card.suit[0]}
-                          ></playing-card>
+                            <CardComponent key={index} card={`${rankConversion[card.rank]}${card.suit[0]}`}/>
                         ))}
                       </div>
                     </OpponentWrapper>
@@ -233,13 +208,7 @@ export default function ActiveGame() {
                   </div>
                   <div className="flex">
                     {player?.cards?.map((card, index) => (
-                      <playing-card
-                        // @ts-ignore need to type the global declaration
-                        style={{ "--card-size": "2rem" }}
-                        key={index}
-                        rank={rankConversion[card.rank]}
-                        suit={card.suit[0]}
-                      ></playing-card>
+                      <CardComponent key={index} card={`${rankConversion[card.rank]}${card.suit[0]}`}/>
                     ))}
                   </div>
                 </div>

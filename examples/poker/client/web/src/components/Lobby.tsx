@@ -1,7 +1,7 @@
 import CopyToClipboard from "react-copy-to-clipboard";
 import QRCode from "react-qr-code";
 import { ClipboardCopyIcon } from "@heroicons/react/outline";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import classNames from "classnames";
 
@@ -18,9 +18,8 @@ export default function Lobby({ status }: LobbyProps) {
   const [buyIn, setBuyIn] = useState(10);
   const [totalChips, setTotalChips] = useState(1000);
 
-  const { playerState, getUserName, startGame, endGame, user } = useHathoraContext();
+  const { playerState, getUserName, startGame, user } = useHathoraContext();
 
-  const newGame = playerState?.roundStatus === RoundStatus.WAITING;
   const playerCount = playerState?.players?.length ?? 0;
   const disableStartGame = playerCount < 2;
   return (
