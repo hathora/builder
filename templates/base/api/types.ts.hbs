@@ -280,7 +280,7 @@ validatePrimitive(typeof {{#if arg}}obj.{{arg}}{{else}}x{{/if}} === "string", `I
 {{~else if (eq type "enum")}}
 validatePrimitive({{#if arg}}obj.{{arg}}{{else}}x{{/if}} in {{typeString}}, `Invalid {{typeString}}: ${ {{#if arg}}obj.{{arg}}{{else}}x{{/if}} }`)
 {{~else if (eq type "boolean")}}
-validatePrimitive(typeof {{#if arg}}obj.{{arg}}{{else}}x{{/if}} === "string", `Invalid {{typeString}}: ${ {{#if arg}}obj.{{arg}}{{else}}x{{/if}} }`)
+validatePrimitive(typeof {{#if arg}}obj.{{arg}}{{else}}x{{/if}} === "boolean", `Invalid {{typeString}}: ${ {{#if arg}}obj.{{arg}}{{else}}x{{/if}} }`)
 {{~else if (eq type "optional")}}
 validateOptional({{#if arg}}obj.{{arg}}{{else}}x{{/if}}, (x) => {{> renderValidate item parent=parent inner=arg}})
 {{~else if (eq type "object")}}
