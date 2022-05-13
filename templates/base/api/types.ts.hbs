@@ -379,14 +379,9 @@ parseBoolean(sb)
 export function encodeStateSnapshot(x: {{userState}}) {
   const buf = new _Writer();
   buf.writeUInt8(0);
-  try {
-    {{#with (lookup types userState)}}
-    {{> renderEncodeArg}};
-    {{/with}}
-  } catch (e) {
-    console.error("Invalid user state", x);
-    throw e;
-  }
+  {{#with (lookup types userState)}}
+  {{> renderEncodeArg}};
+  {{/with}}
   return buf.toBuffer();
 }
 export function encodeStateUpdate(
@@ -409,6 +404,11 @@ export function encodeStateUpdate(
   if (x !== undefined) {
     {{#with (lookup types userState)}}{{> renderEncodeDiffArg}};{{/with}}
   }
+  return buf.toBuffer();
+}
+export function encodeStateError() {
+  const buf = new _Writer();
+  buf.writeUInt8(2);
   return buf.toBuffer();
 }
 export function decodeStateUpdate(buf: ArrayBufferView | _Reader): {

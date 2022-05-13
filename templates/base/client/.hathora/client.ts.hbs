@@ -137,6 +137,8 @@ export class HathoraConnection {
             delete this.callbacks[msgId];
           }
         });
+      } else if (type === 2) {
+        this.disconnect(4004);
       } else {
         console.error("Unknown message type", type);
       }
@@ -149,9 +151,11 @@ export class HathoraConnection {
   }
 
   {{/each}}
-  public disconnect(): void {
-    this.socket.onclose = () => {};
-    this.socket.close();
+  public disconnect(code?: number): void {
+    if (code === undefined) {
+      this.socket.onclose = () => {};
+    }
+    this.socket.close(code);
   }
 
   private callMethod(method: Method, request: Uint8Array): Promise<Response> {
