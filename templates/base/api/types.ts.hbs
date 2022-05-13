@@ -197,6 +197,20 @@ export const {{@key}} = {
   values() {
     return [{{#each options}}"{{@key}}"{{#unless @last}}, {{/unless}}{{/each}}];
   },
+  validate(obj: {{@key}}) {
+    {{#each options}}
+    {{#unless @first}}else {{/unless}}if (obj.type === "{{@key}}") {
+      const validationErrors = {{> renderValidate arg="val"}};
+      if (validationErrors.length > 0) {
+        return validationErrors.concat("Invalid union: {{@../key}}");
+      }
+      return validationErrors;
+    }
+    {{/each}}
+    else {
+      return [`Invalid {{@key}} union: ${obj}`];
+    }
+  },
   encode(obj: {{@key}}, writer?: _Writer) {
     const buf = writer ?? new _Writer();
     {{#each options}}
@@ -282,13 +296,13 @@ validatePrimitive({{#if arg}}obj.{{arg}}{{else}}x{{/if}} in {{typeString}}, `Inv
 {{~else if (eq type "boolean")}}
 validatePrimitive(typeof {{#if arg}}obj.{{arg}}{{else}}x{{/if}} === "boolean", `Invalid {{typeString}}: ${ {{#if arg}}obj.{{arg}}{{else}}x{{/if}} }`)
 {{~else if (eq type "optional")}}
-validateOptional({{#if arg}}obj.{{arg}}{{else}}x{{/if}}, (x) => {{> renderValidate item parent=parent inner=arg}})
+validateOptional({{#if arg}}obj.{{arg}}{{else}}x{{/if}}, (x) => {{> renderValidate item}})
 {{~else if (eq type "object")}}
 {{typeString}}.validate({{#if arg}}obj.{{arg}}{{else}}x{{/if}})
 {{~else if (eq type "union")}}
-TODO
+{{typeString}}.validate({{#if arg}}obj.{{arg}}{{else}}x{{/if}})
 {{~else if (eq type "plugin")}}
-{{> renderValidate item parent=parent arg=arg}}
+{{> renderValidate item arg=arg}}
 {{~/if}}
 {{/inline}}
 {{#*inline "renderEncodeArg"}}
@@ -451,7 +465,7 @@ function validateArray<T>(arr: T[], innerValidate: (x: T) => string[]) {
   for (let i = 0; i < arr.length; i++) {
     const validationErrors = innerValidate(arr[i]);
     if (validationErrors.length > 0) {
-      return validationErrors.concat("Invalid array item: " + i);
+      return validationErrors.concat("Invalid array item at index " + i);
     }
   }
   return [];
