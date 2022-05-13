@@ -438,12 +438,6 @@ export function decodeStateSnapshot(buf: ArrayBufferView | _Reader) {
 function validatePrimitive(isValid: boolean, errorMessage: string) {
   return isValid ? [] : [errorMessage];
 }
-function validateObject(validationErrors: string[], errorMessage: string) {
-  if (validationErrors.length > 0) {
-    return validationErrors.concat(errorMessage);
-  }
-  return [];
-}
 function validateOptional<T>(val: T | undefined, innerValidate: (x: T) => string[]) {
   if (val !== undefined) {
     return innerValidate(val);
