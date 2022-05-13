@@ -128,6 +128,21 @@ export const {{@key}} = {
       {{/each}}
     };
   },
+  validate(obj: {{@key}}) {
+    if (typeof obj !== "object") {
+      return [`Invalid {{@key}} object: ${obj}`]
+    }
+    let validationErrors: string[];
+
+    {{#each properties}}
+    validationErrors = {{> renderValidate arg=@key}};
+    if (validationErrors.length > 0) {
+      return validationErrors.concat("Invalid key: {{@../key}}.{{@key}}");
+    }
+    {{/each}}
+
+    return validationErrors;
+  },
   encode(obj: {{@key}}, writer?: _Writer) {
     const buf = writer ?? new _Writer();
     {{#each properties}}
@@ -252,6 +267,29 @@ undefined
 {{~else if (eq type "plugin")}}
 {{> renderDefault item}}
 {{/if}}
+{{/inline}}
+{{#*inline "renderValidate"}}
+{{#if (eq type "array")}}
+validateArray({{#if arg}}obj.{{arg}}{{else}}x{{/if}}, (x) => {{> renderValidate items}})
+{{~else if (eq type "int")}}
+validatePrimitive(Number.isInteger({{#if arg}}obj.{{arg}}{{else}}x{{/if}}), `Invalid {{typeString}}: ${ {{#if arg}}obj.{{arg}}{{else}}x{{/if}} }`)
+{{~else if (eq type "float")}}
+validatePrimitive(typeof {{#if arg}}obj.{{arg}}{{else}}x{{/if}} === "number", `Invalid {{typeString}}: ${ {{#if arg}}obj.{{arg}}{{else}}x{{/if}} }`)
+{{~else if (eq type "string")}}
+validatePrimitive(typeof {{#if arg}}obj.{{arg}}{{else}}x{{/if}} === "string", `Invalid {{typeString}}: ${ {{#if arg}}obj.{{arg}}{{else}}x{{/if}} }`)
+{{~else if (eq type "enum")}}
+validatePrimitive({{#if arg}}obj.{{arg}}{{else}}x{{/if}} in {{typeString}}, `Invalid {{typeString}}: ${ {{#if arg}}obj.{{arg}}{{else}}x{{/if}} }`)
+{{~else if (eq type "boolean")}}
+validatePrimitive(typeof {{#if arg}}obj.{{arg}}{{else}}x{{/if}} === "string", `Invalid {{typeString}}: ${ {{#if arg}}obj.{{arg}}{{else}}x{{/if}} }`)
+{{~else if (eq type "optional")}}
+validateOptional({{#if arg}}obj.{{arg}}{{else}}x{{/if}}, (x) => {{> renderValidate item parent=parent inner=arg}})
+{{~else if (eq type "object")}}
+{{typeString}}.validate({{#if arg}}obj.{{arg}}{{else}}x{{/if}})
+{{~else if (eq type "union")}}
+TODO
+{{~else if (eq type "plugin")}}
+{{> renderValidate item parent=parent arg=arg}}
+{{~/if}}
 {{/inline}}
 {{#*inline "renderEncodeArg"}}
 {{#if (eq type "optional")}}
@@ -395,6 +433,34 @@ export function decodeStateSnapshot(buf: ArrayBufferView | _Reader) {
   {{#with (lookup types userState)}}
   return {{> renderDecodeArg}};
   {{/with}}
+}
+
+function validatePrimitive(isValid: boolean, errorMessage: string) {
+  return isValid ? [] : [errorMessage];
+}
+function validateObject(validationErrors: string[], errorMessage: string) {
+  if (validationErrors.length > 0) {
+    return validationErrors.concat(errorMessage);
+  }
+  return [];
+}
+function validateOptional<T>(val: T | undefined, innerValidate: (x: T) => string[]) {
+  if (val !== undefined) {
+    return innerValidate(val);
+  }
+  return [];
+}
+function validateArray<T>(arr: T[], innerValidate: (x: T) => string[]) {
+  if (!Array.isArray(arr)) {
+    return ["Invalid array: " + arr];
+  }
+  for (let i = 0; i < arr.length; i++) {
+    const validationErrors = innerValidate(arr[i]);
+    if (validationErrors.length > 0) {
+      return validationErrors.concat("Invalid array item: " + i);
+    }
+  }
+  return [];
 }
 
 function writeUInt8(buf: _Writer, x: number) {
