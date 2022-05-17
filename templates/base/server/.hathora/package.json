@@ -4,7 +4,7 @@
     "bin-serde": "1.1.1",
     "chance": "1.1.8",
     "@hathora/log-store": "0.0.2",
-    "on-change": "https://github.com/sindresorhus/on-change"
+    "on-change": "4.0.1"
   },
   "devDependencies": {
     "@types/chance": "1.1.3",
