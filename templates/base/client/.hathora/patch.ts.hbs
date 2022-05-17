@@ -49,9 +49,9 @@ function patch{{@key}}(obj: T.{{@key}}, patch: DeepPartial<T.{{@key}}>) {
 }
 
 {{else if (eq type "union")}}
-function patch{{@key}}(obj: {{@key}}, patch: DeepPartial<{{@key}}>) {
+function patch{{@key}}(obj: T.{{@key}}, patch: DeepPartial<T.{{@key}}>) {
   if (obj.type !== patch.type) {
-    return patch as {{@key}};
+    return patch as T.{{@key}};
   }
   {{#each options}}
   if (patch.type === "{{@key}}" && obj.type === "{{@key}}" && patch.val !== NO_DIFF) {
