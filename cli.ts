@@ -262,10 +262,24 @@ yargs(hideBin(process.argv))
     command: "deploy",
     describe: "Deploys application to Hathora Cloud",
     handler: (_argv) => {
-      const tarFile = tar.create({ cwd: "./", filter: (path) => !path.includes("node_modules") }, [rootDir]);
+      const tarFile = tar.create({ cwd: rootDir, filter: (path) => !path.includes("node_modules") }, ["."]);
       const form = new FormData();
-      form.append("file", tarFile, "asdf.tar");
-      form.submit("http://192.168.1.163:9000/upload");
+      form.append("file", tarFile, "bundle.tar");
+      form.submit(
+        {
+          host: "hathora-cloud.fly.dev",
+          protocol: "https:",
+          path: "/fly/upload",
+          headers: { Authorization: "Bearer $TOKEN" },
+        },
+        (err, response) => {
+          if (err) {
+            console.error("Error: ", err);
+          } else {
+            response.on("data", (data) => console.log(data.toString()));
+          }
+        }
+      );
     },
   })
   .demandCommand()
