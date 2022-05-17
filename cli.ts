@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
 import { createHash } from "crypto";
+import fs from "fs";
+import os from "os";
 import { outputFileSync, existsSync, readdirSync, copySync } from "fs-extra";
 import { join } from "path";
 import { pathToFileURL } from "url";
@@ -261,7 +263,8 @@ yargs(hideBin(process.argv))
   .command({
     command: "deploy",
     describe: "Deploys application to Hathora Cloud",
-    handler: (_argv) => {
+    builder: { appName: { type: "string", demandOption: true } },
+    handler: async (argv) => {
       const tarFile = tar.create(
         {
           cwd: rootDir,
@@ -275,14 +278,12 @@ yargs(hideBin(process.argv))
         ["."]
       );
       const form = new FormData();
+      form.append("appName", argv.appName);
       form.append("file", tarFile, "bundle.tar.gz");
+      const { token } = JSON.parse(fs.readFileSync(join(os.homedir(), ".config", "hathora", "data.json")).toString());
+      const headers = { Authorization: `Bearer ${token}` };
       form.submit(
-        {
-          host: "hathora-cloud.fly.dev",
-          protocol: "https:",
-          path: "/fly/upload",
-          headers: { Authorization: "Bearer $TOKEN" },
-        },
+        { host: "cloud.hathora.com", protocol: "https:", path: "/fly/upload", headers },
         (err, response) => {
           if (err) {
             console.error("Error: ", err);
