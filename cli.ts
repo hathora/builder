@@ -262,9 +262,20 @@ yargs(hideBin(process.argv))
     command: "deploy",
     describe: "Deploys application to Hathora Cloud",
     handler: (_argv) => {
-      const tarFile = tar.create({ cwd: rootDir, filter: (path) => !path.includes("node_modules") }, ["."]);
+      const tarFile = tar.create(
+        {
+          cwd: rootDir,
+          gzip: true,
+          filter: (path) =>
+            !path.startsWith("./api") &&
+            !path.startsWith("./data") &&
+            !path.includes(".hathora") &&
+            !path.includes("node_modules"),
+        },
+        ["."]
+      );
       const form = new FormData();
-      form.append("file", tarFile, "bundle.tar");
+      form.append("file", tarFile, "bundle.tar.gz");
       form.submit(
         {
           host: "hathora-cloud.fly.dev",
