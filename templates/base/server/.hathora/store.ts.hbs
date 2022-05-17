@@ -3,7 +3,13 @@ import { existsSync, mkdirSync } from "fs";
 import { Chance } from "chance";
 import { Writer, Reader } from "bin-serde";
 import { Message, NO_DIFF } from "../../api/base";
-import { UserId, encodeStateSnapshot, encodeStateUpdate, {{userState}} as UserState } from "../../api/types";
+import {
+  UserId,
+  encodeStateSnapshot,
+  encodeStateUpdate,
+  {{userState}} as UserState,
+  encodeStateError,
+} from "../../api/types";
 import { register } from "./protocol";
 import { LogStore } from "@hathora/log-store";
 import { ImplWrapper } from "./wrapper";
@@ -163,6 +169,12 @@ export async function loadState(stateId: StateId) {
 async function sendSnapshot(stateId: StateId, userId: UserId) {
   const { impl, subscriptions } = stateInfo.get(stateId)!;
   const userState = await impl.getUserState(userId);
+  const validationErrors = UserState.validate(userState);
+  if (validationErrors.length > 0) {
+    console.error("Invalid user state: ", validationErrors);
+    coordinator.stateUpdate(stateId, userId, Buffer.from(encodeStateError()));
+    return;
+  }
   subscriptions.set(userId, { userState: JSON.parse(JSON.stringify(userState)), changedAt: 0, messages: [] });
   const buf = encodeStateSnapshot(userState);
   coordinator.stateUpdate(stateId, userId, Buffer.from(buf));
@@ -174,6 +186,12 @@ async function sendUpdates(stateId: StateId, changedAt: number) {
     for (const [userId, userInfo] of subscriptions) {
       const { userState: prevUserState, changedAt: prevChangedAt, messages } = userInfo!;
       const currUserState = await impl.getUserState(userId);
+      const validationErrors = UserState.validate(currUserState);
+      if (validationErrors.length > 0) {
+        console.error("Invalid user state: ", validationErrors);
+        coordinator.stateUpdate(stateId, userId, Buffer.from(encodeStateError()));
+        return;
+      }
       const diff = computeDiff(currUserState, prevUserState);
       if (diff !== NO_DIFF || messages.length > 0) {
         const buf = encodeStateUpdate(diff !== NO_DIFF ? diff : undefined, changedAt - prevChangedAt, messages);

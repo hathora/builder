@@ -1,6 +1,6 @@
-import { Methods, Context } from "./.hathora/methods";
+import { Context, Methods } from "./.hathora/methods";
 import { Response } from "../api/base";
-import { UserId, Direction, PlayerState, ISetDirectionRequest, Player, Point, IInitializeRequest } from "../api/types";
+import { Direction, ISetDirectionRequest, Player, PlayerState, Point, UserId } from "../api/types";
 
 const MAP_WIDTH = 600;
 const MAP_HEIGHT = 400;
@@ -15,7 +15,7 @@ type InternalState = {
 };
 
 export class Impl implements Methods<InternalState> {
-  initialize(ctx: Context, request: IInitializeRequest): InternalState {
+  initialize(ctx: Context): InternalState {
     return {
       playerA: { direction: Direction.NONE, paddle: MAP_HEIGHT / 2, score: 0 },
       playerB: { direction: Direction.NONE, paddle: MAP_HEIGHT / 2, score: 0 },
@@ -38,7 +38,7 @@ export class Impl implements Methods<InternalState> {
     }
     return Response.ok();
   }
-  getUserState(state: InternalState, userId: UserId): PlayerState {
+  getUserState(state: InternalState): PlayerState {
     return state;
   }
   onTick(state: InternalState, ctx: Context, timeDelta: number): void {

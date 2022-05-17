@@ -2,22 +2,14 @@
 
 import { Methods, Context } from "./.hathora/methods";
 import { Response } from "../api/base";
-import {
-  GameStatus,
-  GameState,
-  UserId,
-  IInitializeRequest,
-  IJoinGameRequest,
-  IStartRoundRequest,
-  IMakeGuessRequest,
-} from "../api/types";
+import { GameStatus, GameState, UserId, IStartRoundRequest, IMakeGuessRequest } from "../api/types";
 
 import pfBoggle from "pf-boggle";
 
 type InternalState = GameState;
 
 export class Impl implements Methods<InternalState> {
-  initialize(ctx: Context, request: IInitializeRequest): InternalState {
+  initialize(): InternalState {
     return {
       players: [],
       boggleBoard: [],
@@ -26,7 +18,7 @@ export class Impl implements Methods<InternalState> {
       timeRemaining: 0,
     };
   }
-  joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {
+  joinGame(state: InternalState, userId: UserId): Response {
     if (state.players.find((p) => p.id === userId) !== undefined) {
       return Response.error("Already joined");
     }

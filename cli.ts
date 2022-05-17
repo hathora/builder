@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-import fs from "fs";
 import { createHash } from "crypto";
 import { outputFileSync, existsSync, readdirSync, copySync } from "fs-extra";
 import { join } from "path";
@@ -57,16 +56,20 @@ function npmInstall(dir: string) {
   }
 }
 
-function install() {
+function install(only: "server" | "client" | undefined) {
   npmInstall(join(rootDir, "api"));
-  readdirSync(clientDir).forEach((dir) => npmInstall(join(clientDir, dir)));
-  if (existsSync(join(clientDir, "prototype-ui", "plugins"))) {
-    readdirSync(join(clientDir, "prototype-ui", "plugins")).forEach((dir) =>
-      npmInstall(join(clientDir, "prototype-ui", "plugins", dir))
-    );
+  if (only === "client" || only === undefined) {
+    readdirSync(clientDir).forEach((dir) => npmInstall(join(clientDir, dir)));
+    if (existsSync(join(clientDir, "prototype-ui", "plugins"))) {
+      readdirSync(join(clientDir, "prototype-ui", "plugins")).forEach((dir) =>
+        npmInstall(join(clientDir, "prototype-ui", "plugins", dir))
+      );
+    }
   }
-  npmInstall(serverDir);
-  npmInstall(join(serverDir, ".hathora"));
+  if (only === "server" || only === undefined) {
+    npmInstall(serverDir);
+    npmInstall(join(serverDir, ".hathora"));
+  }
 }
 
 async function startServer() {
@@ -115,29 +118,33 @@ async function start(only: "server" | "client" | undefined) {
   }
 }
 
-function build() {
-  for (const dir of readdirSync(clientDir)) {
-    if (existsSync(join(clientDir, dir, "index.html"))) {
-      buildClient({
-        root: join(clientDir, dir),
-        build: { outDir: join(rootDir, "dist", "client", dir), target: ["esnext"] },
-        clearScreen: false,
-      });
+function build(only: "server" | "client" | undefined) {
+  if (only === "client" || only === undefined) {
+    for (const dir of readdirSync(clientDir)) {
+      if (existsSync(join(clientDir, dir, "index.html"))) {
+        buildClient({
+          root: join(clientDir, dir),
+          build: { outDir: join(rootDir, "dist", "client", dir), target: ["esnext"] },
+          clearScreen: false,
+        });
+      }
     }
   }
-  buildServer({
-    entryPoints: [join(serverDir, ".hathora", "store.ts")],
-    bundle: true,
-    platform: "node",
-    format: "esm",
-    outfile: join(rootDir, "dist", "server", "index.mjs"),
-    banner: {
-      js: "import { createRequire as topLevelCreateRequire } from 'module';\n const require = topLevelCreateRequire(import.meta.url);",
-    },
-  });
+  if (only === "server" || only === undefined) {
+    buildServer({
+      entryPoints: [join(serverDir, ".hathora", "store.ts")],
+      bundle: true,
+      platform: "node",
+      format: "esm",
+      outfile: join(rootDir, "dist", "server", "index.mjs"),
+      banner: {
+        js: "import { createRequire as topLevelCreateRequire } from 'module';\n const require = topLevelCreateRequire(import.meta.url);",
+      },
+    });
+  }
 }
 
-updateNotifier({ pkg: require("./package.json") }).notify();
+updateNotifier({ pkg: require("./package.json") }).notify({ defer: false, isGlobal: true });
 
 const rootDir = getProjectRoot(process.cwd());
 const clientDir = join(rootDir, "client");
@@ -184,8 +191,9 @@ yargs(hideBin(process.argv))
     command: "install",
     aliases: ["i"],
     describe: "Install hathora dependencies",
-    handler: (_argv) => {
-      install();
+    builder: { only: { choices: ["client", "server"] } },
+    handler: (argv) => {
+      install(argv.only as "server" | "client" | undefined);
     },
   })
   .command({
@@ -212,7 +220,7 @@ yargs(hideBin(process.argv))
       } else {
         generateLocal();
       }
-      install();
+      install(argv.only as "server" | "client" | undefined);
       start(argv.only as "server" | "client" | undefined);
     },
   })
@@ -228,7 +236,8 @@ yargs(hideBin(process.argv))
     command: "build",
     aliases: ["b"],
     describe: "Builds the project",
-    handler: (_argv) => {
+    builder: { only: { choices: ["client", "server"] } },
+    handler: (argv) => {
       if (!existsSync(join(serverDir, "impl.ts"))) {
         console.error(
           `${chalk.red("Missing impl.ts, make sure to run")}` +
@@ -238,8 +247,8 @@ yargs(hideBin(process.argv))
       } else {
         generate(rootDir, "templates/base", getAppConfig());
       }
-      install();
-      build();
+      install(argv.only as "server" | "client" | undefined);
+      build(argv.only as "server" | "client" | undefined);
     },
   })
   .command({

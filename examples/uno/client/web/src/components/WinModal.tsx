@@ -6,6 +6,7 @@ interface WinModalProps {
   onClose: () => void;
   title: string;
 }
+
 export default function WinModal({ isOpen, onClose, title }: WinModalProps) {
   return (
     <Transition.Root show={isOpen} as={Fragment}>

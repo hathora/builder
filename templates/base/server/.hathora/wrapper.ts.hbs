@@ -1,5 +1,5 @@
 import onChange from "on-change";
-import { Context } from "./methods";
+import { Context, Methods } from "./methods";
 import { Method } from "../../api/base";
 import {
   UserId,
@@ -9,35 +9,33 @@ import {
   {{/each}}
 } from "../../api/types";
 
-let impl = new (await import("../impl")).Impl();
-type State = ReturnType<typeof impl.initialize>;
+type State = ReturnType<InstanceType<typeof import("../impl").Impl>["initialize"]>;
 
 export class ImplWrapper {
   private state: State;
   private _changedAt: number | undefined;
   constructor(ctx: Context, argsBuffer: ArrayBufferView) {
     monkeyPatchSideEffectFunctions(ctx);
-    const state = impl.initialize(ctx, IInitializeRequest.decode(argsBuffer));
+    const state = prevImpl.initialize(ctx, IInitializeRequest.decode(argsBuffer));
     restoreSideEffectFunctions();
     this.state = onChange(state, () => (this._changedAt = Date.now()));
   }
   public async getResult(userId: UserId, method: Method, ctx: Context, argsBuffer: ArrayBufferView) {
-    await tryReloadImpl();
     monkeyPatchSideEffectFunctions(ctx);
-    const res = this._getResult(userId, method, ctx, argsBuffer);
+    const res = await this._getResult(userId, method, ctx, argsBuffer);
     restoreSideEffectFunctions();
     return res;
   }
   {{#if tick}}
   public async onTick(ctx: Context, timeDelta: number) {
-    await tryReloadImpl();
+    const impl = await getLatestImpl();
     monkeyPatchSideEffectFunctions(ctx);
     impl.onTick(this.state, ctx, timeDelta);
     restoreSideEffectFunctions();
   }
   {{/if}}
   public async getUserState(userId: UserId) {
-    await tryReloadImpl();
+    const impl = await getLatestImpl();
     return impl.getUserState(onChange.target(this.state), userId);
   }
   public changedAt(): number | undefined {
@@ -45,7 +43,8 @@ export class ImplWrapper {
     this._changedAt = undefined;
     return res;
   }
-  private _getResult(userId: UserId, method: Method, ctx: Context, argsBuffer: ArrayBufferView) {
+  private async _getResult(userId: UserId, method: Method, ctx: Context, argsBuffer: ArrayBufferView) {
+    const impl = await getLatestImpl();
     switch (method) {
       {{#each methods}}
       case Method.{{uppercase @key}}:
@@ -56,9 +55,10 @@ export class ImplWrapper {
 }
 
 let prevError = "";
-async function tryReloadImpl() {
+let prevImpl: Methods<State> = new (await import("../impl")).Impl();
+async function getLatestImpl() {
   try {
-    impl = new (await import("../impl")).Impl();
+    prevImpl = new (await import("../impl")).Impl();
     if (prevError !== "") {
       console.log("Successfully reloaded impl");
       prevError = "";
@@ -70,6 +70,7 @@ async function tryReloadImpl() {
       prevError = errorString;
     }
   }
+  return prevImpl;
 }
 
 const origMathRandom = Math.random;
