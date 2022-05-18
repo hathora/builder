@@ -283,7 +283,7 @@ yargs(hideBin(process.argv))
       const { token } = JSON.parse(fs.readFileSync(join(os.homedir(), ".config", "hathora", "data.json")).toString());
       const headers = { Authorization: `Bearer ${token}` };
       form.submit(
-        { host: "cloud.hathora.com", protocol: "https:", path: "/fly/upload", headers },
+        { host: "cloud.hathora.com", protocol: "https:", path: "/builder/upload", headers },
         (err, response) => {
           if (err) {
             console.error("Error: ", err);
