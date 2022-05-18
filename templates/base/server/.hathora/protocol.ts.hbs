@@ -7,8 +7,13 @@ const SUBSCRIBE_USER = 1;
 const UNSUBSCRIBE_USER = 2;
 const HANDLE_UPDATE = 3;
 
-const STATE_UPDATE = 0;
-const STATE_NOT_FOUND = 1;
+enum STORE_MESSAGES {
+  STATE_UPDATE = 0,
+  STATE_NOT_FOUND = 1,
+  PING = 2,
+}
+
+const PING_INTERVAL_MS = 10000;
 
 type StateId = bigint;
 type UserId = string;
@@ -31,7 +36,7 @@ function readData(socket: net.Socket, onData: (data: Buffer) => void) {
 export function register(store: Store): Promise<CoordinatorClient> {
   return new Promise((resolve, reject) => {
     const socket = new net.Socket();
-    socket.setKeepAlive(true, 10000);
+    let pingTimer: NodeJS.Timer;
     socket.connect(7147, COORDINATOR_HOST);
     socket.on("connect", () => {
       socket.write(
@@ -51,14 +56,22 @@ export function register(store: Store): Promise<CoordinatorClient> {
       console.log(
         `Connected to coordinator at ${COORDINATOR_HOST} with appId {{appId}}`
       );
-      resolve(new CoordinatorClient(socket));
+      const coordinatorClient = new CoordinatorClient(socket);
+      pingTimer = setInterval(() => coordinatorClient.ping(), PING_INTERVAL_MS);
+      resolve(coordinatorClient);
     });
     socket.on("error", (err) => {
       console.error("Coordinator connection error", err);
+      if (pingTimer !== undefined) {
+        clearInterval(pingTimer);
+      }
       reject(err.message);
     });
     socket.on("close", () => {
       console.error("Coordinator connection closed, retrying...");
+      if (pingTimer !== undefined) {
+        clearInterval(pingTimer);
+      }
       setTimeout(() => socket.connect(7147, COORDINATOR_HOST), 1000 + Math.random() * 1000);
     });
     readData(socket, (data) => {
@@ -94,7 +107,7 @@ class CoordinatorClient {
     this.socket.write(
       new Writer()
         .writeUInt32(9 + userIdBuf.length + data.length)
-        .writeUInt8(STATE_UPDATE)
+        .writeUInt8(STORE_MESSAGES.STATE_UPDATE)
         .writeUInt64(stateId)
         .writeBuffer(userIdBuf)
         .writeBuffer(data)
@@ -107,9 +120,18 @@ class CoordinatorClient {
     this.socket.write(
       new Writer()
         .writeUInt32(9 + userIdBuf.length)
-        .writeUInt8(STATE_NOT_FOUND)
+        .writeUInt8(STORE_MESSAGES.STATE_NOT_FOUND)
         .writeUInt64(stateId)
         .writeBuffer(userIdBuf)
+        .toBuffer()
+    );
+  }
+
+  public ping() {
+    this.socket.write(
+      new Writer()
+        .writeUInt32(1)
+        .writeUInt8(STORE_MESSAGES.PING)
         .toBuffer()
     );
   }
