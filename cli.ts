@@ -31,8 +31,8 @@ function getProjectRoot(cwd: string): string {
 function getAppConfig() {
   const appSecret = process.env.APP_SECRET ?? uuidv4();
   const appId = createHash("sha256").update(appSecret).digest("hex");
-  const coordinatorHost = process.env.COORDINATOR_HOST ?? "coordinator.hathora.com";
-  const matchmakerHost = process.env.MATCHMAKER_HOST ?? "matchmaker.hathora.com";
+  const coordinatorHost = process.env.COORDINATOR_HOST ?? "coordinator.hathora.dev";
+  const matchmakerHost = process.env.MATCHMAKER_HOST ?? "matchmaker.hathora.dev";
   return { appId, appSecret, coordinatorHost, matchmakerHost };
 }
 
