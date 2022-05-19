@@ -7,11 +7,12 @@
     "cli.js",
     "generate.js",
     "helpers.js",
+    "utils.js",
+    "commands/**/*.js",
     "node-loader.config.mjs",
     "templates",
     "READEME.md",
-    "LICENSE",
-    "commands/**/*.js"
+    "LICENSE"
   ],
   "dependencies": {
     "@node-loader/core": "2.0.0",
