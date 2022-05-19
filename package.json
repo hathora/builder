@@ -10,7 +10,8 @@
     "node-loader.config.mjs",
     "templates",
     "READEME.md",
-    "LICENSE"
+    "LICENSE",
+    "commands/**/*.js"
   ],
   "dependencies": {
     "@node-loader/core": "2.0.0",
