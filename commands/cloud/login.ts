@@ -21,7 +21,7 @@ const cmd: CommandModule = {
     await prompts({
       type: "invisible",
       name: "",
-      message: `Press any key to open up the browser to login or press ctrl-c to abort. You should see the following code: ${handle.user_code}.`,
+      message: `Press enter to open up the browser for login or press ctrl-c to abort. You should see the following code: ${handle.user_code}.`,
     });
     open(handle.verification_uri_complete);
     const tokens = await handle.poll();
