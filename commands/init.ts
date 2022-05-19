@@ -9,7 +9,7 @@ const cmd: CommandModule = {
   command: "init",
   aliases: ["initialize", "initialise"],
   describe: "Creates a new hathora project",
-  handler: (_argv: any) => {
+  handler: (_argv) => {
     const { rootDir, serverDir } = getDirs();
 
     if (existsSync(join(serverDir, "impl.ts"))) {

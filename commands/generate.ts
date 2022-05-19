@@ -8,7 +8,7 @@ const cmd: CommandModule = {
   command: "generate",
   aliases: ["gen", "g"],
   describe: "Regenerates the types from hathora.yml",
-  handler: (_argv: any) => {
+  handler: (_argv) => {
     const { serverDir } = getDirs();
     if (!existsSync(join(serverDir, "impl.ts"))) {
       console.error(
