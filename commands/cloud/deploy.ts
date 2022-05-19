@@ -10,6 +10,7 @@ import { getDirs } from "../../utils";
 
 const cmd: CommandModule = {
   command: "deploy",
+  aliases: ["d"],
   describe: "Deploys application to Hathora Cloud",
   builder: { appName: { type: "string", demandOption: true } },
   handler: async (argv) => {

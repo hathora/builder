@@ -9,6 +9,7 @@ import chalk from "chalk";
 
 const cmd: CommandModule = {
   command: "login",
+  aliases: "l",
   describe: "Login to Hathora Cloud",
   handler: async (_argv) => {
     const auth0 = await Issuer.discover("https://dev-tchp6in9.us.auth0.com");
