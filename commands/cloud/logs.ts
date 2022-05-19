@@ -35,4 +35,3 @@ const cmd: CommandModule = {
 };
 
 module.exports = cmd;
-  
