@@ -9,6 +9,9 @@ import { pathToFileURL } from "url";
 import yargs from "yargs/yargs";
 import { hideBin } from "yargs/helpers";
 import chalk from "chalk";
+import { Issuer } from "openid-client";
+import prompts from "prompts";
+import open from "open";
 import shelljs from "shelljs";
 import { v4 as uuidv4 } from "uuid";
 import tar from "tar";
@@ -261,6 +264,26 @@ yargs(hideBin(process.argv))
     },
   })
   .command({
+    command: "login",
+    handler: async (_argv) => {
+      const auth0 = await Issuer.discover("https://dev-tchp6in9.us.auth0.com");
+      const client = new auth0.Client({
+        client_id: "tWjDhuzPmuIWrI8R9s3yV3BQVw2tW0yq",
+        token_endpoint_auth_method: "none",
+        id_token_signed_response_alg: "RS256",
+      });
+      const handle = await client.deviceAuthorization({ scope: "openid email", audience: "https://cloud.hathora.com" });
+      await prompts({
+        type: "invisible",
+        name: "",
+        message: `Press any key to open up the browser to login or press ctrl-c to abort. You should see the following code: ${handle.user_code}.`,
+      });
+      open(handle.verification_uri_complete);
+      const tokens = await handle.poll();
+      outputFileSync(join(os.homedir(), ".config", "hathora", "token"), tokens.access_token);
+    },
+  })
+  .command({
     command: "deploy",
     describe: "Deploys application to Hathora Cloud",
     builder: { appName: { type: "string", demandOption: true } },
@@ -280,7 +303,12 @@ yargs(hideBin(process.argv))
       const form = new FormData();
       form.append("appName", argv.appName);
       form.append("file", tarFile, "bundle.tar.gz");
-      const { token } = JSON.parse(fs.readFileSync(join(os.homedir(), ".config", "hathora", "data.json")).toString());
+      const tokenFile = join(os.homedir(), ".config", "hathora", "token");
+      if (!existsSync(tokenFile)) {
+        console.log(chalk.redBright(`Missing token file, run ${chalk.underline("hathora login")} first`));
+        return;
+      }
+      const token = fs.readFileSync(tokenFile).toString();
       const headers = { Authorization: `Bearer ${token}` };
       form.submit(
         { host: "cloud.hathora.com", protocol: "https:", path: "/builder/upload", headers },
