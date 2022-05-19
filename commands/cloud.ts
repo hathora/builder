@@ -6,5 +6,4 @@ module.exports = {
       extensions: ["js", "ts"],
     });
   },
-  handler: (argv: any) => {},
 };

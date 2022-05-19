@@ -1,10 +1,10 @@
 import chalk from "chalk";
 import { existsSync, readdirSync } from "fs-extra";
 import { join } from "path";
-import { generate } from "../generate";
-import { getAppConfig, getDirs, install } from "../utils";
 import { build as buildClient } from "vite";
 import { build as buildServer } from "esbuild";
+import { generate } from "../generate";
+import { getAppConfig, getDirs, install } from "../utils";
 
 module.exports = {
   command: "build",

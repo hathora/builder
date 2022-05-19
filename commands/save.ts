@@ -1,6 +1,5 @@
 import { copySync } from "fs-extra";
 import { join } from "path";
-
 import { getDirs } from "../utils";
 
 module.exports = {

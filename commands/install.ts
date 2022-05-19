@@ -1,7 +1,4 @@
-import chalk from "chalk";
-import { existsSync } from "fs";
-import { join } from "path";
-import { generateLocal, getDirs, install } from "../utils";
+import { install } from "../utils";
 
 module.exports = {
   command: "install",

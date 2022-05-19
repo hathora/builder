@@ -4,7 +4,6 @@ import yargs from "yargs/yargs";
 import { hideBin } from "yargs/helpers";
 import updateNotifier from "update-notifier";
 import chalk from "chalk";
-
 import { getDirs } from "./utils";
 
 updateNotifier({ pkg: require("./package.json") }).notify({ defer: false, isGlobal: true });
