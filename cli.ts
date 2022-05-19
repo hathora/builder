@@ -311,7 +311,7 @@ yargs(hideBin(process.argv))
       const token = fs.readFileSync(tokenFile).toString();
       const headers = { Authorization: `Bearer ${token}` };
       form.submit(
-        { host: "cloud.hathora.com", protocol: "https:", path: "/builder/upload", headers },
+        { host: "cloud.hathora.com", protocol: "https:", path: "/deploy", headers },
         (err, response) => {
           if (err) {
             console.error("Error: ", err);
