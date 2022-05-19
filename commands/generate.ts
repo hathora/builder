@@ -1,6 +1,6 @@
-import chalk from "chalk";
 import { existsSync } from "fs";
 import { join } from "path";
+import chalk from "chalk";
 import { generateLocal, getDirs } from "../utils";
 
 module.exports = {

@@ -1,15 +1,14 @@
 import { existsSync, readdirSync } from "fs";
 import { join } from "path";
+import { pathToFileURL } from "url";
+import { createHash } from "crypto";
 import dotenv from "dotenv";
 import { v4 as uuidv4 } from "uuid";
-import { createHash } from "crypto";
 import { outputFileSync } from "fs-extra";
 import shelljs from "shelljs";
-
-import { generate } from "./generate";
 import { createServer } from "vite";
 import chalk from "chalk";
-import { pathToFileURL } from "url";
+import { generate } from "./generate";
 
 export function getProjectRoot(cwd: string): string {
   if (existsSync(join(cwd, "hathora.yml"))) {

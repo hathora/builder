@@ -1,11 +1,10 @@
+import fs from "fs";
+import os from "os";
+import { join } from "path";
 import tar from "tar";
 import FormData from "form-data";
 import chalk from "chalk";
 import { existsSync } from "fs-extra";
-import fs from "fs";
-import os from "os";
-import { join } from "path";
-
 import { getDirs } from "../../utils";
 
 module.exports = {

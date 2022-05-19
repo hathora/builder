@@ -1,6 +1,6 @@
+import { join } from "path";
 import chalk from "chalk";
 import { existsSync, readdirSync } from "fs-extra";
-import { join } from "path";
 import { build as buildClient } from "vite";
 import { build as buildServer } from "esbuild";
 import { generate } from "../generate";

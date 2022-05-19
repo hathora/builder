@@ -1,8 +1,8 @@
+import os from "os";
+import { join } from "path";
 import { outputFileSync } from "fs-extra";
 import { Issuer } from "openid-client";
-import { join } from "path";
 import prompts from "prompts";
-import os from "os";
 import open from "open";
 import chalk from "chalk";
 
