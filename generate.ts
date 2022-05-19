@@ -3,6 +3,7 @@ import { readdirSync, readFileSync, outputFileSync, existsSync, statSync, copySy
 import { compile } from "handlebars";
 import { z } from "zod";
 import { join, basename } from "path";
+import "./helpers";
 
 const TypeArgs = z.union([z.string(), z.array(z.string()), z.record(z.string())]);
 const HathoraConfig = z
