@@ -1,10 +1,11 @@
 import { existsSync } from "fs";
 import { join } from "path";
+import { CommandModule } from "yargs";
 import chalk from "chalk";
 import { generate } from "../generate";
 import { generateLocal, getDirs } from "../utils";
 
-module.exports = {
+const cmd: CommandModule = {
   command: "init",
   aliases: ["initialize", "initialise"],
   describe: "Creates a new hathora project",
@@ -23,3 +24,5 @@ module.exports = {
     }
   },
 };
+
+module.exports = cmd;

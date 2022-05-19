@@ -1,6 +1,7 @@
+import { CommandModule } from "yargs";
 import { install } from "../utils";
 
-module.exports = {
+const cmd: CommandModule = {
   command: "install",
   aliases: ["i"],
   describe: "Install hathora dependencies",
@@ -9,3 +10,5 @@ module.exports = {
     install(argv.only as "server" | "client" | undefined);
   },
 };
+
+module.exports = cmd;

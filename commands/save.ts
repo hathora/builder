@@ -1,8 +1,9 @@
 import { join } from "path";
+import { CommandModule } from "yargs";
 import { copySync } from "fs-extra";
 import { getDirs } from "../utils";
 
-module.exports = {
+const cmd: CommandModule = {
   command: "save <stateId> <saveName>",
   aliases: ["gamesave", "sv"],
   describe: "Creates a named save game from a specific state id",
@@ -11,3 +12,5 @@ module.exports = {
     copySync(join(rootDir, "data", argv.stateId as string), join(rootDir, "data", "saves", argv.saveName as string));
   },
 };
+
+module.exports = cmd;

@@ -1,9 +1,10 @@
 import { existsSync } from "fs";
 import { join } from "path";
+import { CommandModule } from "yargs";
 import chalk from "chalk";
 import { generateLocal, getDirs, install, start } from "../utils";
 
-module.exports = {
+const cmd: CommandModule = {
   command: "dev",
   aliases: ["development", "d"],
   describe: "Starts the server in development mode",
@@ -23,3 +24,5 @@ module.exports = {
     start(argv.only as "server" | "client" | undefined);
   },
 };
+
+module.exports = cmd;

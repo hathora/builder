@@ -1,9 +1,10 @@
 import { existsSync } from "fs";
 import { join } from "path";
+import { CommandModule } from "yargs";
 import chalk from "chalk";
 import { generateLocal, getDirs } from "../utils";
 
-module.exports = {
+const cmd: CommandModule = {
   command: "generate",
   aliases: ["gen", "g"],
   describe: "Regenerates the types from hathora.yml",
@@ -20,3 +21,5 @@ module.exports = {
     }
   },
 };
+
+module.exports = cmd;

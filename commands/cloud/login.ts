@@ -1,14 +1,15 @@
 import os from "os";
 import { join } from "path";
+import { CommandModule } from "yargs";
 import { outputFileSync } from "fs-extra";
 import { Issuer } from "openid-client";
 import prompts from "prompts";
 import open from "open";
 import chalk from "chalk";
 
-module.exports = {
+const cmd: CommandModule = {
   command: "login",
-  desc: "Login to Hathora Cloud",
+  describe: "Login to Hathora Cloud",
   handler: async (_argv: any) => {
     const auth0 = await Issuer.discover("https://dev-tchp6in9.us.auth0.com");
     const client = new auth0.Client({
@@ -29,3 +30,5 @@ module.exports = {
     console.log(chalk.green(`Successfully logged in! Saved credentials to ${tokenPath}`));
   },
 };
+
+module.exports = cmd;

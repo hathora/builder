@@ -1,9 +1,14 @@
-module.exports = {
+import { CommandModule } from "yargs";
+
+const cmd: CommandModule = {
   command: "cloud",
-  desc: "Interact with Hathora Cloud",
-  builder: (yargs: any) => {
-    yargs.commandDir("cloud", {
+  describe: "Interact with Hathora Cloud",
+  builder: (yargs) => {
+    return yargs.commandDir("cloud", {
       extensions: ["js", "ts"],
     });
   },
+  handler() {},
 };
+
+module.exports = cmd;

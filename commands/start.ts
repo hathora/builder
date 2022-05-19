@@ -1,6 +1,7 @@
+import { CommandModule } from "yargs";
 import { start } from "../utils";
 
-module.exports = {
+const cmd: CommandModule = {
   command: "start",
   aliases: ["up", "s"],
   describe: "Starts the hathora server",
@@ -9,3 +10,5 @@ module.exports = {
     start(argv.only as "server" | "client" | undefined);
   },
 };
+
+module.exports = cmd;

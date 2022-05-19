@@ -1,13 +1,14 @@
 import fs from "fs";
 import os from "os";
 import { join } from "path";
+import { CommandModule } from "yargs";
 import tar from "tar";
 import FormData from "form-data";
 import chalk from "chalk";
 import { existsSync } from "fs-extra";
 import { getDirs } from "../../utils";
 
-module.exports = {
+const cmd: CommandModule = {
   command: "deploy",
   describe: "Deploys application to Hathora Cloud",
   builder: { appName: { type: "string", demandOption: true } },
@@ -44,3 +45,5 @@ module.exports = {
     });
   },
 };
+
+module.exports = cmd;
