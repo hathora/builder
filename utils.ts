@@ -10,17 +10,6 @@ import { createServer } from "vite";
 import chalk from "chalk";
 import { generate } from "./generate";
 
-export function getProjectRoot(cwd: string): string {
-  if (existsSync(join(cwd, "hathora.yml"))) {
-    return cwd;
-  }
-  const parentDir = join(cwd, "..");
-  if (parentDir === cwd) {
-    throw new Error("Doesn't appear to be inside a hathora project");
-  }
-  return getProjectRoot(parentDir);
-}
-
 export function getDirs() {
   const rootDir = getProjectRoot(process.cwd());
   return {
@@ -48,16 +37,6 @@ export function generateLocal() {
   }
 }
 
-function npmInstall(dir: string) {
-  console.log(`Installing dependencies in ${dir}`);
-  if (existsSync(join(dir, "yarn.lock"))) {
-    shelljs.exec(`yarn install --cwd ${dir}`);
-  } else if (existsSync(join(dir, "package.json"))) {
-    shelljs.cd(dir);
-    shelljs.exec("npm install");
-  }
-}
-
 export function install(only: "server" | "client" | undefined) {
   const { rootDir, serverDir, clientDir } = getDirs();
   npmInstall(join(rootDir, "api"));
@@ -82,6 +61,27 @@ export async function start(only: "server" | "client" | undefined) {
     return startServer();
   } else {
     return startServer().then(startFrontends);
+  }
+}
+
+function getProjectRoot(cwd: string): string {
+  if (existsSync(join(cwd, "hathora.yml"))) {
+    return cwd;
+  }
+  const parentDir = join(cwd, "..");
+  if (parentDir === cwd) {
+    throw new Error("Doesn't appear to be inside a hathora project");
+  }
+  return getProjectRoot(parentDir);
+}
+
+function npmInstall(dir: string) {
+  console.log(`Installing dependencies in ${dir}`);
+  if (existsSync(join(dir, "yarn.lock"))) {
+    shelljs.exec(`yarn install --cwd ${dir}`);
+  } else if (existsSync(join(dir, "package.json"))) {
+    shelljs.cd(dir);
+    shelljs.exec("npm install");
   }
 }
 
