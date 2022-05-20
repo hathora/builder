@@ -1,28 +1,16 @@
-import { join } from "path";
 import { CommandModule } from "yargs";
-import os from "os";
-import fs from "fs";
-import { existsSync } from "fs";
-import chalk from "chalk";
-import axios from "axios";
+import { makeCloudApiRequest } from "../../utils";
 
 const cmd: CommandModule = {
   command: "list",
   aliases: ["ls"],
   describe: "List Hathora Cloud applications",
+  builder: {
+    token: { type: "string", demandOption: true, hidden: true },
+    cloudApiBase: { type: "string", demandOption: true, hidden: true },
+  },
   handler: async (argv) => {
-    const tokenFile = join(os.homedir(), ".config", "hathora", "token");
-    if (!existsSync(tokenFile)) {
-      console.log(chalk.redBright(`Missing token file, run ${chalk.underline("hathora login")} first`));
-      return;
-    }
-    const token = fs.readFileSync(tokenFile).toString();
-    const apps = await axios.get(`https://cloud.hathora.com/list`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    console.log(apps.data);
+    await makeCloudApiRequest(argv.cloudApiBase as string, `/list`, argv.token as string);
   },
 };
 
