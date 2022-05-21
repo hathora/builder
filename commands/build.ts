@@ -12,7 +12,7 @@ const cmd: CommandModule = {
   aliases: ["b"],
   describe: "Builds the project",
   builder: { only: { choices: ["client", "server"] } },
-  handler: (argv) => {
+  handler(argv) {
     const { rootDir, serverDir } = getDirs();
     if (!existsSync(join(serverDir, "impl.ts"))) {
       console.error(

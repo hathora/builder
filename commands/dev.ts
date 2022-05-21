@@ -9,7 +9,7 @@ const cmd: CommandModule = {
   aliases: ["development", "d"],
   describe: "Starts the server in development mode",
   builder: { only: { choices: ["client", "server"] } },
-  handler: (argv) => {
+  handler(argv) {
     const { serverDir } = getDirs();
     if (!existsSync(join(serverDir, "impl.ts"))) {
       console.error(
