@@ -1,7 +1,7 @@
-import { join } from "path";
-import { CommandModule } from "yargs";
-import { copySync } from "fs-extra";
 import { getDirs } from "../utils";
+import { copySync } from "fs-extra";
+import { CommandModule } from "yargs";
+import { join } from "path";
 
 const cmd: CommandModule = {
   command: "save <stateId> <saveName>",

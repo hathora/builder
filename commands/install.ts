@@ -1,5 +1,5 @@
-import { CommandModule } from "yargs";
 import { install } from "../utils";
+import { CommandModule } from "yargs";
 
 const cmd: CommandModule = {
   command: "install",

@@ -1,9 +1,9 @@
-import { existsSync } from "fs";
-import { join } from "path";
-import { CommandModule } from "yargs";
-import chalk from "chalk";
 import { generate } from "../generate";
 import { generateLocal, getDirs } from "../utils";
+import chalk from "chalk";
+import { CommandModule } from "yargs";
+import { existsSync } from "fs";
+import { join } from "path";
 
 const cmd: CommandModule = {
   command: "init",

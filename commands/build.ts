@@ -1,11 +1,11 @@
-import { join } from "path";
-import chalk from "chalk";
-import { existsSync, readdirSync } from "fs-extra";
-import { build as buildClient } from "vite";
-import { build as buildServer } from "esbuild";
-import { CommandModule } from "yargs";
 import { generate } from "../generate";
 import { getAppConfig, getDirs, install } from "../utils";
+import chalk from "chalk";
+import { existsSync, readdirSync } from "fs-extra";
+import { build as buildServer } from "esbuild";
+import { build as buildClient } from "vite";
+import { CommandModule } from "yargs";
+import { join } from "path";
 
 const cmd: CommandModule = {
   command: "build",

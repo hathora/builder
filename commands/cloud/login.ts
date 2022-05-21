@@ -1,11 +1,11 @@
-import os from "os";
-import { join } from "path";
-import { CommandModule } from "yargs";
+import chalk from "chalk";
 import { outputFileSync } from "fs-extra";
+import open from "open";
 import { Issuer } from "openid-client";
 import prompts from "prompts";
-import open from "open";
-import chalk from "chalk";
+import { CommandModule } from "yargs";
+import os from "os";
+import { join } from "path";
 
 const cmd: CommandModule = {
   command: "login",

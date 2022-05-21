@@ -1,5 +1,5 @@
-import { CommandModule } from "yargs";
 import { makeCloudApiRequest } from "../../utils";
+import { CommandModule } from "yargs";
 
 const cmd: CommandModule = {
   command: "info",

@@ -1,24 +1,3 @@
-// module.exports = {
-//   plugins: [
-//     "import",
-//   ],
-//   rules: {
-//     "import/order": [
-//       "error",
-//       {
-//         groups: [
-//           "index",
-//           "sibling",
-//           "parent",
-//           "internal",
-//           "external",
-//           "builtin"
-//         ]
-//       }
-//     ]
-//   }
-// }
-
 module.exports = {
   root: true,
   parser: '@typescript-eslint/parser',
@@ -29,5 +8,22 @@ module.exports = {
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
+    'plugin:import/typescript',
+    'plugin:import/errors',
   ],
+  rules: {
+    "import/order": [
+      "error",
+      {
+        groups: [
+          "index",
+          "sibling",
+          "parent",
+          "internal",
+          "external",
+          "builtin"
+        ]
+      }
+    ]
+  }
 };
