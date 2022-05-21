@@ -1,9 +1,9 @@
 {
   "type": "module",
   "dependencies": {
-    "lit": "^2.0.2"
+    "lit": "2.0.2"
   },
   "devDependencies": {
-    "typescript": "^4.5.2"
+    "typescript": "4.5.2"
   }
 }

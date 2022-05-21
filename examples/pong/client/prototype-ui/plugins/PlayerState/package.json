@@ -1,10 +1,10 @@
 {
   "type": "module",
   "dependencies": {
-    "interpolation-buffer": "^1.2.3",
-    "lit": "^2.0.2"
+    "interpolation-buffer": "1.2.3",
+    "lit": "2.0.2"
   },
   "devDependencies": {
-    "typescript": "^4.5.2"
+    "typescript": "4.5.2"
   }
 }
