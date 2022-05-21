@@ -1,6 +1,8 @@
 import { join } from "path";
-import { copySync } from "fs-extra";
+
 import { CommandModule } from "yargs";
+import { copySync } from "fs-extra";
+
 import { getDirs } from "../utils";
 
 const cmd: CommandModule = {

@@ -1,4 +1,5 @@
 import { CommandModule } from "yargs";
+
 import { start } from "../utils";
 
 const cmd: CommandModule = {

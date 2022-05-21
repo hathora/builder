@@ -1,4 +1,5 @@
 import { CommandModule } from "yargs";
+
 import { makeCloudApiRequest } from "../../utils";
 
 const cmd: CommandModule = {
@@ -10,7 +11,7 @@ const cmd: CommandModule = {
     cloudApiBase: { type: "string", demandOption: true, hidden: true },
   },
   async handler(argv) {
-    await makeCloudApiRequest(argv.cloudApiBase as string, `/list`, argv.token as string);
+    await makeCloudApiRequest(argv.cloudApiBase as string, "/list", argv.token as string);
   },
 };
 

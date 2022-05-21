@@ -1,6 +1,7 @@
 import { CommandModule } from "yargs";
-import { generate } from "../generate";
+
 import { getDirs } from "../utils";
+import { generate } from "../generate";
 
 const cmd: CommandModule = {
   command: "create-plugin <lib> <type>",

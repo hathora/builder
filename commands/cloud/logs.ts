@@ -1,4 +1,5 @@
 import { CommandModule } from "yargs";
+
 import { makeCloudApiRequest } from "../../utils";
 
 const cmd: CommandModule = {

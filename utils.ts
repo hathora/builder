@@ -1,15 +1,17 @@
-import { existsSync, readdirSync } from "fs";
-import { join } from "path";
-import { Stream } from "stream";
 import { pathToFileURL } from "url";
+import { Stream } from "stream";
+import { join } from "path";
+import { existsSync, readdirSync } from "fs";
 import { createHash } from "crypto";
+
+import { createServer } from "vite";
+import { v4 as uuidv4 } from "uuid";
+import shelljs from "shelljs";
+import { outputFileSync } from "fs-extra";
+import dotenv from "dotenv";
 import chalk from "chalk";
 import axios, { Method } from "axios";
-import dotenv from "dotenv";
-import { outputFileSync } from "fs-extra";
-import shelljs from "shelljs";
-import { v4 as uuidv4 } from "uuid";
-import { createServer } from "vite";
+
 import { generate } from "./generate";
 
 export async function makeCloudApiRequest(cloudApiBase: string, path: string, token: string, method: Method = "GET") {

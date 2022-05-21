@@ -1,8 +1,10 @@
 import { Stream } from "stream";
-import axios from "axios";
-import FormData from "form-data";
-import tar from "tar";
+
 import { CommandModule } from "yargs";
+import tar from "tar";
+import FormData from "form-data";
+import axios from "axios";
+
 import { getDirs } from "../../utils";
 
 const cmd: CommandModule = {

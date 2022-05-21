@@ -1,9 +1,11 @@
 import { join } from "path";
-import chalk from "chalk";
+
+import { CommandModule } from "yargs";
+import { build as buildClient } from "vite";
 import { existsSync, readdirSync } from "fs-extra";
 import { build as buildServer } from "esbuild";
-import { build as buildClient } from "vite";
-import { CommandModule } from "yargs";
+import chalk from "chalk";
+
 import { getAppConfig, getDirs, install } from "../utils";
 import { generate } from "../generate";
 
