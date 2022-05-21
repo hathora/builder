@@ -16,12 +16,12 @@ module.exports = {
       "error",
       {
         groups: [
-          "index",
-          "sibling",
-          "parent",
-          "internal",
+          "builtin",
           "external",
-          "builtin"
+          "internal",
+          "parent",
+          "sibling",
+          "index",
         ]
       }
     ]

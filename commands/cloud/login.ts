@@ -1,17 +1,17 @@
+import os from "os";
+import { join } from "path";
 import chalk from "chalk";
 import { outputFileSync } from "fs-extra";
 import open from "open";
 import { Issuer } from "openid-client";
 import prompts from "prompts";
 import { CommandModule } from "yargs";
-import os from "os";
-import { join } from "path";
 
 const cmd: CommandModule = {
   command: "login",
   aliases: "l",
   describe: "Login to Hathora Cloud",
-  handler: async (_argv) => {
+  async handler() {
     const auth0 = await Issuer.discover("https://auth.hathora.com");
     const client = new auth0.Client({
       client_id: "tWjDhuzPmuIWrI8R9s3yV3BQVw2tW0yq",

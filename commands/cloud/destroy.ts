@@ -1,6 +1,6 @@
-import { makeCloudApiRequest } from "../../utils";
 import prompts from "prompts";
 import { CommandModule } from "yargs";
+import { makeCloudApiRequest } from "../../utils";
 
 const cmd: CommandModule = {
   command: "destroy",
