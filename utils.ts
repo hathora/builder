@@ -24,11 +24,13 @@ export async function makeCloudApiRequest(cloudApiBase: string, path: string, to
       responseType: "stream",
     });
 
-    response.data.pipe(process.stdout);
+    response.data.on('data', (d: any) => process.stdout.write(d));
+    response.data.on('end', () => process.stdout.write("\n"));
   } catch (err) {
     if (axios.isAxiosError(err)) {
       (err.response?.data as Stream).on("data", (data) => console.error(data.toString()));
     }
+    console.error(err);
   }
 }
 

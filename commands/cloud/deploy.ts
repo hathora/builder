@@ -39,6 +39,7 @@ const cmd: CommandModule = {
       if (axios.isAxiosError(err)) {
         (err.response?.data as Stream).on("data", (data) => console.log(data.toString()));
       }
+      console.error(err);
     }
   },
 };

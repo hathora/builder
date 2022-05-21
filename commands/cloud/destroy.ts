@@ -6,7 +6,7 @@ const cmd: CommandModule = {
   command: "destroy",
   describe: "Destroy a Hathora Cloud application",
   builder: {
-    yes: { type: "boolean", describe: "Accept all confirmations" },
+    yes: { type: "boolean", describe: "Accept all confirmations", default: false },
     appName: { type: "string", demandOption: true },
     token: { type: "string", demandOption: true, hidden: true },
     cloudApiBase: { type: "string", demandOption: true, hidden: true },
