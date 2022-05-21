@@ -14,7 +14,7 @@ const cmd: CommandModule = {
     token: { type: "string", demandOption: true, hidden: true },
     cloudApiBase: { type: "string", demandOption: true, hidden: true },
   },
-  handler: async (argv) => {
+  async handler(argv) {
     const { rootDir } = getDirs();
     const tarFile = tar.create(
       {

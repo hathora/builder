@@ -6,7 +6,7 @@ const cmd: CommandModule = {
   aliases: ["i"],
   describe: "Install hathora dependencies",
   builder: { only: { choices: ["client", "server"] } },
-  handler: (argv) => {
+  handler(argv) {
     install(argv.only as "server" | "client" | undefined);
   },
 };

@@ -11,7 +11,7 @@ const cmd: CommandModule = {
     token: { type: "string", demandOption: true, hidden: true },
     cloudApiBase: { type: "string", demandOption: true, hidden: true },
   },
-  handler: async (argv) => {
+  async handler(argv) {
     if (!argv.yes) {
       const userInput = await prompts({
         type: "confirm",

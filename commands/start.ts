@@ -6,7 +6,7 @@ const cmd: CommandModule = {
   aliases: ["up", "s"],
   describe: "Starts the hathora server",
   builder: { only: { choices: ["client", "server"] } },
-  handler: (argv) => {
+  handler(argv) {
     start(argv.only as "server" | "client" | undefined);
   },
 };

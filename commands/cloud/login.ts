@@ -11,7 +11,7 @@ const cmd: CommandModule = {
   command: "login",
   aliases: "l",
   describe: "Login to Hathora Cloud",
-  handler: async (_argv) => {
+  async handler() {
     const auth0 = await Issuer.discover("https://dev-tchp6in9.us.auth0.com");
     const client = new auth0.Client({
       client_id: "tWjDhuzPmuIWrI8R9s3yV3BQVw2tW0yq",
