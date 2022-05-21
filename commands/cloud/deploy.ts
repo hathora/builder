@@ -38,8 +38,9 @@ const cmd: CommandModule = {
     } catch (err) {
       if (axios.isAxiosError(err)) {
         (err.response?.data as Stream).on("data", (data) => console.log(data.toString()));
+      } else {
+        console.error(err);
       }
-      console.error(err);
     }
   },
 };
