@@ -77,6 +77,6 @@
     "test": "./scripts/run-all-examples.sh",
     "test:one": "./scripts/test-example.sh",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "lint_fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "lint_fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix"
   }
 }
