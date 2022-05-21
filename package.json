@@ -76,9 +76,10 @@
   "scripts": {
     "test": "./scripts/run-all-examples.sh",
     "test:one": "./scripts/test-example.sh",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "lint_fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
-    "lint_packagejson": "npx npm-package-json-lint ."
+    "lint_src": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint_src_fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "lint_packagejson": "npx npm-package-json-lint .",
+    "lint": "npm run lint_src && npm run lint_packagejson"
   },
   "npmpackagejsonlint": {
     "rules": {
