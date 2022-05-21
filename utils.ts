@@ -18,9 +18,7 @@ export async function makeCloudApiRequest(cloudApiBase: string, path: string, to
       method,
       baseURL: cloudApiBase,
       url: path,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${token}` },
       responseType: "stream",
     });
 

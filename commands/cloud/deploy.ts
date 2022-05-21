@@ -1,9 +1,9 @@
+import { Stream } from "stream";
 import { CommandModule } from "yargs";
 import tar from "tar";
 import FormData from "form-data";
-import { getDirs } from "../../utils";
 import axios from "axios";
-import { Stream } from "stream";
+import { getDirs } from "../../utils";
 
 const cmd: CommandModule = {
   command: "deploy",
