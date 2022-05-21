@@ -9,6 +9,29 @@ import shelljs from "shelljs";
 import { createServer } from "vite";
 import chalk from "chalk";
 import { generate } from "./generate";
+import axios, { Method } from "axios";
+import { Stream } from "stream";
+
+export async function makeCloudApiRequest(cloudApiBase: string, path: string, token: string, method: Method = "GET") {
+  try {
+    const response = await axios({
+      method,
+      baseURL: cloudApiBase,
+      url: path,
+      headers: { Authorization: `Bearer ${token}` },
+      responseType: "stream",
+    });
+
+    response.data.on("data", (d: any) => process.stdout.write(d));
+    response.data.on("end", () => process.stdout.write("\n"));
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      (err.response?.data as Stream).on("data", (data) => console.error(data.toString()));
+    } else {
+      console.error(err);
+    }
+  }
+}
 
 export function getDirs() {
   const rootDir = getProjectRoot(process.cwd());

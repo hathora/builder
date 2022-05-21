@@ -9,6 +9,7 @@ import chalk from "chalk";
 
 const cmd: CommandModule = {
   command: "login",
+  aliases: "l",
   describe: "Login to Hathora Cloud",
   handler: async (_argv) => {
     const auth0 = await Issuer.discover("https://auth.hathora.com");
@@ -18,11 +19,18 @@ const cmd: CommandModule = {
       id_token_signed_response_alg: "RS256",
     });
     const handle = await client.deviceAuthorization({ scope: "openid email", audience: "https://cloud.hathora.com" });
-    await prompts({
-      type: "invisible",
-      name: "",
-      message: `Press enter to open up the browser for login or press ctrl-c to abort. You should see the following code: ${handle.user_code}.`,
+
+    const userInput = await prompts({
+      type: "confirm",
+      name: "value",
+      message: `Open browser for login? You should see the following code: ${handle.user_code}.`,
+      initial: true,
     });
+
+    if (!userInput.value) {
+      return;
+    }
+
     open(handle.verification_uri_complete);
     const tokens = await handle.poll();
     const tokenPath = join(os.homedir(), ".config", "hathora", "token");

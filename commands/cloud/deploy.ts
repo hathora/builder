@@ -1,17 +1,19 @@
-import fs from "fs";
-import os from "os";
-import { join } from "path";
+import { Stream } from "stream";
 import { CommandModule } from "yargs";
 import tar from "tar";
 import FormData from "form-data";
-import chalk from "chalk";
-import { existsSync } from "fs-extra";
+import axios from "axios";
 import { getDirs } from "../../utils";
 
 const cmd: CommandModule = {
   command: "deploy",
+  aliases: ["d"],
   describe: "Deploys application to Hathora Cloud",
-  builder: { appName: { type: "string", demandOption: true } },
+  builder: {
+    appName: { type: "string", demandOption: true },
+    token: { type: "string", demandOption: true, hidden: true },
+    cloudApiBase: { type: "string", demandOption: true, hidden: true },
+  },
   handler: async (argv) => {
     const { rootDir } = getDirs();
     const tarFile = tar.create(
@@ -29,20 +31,17 @@ const cmd: CommandModule = {
     const form = new FormData();
     form.append("appName", argv.appName);
     form.append("file", tarFile, "bundle.tar.gz");
-    const tokenFile = join(os.homedir(), ".config", "hathora", "token");
-    if (!existsSync(tokenFile)) {
-      console.log(chalk.redBright(`Missing token file, run ${chalk.underline("hathora login")} first`));
-      return;
-    }
-    const token = fs.readFileSync(tokenFile).toString();
-    const headers = { Authorization: `Bearer ${token}` };
-    form.submit({ host: "cloud.hathora.com", protocol: "https:", path: "/deploy", headers }, (err, response) => {
-      if (err) {
-        console.error("Error: ", err);
+    const headers = { Authorization: `Bearer ${argv.token}` };
+    try {
+      const response = await axios.postForm(`${argv.cloudApiBase}/deploy`, form, { headers, responseType: "stream" });
+      response.data.pipe(process.stdout);
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        (err.response?.data as Stream).on("data", (data) => console.log(data.toString()));
       } else {
-        response.on("data", (data) => console.log(data.toString()));
+        console.error(err);
       }
-    });
+    }
   },
 };
 
