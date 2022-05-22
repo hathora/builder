@@ -5,12 +5,12 @@ import { createHash } from "crypto";
 import dotenv from "dotenv";
 import { v4 as uuidv4 } from "uuid";
 import { outputFileSync } from "fs-extra";
-import shelljs from "shelljs";
 import { createServer } from "vite";
 import chalk from "chalk";
 import { generate } from "./generate";
 import axios, { Method } from "axios";
 import { Stream } from "stream";
+import { exec, execSync } from "child_process";
 
 export async function makeCloudApiRequest(cloudApiBase: string, path: string, token: string, method: Method = "GET") {
   try {
@@ -101,10 +101,9 @@ function getProjectRoot(cwd: string): string {
 function npmInstall(dir: string) {
   console.log(`Installing dependencies in ${dir}`);
   if (existsSync(join(dir, "yarn.lock"))) {
-    shelljs.exec(`yarn install --cwd ${dir}`);
+    console.log(execSync(`yarn install --cwd ${dir}`, { encoding: "utf-8" }));
   } else if (existsSync(join(dir, "package.json"))) {
-    shelljs.cd(dir);
-    shelljs.exec("npm install");
+    console.log(execSync("npm install", { cwd: dir, encoding: "utf-8" }));
   }
 }
 
@@ -133,13 +132,14 @@ async function startFrontends() {
 
 async function startServer() {
   const { rootDir, serverDir } = getDirs();
-  shelljs.cd(join(serverDir, ".hathora"));
-  process.env.DATA_DIR = join(rootDir, "data");
-  process.env.NODE_LOADER_CONFIG = join(__dirname, "node-loader.config.mjs");
   const loaderPath = pathToFileURL(require.resolve("@node-loader/core/lib/node-loader-core.js"));
   const storePath = join(serverDir, ".hathora/store.ts");
-  const cp = shelljs.exec(`node --loader ${loaderPath} --experimental-specifier-resolution=node "${storePath}"`, {
-    async: true,
+  const cp = exec(`node --loader ${loaderPath} --experimental-specifier-resolution=node "${storePath}"`, {
+    cwd: join(serverDir, ".hathora"),
+    env: {
+      DATA_DIR: join(rootDir, "data"),
+      NODE_LOADER_CONFIG: join(__dirname, "node-loader.config.mjs"),
+    },
   });
   return new Promise((resolve, reject) => {
     cp.stdout?.on("data", resolve);

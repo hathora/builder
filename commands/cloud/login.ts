@@ -34,7 +34,8 @@ const cmd: CommandModule = {
     open(handle.verification_uri_complete);
     const tokens = await handle.poll();
     const tokenPath = join(os.homedir(), ".config", "hathora", "token");
-    outputFileSync(tokenPath, tokens.access_token);
+    console.log(tokens);
+    outputFileSync(tokenPath, tokens.id_token);
     console.log(chalk.green(`Successfully logged in! Saved credentials to ${tokenPath}`));
   },
 };
