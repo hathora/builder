@@ -3,9 +3,9 @@
   "version": "0.0.1",
   "type": "module",
   "dependencies": {
-    "@pairjacks/poker-cards": "0.3.0"
+    "@pairjacks/poker-cards": "^0.3.0"
   },
   "devDependencies": {
-    "typescript": "4.5.2"
+    "typescript": "^4.5.2"
   }
 }

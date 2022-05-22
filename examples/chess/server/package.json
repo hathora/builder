@@ -3,10 +3,10 @@
   "version": "0.0.1",
   "type": "module",
   "dependencies": {
-    "chess.js": "0.12.0"
+    "chess.js": "^0.12.0"
   },
   "devDependencies": {
-    "@types/chess.js": "0.11.2",
-    "typescript": "4.5.2"
+    "@types/chess.js": "^0.11.2",
+    "typescript": "^4.5.2"
   }
 }
