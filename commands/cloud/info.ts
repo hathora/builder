@@ -4,7 +4,7 @@ import { makeCloudApiRequest } from "../../utils";
 
 const cmd: CommandModule = {
   command: "info",
-  aliases: ["i", "details", "d"],
+  aliases: ["i"],
   describe: "Get details about a Hathora Cloud application",
   builder: {
     appName: { type: "string", demandOption: true },
