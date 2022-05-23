@@ -133,37 +133,39 @@ class Store {
 const coordinator = await register(new Store());
 
 export async function loadState(stateId: StateId) {
+  let rows;
   try {
-    const rows = log.load(stateId);
-
-    const { time, record } = rows[0];
-    const reader = new Reader(record);
-    const seed = reader.readUInt64();
-    const userId = reader.readString();
-    const argsBuffer = reader.readBuffer(reader.readUVarint());
-    const chance = Chance(seed.toString());
-    const impl = new ImplWrapper(ctxNoEvents(chance, time), argsBuffer);
-
-    for (let i = 1; i < rows.length; i++) {
-      const { time, record } = rows[i];
-      const reader = new Reader(record);
-      const method = reader.readUInt8();
-      {{#if tick}}
-      if (method === 0xff) {
-        const timeDelta = reader.readUVarint();
-        await impl.onTick(ctxNoEvents(chance, time), timeDelta / 1000);
-        continue;
-      }
-      {{/if}}
-      const userId = reader.readString();
-      const argsBuffer = reader.readBuffer(reader.readUVarint());
-      await impl.getResult(userId, method, ctxNoEvents(chance, time), argsBuffer);
-    }
-
-    return { impl, chance };
+    rows = log.load(stateId);
   } catch (e) {
     console.error("Unable to load state", stateId.toString(36));
+    return;
   }
+
+  const { time, record } = rows[0];
+  const reader = new Reader(record);
+  const seed = reader.readUInt64();
+  const userId = reader.readString();
+  const argsBuffer = reader.readBuffer(reader.readUVarint());
+  const chance = Chance(seed.toString());
+  const impl = new ImplWrapper(ctxNoEvents(chance, time), argsBuffer);
+
+  for (let i = 1; i < rows.length; i++) {
+    const { time, record } = rows[i];
+    const reader = new Reader(record);
+    const method = reader.readUInt8();
+    {{#if tick}}
+    if (method === 0xff) {
+      const timeDelta = reader.readUVarint();
+      await impl.onTick(ctxNoEvents(chance, time), timeDelta / 1000);
+      continue;
+    }
+    {{/if}}
+    const userId = reader.readString();
+    const argsBuffer = reader.readBuffer(reader.readUVarint());
+    await impl.getResult(userId, method, ctxNoEvents(chance, time), argsBuffer);
+  }
+
+  return { impl, chance };
 }
 
 async function sendSnapshot(stateId: StateId, userId: UserId) {
