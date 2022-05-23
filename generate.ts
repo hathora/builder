@@ -1,8 +1,9 @@
-import { load } from "js-yaml";
-import { readdirSync, readFileSync, outputFileSync, existsSync, statSync, copySync } from "fs-extra";
-import { compile } from "handlebars";
+import { basename, join } from "path";
+
 import { z } from "zod";
-import { join, basename } from "path";
+import { load } from "js-yaml";
+import { compile } from "handlebars";
+import { copySync, existsSync, outputFileSync, readdirSync, readFileSync, statSync } from "fs-extra";
 import "./helpers";
 
 const TypeArgs = z.union([z.string(), z.array(z.string()), z.record(z.string())]);

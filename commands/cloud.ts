@@ -5,7 +5,9 @@ const cmd: CommandModule = {
   aliases: ["c"],
   describe: "Interact with Hathora Cloud",
   builder: (yargs) => yargs.commandDir("cloud", { extensions: ["js", "ts"] }),
-  handler() {},
+  handler() {
+    console.log("Please use one of the subcommands (run with --help for full list.");
+  },
 };
 
 module.exports = cmd;

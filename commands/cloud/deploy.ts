@@ -1,8 +1,10 @@
 import { Stream } from "stream";
+
 import { CommandModule } from "yargs";
 import tar from "tar";
 import FormData from "form-data";
 import axios from "axios";
+
 import { getDirs } from "../../utils";
 
 const cmd: CommandModule = {
@@ -14,7 +16,7 @@ const cmd: CommandModule = {
     token: { type: "string", demandOption: true, hidden: true },
     cloudApiBase: { type: "string", demandOption: true, hidden: true },
   },
-  handler: async (argv) => {
+  async handler(argv) {
     const { rootDir } = getDirs();
     const tarFile = tar.create(
       {

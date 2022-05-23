@@ -1,5 +1,5 @@
-import Handlebars from "handlebars";
 import { v4 as uuidv4 } from "uuid";
+import Handlebars from "handlebars";
 
 Handlebars.registerHelper("concat", (...arr) => arr.splice(0, arr.length - 1).join(""));
 Handlebars.registerHelper("eq", (a, b) => a === b);
