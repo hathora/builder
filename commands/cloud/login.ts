@@ -1,17 +1,18 @@
-import os from "os";
 import { join } from "path";
+import os from "os";
+
 import { CommandModule } from "yargs";
-import { outputFileSync } from "fs-extra";
-import { Issuer } from "openid-client";
 import prompts from "prompts";
+import { Issuer } from "openid-client";
 import open from "open";
+import { outputFileSync } from "fs-extra";
 import chalk from "chalk";
 
 const cmd: CommandModule = {
   command: "login",
   aliases: "l",
   describe: "Login to Hathora Cloud",
-  handler: async (_argv) => {
+  async handler() {
     const auth0 = await Issuer.discover("https://auth.hathora.com");
     const client = new auth0.Client({
       client_id: "tWjDhuzPmuIWrI8R9s3yV3BQVw2tW0yq",
@@ -34,8 +35,7 @@ const cmd: CommandModule = {
     open(handle.verification_uri_complete);
     const tokens = await handle.poll();
     const tokenPath = join(os.homedir(), ".config", "hathora", "token");
-    console.log(tokens);
-    outputFileSync(tokenPath, tokens.id_token);
+    outputFileSync(tokenPath, tokens.access_token);
     console.log(chalk.green(`Successfully logged in! Saved credentials to ${tokenPath}`));
   },
 };
