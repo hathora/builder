@@ -104,9 +104,11 @@ function getProjectRoot(cwd: string): string {
 function npmInstall(dir: string) {
   console.log(`Installing dependencies in ${dir}`);
   if (existsSync(join(dir, "yarn.lock"))) {
-    console.log(execSync(`yarn install --cwd ${dir}`, { encoding: "utf-8" }));
+    console.log(execSync("yarn install", { cwd: dir, encoding: "utf-8" }));
   } else if (existsSync(join(dir, "package.json"))) {
     console.log(execSync("npm install", { cwd: dir, encoding: "utf-8" }));
+  } else {
+    console.error("npm or yarn not found.");
   }
 }
 
