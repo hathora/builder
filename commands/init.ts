@@ -1,15 +1,17 @@
-import { existsSync } from "fs";
 import { join } from "path";
+import { existsSync } from "fs";
+
 import { CommandModule } from "yargs";
 import chalk from "chalk";
-import { generate } from "../generate";
+
 import { generateLocal, getDirs } from "../utils";
+import { generate } from "../generate";
 
 const cmd: CommandModule = {
   command: "init",
   aliases: ["initialize", "initialise"],
   describe: "Creates a new hathora project",
-  handler: (_argv) => {
+  handler() {
     const { rootDir, serverDir } = getDirs();
 
     if (existsSync(join(serverDir, "impl.ts"))) {

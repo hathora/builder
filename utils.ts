@@ -1,16 +1,18 @@
-import { existsSync, readdirSync } from "fs";
-import { join } from "path";
 import { pathToFileURL } from "url";
+import { Stream } from "stream";
+import { join } from "path";
+import { existsSync, readdirSync } from "fs";
 import { createHash } from "crypto";
-import dotenv from "dotenv";
+import { exec, execSync } from "child_process";
+
+import { createServer } from "vite";
 import { v4 as uuidv4 } from "uuid";
 import { outputFileSync } from "fs-extra";
-import { createServer } from "vite";
+import dotenv from "dotenv";
 import chalk from "chalk";
-import { generate } from "./generate";
 import axios, { Method } from "axios";
-import { Stream } from "stream";
-import { exec, execSync } from "child_process";
+
+import { generate } from "./generate";
 
 export async function makeCloudApiRequest(cloudApiBase: string, path: string, token: string, method: Method = "GET") {
   try {
@@ -22,8 +24,9 @@ export async function makeCloudApiRequest(cloudApiBase: string, path: string, to
       responseType: "stream",
     });
 
-    response.data.on("data", (d: any) => process.stdout.write(d));
-    response.data.on("end", () => process.stdout.write("\n"));
+    const data = response.data as Stream;
+    data.on("data", (d) => process.stdout.write(d));
+    data.on("end", () => process.stdout.write("\n"));
   } catch (err) {
     if (axios.isAxiosError(err)) {
       (err.response?.data as Stream).on("data", (data) => console.error(data.toString()));

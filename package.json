@@ -1,6 +1,6 @@
 {
   "name": "hathora",
-  "version": "0.7.19",
+  "version": "0.7.21",
   "description": "Multiplayer game framework",
   "bin": "./cli.js",
   "files": [
@@ -45,7 +45,11 @@
     "@types/update-notifier": "5.1.0",
     "@types/uuid": "8.3.4",
     "@types/yargs": "17.0.10",
-    "prettier": "2.6.2",
+    "@typescript-eslint/eslint-plugin": "5.25.0",
+    "@typescript-eslint/parser": "5.25.0",
+    "eslint": "8.16.0",
+    "eslint-plugin-import": "2.26.0",
+    "npm-package-json-lint": "6.3.0",
     "typescript": "4.6.4"
   },
   "engines": {
@@ -69,6 +73,18 @@
   "homepage": "https://www.hathora.dev",
   "scripts": {
     "test": "./scripts/run-all-examples.sh",
-    "test:one": "./scripts/test-example.sh"
+    "test:one": "./scripts/test-example.sh",
+    "lint_src": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint_src_fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "lint_packagejson": "npx npm-package-json-lint .",
+    "lint": "npm run lint_src && npm run lint_packagejson"
+  },
+  "npmpackagejsonlint": {
+    "rules": {
+      "no-caret-version-dependencies": "error",
+      "no-caret-version-devDependencies": "error",
+      "no-tilde-version-dependencies": "error",
+      "no-tilde-version-devDependencies": "error"
+    }
   }
 }

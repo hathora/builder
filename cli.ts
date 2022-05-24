@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 
 import { join } from "path";
-import fs from "fs";
 import os from "os";
-import chalk from "chalk";
+import fs from "fs";
+
 import yargs from "yargs/yargs";
 import { hideBin } from "yargs/helpers";
 import { MiddlewareFunction } from "yargs";
 import updateNotifier from "update-notifier";
+import chalk from "chalk";
 
 updateNotifier({ pkg: require("./package.json") }).notify({ defer: false, isGlobal: true });
 

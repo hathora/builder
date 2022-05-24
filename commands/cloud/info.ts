@@ -1,16 +1,17 @@
 import { CommandModule } from "yargs";
+
 import { makeCloudApiRequest } from "../../utils";
 
 const cmd: CommandModule = {
   command: "info",
-  aliases: ["i", "details", "d"],
+  aliases: ["i"],
   describe: "Get details about a Hathora Cloud application",
   builder: {
     appName: { type: "string", demandOption: true },
     token: { type: "string", demandOption: true, hidden: true },
     cloudApiBase: { type: "string", demandOption: true, hidden: true },
   },
-  handler: async (argv) => {
+  async handler(argv) {
     await makeCloudApiRequest(argv.cloudApiBase as string, `/app/${argv.appName}`, argv.token as string);
   },
 };

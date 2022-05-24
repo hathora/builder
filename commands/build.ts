@@ -1,18 +1,20 @@
 import { join } from "path";
-import chalk from "chalk";
-import { existsSync, readdirSync } from "fs-extra";
-import { build as buildClient } from "vite";
-import { build as buildServer } from "esbuild";
+
 import { CommandModule } from "yargs";
-import { generate } from "../generate";
+import { build as buildClient } from "vite";
+import { existsSync, readdirSync } from "fs-extra";
+import { build as buildServer } from "esbuild";
+import chalk from "chalk";
+
 import { getAppConfig, getDirs, install } from "../utils";
+import { generate } from "../generate";
 
 const cmd: CommandModule = {
   command: "build",
   aliases: ["b"],
   describe: "Builds the project",
   builder: { only: { choices: ["client", "server"] } },
-  handler: (argv) => {
+  handler(argv) {
     const { rootDir, serverDir } = getDirs();
     if (!existsSync(join(serverDir, "impl.ts"))) {
       console.error(
