@@ -7,6 +7,7 @@ import { exec, execSync } from "child_process";
 
 import { createServer } from "vite";
 import { v4 as uuidv4 } from "uuid";
+import shelljs from "shelljs";
 import { outputFileSync } from "fs-extra";
 import dotenv from "dotenv";
 import chalk from "chalk";
@@ -140,24 +141,16 @@ async function startFrontends() {
 
 async function startServer() {
   const { rootDir, serverDir } = getDirs();
+  shelljs.cd(join(serverDir, ".hathora"));
+  process.env.DATA_DIR = join(rootDir, "data");
+  process.env.NODE_LOADER_CONFIG = join(__dirname, "..", "node-loader.config.mjs");
   const loaderPath = pathToFileURL(require.resolve("@node-loader/core/lib/node-loader-core.js"));
-  const storePath = join(serverDir, ".hathora", "store.ts");
-  const cp = exec(`node --loader ${loaderPath} --experimental-specifier-resolution=node "${storePath}"`, {
-    cwd: join(serverDir, ".hathora"),
-    env: {
-      DATA_DIR: join(rootDir, "data"),
-      NODE_LOADER_CONFIG: join(__dirname, "..", "node-loader.config.mjs"),
-    },
+  const storePath = join(serverDir, ".hathora/store.ts");
+  const cp = shelljs.exec(`node --loader ${loaderPath} --experimental-specifier-resolution=node "${storePath}"`, {
+    async: true,
   });
   return new Promise((resolve, reject) => {
-    cp.stdout?.on("data", console.log);
-    cp.stderr?.on("data", console.error);
-    cp.on("exit", (code) => {
-      if (code === 0) {
-        resolve(code);
-      } else {
-        reject(code);
-      }
-    });
+    cp.stdout?.on("data", resolve);
+    cp.on("error", reject);
   });
 }
