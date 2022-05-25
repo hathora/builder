@@ -3,7 +3,8 @@
     "esModuleInterop": true,
     "module": "commonjs",
     "strict": true,
-    "target": "esnext"
+    "target": "esnext",
+    "outDir": "lib"
   },
   "exclude": ["examples"]
 }

@@ -2,13 +2,9 @@
   "name": "hathora",
   "version": "0.7.22",
   "description": "Multiplayer game framework",
-  "bin": "./cli.js",
+  "bin": "./lib/cli.js",
   "files": [
-    "cli.js",
-    "generate.js",
-    "helpers.js",
-    "utils.js",
-    "commands/**/*.js",
+    "lib",
     "node-loader.config.mjs",
     "templates",
     "READEME.md",
@@ -72,6 +68,7 @@
   },
   "homepage": "https://www.hathora.dev",
   "scripts": {
+    "build": "npx tsc",
     "test": "./scripts/run-all-examples.sh",
     "test:one": "./scripts/test-example.sh",
     "lint_src": "eslint . --ext .js,.jsx,.ts,.tsx",
