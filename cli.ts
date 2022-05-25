@@ -10,7 +10,13 @@ import { MiddlewareFunction } from "yargs";
 import updateNotifier from "update-notifier";
 import chalk from "chalk";
 
-updateNotifier({ pkg: require("./package.json") }).notify({ defer: false, isGlobal: true });
+import { findUp } from "./utils";
+
+const pkgRoot = findUp("package.json", __dirname);
+if (pkgRoot === undefined) {
+  throw new Error("Could not find package.json");
+}
+updateNotifier({ pkg: require(join(pkgRoot, "package.json")) }).notify({ defer: false, isGlobal: true });
 
 const cloudMiddleware: MiddlewareFunction = (argv) => {
   if (argv._[0] !== "cloud") {

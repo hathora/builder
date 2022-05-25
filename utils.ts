@@ -38,6 +38,9 @@ export async function makeCloudApiRequest(cloudApiBase: string, path: string, to
 
 export function getDirs() {
   const rootDir = findUp("hathora.yml");
+  if (rootDir === undefined) {
+    throw new Error("Doesn't appear to be inside a hathora project");
+  }
   return {
     rootDir,
     clientDir: join(rootDir, "client"),
@@ -90,13 +93,13 @@ export async function start(only: "server" | "client" | undefined) {
   }
 }
 
-export function findUp(file: string, dir: string = process.cwd()): string {
+export function findUp(file: string, dir: string = process.cwd()): string | undefined {
   if (existsSync(join(dir, file))) {
     return dir;
   }
   const parentDir = join(dir, "..");
   if (parentDir === dir) {
-    throw new Error("Doesn't appear to be inside a hathora project");
+    return undefined;
   }
   return findUp(file, parentDir);
 }
