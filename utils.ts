@@ -37,7 +37,7 @@ export async function makeCloudApiRequest(cloudApiBase: string, path: string, to
 }
 
 export function getDirs() {
-  const rootDir = getProjectRoot(process.cwd());
+  const rootDir = findUp("hathora.yml");
   return {
     rootDir,
     clientDir: join(rootDir, "client"),
@@ -90,15 +90,15 @@ export async function start(only: "server" | "client" | undefined) {
   }
 }
 
-function getProjectRoot(cwd: string): string {
-  if (existsSync(join(cwd, "hathora.yml"))) {
-    return cwd;
+export function findUp(file: string, dir: string = process.cwd()): string {
+  if (existsSync(join(dir, file))) {
+    return dir;
   }
-  const parentDir = join(cwd, "..");
-  if (parentDir === cwd) {
+  const parentDir = join(dir, "..");
+  if (parentDir === dir) {
     throw new Error("Doesn't appear to be inside a hathora project");
   }
-  return getProjectRoot(parentDir);
+  return findUp(file, parentDir);
 }
 
 function npmInstall(dir: string) {
@@ -147,7 +147,8 @@ async function startServer() {
     },
   });
   return new Promise((resolve, reject) => {
-    cp.stdout?.on("data", resolve);
+    cp.stdout?.on("data", console.log);
     cp.on("error", reject);
+    cp.on("exit", resolve);
   });
 }
