@@ -61,7 +61,7 @@ export function generateLocal() {
   const { rootDir } = getDirs();
   dotenv.config({ path: join(rootDir, ".env") });
   const appConfig = getAppConfig();
-  generate(rootDir, join(__dirname, "..", "templates", "base"), appConfig);
+  generate(rootDir, "base", appConfig);
   if (!existsSync(join(rootDir, ".env"))) {
     outputFileSync(join(rootDir, ".env"), `APP_SECRET=${appConfig.appSecret}\n`);
   }
