@@ -3,7 +3,7 @@ import { Stream } from "stream";
 import { join } from "path";
 import { existsSync, readdirSync } from "fs";
 import { createHash } from "crypto";
-import { exec, execSync } from "child_process";
+import { execSync } from "child_process";
 
 import { createServer } from "vite";
 import { v4 as uuidv4 } from "uuid";
