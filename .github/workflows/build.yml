@@ -1,12 +1,13 @@
 name: build
+
 on: [push]
+
 jobs:
   cli-all-examples:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [16.x, 17.x, 18.x]
-
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
@@ -14,6 +15,6 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: npm ci
+      - run: npm run lint
       - run: npm install -g ts-node
       - run: npm test
-      - run: npm run lint

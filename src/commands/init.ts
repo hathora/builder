@@ -21,7 +21,7 @@ const cmd: CommandModule = {
           `${chalk.red(" to regenerate")}`
       );
     } else {
-      generate(rootDir, "templates/bootstrap");
+      generate(rootDir, "bootstrap");
       generateLocal();
     }
   },

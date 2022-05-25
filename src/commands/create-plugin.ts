@@ -1,3 +1,5 @@
+import { join } from "path";
+
 import { CommandModule } from "yargs";
 
 import { getDirs } from "../utils";
@@ -8,7 +10,7 @@ const cmd: CommandModule = {
   describe: "Creates a plugin",
   handler(argv) {
     const { rootDir } = getDirs();
-    generate(rootDir, `templates/plugin/${argv.lib}`, { val: argv.type as string });
+    generate(rootDir, join("plugin", argv.lib as string), { val: argv.type as string });
   },
 };
 

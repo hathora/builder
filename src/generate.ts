@@ -201,5 +201,5 @@ export function generate(rootDir: string, templatesDir: string, args: Record<str
       }
     });
   }
-  codegen(join(__dirname, templatesDir), rootDir);
+  codegen(join(__dirname, "..", "templates", templatesDir), rootDir);
 }

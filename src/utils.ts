@@ -3,10 +3,11 @@ import { Stream } from "stream";
 import { join } from "path";
 import { existsSync, readdirSync } from "fs";
 import { createHash } from "crypto";
-import { exec, execSync } from "child_process";
+import { execSync } from "child_process";
 
 import { createServer } from "vite";
 import { v4 as uuidv4 } from "uuid";
+import shelljs from "shelljs";
 import { outputFileSync } from "fs-extra";
 import dotenv from "dotenv";
 import chalk from "chalk";
@@ -37,7 +38,10 @@ export async function makeCloudApiRequest(cloudApiBase: string, path: string, to
 }
 
 export function getDirs() {
-  const rootDir = getProjectRoot(process.cwd());
+  const rootDir = findUp("hathora.yml");
+  if (rootDir === undefined) {
+    throw new Error("Doesn't appear to be inside a hathora project");
+  }
   return {
     rootDir,
     clientDir: join(rootDir, "client"),
@@ -57,7 +61,7 @@ export function generateLocal() {
   const { rootDir } = getDirs();
   dotenv.config({ path: join(rootDir, ".env") });
   const appConfig = getAppConfig();
-  generate(rootDir, "templates/base", appConfig);
+  generate(rootDir, "base", appConfig);
   if (!existsSync(join(rootDir, ".env"))) {
     outputFileSync(join(rootDir, ".env"), `APP_SECRET=${appConfig.appSecret}\n`);
   }
@@ -90,23 +94,25 @@ export async function start(only: "server" | "client" | undefined) {
   }
 }
 
-function getProjectRoot(cwd: string): string {
-  if (existsSync(join(cwd, "hathora.yml"))) {
-    return cwd;
+function findUp(file: string, dir: string = process.cwd()): string | undefined {
+  if (existsSync(join(dir, file))) {
+    return dir;
   }
-  const parentDir = join(cwd, "..");
-  if (parentDir === cwd) {
-    throw new Error("Doesn't appear to be inside a hathora project");
+  const parentDir = join(dir, "..");
+  if (parentDir === dir) {
+    return undefined;
   }
-  return getProjectRoot(parentDir);
+  return findUp(file, parentDir);
 }
 
 function npmInstall(dir: string) {
   console.log(`Installing dependencies in ${dir}`);
   if (existsSync(join(dir, "yarn.lock"))) {
-    console.log(execSync(`yarn install --cwd ${dir}`, { encoding: "utf-8" }));
+    console.log(execSync("yarn install", { cwd: dir, encoding: "utf-8" }));
   } else if (existsSync(join(dir, "package.json"))) {
     console.log(execSync("npm install", { cwd: dir, encoding: "utf-8" }));
+  } else {
+    console.error("npm or yarn not found.");
   }
 }
 
@@ -135,14 +141,13 @@ async function startFrontends() {
 
 async function startServer() {
   const { rootDir, serverDir } = getDirs();
+  shelljs.cd(join(serverDir, ".hathora"));
+  process.env.DATA_DIR = join(rootDir, "data");
+  process.env.NODE_LOADER_CONFIG = join(__dirname, "..", "node-loader.config.mjs");
   const loaderPath = pathToFileURL(require.resolve("@node-loader/core/lib/node-loader-core.js"));
   const storePath = join(serverDir, ".hathora/store.ts");
-  const cp = exec(`node --loader ${loaderPath} --experimental-specifier-resolution=node "${storePath}"`, {
-    cwd: join(serverDir, ".hathora"),
-    env: {
-      DATA_DIR: join(rootDir, "data"),
-      NODE_LOADER_CONFIG: join(__dirname, "node-loader.config.mjs"),
-    },
+  const cp = shelljs.exec(`node --loader ${loaderPath} --experimental-specifier-resolution=node "${storePath}"`, {
+    async: true,
   });
   return new Promise((resolve, reject) => {
     cp.stdout?.on("data", resolve);

@@ -10,7 +10,7 @@ import { MiddlewareFunction } from "yargs";
 import updateNotifier from "update-notifier";
 import chalk from "chalk";
 
-updateNotifier({ pkg: require("./package.json") }).notify({ defer: false, isGlobal: true });
+updateNotifier({ pkg: require("../package.json") }).notify({ defer: false, isGlobal: true });
 
 const cloudMiddleware: MiddlewareFunction = (argv) => {
   if (argv._[0] !== "cloud") {

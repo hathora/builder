@@ -23,7 +23,7 @@ const cmd: CommandModule = {
           `${chalk.red("first")}`
       );
     } else {
-      generate(rootDir, "templates/base", getAppConfig());
+      generate(rootDir, "base", getAppConfig());
     }
     install(argv.only as "server" | "client" | undefined);
     build(argv.only as "server" | "client" | undefined);
