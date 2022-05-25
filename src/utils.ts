@@ -141,7 +141,7 @@ async function startFrontends() {
 async function startServer() {
   const { rootDir, serverDir } = getDirs();
   const loaderPath = pathToFileURL(require.resolve("@node-loader/core/lib/node-loader-core.js"));
-  const storePath = join(serverDir, ".hathora/store.ts");
+  const storePath = join(serverDir, ".hathora", "store.ts");
   const cp = exec(`node --loader ${loaderPath} --experimental-specifier-resolution=node "${storePath}"`, {
     cwd: join(serverDir, ".hathora"),
     env: {
@@ -149,9 +149,9 @@ async function startServer() {
       NODE_LOADER_CONFIG: join(__dirname, "..", "node-loader.config.mjs"),
     },
   });
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     cp.stdout?.on("data", console.log);
-    cp.on("error", reject);
+    cp.stderr?.on("data", console.error);
     cp.on("exit", resolve);
   });
 }
