@@ -2,7 +2,7 @@
   "name": "hathora",
   "version": "0.7.22",
   "description": "Multiplayer game framework",
-  "bin": "./lib/cli.js",
+  "bin": "lib/cli.js",
   "files": [
     "lib",
     "node-loader.config.mjs",
