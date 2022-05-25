@@ -34,7 +34,7 @@
     "uuid": "8.3.2",
     "vite": "2.9.9",
     "yargs": "17.5.1",
-    "zod": "3.16.0"
+    "zod": "3.17.3"
   },
   "devDependencies": {
     "@types/fs-extra": "9.0.13",
