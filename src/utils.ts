@@ -60,7 +60,7 @@ export function generateLocal() {
   const { rootDir } = getDirs();
   dotenv.config({ path: join(rootDir, ".env") });
   const appConfig = getAppConfig();
-  generate(rootDir, "templates/base", appConfig);
+  generate(rootDir, join(__dirname, "..", "templates", "base"), appConfig);
   if (!existsSync(join(rootDir, ".env"))) {
     outputFileSync(join(rootDir, ".env"), `APP_SECRET=${appConfig.appSecret}\n`);
   }
@@ -93,7 +93,7 @@ export async function start(only: "server" | "client" | undefined) {
   }
 }
 
-export function findUp(file: string, dir: string = process.cwd()): string | undefined {
+function findUp(file: string, dir: string = process.cwd()): string | undefined {
   if (existsSync(join(dir, file))) {
     return dir;
   }
@@ -146,7 +146,7 @@ async function startServer() {
     cwd: join(serverDir, ".hathora"),
     env: {
       DATA_DIR: join(rootDir, "data"),
-      NODE_LOADER_CONFIG: join(__dirname, "node-loader.config.mjs"),
+      NODE_LOADER_CONFIG: join(__dirname, "..", "node-loader.config.mjs"),
     },
   });
   return new Promise((resolve, reject) => {

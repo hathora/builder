@@ -6,5 +6,5 @@
     "target": "esnext",
     "outDir": "lib"
   },
-  "exclude": ["examples"]
+  "include": ["src"]
 }
