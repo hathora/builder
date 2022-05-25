@@ -38,14 +38,16 @@ class Store {
     setInterval(() => {
       {{#if tick}}
       const currTime = Date.now();
-      stateInfo.forEach(async ({ impl, chance }, stateId) => {
-        const timeDelta = currTime - prevUpdateTime;
-        await impl.onTick(ctx(chance, currTime, stateId), timeDelta / 1000);
-        const changedAt = impl.changedAt();
-        if (changedAt !== undefined) {
-          changedStates.set(stateId, changedAt);
-          pendingMessages.delete(stateId);
-          log.append(stateId, currTime, new Writer().writeUInt8(0xff).writeUVarint(timeDelta).toBuffer());
+      stateInfo.forEach(async ({ impl, chance, subscriptions }, stateId) => {
+        if (subscriptions.size > 0) {
+          const timeDelta = currTime - prevUpdateTime;
+          await impl.onTick(ctx(chance, currTime, stateId), timeDelta / 1000);
+          const changedAt = impl.changedAt();
+          if (changedAt !== undefined) {
+            changedStates.set(stateId, changedAt);
+            pendingMessages.delete(stateId);
+            log.append(stateId, currTime, new Writer().writeUInt8(0xff).writeUVarint(timeDelta).toBuffer());
+          }
         }
       });
       prevUpdateTime = currTime;
@@ -56,6 +58,14 @@ class Store {
       pendingMessages.forEach((userIds, stateId) => userIds.forEach((userId) => sendMessages(stateId, userId)));
       pendingMessages.clear();
     }, {{#if tick}}{{tick}}{{else}}50{{/if}});
+    setInterval(() => {
+      stateInfo.forEach(({ subscriptions }, stateId) => {
+        if (subscriptions.size === 0) {
+          stateInfo.delete(stateId);
+          log.unload(stateId);
+        }
+      });
+    }, 10000);
   }
   async newState(stateId: StateId, userId: UserId, data: Buffer) {
     const seed = randomBytes(8).readBigUInt64LE();
@@ -85,13 +95,10 @@ class Store {
       return;
     }
     const subscribers = stateInfo.get(stateId)!.subscriptions;
-    if (subscribers.size > 1) {
-      subscribers.delete(userId);
-    } else {
-      stateInfo.delete(stateId);
+    subscribers.delete(userId);
+    if (subscribers.size === 0) {
       changedStates.delete(stateId);
       pendingMessages.delete(stateId);
-      log.unload(stateId);
     }
   }
   async handleUpdate(stateId: StateId, userId: UserId, data: Buffer) {
