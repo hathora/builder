@@ -3,10 +3,10 @@ import { Stream } from "stream";
 import { join } from "path";
 import { existsSync, readdirSync } from "fs";
 import { createHash } from "crypto";
+import { exec, execSync } from "child_process";
 
 import { createServer } from "vite";
 import { v4 as uuidv4 } from "uuid";
-import shelljs from "shelljs";
 import { outputFileSync } from "fs-extra";
 import dotenv from "dotenv";
 import chalk from "chalk";
@@ -104,10 +104,11 @@ function getProjectRoot(cwd: string): string {
 function npmInstall(dir: string) {
   console.log(`Installing dependencies in ${dir}`);
   if (existsSync(join(dir, "yarn.lock"))) {
-    shelljs.exec(`yarn install --cwd ${dir}`);
+    console.log(execSync("yarn install", { cwd: dir, encoding: "utf-8" }));
   } else if (existsSync(join(dir, "package.json"))) {
-    shelljs.cd(dir);
-    shelljs.exec("npm install");
+    console.log(execSync("npm install", { cwd: dir, encoding: "utf-8" }));
+  } else {
+    console.error("npm or yarn not found.");
   }
 }
 
@@ -136,13 +137,14 @@ async function startFrontends() {
 
 async function startServer() {
   const { rootDir, serverDir } = getDirs();
-  shelljs.cd(join(serverDir, ".hathora"));
-  process.env.DATA_DIR = join(rootDir, "data");
-  process.env.NODE_LOADER_CONFIG = join(__dirname, "node-loader.config.mjs");
   const loaderPath = pathToFileURL(require.resolve("@node-loader/core/lib/node-loader-core.js"));
   const storePath = join(serverDir, ".hathora/store.ts");
-  const cp = shelljs.exec(`node --loader ${loaderPath} --experimental-specifier-resolution=node "${storePath}"`, {
-    async: true,
+  const cp = exec(`node --loader ${loaderPath} --experimental-specifier-resolution=node "${storePath}"`, {
+    cwd: join(serverDir, ".hathora"),
+    env: {
+      DATA_DIR: join(rootDir, "data"),
+      NODE_LOADER_CONFIG: join(__dirname, "node-loader.config.mjs"),
+    },
   });
   return new Promise((resolve, reject) => {
     cp.stdout?.on("data", resolve);
