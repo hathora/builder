@@ -149,9 +149,15 @@ async function startServer() {
       NODE_LOADER_CONFIG: join(__dirname, "..", "node-loader.config.mjs"),
     },
   });
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     cp.stdout?.on("data", console.log);
     cp.stderr?.on("data", console.error);
-    cp.on("exit", resolve);
+    cp.on("exit", (code) => {
+      if (code === 0) {
+        resolve(code);
+      } else {
+        reject(code);
+      }
+    });
   });
 }
