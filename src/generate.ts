@@ -20,7 +20,7 @@ const HathoraConfig = z
     userState: z.string(),
     initializeArgs: z.optional(z.string()),
     error: z.string(),
-    tick: z.optional(z.number().int().gte(50)),
+    tick: z.optional(z.number().int().gte(25)),
   })
   .strict();
 
