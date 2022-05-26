@@ -5,34 +5,43 @@ import { existsSync, readdirSync } from "fs";
 import { createHash } from "crypto";
 import { execSync } from "child_process";
 
+import yargs from "yargs";
 import { createServer } from "vite";
 import { v4 as uuidv4 } from "uuid";
 import shelljs from "shelljs";
 import { outputFileSync } from "fs-extra";
+import FormData from "form-data";
 import dotenv from "dotenv";
 import chalk from "chalk";
 import axios, { Method } from "axios";
 
 import { generate } from "./generate";
 
-export async function makeCloudApiRequest(cloudApiBase: string, path: string, token: string, method: Method = "GET") {
+export async function makeCloudApiRequest(cloudApiBase: string, path: string, token: string, method: Method = "GET", form?: FormData) {
   try {
-    const response = await axios({
+    const response = await axios.request<Stream>({
       method,
       baseURL: cloudApiBase,
       url: path,
       headers: { Authorization: `Bearer ${token}` },
       responseType: "stream",
+      data: form,
     });
-
-    const data = response.data as Stream;
-    data.on("data", (d) => process.stdout.write(d));
-    data.on("end", () => process.stdout.write("\n"));
+    response.data.pipe(process.stdout);
   } catch (err) {
     if (axios.isAxiosError(err)) {
-      (err.response?.data as Stream).on("data", (data) => console.error(data.toString()));
+      const axiosError = err;
+      if (axiosError.response === undefined) {
+        yargs.exit(1, err);
+        return;
+      }
+
+      const dataStream = axiosError.response.data as Stream;
+      dataStream.pipe(process.stderr);
+      dataStream.on("end", () => yargs.exit(1, axiosError));
     } else {
       console.error(err);
+      yargs.exit(1, err as Error);
     }
   }
 }
