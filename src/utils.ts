@@ -143,6 +143,7 @@ async function startServer() {
   const { rootDir, serverDir } = getDirs();
   shelljs.cd(join(serverDir, ".hathora"));
   process.env.DATA_DIR = join(rootDir, "data");
+  process.env.STORE_REGION = "local";
   process.env.NODE_LOADER_CONFIG = join(__dirname, "..", "node-loader.config.mjs");
   const loaderPath = pathToFileURL(require.resolve("@node-loader/core/lib/node-loader-core.js"));
   const storePath = join(serverDir, ".hathora/store.ts");
