@@ -8,6 +8,7 @@ const cmd: CommandModule = {
   describe: "Destroy a Hathora Cloud application",
   builder: {
     yes: { type: "boolean", describe: "Accept all confirmations", default: false },
+    forceDestroy: { type: "boolean", describe: "Force destroy", default: false },
     appName: { type: "string", demandOption: true },
     token: { type: "string", demandOption: true, hidden: true },
     cloudApiBase: { type: "string", demandOption: true, hidden: true },
@@ -24,7 +25,8 @@ const cmd: CommandModule = {
         return;
       }
     }
-    await makeCloudApiRequest(argv.cloudApiBase as string, `/app/${argv.appName}`, argv.token as string, "DELETE");
+    const path = `/app/${argv.appName}?forceDestroy=${argv.forceDestroy}`;
+    await makeCloudApiRequest(argv.cloudApiBase as string, path, argv.token as string, "DELETE");
   },
 };
 
