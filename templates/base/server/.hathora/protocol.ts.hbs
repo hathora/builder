@@ -42,6 +42,7 @@ export function register(store: Store): Promise<CoordinatorClient> {
       socket.write(
         JSON.stringify({
           appSecret: "{{appSecret}}",
+          storeRegion: process.env.STORE_REGION ?? "unknown",
           authInfo: {
 {{#each auth}}
 {{#if (eq @key "anonymous")}}
@@ -128,11 +129,6 @@ class CoordinatorClient {
   }
 
   public ping() {
-    this.socket.write(
-      new Writer()
-        .writeUInt32(1)
-        .writeUInt8(STORE_MESSAGES.PING)
-        .toBuffer()
-    );
+    this.socket.write(new Writer().writeUInt32(1).writeUInt8(STORE_MESSAGES.PING).toBuffer());
   }
 }
