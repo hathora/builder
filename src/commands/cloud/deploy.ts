@@ -1,11 +1,8 @@
-import { Stream } from "stream";
-
 import { CommandModule } from "yargs";
 import tar from "tar";
 import FormData from "form-data";
-import axios from "axios";
 
-import { getDirs } from "../../utils";
+import { getDirs, makeCloudApiRequest } from "../../utils";
 
 const cmd: CommandModule = {
   command: "deploy",
@@ -33,17 +30,7 @@ const cmd: CommandModule = {
     const form = new FormData();
     form.append("appName", argv.appName);
     form.append("file", tarFile, "bundle.tar.gz");
-    const headers = { Authorization: `Bearer ${argv.token}` };
-    try {
-      const response = await axios.postForm(`${argv.cloudApiBase}/deploy`, form, { headers, responseType: "stream" });
-      response.data.pipe(process.stdout);
-    } catch (err) {
-      if (axios.isAxiosError(err)) {
-        (err.response?.data as Stream).on("data", (data) => console.log(data.toString()));
-      } else {
-        console.error(err);
-      }
-    }
+    await makeCloudApiRequest(argv.cloudApiBase as string, "/deploy", argv.token as string, "POST", form);
   },
 };
 
