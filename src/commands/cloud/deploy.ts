@@ -2,7 +2,7 @@ import { CommandModule } from "yargs";
 import tar from "tar";
 import FormData from "form-data";
 
-import { getDirs, makeCloudApiRequest} from "../../utils";
+import { getDirs, makeCloudApiRequest } from "../../utils";
 
 const cmd: CommandModule = {
   command: "deploy",
