@@ -52,9 +52,7 @@ export function getDirs() {
 export function getAppConfig() {
   const appSecret = process.env.APP_SECRET ?? uuidv4();
   const appId = createHash("sha256").update(appSecret).digest("hex");
-  const coordinatorHost = process.env.COORDINATOR_HOST ?? "coordinator.hathora.dev";
-  const matchmakerHost = process.env.MATCHMAKER_HOST ?? "matchmaker.hathora.dev";
-  return { appId, appSecret, coordinatorHost, matchmakerHost };
+  return { appId, appSecret };
 }
 
 export function generateLocal() {
@@ -116,13 +114,12 @@ function npmInstall(dir: string) {
   }
 }
 
-async function startFrontend(root: string) {
-  const { rootDir } = getDirs();
-  console.log(`Starting frontend at ${chalk.blue.underline.bold(root)}`);
+async function startFrontend(clientRoot: string) {
+  console.log(`Starting frontend at ${chalk.blue.underline.bold(clientRoot)}`);
   return createServer({
-    root,
+    root: clientRoot,
     build: { target: ["esnext"] },
-    envDir: rootDir,
+    envPrefix: ["COORDINATOR_HOST", "MATCHMAKER_HOST"],
     clearScreen: false,
     server: { host: "0.0.0.0" },
   })

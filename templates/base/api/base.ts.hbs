@@ -1,8 +1,3 @@
-import axios from "axios";
-import * as T from "./types";
-
-export const COORDINATOR_HOST = "{{coordinatorHost}}";
-
 export const NO_DIFF = Symbol("NODIFF");
 export type DeepPartial<T> = T extends string | number | boolean | undefined
   ? T
@@ -52,10 +47,6 @@ export interface {{capitalize @key}}UserData {
 }
 {{/each}}
 export type UserData = {{#each auth}}{{capitalize @key}}UserData{{#unless @last}} | {{/unless}}{{/each}};
-
-export function lookupUser(userId: T.UserId): Promise<UserData> {
-  return axios.get<UserData>(`https://${COORDINATOR_HOST}/users/${userId}`).then((res) => res.data);
-}
 
 export function getUserDisplayName(user: UserData) {
   switch (user.type) {

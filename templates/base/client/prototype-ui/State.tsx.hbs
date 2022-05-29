@@ -1,9 +1,9 @@
 import React, { useRef, useLayoutEffect, useContext, useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { ChevronRightIcon, ChevronDownIcon, MinusSmIcon, PlusSmIcon, UserCircleIcon } from "@heroicons/react/solid";
-import { getUserDisplayName, lookupUser, UserData } from "../../api/base";
+import { getUserDisplayName, UserData } from "../../api/base";
 import * as T from "../../api/types";
-import { HathoraConnection } from "../.hathora/client";
+import { HathoraClient, HathoraConnection } from "../.hathora/client";
 {{#each plugins}}
 import {{this}}Plugin from "./plugins/{{this}}/index";
 {{/each}}
@@ -82,7 +82,7 @@ function UserIdDisplay({ value }: { value: string }) {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
   const [userData, setUserData] = useState<UserData>();
   useEffect(() => {
-    lookupUser(value).then(setUserData);
+    HathoraClient.lookupUser(value).then(setUserData);
   }, [value]);
   const renderDisplayText = (displayName: string) => (
     <span className="flex items-center user-display">

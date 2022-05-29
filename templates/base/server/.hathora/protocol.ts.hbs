@@ -1,6 +1,7 @@
 import net from "net";
 import { Reader, Writer } from "bin-serde";
-import { COORDINATOR_HOST } from "../../api/base";
+
+const COORDINATOR_HOST = process.env.COORDINATOR_HOST ?? "coordinator.hathora.dev";
 
 const NEW_STATE = 0;
 const SUBSCRIBE_USER = 1;

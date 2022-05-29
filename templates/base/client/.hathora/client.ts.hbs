@@ -4,10 +4,11 @@ import getRandomValues from "get-random-values";
 import axios from "axios";
 import jwtDecode from "jwt-decode";
 import { Reader, Writer } from "bin-serde";
-import { UserData, Response, Method, COORDINATOR_HOST } from "../../api/base";
+import { UserData, Response, Method } from "../../api/base";
 import {
   decodeStateSnapshot,
   decodeStateUpdate,
+  UserId,
   {{userState}} as UserState,
   IInitializeRequest,
   {{#each methods}}
@@ -17,7 +18,8 @@ import {
 import { ConnectionFailure, transformCoordinatorFailure } from "./failures";
 import { computePatch } from "./patch";
 
-const MATCHMAKER_HOST = "{{matchmakerHost}}";
+const COORDINATOR_HOST = import.meta.env.COORDINATOR_HOST;
+const MATCHMAKER_HOST = import.meta.env.MATCHMAKER_HOST;
 
 export type StateId = string;
 export type UpdateArgs = { stateId: StateId; state: UserState; updatedAt: number; events: string[] };
@@ -27,6 +29,10 @@ export class HathoraClient {
 
   public static getUserFromToken(token: string): UserData {
     return jwtDecode(token);
+  }
+
+  public static lookupUser(userId: UserId): Promise<UserData> {
+    return axios.get<UserData>(`https://${COORDINATOR_HOST}/users/${userId}`).then((res) => res.data);
   }
 
 {{#each auth}}

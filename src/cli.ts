@@ -32,6 +32,9 @@ const cloudMiddleware: MiddlewareFunction = (argv) => {
   }
 };
 
+process.env.COORDINATOR_HOST ??= "coordinator.hathora.dev";
+process.env.MATCHMAKER_HOST ??= "matchmaker.hathora.dev";
+
 yargs(hideBin(process.argv))
   .scriptName("hathora")
   .middleware(cloudMiddleware, true)
