@@ -23,8 +23,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: npm install hathora surge -g
-      - run: COORDINATOR_HOST=coordinator.hathora.com APP_SECRET=${{ secrets.APP_SECRET }} hathora build --only client
-      - run: cp dist/client/prototype-ui/index.html dist/client/web/200.html
+      - run: COORDINATOR_HOST=coordinator.hathora.com APP_SECRET=${{ secrets.AVALON_APP_SECRET }} hathora build --only client
+      - run: cp dist/client/prototype-ui/index.html dist/client/prototype-ui/200.html
       - run: surge dist/client/prototype-ui hathora-avalon.surge.sh
         env:
           SURGE_LOGIN: ${{ secrets.SURGE_LOGIN }}
