@@ -17,4 +17,4 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm install -g ts-node
-      - run: npm test
+      # - run: npm test
