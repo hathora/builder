@@ -1,0 +1,31 @@
+name: Boggle Deploy
+on:
+  push:
+    branches:
+      - develop
+    paths:
+      - "examples/boggle/**"
+      - .github/workflows/boggle.yml
+
+defaults:
+  run:
+    working-directory: examples/boggle
+
+jobs:
+  server:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: npm install hathora -g
+      - run: hathora cloud deploy --appName hathora-boggle --token ${{ secrets.HATHORA_TOKEN }}
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: npm install hathora surge -g
+      - run: COORDINATOR_HOST=coordinator.hathora.com APP_SECRET=${{ secrets.BOGGLE_APP_SECRET }} hathora build --only client
+      - run: cp dist/client/prototype-ui/index.html dist/client/prototype-ui/200.html
+      - run: surge dist/client/prototype-ui hathora-boggle.surge.sh
+        env:
+          SURGE_LOGIN: ${{ secrets.SURGE_LOGIN }}
+          SURGE_TOKEN: ${{ secrets.SURGE_TOKEN }}
