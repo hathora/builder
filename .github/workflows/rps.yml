@@ -1,0 +1,31 @@
+name: RPS Deploy
+on:
+  push:
+    branches:
+      - develop
+    paths:
+      - "examples/rock-paper-scissor/**"
+      - .github/workflows/rock-paper-scissor.yml
+
+defaults:
+  run:
+    working-directory: examples/rock-paper-scissor
+
+jobs:
+  server:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: npm install hathora -g
+      - run: hathora cloud deploy --appName hathora-rock-paper-scissor --token ${{ secrets.HATHORA_TOKEN }}
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: npm install hathora surge -g
+      - run: COORDINATOR_HOST=coordinator.hathora.com APP_SECRET=${{ secrets.RPS_APP_SECRET }} hathora build --only client
+      - run: cp dist/client/prototype-ui/index.html dist/client/prototype-ui/200.html
+      - run: surge dist/client/prototype-ui hathora-rock-paper-scissor.surge.sh
+        env:
+          SURGE_LOGIN: ${{ secrets.SURGE_LOGIN }}
+          SURGE_TOKEN: ${{ secrets.SURGE_TOKEN }}
