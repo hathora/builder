@@ -1,0 +1,27 @@
+name: Avalon Deploy
+on:
+  push:
+    branches:
+      - develop
+    paths:
+      - "examples/avalon/**"
+      - .github/workflows/avalon.yml
+
+jobs:
+  server:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: npm install hathora -g
+      - run: hathora cloud deploy --appName hathora-avalon --token ${{ secrets.HATHORA_TOKEN }}
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: npm install hathora surge -g
+      - run: COORDINATOR_HOST=coordinator.hathora.com APP_SECRET=${{ secrets.APP_SECRET }} hathora build --only client
+      - run: cp dist/client/web/index.html dist/client/web/200.html
+      - run: surge dist/client/prototype-ui hathora-avalon.surge.sh
+        env:
+          SURGE_LOGIN: ${{ secrets.SURGE_LOGIN }}
+          SURGE_TOKEN: ${{ secrets.SURGE_TOKEN }}
