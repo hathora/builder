@@ -92,19 +92,11 @@ export default function HathoraContextProvider({ children }: HathoraContextProvi
   const connect = useCallback(
     async (stateId: string) => {
       setConnecting(true);
-      const connection = await client.connect(
-        token,
-        stateId,
-        ({ state }) => {
-          setPlayerState(state);
-          setConnecting(false);
-        },
-        (e) => {
-          setConnectionError(e);
-          setConnecting(false);
-        }
-      );
+      const connection = await client.connect(token, stateId);
+      setConnecting(false);
       setConnection(connection);
+      connection.onUpdate(({ state }) => setPlayerState(state));
+      connection.onError((error) => setConnectionError(error));
       return connection;
     },
     [token]
