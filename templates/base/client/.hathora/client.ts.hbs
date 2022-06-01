@@ -53,20 +53,11 @@ export class HathoraClient {
     return res.data.stateId;
   }
 
-  public async connect(
-    token: string,
-    stateId: StateId,
-    onUpdate: (updateArgs: UpdateArgs) => void,
-    onConnectionFailure: (failure: ConnectionFailure) => void
-  ): Promise<HathoraConnection> {
+  public async connect(token: string, stateId: StateId): Promise<HathoraConnection> {
     return new Promise((resolve, reject) => {
       const socket = new WebSocket(`wss://${COORDINATOR_HOST}/${this.appId}`);
       socket.binaryType = "arraybuffer";
-      socket.onclose = (e) => {
-        const failure = transformCoordinatorFailure(e);
-        reject(failure);
-        onConnectionFailure(failure);
-      };
+      socket.onclose = (e) => reject(transformCoordinatorFailure(e));
       socket.onopen = () =>
         socket.send(
           new Writer()
@@ -79,9 +70,7 @@ export class HathoraClient {
         const reader = new Reader(new Uint8Array(data as ArrayBuffer));
         const type = reader.readUInt8();
         if (type === 0) {
-          const state = decodeStateSnapshot(reader);
-          resolve(new HathoraConnection(stateId, state, socket, onUpdate));
-          onUpdate({ stateId, state, updatedAt: 0, events: [] });
+          resolve(new HathoraConnection(stateId, decodeStateSnapshot(reader), socket));
         } else {
           reject("Unknown message type: " + type);
         }
@@ -122,35 +111,39 @@ export class HathoraClient {
   }
 }
 
+type UpdateCallback = (updateArgs: UpdateArgs) => void;
+type ErrorCallback = (error: ConnectionFailure) => void;
+
 export class HathoraConnection {
   private callbacks: Record<string, (response: Response) => void> = {};
   private changedAt = 0;
+  private updateListeners: UpdateCallback[] = [];
+  private errorListeners: ErrorCallback[] = [];
 
-  constructor(
-    public stateId: StateId,
-    private state: UserState,
-    private socket: WebSocket,
-    onUpdate: (updateArgs: UpdateArgs) => void
-  ) {
+  constructor(public stateId: StateId, public state: UserState, private socket: WebSocket) {
     socket.onmessage = ({ data }) => {
       const reader = new Reader(new Uint8Array(data as ArrayBuffer));
       const type = reader.readUInt8();
       if (type === 0) {
         this.state = decodeStateSnapshot(reader);
         this.changedAt = 0;
-        onUpdate({ stateId, state: JSON.parse(JSON.stringify(this.state)), updatedAt: 0, events: [] });
+        this.updateListeners.forEach((listener) =>
+          listener({ stateId, state: JSON.parse(JSON.stringify(this.state)), updatedAt: 0, events: [] })
+        );
       } else if (type === 1) {
         const { stateDiff, changedAtDiff, responses, events } = decodeStateUpdate(reader);
         if (stateDiff !== undefined) {
           this.state = computePatch(this.state!, stateDiff);
         }
         this.changedAt += changedAtDiff;
-        onUpdate({
-          stateId,
-          state: JSON.parse(JSON.stringify(this.state)),
-          updatedAt: this.changedAt,
-          events: events.map((e) => e.event),
-        });
+        this.updateListeners.forEach((listener) =>
+          listener({
+            stateId,
+            state: JSON.parse(JSON.stringify(this.state)),
+            updatedAt: this.changedAt,
+            events: events.map((e) => e.event),
+          })
+        );
         responses.forEach(({ msgId, response }) => {
           if (msgId in this.callbacks) {
             this.callbacks[msgId](response);
@@ -163,6 +156,23 @@ export class HathoraConnection {
         console.error("Unknown message type", type);
       }
     };
+    socket.onclose = (e) => {
+      console.error("Connection closed", e);
+      this.errorListeners.forEach((listener) => listener(transformCoordinatorFailure(e)));
+    };
+  }
+
+  public onUpdate(listener: UpdateCallback) {
+    this.updateListeners.push(listener);
+  }
+
+  public onError(listener: ErrorCallback) {
+    this.errorListeners.push(listener);
+  }
+
+  public removeAllListeners() {
+    this.updateListeners = [];
+    this.errorListeners = [];
   }
 
   {{#each methods}}

@@ -9,7 +9,7 @@ import { lookupUser, Response, UserData } from "../../../../api/base";
 interface GameContext {
   token?: string;
   login: () => Promise<string | undefined>;
-  connect: (gameId: string) => HathoraConnection;
+  connect: (gameId: string) => Promise<HathoraConnection>;
   disconnect: () => void;
   createGame: () => Promise<string | undefined>;
   joinGame: (gameId: string) => Promise<void>;
@@ -90,9 +90,9 @@ export default function HathoraContextProvider({ children }: HathoraContextProvi
   };
 
   const connect = useCallback(
-    (stateId: string) => {
+    async (stateId: string) => {
       setConnecting(true);
-      const connection = client.connect(
+      const connection = await client.connect(
         token,
         stateId,
         ({ state }) => {
@@ -132,7 +132,7 @@ export default function HathoraContextProvider({ children }: HathoraContextProvi
 
   const joinGame = useCallback(
     async (gameId: string) => {
-      const connection = connect(gameId);
+      const connection = await connect(gameId);
       await connection.joinGame({});
     },
     [token, connect]
