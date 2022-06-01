@@ -9,7 +9,7 @@ import { lookupUser, UserData, Response } from "../../../../api/base";
 interface GameContext {
   token?: string;
   login: () => Promise<string | undefined>;
-  connect: (gameId: string) => HathoraConnection;
+  connect: (gameId: string) => Promise<HathoraConnection>;
   disconnect: () => void;
   createGame: () => Promise<string>;
   joinGame: (gameId: string) => Promise<void>;
@@ -88,21 +88,14 @@ export default function HathoraContextProvider({ children }: HathoraContextProvi
   };
 
   const connect = useCallback(
-    (stateId: string) => {
+    async (stateId: string) => {
       setConnecting(true);
-      const connection = client.connect(
-        token,
-        stateId,
-        ({ state }) => {
-          setPlayerState(state);
-          setConnecting(false);
-        },
-        (e) => {
-          setConnectionError(e);
-          setConnecting(false);
-        }
-      );
+      const connection = await client.connect(token, stateId);
       setConnection(connection);
+      setConnecting(false);
+      setPlayerState(connection.state);
+      connection.onUpdate(({ state }) => setPlayerState(state));
+      connection.onError((error) => setConnectionError(error));
       return connection;
     },
     [token]
@@ -123,13 +116,13 @@ export default function HathoraContextProvider({ children }: HathoraContextProvi
       return client.create(token, IInitializeRequest.default());
     } else {
       const token = await login()!;
-      return client.create(token, IInitializeRequest.default());
+      return client.create(token!, IInitializeRequest.default());
     }
   }, [token]);
 
   const joinGame = useCallback(
     async (gameId: string) => {
-      const connection = connect(gameId);
+      const connection = await connect(gameId);
       await connection.joinGame({});
     },
     [token, connect]
