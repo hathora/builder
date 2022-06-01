@@ -95,6 +95,7 @@ export default function HathoraContextProvider({ children }: HathoraContextProvi
       const connection = await client.connect(token, stateId);
       setConnecting(false);
       setConnection(connection);
+      setPlayerState(connection.state);
       connection.onUpdate(({ state }) => setPlayerState(state));
       connection.onError((error) => setConnectionError(error));
       return connection;

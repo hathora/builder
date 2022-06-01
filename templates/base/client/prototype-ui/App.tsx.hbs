@@ -50,9 +50,13 @@ function App() {
                   connection={connection}
                   updateArgs={updateArgs}
                   connectionError={connectionError}
-                  onConnect={(stateId) =>
-                    setConnection(await client.connect(token, stateId, setUpdateArgs, setConnectionError))
-                  }
+                  onConnect={async (stateId) => {
+                    const connection = await client.connect(token, stateId);
+                    setUpdateArgs({ stateId, state: connection.state, updatedAt: 0, events: [] });
+                    connection.onUpdate(setUpdateArgs);
+                    connection.onError(setConnectionError);
+                    setConnection(connection);
+                  }}
                   onDisconnect={() => {
                     if (connection !== undefined) {
                       connection.disconnect();
