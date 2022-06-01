@@ -51,7 +51,7 @@ function App() {
                   updateArgs={updateArgs}
                   connectionError={connectionError}
                   onConnect={(stateId) =>
-                    setConnection(client.connect(token, stateId, setUpdateArgs, setConnectionError))
+                    setConnection(await client.connect(token, stateId, setUpdateArgs, setConnectionError))
                   }
                   onDisconnect={() => {
                     if (connection !== undefined) {

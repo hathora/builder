@@ -53,24 +53,40 @@ export class HathoraClient {
     return res.data.stateId;
   }
 
-  public connect(
+  public async connect(
     token: string,
     stateId: StateId,
     onUpdate: (updateArgs: UpdateArgs) => void,
     onConnectionFailure: (failure: ConnectionFailure) => void
-  ): HathoraConnection {
-    const socket = new WebSocket(`wss://${COORDINATOR_HOST}/${this.appId}`);
-    socket.binaryType = "arraybuffer";
-    socket.onclose = (e) => onConnectionFailure(transformCoordinatorFailure(e));
-    socket.onopen = () =>
-      socket.send(
-        new Writer()
-          .writeUInt8(0)
-          .writeString(token)
-          .writeUInt64([...stateId].reduce((r, v) => r * 36n + BigInt(parseInt(v, 36)), 0n))
-          .toBuffer()
-      );
-    return new HathoraConnection(stateId, socket, onUpdate);
+  ): Promise<HathoraConnection> {
+    return new Promise((resolve, reject) => {
+      const socket = new WebSocket(`wss://${COORDINATOR_HOST}/${this.appId}`);
+      socket.binaryType = "arraybuffer";
+      socket.onclose = (e) => {
+        const failure = transformCoordinatorFailure(e);
+        reject(failure);
+        onConnectionFailure(failure);
+      };
+      socket.onopen = () =>
+        socket.send(
+          new Writer()
+            .writeUInt8(0)
+            .writeString(token)
+            .writeUInt64([...stateId].reduce((r, v) => r * 36n + BigInt(parseInt(v, 36)), 0n))
+            .toBuffer()
+        );
+      socket.onmessage = ({ data }) => {
+        const reader = new Reader(new Uint8Array(data as ArrayBuffer));
+        const type = reader.readUInt8();
+        if (type === 0) {
+          const state = decodeStateSnapshot(reader);
+          resolve(new HathoraConnection(stateId, state, socket, onUpdate));
+          onUpdate({ stateId, state, updatedAt: 0, events: [] });
+        } else {
+          reject("Unknown message type: " + type);
+        }
+      };
+    });
   }
 
   public async findMatch(
@@ -108,17 +124,21 @@ export class HathoraClient {
 
 export class HathoraConnection {
   private callbacks: Record<string, (response: Response) => void> = {};
-  private state?: UserState = undefined;
   private changedAt = 0;
 
-  public constructor(public stateId: StateId, private socket: WebSocket, onUpdate: (updateArgs: UpdateArgs) => void) {
+  constructor(
+    public stateId: StateId,
+    private state: UserState,
+    private socket: WebSocket,
+    onUpdate: (updateArgs: UpdateArgs) => void
+  ) {
     socket.onmessage = ({ data }) => {
       const reader = new Reader(new Uint8Array(data as ArrayBuffer));
       const type = reader.readUInt8();
       if (type === 0) {
         this.state = decodeStateSnapshot(reader);
         this.changedAt = 0;
-        onUpdate({ stateId, state: JSON.parse(JSON.stringify(this.state)), updatedAt: this.changedAt, events: [] });
+        onUpdate({ stateId, state: JSON.parse(JSON.stringify(this.state)), updatedAt: 0, events: [] });
       } else if (type === 1) {
         const { stateDiff, changedAtDiff, responses, events } = decodeStateUpdate(reader);
         if (stateDiff !== undefined) {
@@ -160,10 +180,8 @@ export class HathoraConnection {
 
   private callMethod(method: Method, request: Uint8Array): Promise<Response> {
     return new Promise((resolve, reject) => {
-      if (this.socket.readyState === this.socket.CLOSED) {
-        reject("Connection is closed");
-      } else if (this.socket.readyState !== this.socket.OPEN) {
-        setTimeout(() => this.callMethod(method, request).then(resolve).catch(reject), 0);
+      if (this.socket.readyState !== this.socket.OPEN) {
+        reject("Connection not open");
       } else {
         const msgId: Uint8Array = getRandomValues(new Uint8Array(4));
         this.socket.send(new Uint8Array([...new Uint8Array([method]), ...msgId, ...request]));
