@@ -27,7 +27,6 @@ module.exports = {
         },
       },
     ],
-    "max-len": ["error", { code: 120 }],
     curly: ["error"],
     "arrow-parens": ["error"],
     "arrow-spacing": ["error"],
