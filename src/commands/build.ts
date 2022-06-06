@@ -39,7 +39,10 @@ function build(only: "server" | "client" | undefined) {
           root: join(clientDir, dir),
           build: { outDir: join(rootDir, "dist", "client", dir), target: ["esnext"] },
           define: {
-            "process.env": { COORDINATOR_HOST: process.env.COORDINATOR_HOST, MATCHMAKER_HOST: process.env.MATCHMAKER_HOST },
+            "process.env": {
+              COORDINATOR_HOST: process.env.COORDINATOR_HOST,
+              MATCHMAKER_HOST: process.env.MATCHMAKER_HOST,
+            },
           },
           clearScreen: false,
         });
