@@ -1,14 +1,16 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Game from "./pages/Game";
-import Home from "./pages/Home";
+import { HathoraClient } from "../../.hathora/client";
 
 export default function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/game/:gameId" element={<Game />} />
       </Routes>
     </Router>
   );
+}
+
+function Home() {
+  return <h1>Home</h1>;
 }

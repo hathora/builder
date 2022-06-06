@@ -1,0 +1,8 @@
+{
+  "name": "ping-server",
+  "version": "0.0.1",
+  "type": "module",
+  "devDependencies": {
+    "typescript": "^4.5.2"
+  }
+}

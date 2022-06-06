@@ -1,0 +1,21 @@
+types:
+  PingMessage:
+    uuid: int
+    time: int
+  Player:
+    id: UserId
+    seqArray: PingMessage[]
+  PlayerState:
+    players: Player[]
+
+methods:
+  join:
+  ping:
+    message: PingMessage
+
+auth:
+  anonymous: {}
+
+userState: PlayerState
+error: string
+tick: 50
