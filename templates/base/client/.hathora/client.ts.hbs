@@ -4,7 +4,7 @@ import getRandomValues from "get-random-values";
 import axios from "axios";
 import jwtDecode from "jwt-decode";
 import { Reader, Writer } from "bin-serde";
-import { UserData, Response, Method, COORDINATOR_HOST } from "../../api/base";
+import { UserData, Response, Method, COORDINATOR_HOST, MATCHMAKER_HOST } from "../../api/base";
 import {
   decodeStateSnapshot,
   decodeStateUpdate,
@@ -16,8 +16,6 @@ import {
 } from "../../api/types";
 import { ConnectionFailure, transformCoordinatorFailure } from "./failures";
 import { computePatch } from "./patch";
-
-const MATCHMAKER_HOST = "{{matchmakerHost}}";
 
 export type StateId = string;
 export type UpdateArgs = { stateId: StateId; state: UserState; updatedAt: number; events: string[] };
