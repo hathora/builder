@@ -15,6 +15,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: npm ci
+      - run: npm run lint_packagejson
       - name: Run linters
         uses: wearerequired/lint-action@v2
         with:
