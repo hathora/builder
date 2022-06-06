@@ -4,7 +4,7 @@ import { useSessionstorageState } from "rooks";
 import { HathoraClient, HathoraConnection } from "../../../.hathora/client";
 import { ConnectionFailure } from "../../../.hathora/failures";
 import { IInitializeRequest, PlayerState, RoundStatus } from "../../../../api/types";
-import { lookupUser, Response, UserData } from "../../../../api/base";
+import { Response, UserData } from "../../../../api/base";
 
 interface GameContext {
   token?: string;
@@ -125,7 +125,6 @@ export default function HathoraContextProvider({ children }: HathoraContextProvi
       return client.create(token, IInitializeRequest.default());
     } else {
       const token = (await login()) ?? "";
-
       return client.create(token, IInitializeRequest.default());
     }
   }, [token]);
@@ -191,7 +190,7 @@ export default function HathoraContextProvider({ children }: HathoraContextProvi
       if (Boolean(playerNameMapping[userId])) {
         return playerNameMapping[userId].name;
       } else {
-        lookupUser(userId).then((response) => {
+        HathoraClient.lookupUser(userId).then((response) => {
           setPlayerNameMapping((curr) => ({ ...curr, [userId]: response }));
         });
         return userId;
