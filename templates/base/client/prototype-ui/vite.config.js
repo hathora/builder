@@ -1,0 +1,16 @@
+import { join } from "path";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  build: {
+    outDir: join("..", "..", "dist", "client"),
+    target: "esnext",
+    emptyOutDir: true,
+    define: {
+      "process.env": {
+        COORDINATOR_HOST: process.env.COORDINATOR_HOST,
+        MATCHMAKER_HOST: process.env.MATCHMAKER_HOST,
+      },
+    },
+  },
+});
