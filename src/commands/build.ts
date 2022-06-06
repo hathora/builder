@@ -8,6 +8,7 @@ import chalk from "chalk";
 
 import { getAppConfig, getDirs, install } from "../utils";
 import { generate } from "../generate";
+import { execSync } from "child_process";
 
 const cmd: CommandModule = {
   command: "build",
@@ -35,17 +36,7 @@ function build(only: "server" | "client" | undefined) {
   if (only === "client" || only === undefined) {
     for (const dir of readdirSync(clientDir)) {
       if (existsSync(join(clientDir, dir, "index.html"))) {
-        buildClient({
-          root: join(clientDir, dir),
-          build: { outDir: join(rootDir, "dist", "client", dir), target: ["esnext"] },
-          define: {
-            "process.env": {
-              COORDINATOR_HOST: process.env.COORDINATOR_HOST,
-              MATCHMAKER_HOST: process.env.MATCHMAKER_HOST,
-            },
-          },
-          clearScreen: false,
-        });
+        execSync("npm run build", { cwd: join(clientDir, dir) });
       }
     }
   }
