@@ -1,4 +1,5 @@
 import { join } from "path";
+import { execSync } from "child_process";
 
 import { CommandModule } from "yargs";
 import { build as buildClient } from "vite";
@@ -8,7 +9,6 @@ import chalk from "chalk";
 
 import { getAppConfig, getDirs, install } from "../utils";
 import { generate } from "../generate";
-import { execSync } from "child_process";
 
 const cmd: CommandModule = {
   command: "build",
