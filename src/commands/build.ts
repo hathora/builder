@@ -51,6 +51,7 @@ function build(only: "server" | "client" | undefined) {
       format: "esm",
       outfile: join(rootDir, "dist", "server", "index.mjs"),
       banner: {
+        // eslint-disable-next-line max-len
         js: "import { createRequire as topLevelCreateRequire } from 'module';\n const require = topLevelCreateRequire(import.meta.url);",
       },
     });
