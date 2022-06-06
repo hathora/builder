@@ -9,8 +9,9 @@ module.exports = {
     ecmaVersion: "latest",
     sourceType: "module",
   },
-  plugins: ["@typescript-eslint", "eslint-plugin-import"],
+  plugins: ["@typescript-eslint", "eslint-plugin-import", "prettier"],
   rules: {
+    "prettier/prettier": ["error", { printWidth: 120 }],
     indent: ["error", 2],
     "linebreak-style": ["error", "unix"],
     quotes: ["error", "double"],
@@ -26,5 +27,8 @@ module.exports = {
         },
       },
     ],
+    curly: ["error"],
+    "arrow-parens": ["error"],
+    "arrow-spacing": ["error"],
   },
 };
