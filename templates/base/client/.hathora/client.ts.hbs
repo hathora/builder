@@ -18,8 +18,8 @@ import {
 import { ConnectionFailure, transformCoordinatorFailure } from "./failures";
 import { computePatch } from "./patch";
 
-const COORDINATOR_HOST = import.meta.env.COORDINATOR_HOST;
-const MATCHMAKER_HOST = import.meta.env.MATCHMAKER_HOST;
+const COORDINATOR_HOST = process.env.COORDINATOR_HOST;
+const MATCHMAKER_HOST = process.env.MATCHMAKER_HOST;
 
 export type StateId = string;
 export type UpdateArgs = { stateId: StateId; state: UserState; updatedAt: number; events: string[] };
