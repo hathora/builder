@@ -6,7 +6,6 @@ import { createHash } from "crypto";
 import { execSync } from "child_process";
 
 import yargs from "yargs";
-import { createServer } from "vite";
 import { v4 as uuidv4 } from "uuid";
 import shelljs from "shelljs";
 import { outputFileSync } from "fs-extra";
@@ -129,26 +128,16 @@ function npmInstall(dir: string) {
   }
 }
 
-async function startFrontend(clientRoot: string) {
+function startFrontend(clientRoot: string) {
   console.log(`Starting frontend at ${chalk.blue.underline.bold(clientRoot)}`);
-  return createServer({
-    root: clientRoot,
-    build: { target: ["esnext"] },
-    define: {
-      "process.env": { COORDINATOR_HOST: process.env.COORDINATOR_HOST, MATCHMAKER_HOST: process.env.MATCHMAKER_HOST },
-    },
-    clearScreen: false,
-    server: { host: "0.0.0.0" },
-  })
-    .then((server) => server.listen())
-    .then((server) => server.printUrls());
+  execSync("npm start", { cwd: clientRoot, stdio: "inherit" });
 }
 
-async function startFrontends() {
+function startFrontends() {
   const { clientDir } = getDirs();
   for (const dir of readdirSync(clientDir)) {
     if (existsSync(join(clientDir, dir, "index.html"))) {
-      await startFrontend(join(clientDir, dir));
+      startFrontend(join(clientDir, dir));
     }
   }
 }

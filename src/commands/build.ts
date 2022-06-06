@@ -2,7 +2,6 @@ import { join } from "path";
 import { execSync } from "child_process";
 
 import { CommandModule } from "yargs";
-import { build as buildClient } from "vite";
 import { existsSync, readdirSync } from "fs-extra";
 import { build as buildServer } from "esbuild";
 import chalk from "chalk";
@@ -36,7 +35,7 @@ function build(only: "server" | "client" | undefined) {
   if (only === "client" || only === undefined) {
     for (const dir of readdirSync(clientDir)) {
       if (existsSync(join(clientDir, dir, "index.html"))) {
-        execSync("npm run build", { cwd: join(clientDir, dir) });
+        execSync("npm run build", { cwd: join(clientDir, dir), stdio: "inherit" });
       }
     }
   }
