@@ -16,7 +16,11 @@ const cmd: CommandModule = {
   async handler() {
     const tokenPath = join(os.homedir(), ".config", "hathora", "token");
     if (existsSync(tokenPath)) {
-      console.log(chalk.red(`Token file already present at ${tokenPath}. If you'd like to get a new one, please remove this file.`));
+      console.log(
+        chalk.red(
+          `Token file already present at ${tokenPath}. If you'd like to get a new one, please remove this file.`
+        )
+      );
       return;
     }
 
@@ -25,9 +29,12 @@ const cmd: CommandModule = {
       client_id: "tWjDhuzPmuIWrI8R9s3yV3BQVw2tW0yq",
       token_endpoint_auth_method: "none",
       id_token_signed_response_alg: "RS256",
-      grant_type: "refresh_token"
+      grant_type: "refresh_token",
     });
-    const handle = await client.deviceAuthorization({ scope: "openid email offline_access", audience: "https://cloud.hathora.com" });
+    const handle = await client.deviceAuthorization({
+      scope: "openid email offline_access",
+      audience: "https://cloud.hathora.com",
+    });
 
     const userInput = await prompts({
       type: "confirm",
