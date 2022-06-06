@@ -17,7 +17,13 @@ import axios, { Method } from "axios";
 
 import { generate } from "./generate";
 
-export async function makeCloudApiRequest(cloudApiBase: string, path: string, token: string, method: Method = "GET", form?: FormData) {
+export async function makeCloudApiRequest(
+  cloudApiBase: string,
+  path: string,
+  token: string,
+  method: Method = "GET",
+  form?: FormData
+) {
   try {
     const response = await axios.request<Stream>({
       method,
