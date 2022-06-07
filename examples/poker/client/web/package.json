@@ -3,9 +3,8 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
+    "start": "vite",
+    "build": "vite build"
   },
   "dependencies": {
     "@headlessui/react": "^1.5.0",
