@@ -24,7 +24,7 @@ The `client/<app>` directory is a self contained frontend application and can be
 For example, you can deploy your application's Prototype UI to surge by running the following command from your project root:
 
 ```sh
-surge dist/client/prototype-ui my-app.surge.sh
+surge client/prototype-ui/dist my-app.surge.sh
 ```
 
 ## Server
