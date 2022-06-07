@@ -31,7 +31,7 @@ const cmd: CommandModule = {
 };
 
 function build(only: "server" | "client" | undefined) {
-  const { clientDir, rootDir, serverDir } = getDirs();
+  const { clientDir, serverDir } = getDirs();
   if (only === "client" || only === undefined) {
     for (const dir of readdirSync(clientDir)) {
       if (existsSync(join(clientDir, dir, "index.html"))) {
@@ -45,7 +45,7 @@ function build(only: "server" | "client" | undefined) {
       bundle: true,
       platform: "node",
       format: "esm",
-      outfile: join(rootDir, "dist", "server", "index.mjs"),
+      outfile: join(serverDir, "dist", "index.mjs"),
       banner: {
         // eslint-disable-next-line max-len
         js: "import { createRequire as topLevelCreateRequire } from 'module';\n const require = topLevelCreateRequire(import.meta.url);",
