@@ -3,7 +3,7 @@ import { Stream } from "stream";
 import { join } from "path";
 import { existsSync, readdirSync } from "fs";
 import { createHash } from "crypto";
-import { execSync } from "child_process";
+import { execSync, spawn } from "child_process";
 
 import yargs from "yargs";
 import { v4 as uuidv4 } from "uuid";
@@ -130,7 +130,7 @@ function npmInstall(dir: string) {
 
 function startFrontend(clientRoot: string) {
   console.log(`Starting frontend at ${chalk.blue.underline.bold(clientRoot)}`);
-  execSync("npm start", { cwd: clientRoot, stdio: "inherit" });
+  spawn("npm start", { cwd: clientRoot, stdio: "inherit", shell: true });
 }
 
 function startFrontends() {
