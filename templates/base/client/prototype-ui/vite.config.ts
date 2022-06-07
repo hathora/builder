@@ -1,14 +1,7 @@
-import { join, dirname, basename } from "path";
-import { fileURLToPath } from "url";
-
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  build: {
-    outDir: join("..", "..", "dist", "client", basename(dirname(fileURLToPath(import.meta.url)))),
-    target: "esnext",
-    emptyOutDir: true,
-  },
+  build: { target: "esnext", emptyOutDir: true },
   define: {
     "process.env": {
       COORDINATOR_HOST: process.env.COORDINATOR_HOST,
