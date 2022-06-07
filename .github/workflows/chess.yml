@@ -24,8 +24,8 @@ jobs:
       - uses: actions/checkout@v2
       - run: npm install hathora surge -g
       - run: COORDINATOR_HOST=coordinator.hathora.com APP_SECRET=${{ secrets.CHESS_APP_SECRET }} hathora build --only client
-      - run: cp dist/client/prototype-ui/index.html dist/client/prototype-ui/200.html
-      - run: surge dist/client/prototype-ui hathora-chess.surge.sh
+      - run: cp client/prototype-ui/dist/index.html client/prototype-ui/dist/200.html
+      - run: surge client/prototype-ui/dist hathora-chess.surge.sh
         env:
           SURGE_LOGIN: ${{ secrets.SURGE_LOGIN }}
           SURGE_TOKEN: ${{ secrets.SURGE_TOKEN }}

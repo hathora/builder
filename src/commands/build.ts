@@ -1,7 +1,7 @@
 import { join } from "path";
+import { execSync } from "child_process";
 
 import { CommandModule } from "yargs";
-import { build as buildClient } from "vite";
 import { existsSync, readdirSync } from "fs-extra";
 import { build as buildServer } from "esbuild";
 import chalk from "chalk";
@@ -31,21 +31,11 @@ const cmd: CommandModule = {
 };
 
 function build(only: "server" | "client" | undefined) {
-  const { clientDir, rootDir, serverDir } = getDirs();
+  const { clientDir, serverDir } = getDirs();
   if (only === "client" || only === undefined) {
     for (const dir of readdirSync(clientDir)) {
       if (existsSync(join(clientDir, dir, "index.html"))) {
-        buildClient({
-          root: join(clientDir, dir),
-          build: { outDir: join(rootDir, "dist", "client", dir), target: ["esnext"] },
-          define: {
-            "process.env": {
-              COORDINATOR_HOST: process.env.COORDINATOR_HOST,
-              MATCHMAKER_HOST: process.env.MATCHMAKER_HOST,
-            },
-          },
-          clearScreen: false,
-        });
+        execSync("npm run build", { cwd: join(clientDir, dir), stdio: "inherit" });
       }
     }
   }
@@ -55,7 +45,7 @@ function build(only: "server" | "client" | undefined) {
       bundle: true,
       platform: "node",
       format: "esm",
-      outfile: join(rootDir, "dist", "server", "index.mjs"),
+      outfile: join(serverDir, "dist", "index.mjs"),
       banner: {
         // eslint-disable-next-line max-len
         js: "import { createRequire as topLevelCreateRequire } from 'module';\n const require = topLevelCreateRequire(import.meta.url);",
