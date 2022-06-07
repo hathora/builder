@@ -4,17 +4,19 @@ After your application is working as desired locally, you may want to deploy it 
 
 ## Build
 
-First, you must build your project by running `hathora build`. This will create a `dist` folder at your project root, and inside `dist` you will find a `client` and `server` directory.
+First, you must build your project by running `hathora build`. This will create a `dist` inside your `server` directory and also inside each of your client subdirectories.
 
 The directory structure will look something like this:
 
 ```
 . # project root
-└─ dist
-   ├─ client
-   │  ├─ prototype-ui
-   │  └─ web
-   └─ server
+├─ client
+│  ├─ prototype-ui
+│  │  └─ dist
+│  └─ web
+│     └─ dist
+└─ server
+   └─ dist
 ```
 
 ## Client
@@ -29,9 +31,9 @@ surge client/prototype-ui/dist my-app.surge.sh
 
 ## Server
 
-The `server` directory is a self contains backend application that can be deployed to any cloud server or application hosting environment.
+The `server/dist` directory is a self contains backend application that can be deployed to any cloud server or application hosting environment.
 
-For typescript backends, the only file inside the `server` directory is `index.mjs`. The two requirements for running the backend are:
+For typescript backends, the only file inside the `server/dist` directory is `index.mjs`. The two requirements for running the backend are:
 
 - node.js must be installed
 - the `DATA_DIR` environment variable must be set to the path where Hathora should write its data files
