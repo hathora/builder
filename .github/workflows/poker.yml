@@ -38,8 +38,8 @@ jobs:
       - run: npm ci
       - run: npm install ts-node surge -g
       - run: COORDINATOR_HOST=coordinator.hathora.com APP_SECRET=${{ secrets.POKER_APP_SECRET }} ts-node ../../src/cli.ts build --only client
-      - run: cp dist/client/web/index.html dist/client/web/200.html
-      - run: surge dist/client/web screeching-chance.surge.sh
+      - run: cp client/web/dist/index.html client/web/dist/200.html
+      - run: surge client/web/dist screeching-chance.surge.sh
         env:
           SURGE_LOGIN: ${{ secrets.SURGE_LOGIN }}
           SURGE_TOKEN: ${{ secrets.SURGE_TOKEN }}
