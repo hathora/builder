@@ -70,6 +70,7 @@ export function register(store: Store): Promise<CoordinatorClient> {
     });
     socket.on("close", () => {
       console.error("Coordinator connection closed, retrying...");
+      store.unsubscribeAll();
       if (pingTimer !== undefined) {
         clearInterval(pingTimer);
       }
@@ -97,6 +98,7 @@ interface Store {
   newState(stateId: StateId, userId: UserId, data: ArrayBufferView): void;
   subscribeUser(stateId: StateId, userId: UserId): void;
   unsubscribeUser(stateId: StateId, userId: UserId): void;
+  unsubscribeAll(): void;
   handleUpdate(stateId: StateId, userId: UserId, data: ArrayBufferView): void;
 }
 
