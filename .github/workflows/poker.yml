@@ -16,14 +16,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: npm install hathora -g
-      - run: hathora cloud deploy --appName hathora-poker --token ${{ secrets.HATHORA_TOKEN }}
+      - run: npm ci
+      - run: npm install ts-node -g
+      - run: ts-node src/cli.ts cloud deploy --appName hathora-poker --token ${{ secrets.HATHORA_TOKEN }}
   frontend:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: npm install hathora surge -g
-      - run: COORDINATOR_HOST=coordinator.hathora.com APP_SECRET=${{ secrets.POKER_APP_SECRET }} hathora build --only client
+      - run: npm install ts-node surge -g
+      - run: COORDINATOR_HOST=coordinator.hathora.com APP_SECRET=${{ secrets.POKER_APP_SECRET }} ts-node src/cli.ts build --only client
       - run: cp client/prototype-ui/dist/index.html client/prototype-ui/dist/200.html
       - run: surge client/prototype-ui/dist hathora-poker.surge.sh
         env:
@@ -33,8 +34,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: npm install hathora surge -g
-      - run: COORDINATOR_HOST=coordinator.hathora.com APP_SECRET=${{ secrets.POKER_APP_SECRET }} hathora build --only client
+      - run: npm install ts-node surge -g
+      - run: COORDINATOR_HOST=coordinator.hathora.com APP_SECRET=${{ secrets.POKER_APP_SECRET }} ts-node src/cli.ts build --only client
       - run: cp dist/client/web/index.html dist/client/web/200.html
       - run: surge dist/client/web screeching-chance.surge.sh
         env:
