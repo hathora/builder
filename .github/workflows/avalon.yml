@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: npm ci
+      - run: npm install
       - run: npm install ts-node -g
       - run: ts-node ../../src/cli.ts cloud deploy --appName hathora-avalon --token ${{ secrets.HATHORA_TOKEN }}
   frontend:
