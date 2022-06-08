@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v2
       - run: npm ci
       - run: npm install ts-node -g
-      - run: ts-node src/cli.ts cloud deploy --appName hathora-boggle --token ${{ secrets.HATHORA_TOKEN }}
+      - run: ts-node ../../src/cli.ts cloud deploy --appName hathora-boggle --token ${{ secrets.HATHORA_TOKEN }}
   frontend:
     runs-on: ubuntu-latest
     steps:
