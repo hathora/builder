@@ -101,6 +101,13 @@ class Store {
       pendingMessages.delete(stateId);
     }
   }
+  unsubscribeAll() {
+    stateInfo.forEach(({ subscriptions }, stateId) => {
+      subscriptions.clear();
+      changedStates.delete(stateId);
+      pendingMessages.delete(stateId);
+    });
+  }
   async handleUpdate(stateId: StateId, userId: UserId, data: Buffer) {
     if (!stateInfo.has(stateId)) {
       return;
