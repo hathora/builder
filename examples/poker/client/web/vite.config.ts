@@ -4,7 +4,7 @@ import react from "@vitejs/plugin-react";
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  build: { target: "esnext", emptyOutDir: true },
+  build: { target: "esnext" },
   define: {
     "process.env": {
       COORDINATOR_HOST: process.env.COORDINATOR_HOST,

@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  build: { target: "esnext", emptyOutDir: true },
+  build: { target: "esnext" },
   define: {
     "process.env": {
       COORDINATOR_HOST: process.env.COORDINATOR_HOST,
