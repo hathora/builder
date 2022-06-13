@@ -43,7 +43,7 @@ Requirements:
 
 - node v16.12.0+
 
-Install hathora from the npm registry:
+Install Hathora from the npm registry:
 
 ```sh
 npm install -g hathora

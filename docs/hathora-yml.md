@@ -51,7 +51,7 @@ methods:
 
 ## auth
 
-The `auth` section is used to configure the authentication modes that the application can use. The two currently supported modes are anonymous and google. At least one authentication method must be configured.
+The `auth` section is used to configure the authentication modes that the application can use. The two currently supported modes are `anonymous` and `google`. At least one authentication method must be configured.
 
 Example:
 
@@ -82,4 +82,4 @@ The `error` key represents the response type the server sends when a method call
 
 ## tick
 
-The optional `tick` configures whether or not the backend will run an `onTick` function at a configurable interval. See the Server section below for more details.
+The optional `tick` configures whether or not the backend will run an `onTick` function at a configurable interval. See the [Server](server.md) section below for more details.

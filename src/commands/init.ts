@@ -10,7 +10,7 @@ import { generate } from "../generate";
 const cmd: CommandModule = {
   command: "init",
   aliases: ["initialize", "initialise"],
-  describe: "Creates a new hathora project",
+  describe: "Creates a new Hathora project",
   handler() {
     const { rootDir, serverDir } = getDirs();
 

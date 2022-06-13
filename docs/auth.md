@@ -21,7 +21,7 @@ auth:
 
 ### Google login
 
-This methods allows users to login using their google account. Provided that the user consents to the Google OAuth prompt, it fetches basic information from their profile like their name and email address.
+This methods allows users to login using their Google account. Provided that the user consents to the Google OAuth prompt, it fetches basic information from their profile like their name and email address.
 
 To configure it, [create authorization credentials](https://developers.google.com/identity/sign-in/web/sign-in#create_authorization_credentials) from the Google developer console and simply paste the client ID you get into your `hathora.yml` as follows:
 

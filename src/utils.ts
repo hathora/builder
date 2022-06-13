@@ -54,7 +54,7 @@ export async function makeCloudApiRequest(
 export function getDirs() {
   const rootDir = findUp("hathora.yml");
   if (rootDir === undefined) {
-    throw new Error("Doesn't appear to be inside a hathora project");
+    throw new Error("Doesn't appear to be inside a Hathora project");
   }
   return {
     rootDir,

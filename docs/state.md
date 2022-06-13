@@ -12,7 +12,7 @@ The `userState` is the client specific view of the data which is kept synchroniz
 
 New states are created via the `/<appId>/create` endpoint in the coordinator. Users can directly create a new state by hitting this endpoint via `client.create(token, request)`, or they can go through the matchmaker via `client.findMatch(token, request, numPlayers)`. The matchmaker is responsible for grouping a set of users together based on the specified criteria, and then calling the create endpoint internally and returning the resulting `stateId` to the matched group.
 
-States are never destroyed, so they can always be accessed via their `stateId`. When there are no connected users to a given state, hathora may purge the `InternalState` from memory, but it will be loaded again from disk if someone connects to it again.
+States are never destroyed, so they can always be accessed via their `stateId`. When there are no connected users to a given state, Hathora may purge the `InternalState` from memory, but it will be loaded again from disk if someone connects to it again.
 
 ## Data privacy
 
