@@ -1,10 +1,10 @@
 # Client
 
-The Hathora framework includes an automatically generated [prototype UI](type-driven-development.md?id=prototype-ui) that lets you interact with your application and test your backend logic without writing any frontend code. Furthermore, Hathora provides ways to incrementally add custom presentation logic as you become ready for it.
+The Hathora framework includes an automatically generated [Prototype UI](type-driven-development.md?id=prototype-ui) that lets you interact with your application and test your backend logic without writing any frontend code. Furthermore, Hathora provides ways to incrementally add custom presentation logic as you become ready for it.
 
 ## Plugins
 
-Plugins allow you to customize the way the prototype UI renders types in its state view. Plugins simply need to export a webcomponent, and can be created as follows for the following frontend frameworks:
+Plugins allow you to customize the way the Prototype UI renders types in its state view. Plugins simply need to export a webcomponent, and can be created as follows for the following frontend frameworks:
 
 - No framework: `hathora create-plugin native <type>`
 - React: `hathora create-plugin react <type>`
@@ -51,7 +51,7 @@ export default class CardComponent extends LitElement {
 }
 ```
 
-Which renders like this in the prototype UI:
+Which renders like this in the Prototype UI:
 ![image](https://user-images.githubusercontent.com/5400947/149680633-b165e6d7-8c87-417a-88e8-9cc1fd14b80d.png)
 
 ## Fully custom frontend

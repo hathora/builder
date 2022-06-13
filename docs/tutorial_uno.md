@@ -216,7 +216,7 @@ See [here](methods.md) for more details about how server methods works.
 
 > The Hathora dev server supports hot reloading of both backend and frontend, so you shouldn't need to restart the server when making edits to your code.
 
-Going back to the prototype UI, we can see our working application in action. Create a game, join it as another user from a different tab (by using the same url), and start the game. You should see a view like this:
+Going back to the Prototype UI, we can see our working application in action. Create a game, join it as another user from a different tab (by using the same url), and start the game. You should see a view like this:
 
 ![image](https://user-images.githubusercontent.com/5400947/149870083-67986611-6151-4ea8-abb2-9a67467741d1.png)
 
