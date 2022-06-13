@@ -46,7 +46,7 @@ The coordinator also implements support for multiple protocols (although only We
 
 In a normal client/server set up, the client needs to connect directly to the server's IP address. This means that the server needs to advertise their IP to allow inbound connections, which can be a security risk (and some firewalls may prevent it).
 
-With Hathora, servers only need one output TCP connection to the coordinator -- all comunication is done through this connection. This allows the server's IP address to remain private and you don't need to allow any inbound connections.
+With Hathora, servers only need one output TCP connection to the coordinator -- all communication is done through this connection. This allows the server's IP address to remain private and you don't need to allow any inbound connections.
 
 ### Stream multiplexing
 
@@ -58,11 +58,11 @@ The coordinator knows data about backend instance health, active client connecti
 
 ## Data Privacy and Offline Development
 
-There is a production cloud coordinator instance deployed at coordinator.hathora.dev, mainted by the Hathora team.
+There is a production cloud coordinator instance deployed at coordinator.hathora.dev, maintained by the Hathora team.
 
 The coordinator does not store any game data -- that lives entirely within the backend instances which you own. The coordinator simply proxies game packets back and forth from clients and backend instances. The coordinator does store user profile information in order to allow Hathora applications to perform userId lookups.
 
-To develop locally without using the cloud coordinator (e.g. for working offline), you can make use of the [local coordinator](https://github.com/hathora/local-coordinator). Simply start the local coordinator process in a separate terminal tab, then set the `COORDINATOR_HOST` environment variable when starting the hathora dev server:
+To develop locally without using the cloud coordinator (e.g. for working offline), you can make use of the [local coordinator](https://github.com/hathora/local-coordinator). Simply start the local coordinator process in a separate terminal tab, then set the `COORDINATOR_HOST` environment variable when starting the Hathora dev server:
 
 ```sh
 COORDINATOR_HOST=localhost hathora dev

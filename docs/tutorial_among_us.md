@@ -13,7 +13,7 @@ This is what our game will look like by the end of this tutorial:
 
 ## Install
 
-Before you begin, make sure you have nodejs v16.12+ and the hathora cli installed:
+Before you begin, make sure you have nodejs v16.12+ and the Hathora cli installed:
 
 ```sh
 npm install -g hathora
@@ -128,7 +128,7 @@ Because of the default implementation, we don't see any real data and clicking S
 
 See [here](methods) for more details about how server methods works.
 
-> The hathora dev server supports hot reloading of both backend and frontend, so you shouldn't need to restart the server when making edits to your code.
+> The Hathora dev server supports hot reloading of both backend and frontend, so you shouldn't need to restart the server when making edits to your code.
 
 Going back to the prototype UI, we can see our working application in action. Login, create a game, and join it as another user from a different tab. You should be able to see both users get added to the players array.
 

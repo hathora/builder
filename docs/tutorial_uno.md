@@ -12,7 +12,7 @@ This is what our game will look like by the end of this tutorial:
 
 ## Install
 
-Before you begin, make sure you have nodejs v16.12+ and the hathora cli installed:
+Before you begin, make sure you have nodejs v16.12+ and the Hathora cli installed:
 
 ```sh
 npm install -g hathora
@@ -56,7 +56,7 @@ userState: PlayerState
 error: string
 ```
 
-This file defines the client data model and the server api endpoints for our application. For more information on this file format, see [here](type-driven-development).
+This file defines the client data model and the server api endpoints for our application. For more information on this file format, see [here](type-driven-development.md).
 
 To initialize our project structure run `hathora init`. You should see the following directory structure generated for you:
 
@@ -120,7 +120,7 @@ Next, run `hathora dev` to start the development server. Visit http://localhost:
 
 ## Backend logic
 
-Because of the default implementation, we don't see any real data and clicking Submit for any of the methods displays a "Not implemented" error. Let's fix this by adding our game logic to `server/impl.ts`:
+Because of the default implementation, we don't see any real data and clicking `Submit` for any of the methods displays a "Not implemented" error. Let's fix this by adding our game logic to `server/impl.ts`:
 
 ```ts
 import { Methods, Context } from "./.hathora/methods";
@@ -212,9 +212,9 @@ export class Impl implements Methods<InternalState> {
 
 ```
 
-See [here](methods) for more details about how server methods works.
+See [here](methods.md) for more details about how server methods works.
 
-> The hathora dev server supports hot reloading of both backend and frontend, so you shouldn't need to restart the server when making edits to your code.
+> The Hathora dev server supports hot reloading of both backend and frontend, so you shouldn't need to restart the server when making edits to your code.
 
 Going back to the prototype UI, we can see our working application in action. Create a game, join it as another user from a different tab (by using the same url), and start the game. You should see a view like this:
 
@@ -236,7 +236,7 @@ One problem with our current backend implementation is that there is no validati
   }
 ```
 
-Now, if you try to join a second time you will get a `Already joined` error on the screen. Try adding validations to the other functions as well. To see a complete implementation of the backend, see [the uno example](https://github.com/hathora/hathora/tree/develop/examples/uno).
+Now, if you try to join a second time you will get a `Already joined` error on the screen. Try adding validations to the other functions as well. To see a complete implementation of the backend, see [the Uno example](https://github.com/hathora/hathora/tree/develop/examples/uno).
 
 ## Next steps
 
