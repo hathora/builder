@@ -53,7 +53,12 @@ export class HathoraClient {
     return res.data.stateId;
   }
 
-  public async connect(token: string, stateId: StateId): Promise<HathoraConnection> {
+  public async connect(
+    token: string,
+    stateId: StateId,
+    onUpdate?: UpdateCallback,
+    onError?: ErrorCallback
+  ): Promise<HathoraConnection> {
     return new Promise((resolve, reject) => {
       const socket = new WebSocket(`wss://${COORDINATOR_HOST}/${this.appId}`);
       socket.binaryType = "arraybuffer";
@@ -70,9 +75,10 @@ export class HathoraClient {
         const reader = new Reader(new Uint8Array(data as ArrayBuffer));
         const type = reader.readUInt8();
         if (type === 0) {
-          resolve(new HathoraConnection(stateId, decodeStateSnapshot(reader), socket));
+          const connection = new HathoraConnection(stateId, decodeStateSnapshot(reader), socket, onUpdate, onError);
+          resolve(connection);
         } else {
-          reject("Unknown message type: " + type);
+          reject("Unexpected message type: " + type);
         }
       };
     });
@@ -117,7 +123,20 @@ export class HathoraConnection {
   private updateListeners: UpdateCallback[] = [];
   private errorListeners: ErrorCallback[] = [];
 
-  constructor(public stateId: StateId, public state: UserState, private socket: WebSocket) {
+  constructor(
+    public stateId: StateId,
+    public state: UserState,
+    private socket: WebSocket,
+    onUpdate?: UpdateCallback,
+    onError?: ErrorCallback
+  ) {
+    if (onUpdate !== undefined) {
+      this.onUpdate(onUpdate);
+      onUpdate({ stateId, state: JSON.parse(JSON.stringify(this.state)), updatedAt: 0, events: [] });
+    }
+    if (onError !== undefined) {
+      this.onError(onError);
+    }
     socket.onmessage = ({ data }) => {
       const reader = new Reader(new Uint8Array(data as ArrayBuffer));
       const type = reader.readUInt8();
