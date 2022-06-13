@@ -6,7 +6,7 @@ By leveraging this rich declarative format along with its code generation system
 
 1. typesafe clients with the data types and api calls built in
 2. the server interface with method stubs to be implemented
-3. a prototype UI which allows for fast iteration and testing
+3. a Prototype UI which allows for fast iteration and testing
 
 > Note that the `hathora.yml` format is designed to be language agnostic, so all the code generation can be ported to produce output in any language. Typescript is the only current language implemented but support for others is coming soon.
 

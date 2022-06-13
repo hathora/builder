@@ -130,7 +130,7 @@ See [here](methods) for more details about how server methods works.
 
 > The Hathora dev server supports hot reloading of both backend and frontend, so you shouldn't need to restart the server when making edits to your code.
 
-Going back to the prototype UI, we can see our working application in action. Login, create a game, and join it as another user from a different tab. You should be able to see both users get added to the players array.
+Going back to the Prototype UI, we can see our working application in action. Login, create a game, and join it as another user from a different tab. You should be able to see both users get added to the players array.
 
 ![gif](https://user-images.githubusercontent.com/5400947/154374350-07d5a2ba-cc68-4239-ac58-fd0260b10e32.gif)
 
@@ -190,7 +190,7 @@ The [onTick](server.md?id=ontick) function allows us to add logic that runs at a
   }
 ```
 
-As before, we visit the prototype UI to test our changes:
+As before, we visit the Prototype UI to test our changes:
 
 ![gif](https://user-images.githubusercontent.com/5400947/154375956-b61b9cdf-8cf6-4731-8232-aca686d5d54f.gif)
 
