@@ -3,6 +3,7 @@ import WebSocket from "isomorphic-ws";
 import getRandomValues from "get-random-values";
 import axios from "axios";
 import jwtDecode from "jwt-decode";
+import { Socket } from "net";
 import { Reader, Writer } from "bin-serde";
 import { UserData, Response, Method, COORDINATOR_HOST, MATCHMAKER_HOST } from "../../api/base";
 import {
@@ -21,6 +22,12 @@ export type StateId = string;
 export type UpdateArgs = { stateId: StateId; state: UserState; updatedAt: number; events: string[] };
 export type UpdateCallback = (updateArgs: UpdateArgs) => void;
 export type ErrorCallback = (error: ConnectionFailure) => void;
+
+export enum TransportType {
+  WebSocket,
+  TCP,
+  UDP,
+}
 
 export class HathoraClient {
   public appId = "{{appId}}";
@@ -56,9 +63,21 @@ export class HathoraClient {
   public async connect(
     token: string,
     stateId: StateId,
-    onUpdate?: UpdateCallback,
-    onError?: ErrorCallback
+    transportType: TransportType = TransportType.WebSocket
   ): Promise<HathoraConnection> {
+    switch (transportType) {
+      case TransportType.WebSocket:
+        return this.connectWebSocket(token, stateId);
+      case TransportType.TCP:
+        return this.connectTCP(token, stateId);
+      case TransportType.UDP:
+      // return this.connectUDP(token, stateId);
+      default:
+        throw new Error("Unknown transport type");
+    }
+  }
+
+  public async connectWebSocket(token: string, stateId: StateId): Promise<HathoraConnection> {
     return new Promise((resolve, reject) => {
       const socket = new WebSocket(`wss://${COORDINATOR_HOST}/${this.appId}`);
       socket.binaryType = "arraybuffer";
@@ -75,12 +94,37 @@ export class HathoraClient {
         const reader = new Reader(new Uint8Array(data as ArrayBuffer));
         const type = reader.readUInt8();
         if (type === 0) {
-          const connection = new HathoraConnection(stateId, decodeStateSnapshot(reader), socket, onUpdate, onError);
-          resolve(connection);
+          resolve(new WebSocketHathoraConnection(stateId, decodeStateSnapshot(reader), socket));
         } else {
-          reject("Unexpected message type: " + type);
+          reject("Unknown message type: " + type);
         }
       };
+    });
+  }
+
+  public async connectTCP(token: string, stateId: StateId): Promise<HathoraConnection> {
+    return new Promise((resolve, reject) => {
+      const socket = new Socket();
+      socket.connect(7148, COORDINATOR_HOST);
+      socket.on("connect", () =>
+        socket.write(
+          new Writer()
+            .writeUInt8(0)
+            .writeString(token)
+            .writeString(this.appId)
+            .writeUInt64([...stateId].reduce((r, v) => r * 36n + BigInt(parseInt(v, 36)), 0n))
+            .toBuffer()
+        )
+      );
+      socket.once("data", (data: Buffer) => {
+        const reader = new Reader(new Uint8Array(data as ArrayBuffer));
+        const type = reader.readUInt8();
+        if (type === 0) {
+          resolve(new TCPHathoraConnection(stateId, decodeStateSnapshot(reader), socket));
+        } else {
+          reject("Unknown message type: " + type);
+        }
+      });
     });
   }
 
@@ -117,16 +161,15 @@ export class HathoraClient {
   }
 }
 
-export class HathoraConnection {
-  private callbacks: Record<string, (response: Response) => void> = {};
-  private changedAt = 0;
-  private updateListeners: UpdateCallback[] = [];
-  private errorListeners: ErrorCallback[] = [];
+export abstract class HathoraConnection {
+  protected updateListeners: UpdateCallback[] = [];
+  protected errorListeners: ErrorCallback[] = [];
+  protected callbacks: Record<string, (response: Response) => void> = {};
+  protected changedAt = 0;
 
   constructor(
     public stateId: StateId,
     public state: UserState,
-    private socket: WebSocket,
     onUpdate?: UpdateCallback,
     onError?: ErrorCallback
   ) {
@@ -137,6 +180,122 @@ export class HathoraConnection {
     if (onError !== undefined) {
       this.onError(onError);
     }
+  }
+
+  public onUpdate(listener: UpdateCallback) {
+    this.updateListeners.push(listener);
+  }
+
+  public onError(listener: ErrorCallback) {
+    this.errorListeners.push(listener);
+  }
+
+  public removeAllListeners() {
+    this.updateListeners = [];
+    this.errorListeners = [];
+  }
+
+  protected abstract callMethod(method: Method, request: Uint8Array): Promise<Response>;
+
+  {{#each methods}}
+  public {{@key}}(request: {{makeRequestName @key}}): Promise<Response> {
+    return this.callMethod(Method.{{uppercase @key}}, {{makeRequestName @key}}.encode(request).toBuffer());
+  }
+
+  {{/each}}
+}
+
+
+export class TCPHathoraConnection extends HathoraConnection {
+  constructor(public stateId: StateId, public state: UserState, private socket: Socket, onUpdate?: UpdateCallback, onError?: ErrorCallback) {
+    super(stateId, state, onUpdate, onError);
+    TCPHathoraConnection.readTCPData(socket, (data) => {
+      const reader = new Reader(new Uint8Array(data as ArrayBuffer));
+      const type = reader.readUInt8();
+
+      if (type === 0) {
+        this.state = decodeStateSnapshot(reader);
+        this.changedAt = 0;
+        this.updateListeners.forEach((listener) =>
+          listener({ stateId, state: JSON.parse(JSON.stringify(this.state)), updatedAt: 0, events: [] })
+        );
+      } else if (type === 1) {
+        const { stateDiff, changedAtDiff, responses, events } = decodeStateUpdate(reader);
+        if (stateDiff !== undefined) {
+          this.state = computePatch(this.state!, stateDiff);
+        }
+        this.changedAt += changedAtDiff;
+        this.updateListeners.forEach((listener) =>
+          listener({
+            stateId,
+            state: JSON.parse(JSON.stringify(this.state)),
+            updatedAt: this.changedAt,
+            events: events.map((e) => e.event),
+          })
+        );
+        responses.forEach(({ msgId, response }) => {
+          if (msgId in this.callbacks) {
+            this.callbacks[msgId](response);
+            delete this.callbacks[msgId];
+          }
+        });
+      } else if (type === 2) {
+        this.disconnect();
+      } else if (type === 3) {
+        TCPHathoraConnection.writeTCPData(socket, new Writer().writeUInt8(2).toBuffer());
+      } else {
+        console.error("Unknown message type", type);
+      }
+    });
+    socket.on("close", (hadError) => {
+      this.errorListeners.forEach((listener) =>
+        listener(transformCoordinatorFailure({ code: 4000, reason: "Connection closed" }))
+      );
+    });
+  }
+
+  protected callMethod(method: Method, request: Uint8Array): Promise<Response> {
+    return new Promise((resolve, reject) => {
+      if (this.socket.readyState !== "open") {
+        reject("Connection not open");
+      } else {
+        const msgId: Uint8Array = getRandomValues(new Uint8Array(4));
+        TCPHathoraConnection.writeTCPData(
+          this.socket,
+          new Uint8Array([...new Uint8Array([method]), ...msgId, ...request])
+        );
+        this.callbacks[new DataView(msgId.buffer).getUint32(0)] = resolve;
+      }
+    });
+  }
+
+  private static readTCPData(socket: Socket, onData: (data: Buffer) => void) {
+    let buf = Buffer.alloc(0);
+    socket.on("data", (data) => {
+      buf = Buffer.concat([buf, data]);
+      while (buf.length >= 4) {
+        const bufLen = buf.readUInt32BE();
+        if (buf.length < 4 + bufLen) {
+          return;
+        }
+        onData(buf.slice(4, 4 + bufLen));
+        buf = buf.slice(4 + bufLen);
+      }
+    });
+  }
+
+  private static writeTCPData(socket: Socket, data: Uint8Array) {
+    socket.write(new Writer().writeUInt32(data.length).writeBuffer(data).toBuffer());
+  }
+
+  public disconnect(): void {
+    this.socket.destroy();
+  }
+}
+
+export class WebSocketHathoraConnection extends HathoraConnection {
+  constructor(public stateId: StateId, public state: UserState, private socket: WebSocket, onUpdate?: UpdateCallback, onError?: ErrorCallback) {
+    super(stateId, state, onUpdate, onError);
     socket.onmessage = ({ data }) => {
       const reader = new Reader(new Uint8Array(data as ArrayBuffer));
       const type = reader.readUInt8();
@@ -178,25 +337,6 @@ export class HathoraConnection {
     };
   }
 
-  public onUpdate(listener: UpdateCallback) {
-    this.updateListeners.push(listener);
-  }
-
-  public onError(listener: ErrorCallback) {
-    this.errorListeners.push(listener);
-  }
-
-  public removeAllListeners() {
-    this.updateListeners = [];
-    this.errorListeners = [];
-  }
-
-  {{#each methods}}
-  public {{@key}}(request: {{makeRequestName @key}}): Promise<Response> {
-    return this.callMethod(Method.{{uppercase @key}}, {{makeRequestName @key}}.encode(request).toBuffer());
-  }
-
-  {{/each}}
   public disconnect(code?: number): void {
     if (code === undefined) {
       this.socket.onclose = () => {};
@@ -204,7 +344,7 @@ export class HathoraConnection {
     this.socket.close(code);
   }
 
-  private callMethod(method: Method, request: Uint8Array): Promise<Response> {
+  protected callMethod(method: Method, request: Uint8Array): Promise<Response> {
     return new Promise((resolve, reject) => {
       if (this.socket.readyState !== this.socket.OPEN) {
         reject("Connection not open");
