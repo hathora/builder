@@ -106,7 +106,7 @@ export class HathoraClient {
     return new Promise((resolve, reject) => {
       const socket = new Socket();
       socket.connect(7148, COORDINATOR_HOST);
-      socket.on("connect", () =>
+      socket.on("connect", () => 
         socket.write(
           new Writer()
             .writeUInt8(0)
@@ -207,7 +207,13 @@ export abstract class HathoraConnection {
 
 
 export class TCPHathoraConnection extends HathoraConnection {
-  constructor(public stateId: StateId, public state: UserState, private socket: Socket, onUpdate?: UpdateCallback, onError?: ErrorCallback) {
+  constructor(
+    public stateId: StateId,
+    public state: UserState,
+    private socket: Socket,
+    onUpdate?: UpdateCallback,
+    onError?: ErrorCallback
+  ) {
     super(stateId, state, onUpdate, onError);
     TCPHathoraConnection.readTCPData(socket, (data) => {
       const reader = new Reader(new Uint8Array(data as ArrayBuffer));
@@ -242,7 +248,7 @@ export class TCPHathoraConnection extends HathoraConnection {
       } else if (type === 2) {
         this.disconnect();
       } else if (type === 3) {
-        TCPHathoraConnection.writeTCPData(socket, new Writer().writeUInt8(2).toBuffer());
+        // ping
       } else {
         console.error("Unknown message type", type);
       }
@@ -294,7 +300,13 @@ export class TCPHathoraConnection extends HathoraConnection {
 }
 
 export class WebSocketHathoraConnection extends HathoraConnection {
-  constructor(public stateId: StateId, public state: UserState, private socket: WebSocket, onUpdate?: UpdateCallback, onError?: ErrorCallback) {
+  constructor(
+    public stateId: StateId,
+    public state: UserState,
+    private socket: WebSocket,
+    onUpdate?: UpdateCallback,
+    onError?: ErrorCallback
+  ) {
     super(stateId, state, onUpdate, onError);
     socket.onmessage = ({ data }) => {
       const reader = new Reader(new Uint8Array(data as ArrayBuffer));
