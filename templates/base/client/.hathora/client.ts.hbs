@@ -249,6 +249,7 @@ export class TCPHathoraConnection extends HathoraConnection {
         this.disconnect();
       } else if (type === 3) {
         // ping
+        TCPHathoraConnection.writeTCPData(socket, new Writer().writeUInt8(1).toBuffer());
       } else {
         console.error("Unknown message type", type);
       }
