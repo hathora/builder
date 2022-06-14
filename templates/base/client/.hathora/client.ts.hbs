@@ -162,10 +162,10 @@ export class HathoraClient {
 }
 
 export abstract class HathoraConnection {
-  protected updateListeners: UpdateCallback[] = [];
-  protected errorListeners: ErrorCallback[] = [];
   protected callbacks: Record<string, (response: Response) => void> = {};
   protected changedAt = 0;
+  protected updateListeners: UpdateCallback[] = [];
+  protected errorListeners: ErrorCallback[] = [];
 
   constructor(
     public stateId: StateId,
