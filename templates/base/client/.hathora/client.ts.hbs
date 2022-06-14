@@ -96,7 +96,7 @@ export class HathoraClient {
         if (type === 0) {
           resolve(new WebSocketHathoraConnection(stateId, decodeStateSnapshot(reader), socket));
         } else {
-          reject("Unknown message type: " + type);
+          reject("Unexpected message type: " + type);
         }
       };
     });
