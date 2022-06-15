@@ -18,6 +18,7 @@ export interface HathoraTransport {
     onClose: (e: { code: number; reason: string }) => void
   ): Promise<PlayerState>;
   disconnect(code?: number): void;
+  pong(): void;
   isReady(): boolean;
   write(data: Uint8Array): void;
 }
@@ -69,6 +70,9 @@ export class WebSocketHathoraTransport implements HathoraTransport {
   write(data: Uint8Array): void {
     this.socket.send(data);
   }
+  pong() {
+    this.socket.ping();
+  }
 }
 
 export class TCPHathoraTransport implements HathoraTransport {
@@ -109,7 +113,13 @@ export class TCPHathoraTransport implements HathoraTransport {
   }
 
   public write(data: Uint8Array) {
-    this.socket.write(new Writer().writeUInt32(data.length).writeBuffer(data).toBuffer());
+    this.socket.write(
+      new Writer()
+        .writeUInt32(data.length + 1)
+        .writeUInt8(0)
+        .writeBuffer(data)
+        .toBuffer()
+    );
   }
 
   public disconnect(code?: number | undefined): void {
@@ -118,6 +128,10 @@ export class TCPHathoraTransport implements HathoraTransport {
 
   public isReady(): boolean {
     return this.socket.readyState === "open";
+  }
+
+  public pong(): void {
+    this.socket.write(new Writer().writeUInt32(1).writeUInt8(1).toBuffer());
   }
 
   private readTCPData(onData: (data: Buffer) => void) {
