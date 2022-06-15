@@ -1,3 +1,4 @@
+// @ts-ignore
 import getRandomValues from "get-random-values";
 import axios from "axios";
 import jwtDecode from "jwt-decode";
@@ -6,7 +7,7 @@ import { UserData, Response, Method, COORDINATOR_HOST, MATCHMAKER_HOST } from ".
 import {
   decodeStateSnapshot,
   decodeStateUpdate,
-  {{userState}} as PlayerState,
+  {{userState}} as UserState,
   IInitializeRequest,
   {{#each methods}}
   {{makeRequestName @key}},
@@ -101,7 +102,7 @@ export class HathoraConnection {
   private updateListeners: UpdateCallback[] = [];
   private errorListeners: ErrorCallback[] = [];
   private transport: HathoraTransport;
-  private state: PlayerState | undefined;
+  private state: UserState | undefined;
 
   constructor(
     public appId: string,
@@ -136,7 +137,7 @@ export class HathoraConnection {
     );
   }
 
-  public getState(): PlayerState {
+  public getState(): UserState {
     if (this.state === undefined) {
       throw new Error("Must wait on HathoraConnection.connect() before calling getState()");
     }
