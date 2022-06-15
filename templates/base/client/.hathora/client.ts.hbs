@@ -116,15 +116,12 @@ export class HathoraConnection {
     onUpdate?: UpdateCallback,
     onError?: ErrorCallback
   ) {
-    switch (transportType) {
-      case TransportType.TCP:
-        this.transport = new TCPHathoraTransport(appId);
-        break;
-      case TransportType.WebSocket:
-        this.transport = new WebSocketHathoraTransport(appId);
-        break;
-      default:
-        throw new Error("Unknown transport type");
+    if (transportType === TransportType.TCP) {
+      this.transport = new TCPHathoraTransport(appId);
+    } else if (transportType === TransportType.WebSocket) {
+      this.transport = new WebSocketHathoraTransport(appId);
+    } else {
+      throw new Error("Unknown transport type");
     }
 
     if (onUpdate !== undefined) {
