@@ -37,6 +37,7 @@ export async function makeCloudApiRequest(
     if (axios.isAxiosError(err)) {
       const axiosError = err;
       if (axiosError.response === undefined) {
+        console.error("Error:", axiosError.message);
         yargs.exit(1, err);
         return;
       }
