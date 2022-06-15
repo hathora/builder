@@ -107,7 +107,7 @@ export class HathoraConnection {
   private updateListeners: UpdateCallback[] = [];
   private errorListeners: ErrorCallback[] = [];
   private transport: HathoraTransport;
-  private state: UserState | undefined;
+  private internalState: UserState | undefined;
 
   constructor(
     public appId: string,
@@ -136,38 +136,38 @@ export class HathoraConnection {
   }
 
   public async connect(token: string): Promise<void> {
-    this.state = await this.transport.connect(this.stateId, token, this.handleData, this.handleClose);
+    this.internalState = await this.transport.connect(this.stateId, token, this.handleData, this.handleClose);
     this.updateListeners.forEach((updateListener) =>
-      updateListener({ stateId: this.stateId, state: this.getState(), updatedAt: 0, events: [] })
+      updateListener({ stateId: this.stateId, state: this.state, updatedAt: 0, events: [] })
     );
   }
 
-  public getState(): UserState {
-    if (this.state === undefined) {
-      throw new Error("Must wait on HathoraConnection.connect() before calling getState()");
+  get state(): UserState {
+    if (this.internalState === undefined) {
+      throw new Error("Must wait on HathoraConnection.connect() before looking up state");
     }
-    return this.state;
+    return this.internalState;
   }
 
   private handleData = (data: Buffer) => {
     const reader = new Reader(new Uint8Array(data as ArrayBuffer));
     const type = reader.readUInt8();
     if (type === 0) {
-      this.state = decodeStateSnapshot(reader);
+      this.internalState = decodeStateSnapshot(reader);
       this.changedAt = 0;
       this.updateListeners.forEach((listener) =>
-        listener({ stateId: this.stateId, state: JSON.parse(JSON.stringify(this.state)), updatedAt: 0, events: [] })
+        listener({ stateId: this.stateId, state: JSON.parse(JSON.stringify(this.internalState)), updatedAt: 0, events: [] })
       );
     } else if (type === 1) {
       const { stateDiff, changedAtDiff, responses, events } = decodeStateUpdate(reader);
       if (stateDiff !== undefined) {
-        this.state = computePatch(this.state!, stateDiff);
+        this.internalState = computePatch(this.internalState!, stateDiff);
       }
       this.changedAt += changedAtDiff;
       this.updateListeners.forEach((listener) =>
         listener({
           stateId: this.stateId,
-          state: JSON.parse(JSON.stringify(this.state)),
+          state: JSON.parse(JSON.stringify(this.internalState)),
           updatedAt: this.changedAt,
           events: events.map((e) => e.event),
         })
@@ -180,6 +180,8 @@ export class HathoraConnection {
       });
     } else if (type === 2) {
       this.transport.disconnect(4004);
+    } else if (type === 3) {
+      this.transport.pong();
     } else {
       console.error("Unknown message type", type);
     }
