@@ -1,9 +1,10 @@
+import jwtDecode from "jwt-decode";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import getRandomValues from "get-random-values";
-import axios from "axios";
-import jwtDecode from "jwt-decode";
 import { Reader, Writer } from "bin-serde";
-import { UserData, Response, Method, COORDINATOR_HOST, MATCHMAKER_HOST } from "../../api/base";
+import axios from "axios";
+
 import {
   decodeStateSnapshot,
   decodeStateUpdate,
@@ -12,12 +13,14 @@ import {
   {{#each methods}}
   {{makeRequestName @key}},
   {{/each}}
+  StateId,
 } from "../../api/types";
-import { ConnectionFailure, transformCoordinatorFailure } from "./failures";
-import { computePatch } from "./patch";
-import { HathoraTransport, TCPHathoraTransport, TransportType, WebSocketHathoraTransport } from "./transport";
+import { UserData, Response, Method, COORDINATOR_HOST, MATCHMAKER_HOST } from "../../api/base";
 
-export type StateId = string;
+import { HathoraTransport, TCPHathoraTransport, TransportType, WebSocketHathoraTransport } from "./transport";
+import { computePatch } from "./patch";
+import { ConnectionFailure, transformCoordinatorFailure } from "./failures";
+
 export type UpdateArgs = { stateId: StateId; state: UserState; updatedAt: number; events: string[] };
 export type UpdateCallback = (updateArgs: UpdateArgs) => void;
 export type ErrorCallback = (error: ConnectionFailure) => void;

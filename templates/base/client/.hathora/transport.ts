@@ -1,8 +1,7 @@
 import { Reader, Writer } from "bin-serde";
 import { Socket } from "net";
 import { COORDINATOR_HOST } from "../../api/base";
-import { decodeStateSnapshot, PlayerState } from "../../api/types";
-import { StateId } from "./client";
+import { decodeStateSnapshot, PlayerState, StateId } from "../../api/types";
 import WebSocket from "isomorphic-ws";
 
 export enum TransportType {
