@@ -22,8 +22,10 @@ const cmd: CommandModule = {
         filter: (path) =>
           !path.startsWith("./api") &&
           !path.startsWith("./data") &&
+          !path.startsWith("./client") &&
           !path.includes(".hathora") &&
-          !path.includes("node_modules"),
+          !path.includes("node_modules") &&
+          !path.includes(".git"),
       },
       ["."]
     );
