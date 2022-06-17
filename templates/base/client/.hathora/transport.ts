@@ -1,7 +1,7 @@
 import { Reader, Writer } from "bin-serde";
 import { Socket } from "net";
 import { COORDINATOR_HOST } from "../../api/base";
-import { decodeStateSnapshot, PlayerState, StateId } from "../../api/types";
+import { StateId } from "../../api/types";
 import WebSocket from "isomorphic-ws";
 
 export enum TransportType {
@@ -16,7 +16,7 @@ export interface HathoraTransport {
     token: string,
     onData: (data: Buffer) => void,
     onClose: (e: { code: number; reason: string }) => void
-  ): Promise<PlayerState>;
+  ): Promise<void>;
   disconnect(code?: number): void;
   pong(): void;
   isReady(): boolean;
@@ -33,7 +33,7 @@ export class WebSocketHathoraTransport implements HathoraTransport {
     token: string,
     onData: (data: Buffer) => void,
     onClose: (e: { code: number; reason: string }) => void
-  ): Promise<PlayerState> {
+  ): Promise<void> {
     return new Promise((resolve, reject) => {
       this.socket.binaryType = "arraybuffer";
       this.socket.onclose = onClose;
@@ -51,7 +51,8 @@ export class WebSocketHathoraTransport implements HathoraTransport {
         if (type === 0) {
           this.socket.onmessage = ({ data }) => onData(data as Buffer);
           this.socket.onclose = onClose;
-          resolve(decodeStateSnapshot(reader));
+          onData(data as Buffer);
+          resolve();
         } else {
           reject("Unexpected message type: " + type);
         }
@@ -81,12 +82,12 @@ export class TCPHathoraTransport implements HathoraTransport {
     this.socket = new Socket();
   }
 
-  public async connect(
+  public connect(
     stateId: StateId,
     token: string,
     onData: (data: Buffer) => void,
     onClose: (e: { code: number; reason: string }) => void
-  ): Promise<PlayerState> {
+  ): Promise<void> {
     return new Promise((resolve, reject) => {
       this.socket.connect(7148, COORDINATOR_HOST);
       this.socket.on("connect", () =>
@@ -104,7 +105,8 @@ export class TCPHathoraTransport implements HathoraTransport {
         if (type === 0) {
           this.readTCPData(onData);
           this.socket.on("close", onClose);
-          resolve(decodeStateSnapshot(reader));
+          onData(data as Buffer);
+          resolve();
         } else {
           reject("Unknown message type: " + type);
         }

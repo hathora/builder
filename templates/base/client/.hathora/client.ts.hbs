@@ -25,6 +25,12 @@ export type UpdateArgs = { stateId: StateId; state: UserState; updatedAt: number
 export type UpdateCallback = (updateArgs: UpdateArgs) => void;
 export type ErrorCallback = (error: ConnectionFailure) => void;
 
+export type IHathoraConnectionOptions = {
+  onUpdate?: UpdateCallback;
+  onError?: ErrorCallback;
+  transportType?: TransportType;
+};
+
 export class HathoraClient {
   public appId = "{{appId}}";
 
@@ -57,14 +63,12 @@ export class HathoraClient {
   }
 
   public async connect(
-    token: string,
     stateId: StateId,
-    onUpdate?: UpdateCallback,
-    onError?: ErrorCallback,
-    transportType: TransportType = TransportType.WebSocket
+    token: string,
+    connectionOptions: IHathoraConnectionOptions
   ): Promise<HathoraConnection> {
-    const connection = new HathoraConnection(this.appId, stateId, transportType, onUpdate, onError);
-    await connection.connect(token);
+    const connection = new HathoraConnection(this.appId, stateId, token, connectionOptions);
+    await connection.connect();
     return connection;
   }
 
@@ -110,16 +114,19 @@ export class HathoraConnection {
   private internalState: UserState | undefined;
 
   constructor(
-    public appId: string,
-    public stateId: StateId,
-    transportType: TransportType,
-    onUpdate?: UpdateCallback,
-    onError?: ErrorCallback
+    private appId: string,
+    private stateId: StateId,
+    private token: string,
+    connectionOptions: IHathoraConnectionOptions
   ) {
-    if (transportType === TransportType.TCP) {
-      this.transport = new TCPHathoraTransport(appId);
-    } else if (transportType === TransportType.WebSocket) {
+    const { onError, onUpdate, transportType } = connectionOptions;
+    this.stateId = stateId;
+    this.token = token;
+
+    if (transportType === undefined || transportType === TransportType.WebSocket) {
       this.transport = new WebSocketHathoraTransport(appId);
+    } else if (transportType === TransportType.TCP) {
+      this.transport = new TCPHathoraTransport(appId);
     } else {
       throw new Error("Unknown transport type");
     }
@@ -132,18 +139,50 @@ export class HathoraConnection {
     }
   }
 
-  public async connect(token: string): Promise<void> {
-    this.internalState = await this.transport.connect(this.stateId, token, this.handleData, this.handleClose);
-    this.updateListeners.forEach((updateListener) =>
-      updateListener({ stateId: this.stateId, state: this.state, updatedAt: 0, events: [] })
-    );
+  public async connect(): Promise<void> {
+    await this.transport.connect(this.stateId, this.token, this.handleData, this.handleClose);
   }
 
-  get state(): UserState {
+  public get state(): UserState {
     if (this.internalState === undefined) {
       throw new Error("Must wait on HathoraConnection.connect() before looking up state");
     }
     return this.internalState;
+  }
+
+  public onUpdate(listener: UpdateCallback) {
+    this.updateListeners.push(listener);
+  }
+  
+  public onError(listener: ErrorCallback) {
+    this.errorListeners.push(listener);
+  }
+  
+  public removeAllListeners() {
+    this.updateListeners = [];
+    this.errorListeners = [];
+  }
+  
+  {{#each methods}}
+  public {{@key}}(request: {{makeRequestName @key}}): Promise<Response> {
+    return this.callMethod(Method.{{uppercase @key}}, {{makeRequestName @key}}.encode(request).toBuffer());
+  }
+  
+  {{/each}}
+  public disconnect(code?: number): void {
+    this.transport.disconnect(code);
+  }
+  
+  private callMethod(method: Method, request: Uint8Array): Promise<Response> {
+    return new Promise((resolve, reject) => {
+      if (!this.transport.isReady()) {
+        reject("Connection not open");
+      } else {
+        const msgId: Uint8Array = getRandomValues(new Uint8Array(4));
+        this.transport.write(new Uint8Array([...new Uint8Array([method]), ...msgId, ...request]));
+        this.callbacks[new DataView(msgId.buffer).getUint32(0)] = resolve;
+      }
+    });
   }
 
   private handleData = (data: Buffer) => {
@@ -183,45 +222,9 @@ export class HathoraConnection {
       console.error("Unknown message type", type);
     }
   };
-
+  
   private handleClose = (e: { code: number; reason: string }) => {
     console.error("Connection closed", e);
     this.errorListeners.forEach((listener) => listener(transformCoordinatorFailure(e)));
   };
-
-  public onUpdate(listener: UpdateCallback) {
-    this.updateListeners.push(listener);
-  }
-
-  public onError(listener: ErrorCallback) {
-    this.errorListeners.push(listener);
-  }
-
-  public removeAllListeners() {
-    this.updateListeners = [];
-    this.errorListeners = [];
-  }
-
-  {{#each methods}}
-  public {{@key}}(request: {{makeRequestName @key}}): Promise<Response> {
-    return this.callMethod(Method.{{uppercase @key}}, {{makeRequestName @key}}.encode(request).toBuffer());
-  }
-
-  {{/each}}
-  public disconnect(code?: number): void {
-    this.transport.disconnect(code);
-  }
-
-  private callMethod(method: Method, request: Uint8Array): Promise<Response> {
-    return new Promise((resolve, reject) => {
-      if (!this.transport.isReady()) {
-        reject("Connection not open");
-      } else {
-        const msgId: Uint8Array = getRandomValues(new Uint8Array(4));
-        this.transport.write(new Uint8Array([...new Uint8Array([method]), ...msgId, ...request]));
-        this.callbacks[new DataView(msgId.buffer).getUint32(0)] = resolve;
-      }
-    });
-  }
-
 }
