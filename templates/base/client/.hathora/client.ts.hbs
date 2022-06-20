@@ -13,7 +13,6 @@ import {
   {{#each methods}}
   {{makeRequestName @key}},
   {{/each}}
-  StateId,
 } from "../../api/types";
 import { UserData, Response, Method, COORDINATOR_HOST, MATCHMAKER_HOST } from "../../api/base";
 
@@ -21,6 +20,7 @@ import { HathoraTransport, TCPHathoraTransport, TransportType, WebSocketHathoraT
 import { computePatch } from "./patch";
 import { ConnectionFailure, transformCoordinatorFailure } from "./failures";
 
+export type StateId = string;
 export type UpdateArgs = { stateId: StateId; state: UserState; updatedAt: number; events: string[] };
 export type UpdateCallback = (updateArgs: UpdateArgs) => void;
 export type ErrorCallback = (error: ConnectionFailure) => void;
@@ -153,26 +153,26 @@ export class HathoraConnection {
   public onUpdate(listener: UpdateCallback) {
     this.updateListeners.push(listener);
   }
-  
+
   public onError(listener: ErrorCallback) {
     this.errorListeners.push(listener);
   }
-  
+
   public removeAllListeners() {
     this.updateListeners = [];
     this.errorListeners = [];
   }
-  
+
   {{#each methods}}
   public {{@key}}(request: {{makeRequestName @key}}): Promise<Response> {
     return this.callMethod(Method.{{uppercase @key}}, {{makeRequestName @key}}.encode(request).toBuffer());
   }
-  
+
   {{/each}}
   public disconnect(code?: number): void {
     this.transport.disconnect(code);
   }
-  
+
   private callMethod(method: Method, request: Uint8Array): Promise<Response> {
     return new Promise((resolve, reject) => {
       if (!this.transport.isReady()) {
@@ -192,7 +192,12 @@ export class HathoraConnection {
       this.internalState = decodeStateSnapshot(reader);
       this.changedAt = 0;
       this.updateListeners.forEach((listener) =>
-        listener({ stateId: this.stateId, state: JSON.parse(JSON.stringify(this.internalState)), updatedAt: 0, events: [] })
+        listener({
+          stateId: this.stateId,
+          state: JSON.parse(JSON.stringify(this.internalState)),
+          updatedAt: 0,
+          events: [],
+        })
       );
     } else if (type === 1) {
       const { stateDiff, changedAtDiff, responses, events } = decodeStateUpdate(reader);
@@ -222,7 +227,7 @@ export class HathoraConnection {
       console.error("Unknown message type", type);
     }
   };
-  
+
   private handleClose = (e: { code: number; reason: string }) => {
     console.error("Connection closed", e);
     this.errorListeners.forEach((listener) => listener(transformCoordinatorFailure(e)));

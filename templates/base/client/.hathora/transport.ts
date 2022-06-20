@@ -1,7 +1,6 @@
 import { Reader, Writer } from "bin-serde";
 import net from "net";
 import { COORDINATOR_HOST } from "../../api/base";
-import { StateId } from "../../api/types";
 import WebSocket from "isomorphic-ws";
 
 export enum TransportType {
@@ -12,7 +11,7 @@ export enum TransportType {
 
 export interface HathoraTransport {
   connect(
-    stateId: StateId,
+    stateId: string,
     token: string,
     onData: (data: Buffer) => void,
     onClose: (e: { code: number; reason: string }) => void
@@ -90,7 +89,7 @@ export class TCPHathoraTransport implements HathoraTransport {
   }
 
   public connect(
-    stateId: StateId,
+    stateId: string,
     token: string,
     onData: (data: Buffer) => void,
     onClose: (e: { code: number; reason: string }) => void
