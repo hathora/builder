@@ -37,6 +37,7 @@ export async function makeCloudApiRequest(
     if (axios.isAxiosError(err)) {
       const axiosError = err;
       if (axiosError.response === undefined) {
+        console.error("Error:", axiosError.message);
         yargs.exit(1, err);
         return;
       }
@@ -133,11 +134,14 @@ function startFrontend(clientRoot: string) {
   spawn("npm start", { cwd: clientRoot, stdio: "inherit", shell: true });
 }
 
-function startFrontends() {
+async function startFrontends() {
   const { clientDir } = getDirs();
   for (const dir of readdirSync(clientDir)) {
-    if (existsSync(join(clientDir, dir, "index.html"))) {
-      startFrontend(join(clientDir, dir));
+    if (existsSync(join(clientDir, dir, "package.json"))) {
+      const pkg = await import(join(clientDir, dir, "package.json"));
+      if (pkg.scripts?.start !== undefined) {
+        startFrontend(join(clientDir, dir));
+      }
     }
   }
 }

@@ -20,7 +20,7 @@ const cloudMiddleware: MiddlewareFunction = (argv) => {
   if (!(argv._[1] === "login" || "token" in argv)) {
     const tokenFile = join(os.homedir(), ".config", "hathora", "token");
     if (!fs.existsSync(tokenFile)) {
-      console.log(chalk.redBright(`Missing token file, run ${chalk.underline("hathora login")} first`));
+      console.log(chalk.redBright(`Missing token file, run ${chalk.underline("hathora cloud login")} first`));
       return;
     }
 
