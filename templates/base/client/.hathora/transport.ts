@@ -1,5 +1,5 @@
 import { Reader, Writer } from "bin-serde";
-import { Socket } from "net";
+import net from "net";
 import { COORDINATOR_HOST } from "../../api/base";
 import { StateId } from "../../api/types";
 import WebSocket from "isomorphic-ws";
@@ -25,10 +25,12 @@ export interface HathoraTransport {
 
 export class WebSocketHathoraTransport implements HathoraTransport {
   private socket: WebSocket;
+
   constructor(private appId: string) {
     this.socket = new WebSocket(`wss://${COORDINATOR_HOST}/${appId}`);
   }
-  connect(
+
+  public connect(
     stateId: string,
     token: string,
     onData: (data: Buffer) => void,
@@ -59,27 +61,32 @@ export class WebSocketHathoraTransport implements HathoraTransport {
       };
     });
   }
-  disconnect(code?: number | undefined): void {
+
+  public disconnect(code?: number | undefined): void {
     if (code === undefined) {
       this.socket.onclose = () => {};
     }
     this.socket.close(code);
   }
-  isReady(): boolean {
+
+  public isReady(): boolean {
     return this.socket.readyState === this.socket.OPEN;
   }
-  write(data: Uint8Array): void {
+
+  public write(data: Uint8Array): void {
     this.socket.send(data);
   }
-  pong() {
+
+  public pong() {
     this.socket.ping();
   }
 }
 
 export class TCPHathoraTransport implements HathoraTransport {
-  private socket: Socket;
+  private socket: net.Socket;
+
   constructor(private appId: string) {
-    this.socket = new Socket();
+    this.socket = new net.Socket();
   }
 
   public connect(

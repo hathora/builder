@@ -63,8 +63,8 @@ export class HathoraClient {
   }
 
   public async connect(
-    stateId: StateId,
     token: string,
+    stateId: StateId,
     connectionOptions: IHathoraConnectionOptions
   ): Promise<HathoraConnection> {
     const connection = new HathoraConnection(this.appId, stateId, token, connectionOptions);
