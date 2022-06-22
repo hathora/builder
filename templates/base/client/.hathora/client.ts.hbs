@@ -25,12 +25,6 @@ export type UpdateArgs = { stateId: StateId; state: UserState; updatedAt: number
 export type UpdateCallback = (updateArgs: UpdateArgs) => void;
 export type ErrorCallback = (error: ConnectionFailure) => void;
 
-export type IHathoraConnectionOptions = {
-  onUpdate?: UpdateCallback;
-  onError?: ErrorCallback;
-  transportType?: TransportType;
-};
-
 export class HathoraClient {
   public appId = "{{appId}}";
 
@@ -65,9 +59,11 @@ export class HathoraClient {
   public async connect(
     token: string,
     stateId: StateId,
-    connectionOptions: IHathoraConnectionOptions
+    onUpdate?: UpdateCallback,
+    onError?: ErrorCallback,
+    transportType?: TransportType
   ): Promise<HathoraConnection> {
-    const connection = new HathoraConnection(this.appId, stateId, token, connectionOptions);
+    const connection = new HathoraConnection(this.appId, stateId, token, onUpdate, onError, transportType);
     await connection.connect();
     return connection;
   }
@@ -117,9 +113,10 @@ export class HathoraConnection {
     private appId: string,
     private stateId: StateId,
     private token: string,
-    connectionOptions: IHathoraConnectionOptions
+    onUpdate?: UpdateCallback,
+    onError?: ErrorCallback,
+    transportType?: TransportType
   ) {
-    const { onError, onUpdate, transportType } = connectionOptions;
     this.stateId = stateId;
     this.token = token;
 
