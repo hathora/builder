@@ -6,7 +6,7 @@ const MAP_WIDTH = 600;
 const MAP_HEIGHT = 400;
 const PADDLE_HEIGHT = 60;
 const PADDLE_SPEED = 100;
-const BALL_SPEED = 250;
+const BALL_SPEED = 500;
 
 type InternalState = {
   playerA: { id?: string; direction: Direction; paddle: number; score: number };
