@@ -8,7 +8,7 @@ export class Impl implements Methods<RoomState> {
   }
   joinRoom(state: RoomState, userId: string): Response {
     if (state.users.includes(userId)) {
-      return Response.error("Already joined");
+      return Response.error("Already joined!");
     }
     state.users.push(userId);
     return Response.ok();
