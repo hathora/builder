@@ -51,6 +51,8 @@ export interface {{capitalize @key}}UserData {
   email: string;
   locale: string;
   picture: string;
+{{else if (eq @key "email")}}
+  email: string;
 {{/if}}
 }
 {{/each}}
@@ -62,18 +64,18 @@ export function lookupUser(userId: T.UserId): Promise<UserData> {
 
 export function getUserDisplayName(user: UserData) {
   switch (user.type) {
-    {{#each auth}}
+{{#each auth}}
     case "{{@key}}":
-      {{#if (eq @key "anonymous")}}
+{{#if (eq @key "anonymous")}}
       return user.name;
-      {{else if (eq @key "nickname")}}
+{{else if (eq @key "nickname")}}
       return user.name;
-      {{else if (eq @key "google")}}
+{{else if (eq @key "google")}}
       return user.name;
-      {{else if (eq @key "email")}}
+{{else if (eq @key "email")}}
       return user.email;
-      {{/if}}
-    {{/each}}
+{{/if}}
+{{/each}}
   }
 }
 {{#*inline "renderTypeArg"}}

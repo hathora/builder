@@ -1,3 +1,6 @@
+{{#if auth.email}}
+import { Magic } from "magic-sdk";
+{{/if}}
 import React, { useState } from "react";
 import { toast } from "react-toastify";
 {{#if auth.google}}
@@ -6,7 +9,13 @@ import { GoogleLogin } from "react-google-login";
 import { HathoraClient } from "../.hathora/client";
 
 export function Login({ client, setToken }: { client: HathoraClient; setToken: (token: string) => void }) {
+  {{#if auth.nickname}}
   const [nickname, setNickname] = useState<string>("");
+  {{/if}}
+  {{#if auth.email}}
+  const [email, setEmail] = useState<string>("");
+  const magic = new Magic("{{auth.email.magicPublicApiKey}}");
+  {{/if}}
   return (
     <div className="flex flex-col w-full md:justify-center">
       <div className="w-6/12 m-auto">
@@ -71,6 +80,40 @@ export function Login({ client, setToken }: { client: HathoraClient; setToken: (
               }
               onFailure={(error) => toast.error("Authentication error: " + error.details)}
             />
+          </div>
+{{else if (eq @key "email")}}
+          <div className="w-6/12 mb-4">
+            <input
+              type="text"
+              value={email}
+              placeholder="Email"
+              onChange={(e) => setEmail(e.target.value)}
+              className="mr-2 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            />
+            <button
+              type="button"
+              onClick={async () => {
+                if (email.length > 0) {
+                  const didToken = await magic.auth.loginWithMagicLink({ email });
+                  if (didToken !== null) {
+                    client
+                      .loginEmail(didToken)
+                      .then((token) => {
+                        sessionStorage.setItem("token", token);
+                        setToken(token);
+                      })
+                      .catch((e) => toast.error("Authentication error: " + e.reason));
+                  } else {
+                    toast.error("Error logging in with magic link");
+                  }
+                } else {
+                  toast.error("Enter valid email");
+                }
+              }}
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Login (Email)
+            </button>
           </div>
 {{/if}}
 {{/each}}

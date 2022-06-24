@@ -3,6 +3,9 @@
   "dependencies": {
     "@headlessui/react": "1.4.3",
     "@heroicons/react": "1.0.5",
+    {{#if auth.email}}
+    "magic-sdk": "8.1.1",
+    {{/if}}
     "react": "17.0.2",
     "react-dom": "17.0.2",
     {{#if auth.google}}
