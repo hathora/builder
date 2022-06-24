@@ -51,6 +51,12 @@ export class HathoraClient {
     return res.data.token;
   }
 
+{{else if (eq @key "email")}}
+  public async loginEmail(didToken: string): Promise<string> {
+    const res = await axios.post(`https://${COORDINATOR_HOST}/${this.appId}/login/email`, { didToken });
+    return res.data.token;
+  }
+
 {{/if}}
 {{/each}}
   public async create(token: string, request: IInitializeRequest): Promise<string> {

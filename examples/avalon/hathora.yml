@@ -74,6 +74,8 @@ auth:
   nickname: {}
   google:
     clientId: 848412826788-m4msrb6q44dm2ue3kgvui0fq7kda55ls.apps.googleusercontent.com
+  email:
+    magicPublicApiKey: pk_live_C51086447ADD349D
 
 userState: PlayerState
 error: string
