@@ -39,6 +39,12 @@ export class HathoraClient {
     return res.data.token;
   }
 
+{{else if (eq @key "nickname")}}
+  public async loginNickname(nickname: string): Promise<string> {
+    const res = await axios.post(`https://${COORDINATOR_HOST}/${this.appId}/login/nickname`, { nickname });
+    return res.data.token;
+  }
+
 {{else if (eq @key "google")}}
   public async loginGoogle(idToken: string): Promise<string> {
     const res = await axios.post(`https://${COORDINATOR_HOST}/${this.appId}/login/google`, { idToken });

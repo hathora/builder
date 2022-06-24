@@ -47,6 +47,8 @@ export function register(store: Store): Promise<CoordinatorClient> {
 {{#each auth}}
 {{#if (eq @key "anonymous")}}
             anonymous: { separator: "{{separator}}" },
+{{else if (eq @key "nickname")}}
+            nickname: {},
 {{else if (eq @key "google")}}
             google: { clientId: "{{clientId}}" },
 {{/if}}

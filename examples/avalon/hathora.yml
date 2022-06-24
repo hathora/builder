@@ -71,6 +71,7 @@ methods:
 
 auth:
   anonymous: {}
+  nickname: {}
   google:
     clientId: 848412826788-m4msrb6q44dm2ue3kgvui0fq7kda55ls.apps.googleusercontent.com
 

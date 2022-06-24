@@ -14,6 +14,7 @@ const HathoraConfig = z
     auth: z
       .object({
         anonymous: z.optional(z.object({ separator: z.optional(z.string()).default("-") }).strict()),
+        nickname: z.optional(z.object({}).strict()),
         google: z.optional(z.object({ clientId: z.string() }).strict()),
       })
       .strict(),
