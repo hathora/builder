@@ -1,0 +1,81 @@
+import React, { useState } from "react";
+import { toast } from "react-toastify";
+{{#if auth.google}}
+import { GoogleLogin } from "react-google-login";
+{{/if}}
+import { HathoraClient } from "../.hathora/client";
+
+export function Login({ client, setToken }: { client: HathoraClient; setToken: (token: string) => void }) {
+  const [nickname, setNickname] = useState<string>("");
+  return (
+    <div className="flex flex-col w-full md:justify-center">
+      <div className="w-6/12 m-auto">
+        <h2 className="text-2xl font-semibold text-gray-900">Login</h2>
+        <div className="flex flex-col mt-2">
+{{#each auth}}
+{{#if (eq @key "anonymous")}}
+          <div className="w-6/12 mb-4">
+            <button
+              type="button"
+              onClick={() =>
+                client
+                  .loginAnonymous()
+                  .then((token) => {
+                    sessionStorage.setItem(client.appId, token);
+                    setToken(token);
+                  })
+                  .catch((e) => toast.error("Authentication error: " + e.reason))
+              }
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Login (Anonymous)
+            </button>
+          </div>
+{{else if (eq @key "nickname")}}
+          <div className="w-6/12 mb-4">
+            <input
+              type="text"
+              value={nickname}
+              placeholder="Nickname"
+              onChange={(e) => setNickname(e.target.value.trim())}
+              className="mr-2 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            />
+            <button
+              type="button"
+              onClick={() =>
+                client
+                  .loginNickname(nickname)
+                  .then((token) => {
+                    sessionStorage.setItem(client.appId, token);
+                    setToken(token);
+                  })
+                  .catch((e) => toast.error("Authentication error: " + e.reason))
+              }
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Login (Nickname)
+            </button>
+          </div>
+{{else if (eq @key "google")}}
+          <div className="w-6/12 mb-4">
+            <GoogleLogin
+              clientId="{{clientId}}"
+              onSuccess={({ tokenId }: any) =>
+                client
+                  .loginGoogle(tokenId)
+                  .then((token) => {
+                    sessionStorage.setItem(client.appId, token);
+                    setToken(token);
+                  })
+                  .catch((e) => toast.error("Authentication error: " + e.reason))
+              }
+              onFailure={(error) => toast.error("Authentication error: " + error.details)}
+            />
+          </div>
+{{/if}}
+{{/each}}
+        </div>
+      </div>
+    </div>
+  );
+}

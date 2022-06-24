@@ -44,6 +44,8 @@ export interface {{capitalize @key}}UserData {
   id: string;
 {{#if (eq @key "anonymous")}}
   name: string;
+{{else if (eq @key "nickname")}}
+  name: string;
 {{else if (eq @key "google")}}
   name: string;
   email: string;
@@ -63,6 +65,8 @@ export function getUserDisplayName(user: UserData) {
     {{#each auth}}
     case "{{@key}}":
       {{#if (eq @key "anonymous")}}
+      return user.name;
+      {{else if (eq @key "nickname")}}
       return user.name;
       {{else if (eq @key "google")}}
       return user.name;
