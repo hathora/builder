@@ -1,5 +1,6 @@
 import net from "net";
 import { Reader, Writer } from "bin-serde";
+import { v4 as uuidv4 } from "uuid";
 import { COORDINATOR_HOST } from "../../api/base";
 
 const NEW_STATE = 0;
@@ -42,7 +43,7 @@ export function register(store: Store): Promise<CoordinatorClient> {
       socket.write(
         JSON.stringify({
           appSecret: "{{appSecret}}",
-          storeRegion: process.env.STORE_REGION ?? "unknown",
+          storeId: process.env.STORE_ID ?? uuidv4(),
           authInfo: {
 {{#each auth}}
 {{#if (eq @key "anonymous")}}
