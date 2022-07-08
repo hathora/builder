@@ -1,3 +1,5 @@
+import { execSync } from "child_process";
+
 import { v4 as uuidv4 } from "uuid";
 import Handlebars from "handlebars";
 
@@ -19,6 +21,8 @@ Handlebars.registerHelper("uppercase", (x) =>
 Handlebars.registerHelper("makeRequestName", (x) => "I" + capitalize(x) + "Request");
 Handlebars.registerHelper("makePluginName", (x) => x.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase() + "-plugin");
 Handlebars.registerHelper("uuid", () => uuidv4());
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+Handlebars.registerHelper("hathoraVersion", () => require("../package.json").version);
 
 function capitalize(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
