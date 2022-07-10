@@ -19,6 +19,17 @@ auth:
   anonymous: {}
 ```
 
+### Nickname login
+
+This method allows users to login while providing a nickname with which to identify themselves. It is has the same benefits and downsides as the anonymous login, with the additional benefit of having a custom display name for users.
+
+To configure your application to use nickname login, simply include the following in your `hathora.yml`:
+
+```yml
+auth:
+  nickname: {}
+```
+
 ### Google login
 
 This methods allows users to login using their Google account. Provided that the user consents to the Google OAuth prompt, it fetches basic information from their profile like their name and email address.
@@ -35,6 +46,7 @@ auth:
 If you're using Hathora's Prototype UI, the user login experience is handled for you out of the box. If you're making a custom frontend, here's how you login using with the different authentication providers:
 
 - anonymous: `const token = await client.loginAnonymous()`
+- nickname: `const token = await client.loginNickname(nickname)`
 - google: `const token = await client.loginGoogle(googleTokenId)`
 
 To get user profile information from the token, simply call
