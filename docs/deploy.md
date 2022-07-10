@@ -37,17 +37,18 @@ For typescript backends, the only file inside the `server/dist` directory is `in
 
 - node.js must be installed
 - the `DATA_DIR` environment variable must be set to the path where Hathora should write its data files
+- the `COORDINATOR_HOST` environment variable must be set to the URL of the Coordinator being used
 
 Example command to start the backend:
 
 ```sh
-DATA_DIR=./data node index.mjs
+COORDINATOR_HOST=coordinator.hathora.dev DATA_DIR=./data node index.mjs
 ```
 
 > For running in production, it may be preferable to use a process manager like [pm2](https://pm2.keymetrics.io/).
 
 ## Managed Hosting
 
-We are working on a managed hosting option called Hathora Cloud and hope to release it soon. The vision is that you won't need to do all the above steps and can deploy your app by simply running `hathora deploy`. Hathora Cloud will simplify running Hathora apps in production by offering features like auto scaling, live application monitoring, managed migrations, and more.
+We are working on a managed hosting option called Hathora Cloud and hope to release it soon. The vision is that you won't need to do all the above steps and can deploy your app by simply running `hathora cloud deploy`. Hathora Cloud will simplify running Hathora apps in production by offering features like auto scaling, live application monitoring, managed migrations, and more.
 
 That being said, self-hosting will remain an option for those that want more control.
