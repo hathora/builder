@@ -11,8 +11,10 @@
     "LICENSE"
   ],
   "dependencies": {
+    "@hathora/log-store": "^0.0.2",
     "@node-loader/core": "2.0.0",
     "axios": "0.27.2",
+    "bin-serde": "^1.1.1",
     "chalk": "4.1.2",
     "dotenv": "16.0.1",
     "esbuild": "0.14.47",
@@ -21,6 +23,7 @@
     "handlebars": "4.7.7",
     "hot-esm": "1.4.1",
     "js-yaml": "4.1.0",
+    "jsonwebtoken": "^8.5.1",
     "open": "8.4.0",
     "openid-client": "5.1.7",
     "prompts": "2.4.2",
@@ -35,6 +38,7 @@
   "devDependencies": {
     "@types/fs-extra": "9.0.13",
     "@types/js-yaml": "4.0.5",
+    "@types/jsonwebtoken": "^8.5.8",
     "@types/node": "18.0.0",
     "@types/prompts": "2.0.14",
     "@types/shelljs": "0.8.11",
