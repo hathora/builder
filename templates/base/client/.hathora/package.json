@@ -1,11 +1,10 @@
 {
   "type": "module",
   "dependencies": {
-    "axios": "0.25.0",
+    "@hathora/client-sdk": "0.0.4",
     "bin-serde": "1.1.1",
     "get-random-values": "1.2.2",
     "isomorphic-ws": "4.0.1",
-    "jwt-decode": "3.1.2",
     "net": "1.0.2",
     "ws": "8.3.0"
   },
