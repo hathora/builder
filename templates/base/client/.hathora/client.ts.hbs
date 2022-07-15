@@ -104,8 +104,8 @@ export class HathoraConnection {
   private changedAt = 0;
   private updateListeners: UpdateCallback[] = [];
   private errorListeners: ErrorCallback[] = [];
-  private internalState: UserState | undefined;
   private transport!: HathoraTransport;
+  private internalState!: UserState;
 
   constructor(
     private _client: _HathoraClient,
@@ -137,9 +137,6 @@ export class HathoraConnection {
   }
 
   public get state(): UserState {
-    if (this.internalState === undefined) {
-      throw new Error("Must wait on HathoraConnection.connect() before looking up state");
-    }
     return this.internalState;
   }
 
