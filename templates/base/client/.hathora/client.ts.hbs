@@ -1,9 +1,9 @@
-import jwtDecode from "jwt-decode";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import getRandomValues from "get-random-values";
 import { Reader, Writer } from "bin-serde";
-import axios from "axios";
+import { HathoraClient as _HathoraClient } from "@hathora/client-sdk";
+import { HathoraTransport, TransportType } from "@hathora/client-sdk/lib/transport";
 
 import {
   decodeStateSnapshot,
@@ -16,7 +16,6 @@ import {
 } from "../../api/types";
 import { UserData, Response, Method, COORDINATOR_HOST, MATCHMAKER_HOST } from "../../api/base";
 
-import { HathoraTransport, TCPHathoraTransport, TransportType, WebSocketHathoraTransport } from "./transport";
 import { computePatch } from "./patch";
 import { ConnectionFailure, transformCoordinatorFailure } from "./failures";
 
@@ -27,39 +26,32 @@ export type ErrorCallback = (error: ConnectionFailure) => void;
 
 export class HathoraClient {
   public appId = "{{appId}}";
+  private _client = new _HathoraClient(this.appId, COORDINATOR_HOST);
 
   public static getUserFromToken(token: string): UserData {
-    return jwtDecode(token);
+    return _HathoraClient.getUserFromToken(token) as UserData;
   }
 
 {{#each auth}}
 {{#if (eq @key "anonymous")}}
   public async loginAnonymous(): Promise<string> {
-    const res = await axios.post(`https://${COORDINATOR_HOST}/${this.appId}/login/anonymous`);
-    return res.data.token;
+    return this._client.loginAnonymous();
   }
 
 {{else if (eq @key "nickname")}}
   public async loginNickname(nickname: string): Promise<string> {
-    const res = await axios.post(`https://${COORDINATOR_HOST}/${this.appId}/login/nickname`, { nickname });
-    return res.data.token;
+    return this._client.loginNickname(nickname);
   }
 
 {{else if (eq @key "google")}}
   public async loginGoogle(idToken: string): Promise<string> {
-    const res = await axios.post(`https://${COORDINATOR_HOST}/${this.appId}/login/google`, { idToken });
-    return res.data.token;
+    return this._client.loginGoogle(idToken);
   }
 
 {{/if}}
 {{/each}}
   public async create(token: string, request: IInitializeRequest): Promise<string> {
-    const res = await axios.post(
-      `https://${COORDINATOR_HOST}/${this.appId}/create`,
-      IInitializeRequest.encode(request).toBuffer(),
-      { headers: { Authorization: token, "Content-Type": "application/octet-stream" } }
-    );
-    return res.data.stateId;
+    return this._client.create(token, IInitializeRequest.encode(request).toBuffer());
   }
 
   public async connect(
@@ -67,9 +59,9 @@ export class HathoraClient {
     stateId: StateId,
     onUpdate?: UpdateCallback,
     onError?: ErrorCallback,
-    transportType?: TransportType
+    transportType: TransportType = TransportType.WebSocket
   ): Promise<HathoraConnection> {
-    const connection = new HathoraConnection(this.appId, stateId, token, onUpdate, onError, transportType);
+    const connection = new HathoraConnection(this._client, stateId, token, transportType, onUpdate, onError);
     await connection.connect();
     return connection;
   }
@@ -112,27 +104,19 @@ export class HathoraConnection {
   private changedAt = 0;
   private updateListeners: UpdateCallback[] = [];
   private errorListeners: ErrorCallback[] = [];
-  private transport: HathoraTransport;
   private internalState: UserState | undefined;
+  private transport!: HathoraTransport;
 
   constructor(
-    private appId: string,
+    private _client: _HathoraClient,
     private stateId: StateId,
     private token: string,
+    private transportType: TransportType,
     onUpdate?: UpdateCallback,
-    onError?: ErrorCallback,
-    transportType?: TransportType
+    onError?: ErrorCallback
   ) {
     this.stateId = stateId;
     this.token = token;
-
-    if (transportType === undefined || transportType === TransportType.WebSocket) {
-      this.transport = new WebSocketHathoraTransport(appId);
-    } else if (transportType === TransportType.TCP) {
-      this.transport = new TCPHathoraTransport(appId);
-    } else {
-      throw new Error("Unknown transport type");
-    }
 
     if (onUpdate !== undefined) {
       this.onUpdate(onUpdate);
@@ -143,7 +127,13 @@ export class HathoraConnection {
   }
 
   public async connect(): Promise<void> {
-    await this.transport.connect(this.stateId, this.token, this.handleData, this.handleClose);
+    this.transport = await this._client.connect(
+      this.token,
+      this.stateId,
+      this.handleData,
+      this.handleClose,
+      this.transportType
+    );
   }
 
   public get state(): UserState {
@@ -188,8 +178,8 @@ export class HathoraConnection {
     });
   }
 
-  private handleData = (data: Buffer) => {
-    const reader = new Reader(new Uint8Array(data as ArrayBuffer));
+  private handleData = (data: ArrayBuffer) => {
+    const reader = new Reader(new Uint8Array(data));
     const type = reader.readUInt8();
     if (type === 0) {
       this.internalState = decodeStateSnapshot(reader);
