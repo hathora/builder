@@ -36,6 +36,7 @@ function readData(socket: net.Socket, onData: (data: Buffer) => void) {
 
 export function register(store: Store): Promise<CoordinatorClient> {
   return new Promise((resolve, reject) => {
+    const storeId = process.env.STORE_ID ?? uuidv4();
     const socket = new net.Socket();
     let pingTimer: NodeJS.Timer;
     socket.connect(7147, COORDINATOR_HOST);
@@ -43,7 +44,7 @@ export function register(store: Store): Promise<CoordinatorClient> {
       socket.write(
         JSON.stringify({
           appSecret: "{{appSecret}}",
-          storeId: process.env.STORE_ID ?? uuidv4(),
+          storeId,
           authInfo: {
 {{#each auth}}
 {{#if (eq @key "anonymous")}}
