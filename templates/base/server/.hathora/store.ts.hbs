@@ -1,8 +1,12 @@
 import { randomBytes } from "crypto";
 import { existsSync, mkdirSync } from "fs";
 import { Chance } from "chance";
+import { v4 as uuidv4 } from "uuid";
 import { Writer, Reader } from "bin-serde";
-import { Message, NO_DIFF } from "../../api/base";
+import { LogStore } from "@hathora/log-store";
+import { register } from "@hathora/server-sdk";
+
+import { COORDINATOR_HOST, Message, NO_DIFF } from "../../api/base";
 import {
   UserId,
   encodeStateSnapshot,
@@ -10,8 +14,6 @@ import {
   {{userState}} as UserState,
   encodeStateError,
 } from "../../api/types";
-import { register } from "./protocol";
-import { LogStore } from "@hathora/log-store";
 import { ImplWrapper } from "./wrapper";
 import { computeDiff } from "./diff";
 import { Context } from "./methods";
@@ -108,7 +110,7 @@ class Store {
       pendingMessages.delete(stateId);
     });
   }
-  async handleUpdate(stateId: StateId, userId: UserId, data: Buffer) {
+  async onMessage(stateId: StateId, userId: UserId, data: Buffer) {
     if (!stateInfo.has(stateId)) {
       return;
     }
@@ -144,7 +146,23 @@ class Store {
   }
 }
 
-const coordinator = await register(new Store());
+const coordinator = await register(
+  COORDINATOR_HOST,
+  "{{appSecret}}",
+  uuidv4(),
+  {
+{{#each auth}}
+{{#if (eq @key "anonymous")}}
+    anonymous: { separator: "{{separator}}" },
+{{else if (eq @key "nickname")}}
+    nickname: {},
+{{else if (eq @key "google")}}
+    google: { clientId: "{{clientId}}" },
+{{/if}}
+{{/each}}
+  },
+  new Store()
+);
 
 export async function loadState(stateId: StateId) {
   let rows;
