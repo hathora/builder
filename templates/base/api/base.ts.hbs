@@ -1,8 +1,8 @@
 import axios from "axios";
 import * as T from "./types";
 
-export const COORDINATOR_HOST = process.env.COORDINATOR_HOST!;
-export const MATCHMAKER_HOST = process.env.MATCHMAKER_HOST!;
+export const COORDINATOR_HOST = process.env.COORDINATOR_HOST ?? "coordinator.hathora.dev";
+export const MATCHMAKER_HOST = process.env.MATCHMAKER_HOST ?? "matchmaker.hathora.dev";
 
 export const NO_DIFF = Symbol("NODIFF");
 export type DeepPartial<T> = T extends string | number | boolean | undefined
