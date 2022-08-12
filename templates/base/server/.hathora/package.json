@@ -4,7 +4,7 @@
     "bin-serde": "1.1.1",
     "chance": "1.1.8",
     "@hathora/log-store": "0.0.2",
-    "@hathora/server-sdk": "0.0.4",
+    "@hathora/server-sdk": "0.1.1",
     "on-change": "4.0.1",
     "uuid": "8.3.2"
   },
