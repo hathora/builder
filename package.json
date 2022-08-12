@@ -22,7 +22,7 @@
     "hot-esm": "1.4.1",
     "js-yaml": "4.1.0",
     "open": "8.4.0",
-    "openid-client": "5.1.7",
+    "openid-client": "5.1.8",
     "prompts": "2.4.2",
     "shelljs": "0.8.5",
     "tar": "6.1.11",
@@ -35,7 +35,7 @@
   "devDependencies": {
     "@types/fs-extra": "9.0.13",
     "@types/js-yaml": "4.0.5",
-    "@types/node": "18.0.0",
+    "@types/node": "18.7.2",
     "@types/prompts": "2.0.14",
     "@types/shelljs": "0.8.11",
     "@types/tar": "6.1.1",
