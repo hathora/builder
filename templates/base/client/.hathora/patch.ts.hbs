@@ -4,7 +4,10 @@ import * as T from "../../api/types";
 {{#each types}}
 {{> renderPatchFunction}}
 {{/each}}
-function patchArray<T>(arr: T[], patch: (typeof NO_DIFF | any)[], innerPatch: (a: T, b: DeepPartial<T>) => T) {
+function patchArray<T>(arr: T[], patch: typeof NO_DIFF | any[], innerPatch: (a: T, b: DeepPartial<T>) => T) {
+  if (patch === NO_DIFF) {
+    return arr;
+  }
   patch.forEach((val, i) => {
     if (val !== NO_DIFF) {
       if (i >= arr.length) {

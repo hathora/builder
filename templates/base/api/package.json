@@ -3,5 +3,8 @@
   "dependencies": {
     "axios": "0.24.0",
     "bin-serde": "1.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "18.7.3"
   }
 }
