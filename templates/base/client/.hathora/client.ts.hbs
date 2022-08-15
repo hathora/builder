@@ -127,21 +127,13 @@ export class HathoraConnection {
   }
 
   public async connect(): Promise<void> {
-    return new Promise(async (resolve, reject) => {
-      this.transport = await this._client.connect(
-        this.token,
-        this.stateId,
-        (data) => {
-          resolve();
-          this.handleData(data);
-        },
-        (e) => {
-          reject(e.reason);
-          this.handleClose(e);
-        },
-        this.transportType
-      );
-    });
+    this.transport = await this._client.connect(
+      this.token,
+      this.stateId,
+      (data) => this.handleData(data),
+      (e) => this.handleClose(e),
+      this.transportType
+    );
   }
 
   public get state(): UserState {
