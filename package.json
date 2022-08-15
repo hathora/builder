@@ -1,6 +1,6 @@
 {
   "name": "hathora",
-  "version": "0.9.13",
+  "version": "0.9.14",
   "description": "Multiplayer game framework",
   "bin": "lib/cli.js",
   "files": [
@@ -35,7 +35,7 @@
   "devDependencies": {
     "@types/fs-extra": "9.0.13",
     "@types/js-yaml": "4.0.5",
-    "@types/node": "18.7.2",
+    "@types/node": "18.7.5",
     "@types/prompts": "2.0.14",
     "@types/shelljs": "0.8.11",
     "@types/tar": "6.1.2",
