@@ -278,12 +278,12 @@ hathora create-client phaser web
 
 This command will create a `client/web` directory with a basic Phaser template.
 
-First, grab the images from https://github.com/hathora/platformer-tutorial/tree/develop/client/web/src/assets (thanks [Pixel Frog](https://pixelfrog-assets.itch.io/pixel-adventure-1!) and place them inside a `client/web/src/assets` folder.
+First, grab the images from https://github.com/hathora/platformer-tutorial/tree/develop/client/web/src/assets (thanks [Pixel Frog](https://pixelfrog-assets.itch.io/pixel-adventure-1)!) and place them inside a `client/web/src/assets` folder.
 
 Next, let's edit the template to load these assets and display the background + player sprite.
 
 ```ts
-// client/src/app.ts
+// client/web/src/app.ts
 
 export class GameScene extends Phaser.Scene {
   private connection!: HathoraConnection;
@@ -343,21 +343,29 @@ export class GameScene extends Phaser.Scene {
 }
 ```
 
-We can now visualize our character falling to the ground:
+Run `hathora dev` again and visit http://localhost:3001 this time. You should see our character falling to the ground:
 
 ![Screen Recording](https://user-images.githubusercontent.com/5400947/185427191-28ee7c10-6a5b-4657-a80f-70b7a992925d.gif)
 
 Next we'll set up keyboard input to control the character inside of the `create()` method:
 
+> remember to add all missing imports
+
 ```ts
-const keys = this.input.keyboard.createCursorKeys();
-const handleKeyEvt = () => {
-  const horizontal = keys.left.isDown ? XDirection.LEFT : keys.right.isDown ? XDirection.RIGHT : XDirection.NONE;
-  const vertical = keys.up.isDown ? YDirection.UP : YDirection.NONE;
-  this.connection.setDirection({ direction: { horizontal, vertical } });
-};
-this.input.keyboard.on("keydown", handleKeyEvt);
-this.input.keyboard.on("keyup", handleKeyEvt);
+  create() {
+    // background
+    this.add.tileSprite(0, 0, this.scale.width, this.scale.height, "background").setOrigin(0, 0);
+
+    // keyboard input
+    const keys = this.input.keyboard.createCursorKeys();
+    const handleKeyEvt = () => {
+      const horizontal = keys.left.isDown ? XDirection.LEFT : keys.right.isDown ? XDirection.RIGHT : XDirection.NONE;
+      const vertical = keys.up.isDown ? YDirection.UP : YDirection.NONE;
+      this.connection.setDirection({ direction: { horizontal, vertical } });
+    };
+    this.input.keyboard.on("keydown", handleKeyEvt);
+    this.input.keyboard.on("keyup", handleKeyEvt);
+  }
 ```
 
 ![Screen Recording](https://user-images.githubusercontent.com/5400947/185431070-ef5938ec-c373-418e-bd2f-bf054af6f988.gif)
@@ -438,15 +446,33 @@ export const PLATFORMS: Platform[] = [
 ];
 ```
 
+Inside the `shared` directory we also need a `package.json` file:
+```json
+{
+  "name": "platformer-tutorial-server",
+  "type": "module",
+  "devDependencies": {
+    "typescript": "^4.5.2"
+  },
+  "dependencies": {
+    "arcade-physics": "^0.0.2"
+  }
+}
+```
+
 On the server, we modify our `initialize` function to add the platforms to the physics simulation, and in `joinGame` we set up colliders between players and platforms:
 
+> remember to import the `common.ts` file
+
 ```ts
-  initialize(): InternalState {
+// impl.ts
+
+  initialize(ctx: Context, request: IInitializeRequest): InternalState {
     const physics = new ArcadePhysics({
       sys: {
         game: { config: {} },
-        settings: { physics: { gravity: { y: GRAVITY } } },
-        scale: { width: GAME_WIDTH, height: GAME_HEIGHT },
+        settings: { physics: { gravity: { y: 200 } } },
+        scale: { width: 800, height: 600 },
       },
     });
     return {
@@ -466,7 +492,7 @@ On the server, we modify our `initialize` function to add the platforms to the p
     }
 
     // spawn player at (0, 0)
-    const playerBody = state.physics.add.body(0, 0, PLAYER_WIDTH, PLAYER_HEIGHT);
+    const playerBody = state.physics.add.body(0, 0, 32, 32);
     playerBody.setCollideWorldBounds(true, undefined, undefined, undefined);
     playerBody.pushable = false;
     state.players.push({ id: userId, body: playerBody, direction: Direction.default() });
@@ -480,7 +506,11 @@ On the server, we modify our `initialize` function to add the platforms to the p
 
 On the client, we simply add the platform sprites to our scene inside the Phaser `create()` method:
 
+> remember to import the `common.ts` file
+
 ```ts
+// app.ts
+
   create() {
     // background
     this.add.tileSprite(0, 0, this.scale.width, this.scale.height, "background").setOrigin(0, 0);
