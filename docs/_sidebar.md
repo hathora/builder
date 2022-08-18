@@ -2,6 +2,7 @@
 
   - [Tutorial: Uno](tutorial_uno.md)
   - [Tutorial: Among Us](tutorial_among_us.md)
+  - [Tutorial: Platformer](tutorial_platformer.md)
   - [Showcase](showcase.md)
 
 - Concepts
