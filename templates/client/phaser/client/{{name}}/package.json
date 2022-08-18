@@ -1,0 +1,16 @@
+{
+  "type": "module",
+  "dependencies": {
+    "interpolation-buffer": "^1.2.5",
+    "phaser": "^3.55.2"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "typescript": "^4.3.4",
+    "vite": "^2.9.10"
+  },
+  "scripts": {
+    "start": "vite",
+    "build": "vite build"
+  }
+}
