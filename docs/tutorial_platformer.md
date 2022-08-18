@@ -2,7 +2,7 @@
 
 For this tutorial, we'll build a multiplayer 2D platformer using [Phaser](http://phaser.io/) and the Hathora framework.
 
-The full code for the game can be found on [Github](https://github.com/hathora/platformer-tutorial), and a live version of the game is deployed [here](https://platformer-tutorial.surge.sh/).
+The full code for the game can be found on [Github](https://github.com/hathora/platformer-tutorial), and a live version of the game deployed on Hathora Cloud can be accessed [here](https://platformer-tutorial.surge.sh/).
 
 ## Install
 
@@ -14,7 +14,7 @@ npm install -g hathora
 
 ## Setup
 
-To start, create a directory called platformer-tutorial and create a `hathora.yml` file. This file defines the client data model and the server functions for our application. For more information on the hathora.yml file format, see [here](http://localhost:3000/#/type-driven-development).
+To start, create a directory called platformer-tutorial and create a `hathora.yml` file. This file defines the client data model and the server functions for our application. For more information on the hathora.yml file format, see [here](https://docs.hathora.dev/#/type-driven-development).
 
 ```yml
 types:
@@ -59,13 +59,43 @@ error: string
 tick: 50
 ```
 
-Next, run `hathora init` to run the Hathora code generation process and bootstrap your project.
+To initialize our project structure run `hathora init`. You should see the following directory structure generated for you:
+
+```
+platformer-tutorial        # project root
+├─ api                     # generated + gitignored
+├─ client
+│  ├─ .hathora             # generated + gitignored
+│  └─ prototype-ui         # generated + gitignored
+├─ server
+│  ├─ .hathora             # generated + gitignored
+│  ├─ impl.ts              # user-editable
+│  ├─ tsconfig.json        # user-editable
+│  ├─ package.json         # user-editable
+├─ hathora.yml             # user-editable
+└─ .gitignore              # user-editable
+```
 
 > If you plan on using git, this is a good time to run `git init`
 
 The generated `server/impl.ts` file should look like this:
 
 ```ts
+import { Methods, Context } from "./.hathora/methods";
+import { Response } from "../api/base";
+import {
+  XDirection,
+  YDirection,
+  Position,
+  Direction,
+  Player,
+  GameState,
+  UserId,
+  IInitializeRequest,
+  IJoinGameRequest,
+  ISetDirectionRequest,
+} from "../api/types";
+
 type InternalState = GameState;
 
 export class Impl implements Methods<InternalState> {
@@ -131,9 +161,8 @@ type InternalState = {
   physics: ArcadePhysics;
   players: InternalPlayer[];
 };
-```
 
-```ts
+export class Impl implements Methods<InternalState> {
   initialize(ctx: Context, request: IInitializeRequest): InternalState {
     const physics = new ArcadePhysics({
       sys: {
@@ -178,6 +207,7 @@ type InternalState = {
     // update the physics simulation to apply gravity, velocities, etc
     state.physics.world.update(ctx.time, timeDelta * 1000);
   }
+}
 ```
 Opening up the Prototype UI, we can see the player fall to the ground due to gravity:
 
