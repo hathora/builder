@@ -2,7 +2,7 @@
 
 For this tutorial, we'll build a multiplayer 2D platformer using [Phaser](http://phaser.io/) and the Hathora framework.
 
-The full code for the game can be found on [Github](https://github.com/hathora/platformer-tutorial), and a live version of the game deployed on Hathora Cloud can be accessed [here](https://platformer-tutorial.surge.sh/).
+The full code for the game can be found on [Github](https://github.com/hathora/platformer-tutorial), and a live version of the game deployed on Hathora Cloud can be accessed [here](https://platformer-tutorial.netlify.app/).
 
 ## Install
 
