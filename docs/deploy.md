@@ -12,8 +12,10 @@ The directory structure will look something like this:
 . # project root
 ├─ client
 │  ├─ prototype-ui
+│  │  ├─ package.json
 │  │  └─ dist
 │  └─ web
+│     ├─ package.json
 │     └─ dist
 └─ server
    └─ dist
