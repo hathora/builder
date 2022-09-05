@@ -1,8 +1,8 @@
 {
   "type": "module",
   "dependencies": {
-    "@hathora/client-sdk": "0.0.6",
-    "bin-serde": "1.1.1",
+    "@hathora/client-sdk": "0.0.7",
+    "bin-serde": "1.2.2",
     "get-random-values": "1.2.2",
     "isomorphic-ws": "4.0.1",
     "net": "1.0.2",
