@@ -23,7 +23,7 @@ Visit https://docs.hathora.dev
 
 ## Quick start
 
-First, make sure you have node v16.12.0+ installed.
+First, make sure you have node v16.12.0+ (there's an [open issue](https://github.com/node-loader/node-loader-core/issues/12) with node v16.17.0+) installed.
 
 Then install the hathora cli from the npm registry:
 

@@ -41,7 +41,7 @@ Hathora comes with the following features out of the box:
 
 Requirements:
 
-- node v16.12.0+
+- node v16.12.0 to v16.16.0 (there's an [open issue](https://github.com/node-loader/node-loader-core/issues/12) with node v16.17.0+)
 
 Install Hathora from the npm registry:
 

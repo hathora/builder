@@ -10,10 +10,9 @@ This is what our game will look like by the end of this tutorial:
 
 ![image](https://user-images.githubusercontent.com/5400947/154554747-2418c0c1-2658-45ea-bcd9-331cea37fabc.png)
 
-
 ## Install
 
-Before you begin, make sure you have nodejs v16.12+ and the Hathora cli installed:
+Before you begin, make sure you have nodejs node v16.12.0 to v16.16.0 (there's an [open issue](https://github.com/node-loader/node-loader-core/issues/12) with node v16.17.0+) and the Hathora cli installed:
 
 ```sh
 npm install -g hathora
