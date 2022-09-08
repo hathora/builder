@@ -30,12 +30,15 @@ const cmd: CommandModule = {
   },
 };
 
-function build(only: "server" | "client" | undefined) {
+async function build(only: "server" | "client" | undefined) {
   const { clientDir, serverDir } = getDirs();
   if (only === "client" || only === undefined) {
     for (const dir of readdirSync(clientDir)) {
-      if (existsSync(join(clientDir, dir, "index.html"))) {
-        execSync("npm run build", { cwd: join(clientDir, dir), stdio: "inherit" });
+      if (existsSync(join(clientDir, dir, "package.json"))) {
+        const pkg = await import(join(clientDir, dir, "package.json"));
+        if (pkg.scripts?.start !== undefined) {
+          execSync("npm run build", { cwd: join(clientDir, dir), stdio: "inherit" });
+        }
       }
     }
   }
