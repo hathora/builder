@@ -130,7 +130,7 @@ jobs:
       - run: hathora cloud deploy --appName XXXXXXXXX --token ${{ secrets.HATHORA_TOKEN }}
 ```
 
-Customize the `name` and `branches` variables to your specifications. In most cases this should be your main production branch. 
+Customize the `name` and `branches` variables to your specifications. In most cases branches should be set to your main production branch. 
 
 
 > If you're using Personal Access Tokens to push up your code to Github, make sure in *Profile Settings --> Developer Access --> Personal access tokens* that `workflow` access is enabled for your token. 
