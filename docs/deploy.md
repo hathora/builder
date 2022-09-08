@@ -128,18 +128,37 @@ jobs:
       - uses: actions/checkout@v2
       - run: npm install -g hathora
       - run: hathora cloud deploy --appName XXXXXXXXX --token ${{ secrets.HATHORA_TOKEN }}
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: npm ci
+      - run: npm install hathora -g
+      - run: APP_SECRET=${{ secrets.HATHORA_APP_SECRET }} hathora build --only client
+      - run: echo '/* /index.html 200' > client/web/dist/_redirects;
+      - run: |
+          npx netlify deploy --prod \
+          --site '${{ secrets.NETLIFY_SITE_ID }}' \
+          --auth '${{ secrets.NETLIFY_AUTH_TOKEN }}' \
+          --dir=client/web/dist;
 ```
 
-Customize the `name` and `branches` variables to your specifications. In most cases branches should be set to your main production branch. 
+Customize the `name`, `branches`, and `appName` variables to your specifications. In most cases branches should be set to your main production branch. 
 
 
 > If you're using Personal Access Tokens to push up your code to Github, make sure in *Profile Settings --> Developer Access --> Personal access tokens* that `workflow` access is enabled for your token. 
 
-In your Hathora project folder in CLI, run the code below to generate and copy your secret to clipboard:
+In your Hathora project folder in CLI, run the command below to generate your Hathora secret to clipboard. 
+
+> WARNING: if using `cat` to get the token from the terminal, don't include the **%** at the end
+
 ```
-cat ~/.config/hathora/token | pbcopy
+cat ~/.config/hathora/token
 ```
+
 > Note you must have already run `hathora cloud login` for the token to be present.
+
+In this example, the frontend is hosted on Netlify so you will need to get NETLIFY_SITE_ID and NETLIFY_AUTH_TOKEN from them directly. 
 
 Save the secret on Github by going to *Repo Settings --> Secrets --> Actions* and creating a `New Repository Secret`. Name the secret `HATHORA_TOKEN` to match `.yml` file above. Paste in the copied value in `Secret` field.
 
