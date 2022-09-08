@@ -107,3 +107,40 @@ APP_SECRET=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX hathora dev --only client
 
 
 Self-hosting will remain an option for those that want more control.
+
+## Setting up Continuous Delivery with Github Actions
+
+Here you will learn how to set up continuous delivery with Github Actions but you can use the platform of your choice. 
+
+In your Github Repo, select the actions tab and create a custom `.yml` file. Remove the auto-generated code and replace with:
+
+```
+name: hathora deploy
+on:
+  push:
+    branches:
+      - main 
+
+jobs:
+  server:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: npm install -g hathora
+      - run: hathora cloud deploy --appName XXXXXXXXX --token ${{ secrets.HATHORA_TOKEN }}
+```
+
+Customize the `name` and `branches` variables to your specifications. In most cases this should be your main production branch. 
+
+
+> If you're using Personal Access Tokens to push up your code to Github, make sure in *Profile Settings --> Developer Access --> Personal access tokens* that `workflow` access is enabled for your token. 
+
+In your Hathora project folder in CLI, run the code below to generate and copy your secret to clipboard:
+```
+cat ~/.config/hathora/token | pbcopy
+```
+> Note you must have already run `hathora cloud login` for the token to be present.
+
+Save the secret on Github by going to *Repo Settings --> Secrets --> Actions* and creating a `New Repository Secret`. Name the secret `HATHORA_TOKEN` to match `.yml` file above. Paste in the copied value in `Secret` field.
+
+Push a change to the branch specified in the `.yml` file. Once you push your changes, go to `Github Actions` tab to see your deployment logs. 
