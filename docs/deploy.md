@@ -148,18 +148,13 @@ Customize the `name`, `branches`, and `appName` variables to your specifications
 
 > If you're using Personal Access Tokens to push up your code to Github, make sure in *Profile Settings --> Developer Access --> Personal access tokens* that `workflow` access is enabled for your token. 
 
-In your Hathora project folder in CLI, run the command below to generate your Hathora secret to clipboard. 
+Copy the secret from `~/.config/hathora/token`
 
 > WARNING: if using `cat` to get the token from the terminal, don't include the **%** at the end
-
-```
-cat ~/.config/hathora/token
-```
-
 > Note you must have already run `hathora cloud login` for the token to be present.
 
-In this example, the frontend is hosted on Netlify so you will need to get NETLIFY_SITE_ID and NETLIFY_AUTH_TOKEN from them directly. 
-
 Save the secret on Github by going to *Repo Settings --> Secrets --> Actions* and creating a `New Repository Secret`. Name the secret `HATHORA_TOKEN` to match `.yml` file above. Paste in the copied value in `Secret` field.
+
+In this example, the frontend is hosted on Netlify so you will need to get NETLIFY_SITE_ID and NETLIFY_AUTH_TOKEN from them directly. 
 
 Push a change to the branch specified in the `.yml` file. Once you push your changes, go to `Github Actions` tab to see your deployment logs. 
