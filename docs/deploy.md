@@ -49,7 +49,7 @@ COORDINATOR_HOST=coordinator.hathora.dev DATA_DIR=./data node index.mjs
 
 > For running in production, it may be preferable to use a process manager like [pm2](https://pm2.keymetrics.io/).
 
-## Getting Started with Hathora Cloud
+## Hathora Cloud
 
 In July 2022, we released the beta version of Hathora Cloud. Currently, games built using the Hathora Framework can be deployed to Hathora Cloud in a few easy steps:
 
@@ -108,14 +108,14 @@ APP_SECRET=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX hathora dev --only client
 
 Self-hosting will remain an option for those that want more control.
 
-## Setting up Continuous Delivery with Github Actions
+## Continuous Delivery
 
-Here you will learn how to set up continuous delivery with Github Actions but you can use the platform of your choice. 
+Once you have manual deploys working, you may want to set up Continuous Integration to automate the deploy process. We will walk through an example for setting up CI/CD using Github Actions, but the general principles apply to other CI systems as well.
 
-In your Github Repo, select the actions tab and create a custom `.yml` file. Remove the auto-generated code and replace with:
+In your Github Repo, select the actions tab and create a custom `.yml` file, for example `deploy.yml`. Replace the auto-generated code with the following:
 
 ```
-name: hathora deploy
+name: Deploy
 on:
   push:
     branches:
@@ -143,18 +143,18 @@ jobs:
           --dir=client/web/dist;
 ```
 
-Customize the `name`, `branches`, and `appName` variables to your specifications. In most cases branches should be set to your main production branch. 
-
+Customize the `name`, `branches`, and `appName` for your app.
 
 > If you're using Personal Access Tokens to push up your code to Github, make sure in *Profile Settings --> Developer Access --> Personal access tokens* that `workflow` access is enabled for your token. 
 
-Copy the secret from `~/.config/hathora/token`
+Next, copy the Hathora token from `~/.config/hathora/token`
 
-> WARNING: if using `cat` to get the token from the terminal, don't include the **%** at the end
 > Note you must have already run `hathora cloud login` for the token to be present.
 
-Save the secret on Github by going to *Repo Settings --> Secrets --> Actions* and creating a `New Repository Secret`. Name the secret `HATHORA_TOKEN` to match `.yml` file above. Paste in the copied value in `Secret` field.
+> WARNING: if using `cat` to get the token from the terminal, don't include the **%** character at the end
 
-In this example, the frontend is hosted on Netlify so you will need to get NETLIFY_SITE_ID and NETLIFY_AUTH_TOKEN from them directly. 
+Save the secret on Github by going to *Repo Settings --> Secrets --> Actions* and creating a `New Repository Secret`. Name the secret `HATHORA_TOKEN` to match `.yml` file above. Paste in the copied value in the `Secret` field.
+
+In this example, the frontend is hosted on Netlify so you will need to get `NETLIFY_SITE_ID` and `NETLIFY_AUTH_TOKEN` from them directly. 
 
 Push a change to the branch specified in the `.yml` file. Once you push your changes, go to `Github Actions` tab to see your deployment logs. 
