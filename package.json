@@ -19,7 +19,7 @@
     "form-data": "4.0.0",
     "fs-extra": "10.1.0",
     "handlebars": "4.7.7",
-    "hot-esm": "1.4.1",
+    "hot-esm": "1.5.0",
     "js-yaml": "4.1.0",
     "open": "8.4.0",
     "openid-client": "5.1.8",
