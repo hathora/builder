@@ -65,7 +65,7 @@ export function getDirs() {
 }
 
 export function getAppConfig() {
-  const appSecret = process.env.APP_SECRET ?? uuidv4();
+  const appSecret = process.env.APP_SECRET?.trim() ?? uuidv4();
   const appId = createHash("sha256").update(appSecret).digest("hex");
   return { appId, appSecret };
 }
