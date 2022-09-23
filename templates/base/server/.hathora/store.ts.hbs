@@ -84,7 +84,7 @@ class Store {
     if (!stateInfo.has(stateId)) {
       const loaded = await loadState(stateId);
       if (loaded === undefined) {
-        coordinator.stateNotFound(stateId, userId);
+        coordinator.closeConnection(stateId, userId, "State not found");
         return;
       }
       stateInfo.set(stateId, { impl: loaded.impl, chance: loaded.chance, subscriptions: new Map() });
@@ -207,12 +207,12 @@ async function sendSnapshot(stateId: RoomId, userId: UserId) {
   const validationErrors = UserState.validate(userState);
   if (validationErrors.length > 0) {
     console.error("Invalid user state: ", validationErrors);
-    coordinator.stateUpdate(stateId, userId, Buffer.from(encodeStateError()));
+    coordinator.sendMessage(stateId, userId, Buffer.from(encodeStateError()));
     return;
   }
   subscriptions.set(userId, { userState: JSON.parse(JSON.stringify(userState)), changedAt: 0, messages: [] });
   const buf = encodeStateSnapshot(userState);
-  coordinator.stateUpdate(stateId, userId, Buffer.from(buf));
+  coordinator.sendMessage(stateId, userId, Buffer.from(buf));
 }
 
 async function sendUpdates(stateId: RoomId, changedAt: number) {
@@ -224,13 +224,13 @@ async function sendUpdates(stateId: RoomId, changedAt: number) {
       const validationErrors = UserState.validate(currUserState);
       if (validationErrors.length > 0) {
         console.error("Invalid user state: ", validationErrors);
-        coordinator.stateUpdate(stateId, userId, Buffer.from(encodeStateError()));
+        coordinator.sendMessage(stateId, userId, Buffer.from(encodeStateError()));
         return;
       }
       const diff = computeDiff(currUserState, prevUserState);
       if (diff !== NO_DIFF || messages.length > 0) {
         const buf = encodeStateUpdate(diff !== NO_DIFF ? diff : undefined, changedAt - prevChangedAt, messages);
-        coordinator.stateUpdate(stateId, userId, Buffer.from(buf));
+        coordinator.sendMessage(stateId, userId, Buffer.from(buf));
         subscriptions.set(userId, { userState: JSON.parse(JSON.stringify(currUserState)), changedAt, messages: [] });
       }
     }
@@ -241,7 +241,7 @@ function sendMessages(stateId: RoomId, userId: UserId) {
   const messages = stateInfo.get(stateId)?.subscriptions.get(userId)?.messages;
   if (messages !== undefined) {
     const buf = encodeStateUpdate(undefined, 0, messages);
-    coordinator.stateUpdate(stateId, userId, Buffer.from(buf));
+    coordinator.sendMessage(stateId, userId, Buffer.from(buf));
     messages.splice(0);
   }
 }
