@@ -1,5 +1,4 @@
 - [Architecture](architecture.md)
-- [Glossary of Terms](glossary.md)
 - [Roadmap](roadmap.md)
 
 - Hathora BuildKit
@@ -11,14 +10,15 @@
 
 - Hathora Cloud
 
-  - [Getting started](cloud/README.md)
+  - [Getting Started](cloud/README.md)
   - [Concepts](cloud/concepts.md)
   - [Reference](cloud/reference.md)
-  - [Deploy](cloud/deploy.md)
 
 - Hathora Builder
 
-  - Getting started
+  - [Overview](builder/README.md)
+
+  - Getting Started
 
     - [Tutorial: Uno](builder/tutorial_uno.md)
     - [Tutorial: Among Us](builder/tutorial_among_us.md)
@@ -40,3 +40,6 @@
     - [CLI Commands](builder/cli.md)
     - [Server](builder/server.md)
     - [Client](builder/client.md)
+    - [Deploy](builder/deploy.md)
+
+- [Glossary of Terms](glossary.md)
