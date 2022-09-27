@@ -1,4 +1,4 @@
-# Deploy
+# Hathora Builder - Reference: Deploy
 
 After your application is working as desired locally, you may want to deploy it on the internet. Hathora Cloud can host your backend, and you may choose any CDN of choice to serve your assets.
 

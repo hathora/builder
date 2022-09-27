@@ -1,4 +1,4 @@
-# hathora.yml
+# Hathora Builder - Reference: hathora.yml
 
 ## types
 

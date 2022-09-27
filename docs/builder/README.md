@@ -1,4 +1,4 @@
-# Hathora
+# Hathora Builder
 
 > A multiplayer game development framework
 
@@ -6,7 +6,7 @@
 
 ## Use cases
 
-Hathora can be used for:
+Hathora Builder can be used for:
 
 1. 🎲 **Turn-based multiplayer games** - Examples: Chess, Words with Friends, Codenames, etc
 
@@ -14,17 +14,17 @@ Hathora can be used for:
 
 3. 💬 **Realtime & social applications** - Examples: chat apps, delivery tracking apps, etc
 
-See the [showcase](showcase.md) to see some example games and demos made with Hathora!
+See the [showcase](showcase.md) to see some example games and demos made with Hathora Builder!
 
 ## Motivation
 
 Building a multiplayer game can be extremely challenging. On top of the challenges of building a single player game, you now have to constantly battle the network and latency, find ways to prevent cheating, and figure out how to make a scalable backend architecture.
 
-Hathora's abstractions greatly simplify these aspects so that you can focus on what matters - making your game!
+Hathora Builder's abstractions greatly simplify these aspects so that you can focus on what matters - making your game!
 
 ## Features
 
-Hathora comes with the following features out of the box:
+Hathora Builder comes with the following features out of the box:
 
 - Built in [networking](networking.md)
   - Automatic state synchronization of server state to all subscribed clients

@@ -1,6 +1,6 @@
 # Tutorial: Platformer
 
-For this tutorial, we'll build a multiplayer 2D platformer using [Phaser](http://phaser.io/) and the Hathora framework.
+For this tutorial, we'll build a multiplayer 2D platformer using [Phaser](http://phaser.io/) and the Hathora Builder.
 
 The full code for the game can be found on [Github](https://github.com/hathora/platformer-tutorial), and a live version of the game deployed on Hathora Cloud can be accessed [here](https://platformer-tutorial.netlify.app/).
 
@@ -138,7 +138,7 @@ At this point, the methods all return "Not implemented" errors so you can't do m
   }
 ```
 
-If we open two browser tabs, we can test this method and see the Hathora multiplayer functionality in action:
+If we open two browser tabs, we can test this method and see the Hathora Builder multiplayer functionality in action:
 
 ![Screen Recording](https://user-images.githubusercontent.com/5400947/185440365-a3a08118-8ba9-4df2-a50a-6aa8b7cb11c3.gif)
 
@@ -209,6 +209,7 @@ export class Impl implements Methods<InternalState> {
   }
 }
 ```
+
 Opening up the Prototype UI, we can see the player fall to the ground due to gravity:
 
 ![Screen Recording](https://user-images.githubusercontent.com/5400947/185244637-2914f026-3eb7-4980-a321-51a346315be4.gif)
@@ -447,6 +448,7 @@ export const PLATFORMS: Platform[] = [
 ```
 
 Inside the `shared` directory we also need a `package.json` file:
+
 ```json
 {
   "name": "platformer-tutorial-server",

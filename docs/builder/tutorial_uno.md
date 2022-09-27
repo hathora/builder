@@ -1,6 +1,6 @@
 # Tutorial: Uno
 
-In this tutorial we will explore Hathora by learning to make a simplified version of [Uno](https://www.mattel.com/products/uno-gdj85).
+In this tutorial we will explore Hathora Builder by learning to make a simplified version of [Uno](https://www.mattel.com/products/uno-gdj85).
 
 ## Repo
 
@@ -209,12 +209,11 @@ export class Impl implements Methods<InternalState> {
     };
   }
 }
-
 ```
 
 See [here](methods.md) for more details about how server methods works.
 
-> The Hathora dev server supports hot reloading of both backend and frontend, so you shouldn't need to restart the server when making edits to your code.
+> The Hathora Builder dev server supports hot reloading of both backend and frontend, so you shouldn't need to restart the server when making edits to your code.
 
 Going back to the Prototype UI, we can see our working application in action. Create a game, join it as another user from a different tab (by using the same url), and start the game. You should see a view like this:
 

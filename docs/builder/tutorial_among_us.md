@@ -1,6 +1,6 @@
 # Tutorial: Among Us (Part 1)
 
-For this tutorial, we’re going to see what it’s like to build a game similar to [Among Us](https://www.innersloth.com/games/among-us/) using the Hathora framework.
+For this tutorial, we’re going to see what it’s like to build a game similar to [Among Us](https://www.innersloth.com/games/among-us/) using Hathora Builder.
 
 ## Repo
 
@@ -9,7 +9,6 @@ The full code for this game can be found [here](https://github.com/hathora/among
 This is what our game will look like by the end of this tutorial:
 
 ![image](https://user-images.githubusercontent.com/5400947/154554747-2418c0c1-2658-45ea-bcd9-331cea37fabc.png)
-
 
 ## Install
 
@@ -128,7 +127,7 @@ Because of the default implementation, we don't see any real data and clicking S
 
 See [here](methods) for more details about how server methods works.
 
-> The Hathora dev server supports hot reloading of both backend and frontend, so you shouldn't need to restart the server when making edits to your code.
+> The Hathora Builder dev server supports hot reloading of both backend and frontend, so you shouldn't need to restart the server when making edits to your code.
 
 Going back to the Prototype UI, we can see our working application in action. Login, create a game, and join it as another user from a different tab. You should be able to see both users get added to the players array.
 

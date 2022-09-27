@@ -1,4 +1,4 @@
-# Server
+# Hathora Builder - Reference: Server
 
 The server has three responsibilities:
 
@@ -21,6 +21,7 @@ The internal state can be composed of any primitives and built in data structure
 The internal state is first created via the `initialize` method:
 
 Example (poker game):
+
 ```ts
 // impl.ts
 

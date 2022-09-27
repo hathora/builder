@@ -5,13 +5,11 @@
 
   - [Getting Started](buildkit/README.md)
   - [Tutorial: Top Down Shooter](buildkit/tutorial_topdown_shooter.md)
-  - [Concepts](buildkit/concepts.md)
   - [Reference](buildkit/reference.md)
 
 - Hathora Cloud
 
   - [Getting Started](cloud/README.md)
-  - [Concepts](cloud/concepts.md)
   - [Reference](cloud/reference.md)
 
 - Hathora Builder
