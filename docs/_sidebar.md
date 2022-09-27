@@ -9,7 +9,7 @@
 
 - Hathora Cloud
 
-  - [Getting Started](cloud/README.md)
+  - [Overview](cloud/README.md)
   - [Reference](cloud/reference.md)
 
 - Hathora Builder
