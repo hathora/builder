@@ -1,73 +1,42 @@
-Hathora 
+- [Architecture](architecture.md)
+- [Glossary of Terms](glossary.md)
+- [Roadmap](roadmap.md)
 
-  - [Overview]()
-  - [Architecture]()
-  - [Glossary of Terms]()
-  - [Roadmap](roadmap.md)
+- Hathora BuildKit
 
-Hathora BuildKit
+  - [Getting Started](buildkit/README.md)
+  - [Tutorial: Top Down Shooter](buildkit/tutorial_topdown_shooter.md)
+  - [Concepts](buildkit/concepts.md)
+  - [Reference](buildkit/reference.md)
 
-  - Getting started
-  
-    - [Tutorial: Top Down Shooter]()
-    - [CLI Commands]()
+- Hathora Cloud
 
-  - Concepts
+  - [Getting started](cloud/README.md)
+  - [Concepts](cloud/concepts.md)
+  - [Reference](cloud/reference.md)
+  - [Deploy](cloud/deploy.md)
 
-    - [Data flow]()
-    - [Authentication]()
-    - [Networking]()
-    - [Architecture]()
-
-  - Reference
-
-    - [Server]()
-    - [Client]()
-    - [Deploy]()
-
-Hathora Cloud
-
-  - Getting started
-  
-    - [Tutorial]()
-    - [CLI Commands]()
-
-  - Concepts
-
-    - [Data flow]()
-    - [Authentication]()
-    - [Networking]()
-    - [Architecture]()
-
-  - Reference
-
-    - [Server]()
-    - [Client]()
-    - [Deploy]()
-
-Hathora Builder
+- Hathora Builder
 
   - Getting started
 
-    - [Tutorial: Uno](tutorial_uno.md)
-    - [Tutorial: Among Us](tutorial_among_us.md)
-    - [Tutorial: Platformer](tutorial_platformer.md)
-    - [Showcase](showcase.md)
-    - [CLI Commands]()
+    - [Tutorial: Uno](builder/tutorial_uno.md)
+    - [Tutorial: Among Us](builder/tutorial_among_us.md)
+    - [Tutorial: Platformer](builder/tutorial_platformer.md)
+    - [Showcase](builder/showcase.md)
 
   - Concepts
 
-    - [Data flow](data-flow.md)
-    - [Type driven development](type-driven-development.md)
-    - [State](state.md)
-    - [Methods](methods.md)
-    - [Authentication](auth.md)
-    - [Networking](networking.md)
-    - [Architecture](architecture.md)
+    - [Data flow](builder/data-flow.md)
+    - [Type driven development](builder/type-driven-development.md)
+    - [State](builder/state.md)
+    - [Methods](builder/methods.md)
+    - [Authentication](builder/auth.md)
+    - [Networking](builder/networking.md)
 
   - Reference
 
-    - [hathora.yml](hathora-yml.md)
-    - [Server](server.md)
-    - [Client](client.md)
-    - [Deploy](deploy.md)
+    - [hathora.yml](builder/hathora-yml.md)
+    - [CLI Commands](builder/cli.md)
+    - [Server](builder/server.md)
+    - [Client](builder/client.md)
