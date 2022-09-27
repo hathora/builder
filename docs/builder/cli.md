@@ -1,5 +1,7 @@
 # Hathora Builder - Reference: CLI
 
+To access all the cloud functions you can run `hathora --help`
+
 ```
 % hathora --help
 hathora <command>

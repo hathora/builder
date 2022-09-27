@@ -35,7 +35,7 @@
   - Reference
 
     - [hathora.yml](builder/hathora-yml.md)
-    - [CLI Commands](builder/cli.md)
+    - [CLI](builder/cli.md)
     - [Server](builder/server.md)
     - [Client](builder/client.md)
     - [Deploy](builder/deploy.md)
