@@ -10,7 +10,7 @@ The Hathora architecture is designed to optimize for the following:
 
 In Hathora applications, clients don't directly communicate with backends. Instead, they go through a stateful load balancer / reverse proxy known as the Coordinator:
 
-![hathora_arch](./statics/arch.png)
+![hathora_arch](/statics/arch.png)
 
 As we can see from the diagram, the Coordinator routes clients to the corresponding backend instance. Each backend instance can run multiple game sessions (states) but a given session runs on exactly one instance at a given time. Games can be migrated from one instance to another given instances write their data to a shared filesystem.
 
