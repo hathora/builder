@@ -5,7 +5,7 @@
 - Hathora BuildKit
 
   - [Getting Started](buildkit/README.md)
-  - [Tutorial: Top Down Shooter](buildkit/tutorial_topdown_shooter.md)
+  - [Tutorial: Top Down Shooter](buildkit/tutorial_top_down_shooter.md)
   - [Reference](buildkit/reference.md)
 
 - Hathora Cloud
