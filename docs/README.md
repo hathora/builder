@@ -2,10 +2,12 @@
 
 > A multiplayer game development framework & cloud hosting platform
 
-Three major components:
+Today, Hathora consists of three major components:
 
-- Hathora Builder: opinionated NodeJS server framework for multiplayer backends
-- Hathora BuildKit: SDKs to conform to the Hathora Protocol
-- Hathora Cloud: Managed infra hosting platform to run + scale Hathora Protocol applications
+- [Hathora Builder](./builder/README.md): opinionated NodeJS server framework for multiplayer backends
+- [Hathora BuildKit](./buildkit/README.md): SDKs to conform to the Hathora Protocol
+- [Hathora Cloud](./cloud/README.md): managed hosting platform to run + scale Hathora Protocol applications
 
-Marketing content here...
+This is how the three parts fit in:
+
+![Hathora product stack](./statics/stack.png)
