@@ -56,7 +56,7 @@ node_modules
 dist
 ```
 
-It's highly recommended to avoid checking in your `node_modules` folders. Everything else isn't mission-critical, but it's unnecessary to check in.
+It's highly recommended to avoid checking in your `node_modules` folders, and you shouldn't check in your `APP_SECRET` either. Everything else isn't mission-critical, but it's unnecessary to check in.
 
 Now, inside of the `common` folder, let's begin by creating a `package.json` file. Inside the file copy and paste the following:
 
