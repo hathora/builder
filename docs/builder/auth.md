@@ -1,12 +1,12 @@
-# Authentication
+# Hathora Builder - Concepts: Authentication
 
-User authentication is critical for establishing user identity. It allows Hathora to know which user called a method, and also which users are subscribed to a state and need to be sent updates. Authentication also allows users to transfer their session from once device to another.
+User authentication is critical for establishing user identity. It allows Hathora Builder to know which user called a method, and also which users are subscribed to a state and need to be sent updates. Authentication also allows users to transfer their session from once device to another.
 
-Hathora implements authentication using json web tokens (JWTs). When the client successfully calls one of the available login methods, they obtain a JWT token which they can use for subsequent communication with the server.
+Hathora Builder implements authentication using json web tokens (JWTs). When the client successfully calls one of the available login methods, they obtain a JWT token which they can use for subsequent communication with the server.
 
 ## Providers
 
-Hathora's authentication system is designed to be flexible to allow for many different authentication providers. You configure the providers for your application in the `auth` block of `hathora.yml`. At this time, the following providers are supported:
+Hathora Builder's authentication system is designed to be flexible to allow for many different authentication providers. You configure the providers for your application in the `auth` block of `hathora.yml`. At this time, the following providers are supported:
 
 ### Anonymous login
 
@@ -43,7 +43,7 @@ auth:
 
 ## Client usage
 
-If you're using Hathora's Prototype UI, the user login experience is handled for you out of the box. If you're making a custom frontend, here's how you login using with the different authentication providers:
+If you're using Hathora Builder's Prototype UI, the user login experience is handled for you out of the box. If you're making a custom frontend, here's how you login using with the different authentication providers:
 
 - anonymous: `const token = await client.loginAnonymous()`
 - nickname: `const token = await client.loginNickname(nickname)`

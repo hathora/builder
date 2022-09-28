@@ -1,6 +1,6 @@
-# Client
+# Hathora Builder - Reference: Client
 
-The Hathora framework includes an automatically generated [Prototype UI](type-driven-development.md?id=prototype-ui) that lets you interact with your application and test your backend logic without writing any frontend code. Furthermore, Hathora provides ways to incrementally add custom presentation logic as you become ready for it.
+The Hathora Builder framework includes an automatically generated [Prototype UI](type-driven-development.md?id=prototype-ui) that lets you interact with your application and test your backend logic without writing any frontend code. Furthermore, Hathora Builder provides ways to incrementally add custom presentation logic as you become ready for it.
 
 ## Plugins
 
@@ -16,7 +16,7 @@ Plugins receive the following properties as input:
 
 - val -- this is the value you are rendering, it has the type of your filename
 - state -- this is the entire state tree, it has the type of `userState`
-- client -- this is the Hathora client instance (so you can make method calls from within your plugin), with type `HathoraClient`
+- client -- this is the Hathora Builder client instance (so you can make method calls from within your plugin), with type `HathoraClient`
 
 Example (from Uno, using Lit):
 
@@ -56,10 +56,10 @@ Which renders like this in the Prototype UI:
 
 ## Fully custom frontend
 
-When you're ready to move away from the debug app, simply create a new folder (you can name it anything you want) inside the `client` directory with an `index.html` file inside. This file now serves as the entry point to your frontend at http://localhost:3001, and can load code and other resources as needed. You are free to use any technologies you wish to build your frontend, just make sure to import the generated client to communicate with the Hathora server.
+When you're ready to move away from the debug app, simply create a new folder (you can name it anything you want) inside the `client` directory with an `index.html` file inside. This file now serves as the entry point to your frontend at http://localhost:3001, and can load code and other resources as needed. You are free to use any technologies you wish to build your frontend, just make sure to import the generated client to communicate with the Hathora Builder server.
 
 The `hathora` frontend tooling is built around [vite](https://vitejs.dev/), which generally creates for a pleasant development experience.
 
-For an example of a fully custom frontend built using Hathora and PIXI.js, see https://github.com/hathora/ship-battle.
+For an example of a fully custom frontend built using Hathora Builder and PIXI.js, see https://github.com/hathora/ship-battle.
 
 For an example using React, see https://github.com/hpx7/tussie-mussie.
