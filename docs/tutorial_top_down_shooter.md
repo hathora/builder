@@ -10,7 +10,7 @@ This game's source code can be found [here](https://github.com/hathora/topdown-s
 
 By the end of this tutorial, the game will look like this:
 
-![A screenshot of the completed top-down shooter game in action.](https://user-images.githubusercontent.com/7004280/192597838-792cf9f5-d7e4-4d98-b743-898937cc6398.png)
+![A screenshot of the completed top-down shooter game in action.](https://user-images.githubusercontent.com/5400947/192792673-3c6c5496-3c52-4d0d-87d6-b04f5ef59ea9.png)
 
 ## Project structure and common files
 
