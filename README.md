@@ -11,11 +11,11 @@
 </p>
 <br/>
 
-# Hathora - multiplayer game framework
+# Hathora Builder - multiplayer game framework
 
 ## Overview
 
-Hathora is a framework for building multiplayer games and other realtime applications.
+The Hathora Builder is a framework for building multiplayer games and other realtime applications.
 
 ## Documentation
 
