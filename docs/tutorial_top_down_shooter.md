@@ -736,7 +736,7 @@ cd src
 mkdir assets
 ```
 
-Next, navigate to each of the following links and download each image into your assets folder:
+Next, navigate to each of the following links and download each image into your assets folder (thanks [Kenney](https://kenney.nl/assets/topdown-shooter)!):
 
 - [bullet.png](https://github.com/hathora/topdown-shooter/blob/develop/client/src/assets/bullet.png)
 - [grass.png](https://github.com/hathora/topdown-shooter/blob/develop/client/src/assets/grass.png)
