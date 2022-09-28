@@ -195,7 +195,7 @@ export type StateUpdateMessage = {
 };
 ```
 
-This file exports an enum and several message types for that will be used on both our client and server applications. These types are used to represent the packet messages being passed back and forth between the clients and server.
+This file exports an enum and several message types for that will be used on both our client and server applications. These types are used to represent the message packets being passed back and forth between the client and server.
 
 ### `common/types.ts`
 
