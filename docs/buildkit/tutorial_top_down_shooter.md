@@ -41,11 +41,11 @@ In `.env`, we only need to add one thing: a fake `APP_SECRET` variable. When I s
 
 Your `.env` should end up looking something like this:
 
-```
+```sh
 APP_SECRET=thisissomefakemadeupsecretokay
 ```
 
-After you've added that, even though it's a fake secret, we'll still add it to the `.gitignore` file so that if you choose to deploy your project on Hathora with a *real* secret, it'll be safe.
+After you've added that, even though it's a fake secret, we'll still add it to the `.gitignore` file so that if you choose to deploy your project on Hathora with a _real_ secret, it'll be safe.
 
 Your `.gitignore` should be as follows:
 
@@ -90,19 +90,19 @@ export const MAP = [
     x: -156,
     y: -156,
     width: 52,
-    height: 312
+    height: 312,
   },
   {
     x: -156,
     y: -156,
     width: 468,
-    height: 52
+    height: 52,
   },
   {
     x: 260,
     y: -156,
     width: 52,
-    height: 312
+    height: 312,
   },
 
   // Blockades
@@ -110,25 +110,25 @@ export const MAP = [
     x: -104,
     y: 780,
     width: 104,
-    height: 52
+    height: 52,
   },
   {
     x: 104,
     y: 624,
     width: 104,
-    height: 52
+    height: 52,
   },
   {
     x: -104,
     y: 468,
     width: 104,
-    height: 52
+    height: 52,
   },
   {
     x: 104,
     y: 312,
     width: 104,
-    height: 52
+    height: 52,
   },
 
   // Bottom base
@@ -136,19 +136,19 @@ export const MAP = [
     x: -156,
     y: 936,
     width: 52,
-    height: 312
+    height: 312,
   },
   {
     x: -156,
     y: 1196,
     width: 468,
-    height: 52
+    height: 52,
   },
   {
     x: 260,
     y: 936,
     width: 52,
-    height: 312
+    height: 312,
   },
 ];
 ```
@@ -222,7 +222,7 @@ export type Player = {
 export type Bullet = {
   id: number;
   position: Position;
-}
+};
 
 export type GameState = {
   players: Player[];
@@ -322,8 +322,8 @@ const BOUNDARY_WIDTH = 50;
 enum BodyType {
   Player,
   Bullet,
-  Wall
-};
+  Wall,
+}
 
 // A type to represent a physics body with a type (uses BodyType above)
 type PhysicsBody = Body & { oType: BodyType };
@@ -422,7 +422,7 @@ const store: Store = {
     if (!rooms.has(roomId)) {
       return;
     }
-    
+
     // Remove the player from the room's state
     const game = rooms.get(roomId)!;
     const idx = game.players.findIndex((player) => player.id === userId);
@@ -706,7 +706,7 @@ mkdir src
 Back in our code editor, create a file in our new `src` folder called `app.ts`, and for now, simply write a `console.log` statement inside it. Like this:
 
 ```ts
-import 'console';
+import "console";
 
 console.log("Client is running!");
 ```
@@ -983,15 +983,14 @@ export class GameScene extends Scene {
       // If the connection is open, send through click events
       this.connection.sendMessage({ type: ClientMessageType.Shoot });
     });
-    
+
     // Render grass
-    this.add.tileSprite(MAP_BOUNDARIES.left, MAP_BOUNDARIES.top, MAP_WIDTH, MAP_HEIGHT, 'grass').setOrigin(0, 0);
+    this.add.tileSprite(MAP_BOUNDARIES.left, MAP_BOUNDARIES.top, MAP_WIDTH, MAP_HEIGHT, "grass").setOrigin(0, 0);
 
     // Render map objects
     MAP.forEach(({ x, y, width, height }) => {
-      this.add.tileSprite(x, y, width, height, 'wall').setOrigin(0, 0);
+      this.add.tileSprite(x, y, width, height, "wall").setOrigin(0, 0);
     });
-
 
     // Set the main camera's background colour and bounding box
     this.cameras.main.setBounds(MAP_BOUNDARIES.left, MAP_BOUNDARIES.top, MAP_WIDTH, MAP_HEIGHT);

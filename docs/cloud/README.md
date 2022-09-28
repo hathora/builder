@@ -34,7 +34,7 @@ Applications deployed Hathora Cloud must conform to the Hathora Protocol, which 
 5. Run `hathora cloud deploy --appName ${MY_GAME_NAME}` to deploy your game globally. If this is your first time deploying the game, you can name your app whatever you'd like. It will take a few minutes for your app to be deployed and you can watch the logs for progress.
 6. To connect a local client to the deployed servers, first get the `APP_SECRET` using `hathora cloud list`. Run your frontend locally as follows
 
-```
+```sh
 export APP_SECRET=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
 hathora dev --only client
 ```
@@ -49,7 +49,7 @@ Once you have manual deploys working, you may want to set up Continuous Delivery
 
 In your Github Repo, select the actions tab and create a custom `.yml` file, for example `deploy.yml`. Replace the auto-generated code with the following:
 
-```
+```yml
 name: Deploy
 on:
   push:

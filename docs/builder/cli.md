@@ -2,7 +2,7 @@
 
 To access all the cloud functions you can run `hathora --help`
 
-```
+```sh
 % hathora --help
 hathora <command>
 
