@@ -813,7 +813,7 @@ cd src
 mkdir scenes
 ```
 
-Within the scenes folder, create a new TypeScript file and name it `BootScene.ts`. What follows is the code for that file.
+Within the scenes folder, create a new TypeScript file and name it `BootScene.ts`. First, we import everything we need to construct this scene, and set a new instance of the `HathoraClient` class to a variable.
 
 ```ts
 import { Scene } from "phaser";
@@ -824,7 +824,7 @@ import { RoomConnection } from "../connection";
 const client = new HathoraClient(process.env.APP_ID as string, process.env.COORDINATOR_HOST);
 ```
 
-First, we import everything we need to construct this scene, and set a new instance of the `HathoraClient` class to a variable.
+After that, we define our `BootScene` class, extending from Phaser's `Scene` class and override the `preload` and `create` methods. In `preload` we load our image assets which you downloaded earlier. In `create` we create a new connection to a room on our Hathora server, and and start the game scene, passing the connection and token.
 
 ```ts
 // Here we extend from Phaser's Scene class to create a game scene compatible with Phaser
@@ -860,7 +860,7 @@ export class BootScene extends Scene {
 }
 ```
 
-After that, we define our `BootScene` class, extending from Phaser's `Scene` class and override the `preload` and `create` methods. In `preload` we load our image assets which you downloaded earlier. In `create` we create a new connection to a room on our Hathora server, and and start the game scene, passing the connection and token.
+The first function, `getToken` is used to get the token either from an existing session via `sessionStorage`, or create a new one using the `client` object we defined at the top. `getRoomId` either grabs the roomId from the URL or creates a new room.
 
 ```ts
       // ...
@@ -892,8 +892,6 @@ async function getRoomId(token: string): Promise<string> {
   }
 }
 ```
-
-The first function, `getToken` is used to get the token either from an existing session, or create one using the `client` object we defined at the top.
 
 Now we've completed writing our `BootScene.ts` implementation, and will proceed to the `GameScene.ts` file.
 
