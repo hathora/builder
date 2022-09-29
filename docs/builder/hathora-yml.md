@@ -82,4 +82,4 @@ The `error` key represents the response type the server sends when a method call
 
 ## tick
 
-The optional `tick` configures whether or not the backend will run an `onTick` function at a configurable interval. See the [Server](server.md) section below for more details.
+The optional `tick` configures whether or not the backend will run an `onTick` function at a configurable interval. See the [Server](builder/server.md) section for more details.

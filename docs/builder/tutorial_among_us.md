@@ -167,7 +167,7 @@ Now it’s straightforward to implement moveTo – we’ll find the player who c
   }
 ```
 
-The [onTick](server.md?id=ontick) function allows us to add logic that runs at a fixed interval in the server. We’ll implement the actual movement logic here by moving each player towards their target at a constant speed.
+The [onTick](builder/server.md?id=ontick) function allows us to add logic that runs at a fixed interval in the server. We’ll implement the actual movement logic here by moving each player towards their target at a constant speed.
 
 ```ts
   onTick(state: InternalState, ctx: Context, timeDelta: number): void {

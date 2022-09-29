@@ -14,7 +14,7 @@ Hathora Builder can be used for:
 
 3. 💬 **Realtime & social applications** - Examples: chat apps, delivery tracking apps, etc
 
-See the [showcase](showcase.md) to see some example games and demos made with Hathora Builder!
+See the [showcase](builder/showcase.md) to see some example games and demos made with Hathora Builder!
 
 ## Motivation
 
@@ -26,15 +26,15 @@ Hathora Builder's abstractions greatly simplify these aspects so that you can fo
 
 Hathora Builder comes with the following features out of the box:
 
-- Built in [networking](networking.md)
+- Built in [networking](builder/networking.md)
   - Automatic state synchronization of server state to all subscribed clients
   - Optimized binary protocol with delta encoding
   - Easy to use remote procedure calls (RPCs)
-- Declarative [API format](type-driven-development.md) with code generation of typesafe data models and clients
-- Development server with built in [prototyping interface](type-driven-development.md?id=prototype-ui)
-- Built in [matchmaking](state.md?id=lifecycle) service
-- Various built in [authentication providers](auth.md)
-- Automatic [persistence](state.md?id=persistence) of server state
+- Declarative [API format](builder/type-driven-development.md) with code generation of typesafe data models and clients
+- Development server with built in [prototyping interface](builder/type-driven-development.md?id=prototype-ui)
+- Built in [matchmaking](builder/state.md?id=lifecycle) service
+- Various built in [authentication providers](builder/auth.md)
+- Automatic [persistence](builder/state.md?id=persistence) of server state
 - Horizontally scalable [architecture](architecture.md)
 
 ## Installation
@@ -51,4 +51,4 @@ npm install -g hathora
 
 ## Getting started
 
-Try out the [Uno](tutorial_uno.md) or [Among Us](tutorial_among_us.md) tutorials.
+Try out the [Uno](builder/tutorial_uno.md) or [Among Us](builder/tutorial_among_us.md) tutorials.

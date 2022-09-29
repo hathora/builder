@@ -56,7 +56,7 @@ userState: PlayerState
 error: string
 ```
 
-This file defines the client data model and the server api endpoints for our application. For more information on this file format, see [here](type-driven-development.md).
+This file defines the client data model and the server api endpoints for our application. For more information on this file format, see [here](builder/type-driven-development.md).
 
 To initialize our project structure run `hathora init`. You should see the following directory structure generated for you:
 
@@ -211,7 +211,7 @@ export class Impl implements Methods<InternalState> {
 }
 ```
 
-See [here](methods.md) for more details about how server methods works.
+See [here](builder/methods.md) for more details about how server methods works.
 
 > The Hathora Builder dev server supports hot reloading of both backend and frontend, so you shouldn't need to restart the server when making edits to your code.
 
@@ -239,4 +239,4 @@ Now, if you try to join a second time you will get a `Already joined` error on t
 
 ## Next steps
 
-To learn how to create plugins for specific types to spruce up the view, or to learn how to make a fully custom frontend, take a look at the [client reference](client.md).
+To learn how to create plugins for specific types to spruce up the view, or to learn how to make a fully custom frontend, take a look at the [client reference](builder/client.md).
