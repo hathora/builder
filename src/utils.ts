@@ -63,7 +63,8 @@ export function getDirs() {
 }
 
 export async function getAppConfig() {
-  const res = await axios.post<{ appId: string; appSecret: string }>("https://coordinator.hathora.dev/registerApp");
+  const coordinatorHost = process.env.COORDINATOR_HOST ?? "coordinator.hathora.dev";
+  const res = await axios.post<{ appId: string; appSecret: string }>(`https://${coordinatorHost}/registerApp`);
   return res.data;
 }
 
