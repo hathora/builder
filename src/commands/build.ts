@@ -22,11 +22,11 @@ const cmd: CommandModule = {
           `${chalk.blue.bold(" hathora init ")}` +
           `${chalk.red("first")}`
       );
-    } else {
-      generate(rootDir, "base", await getAppConfig());
-      install(argv.only as "server" | "client" | undefined);
-      build(argv.only as "server" | "client" | undefined);
+      return;
     }
+    generate(rootDir, "base", await getAppConfig());
+    install(argv.only as "server" | "client" | undefined);
+    build(argv.only as "server" | "client" | undefined);
   },
 };
 

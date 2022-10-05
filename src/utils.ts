@@ -71,24 +71,22 @@ export async function generateLocal() {
   const { rootDir } = getDirs();
 
   let appConfig: { appId: string; appSecret: string };
-  if (!existsSync(join(rootDir, ".env"))) {
+  const parseResult = dotenv.config({ path: join(rootDir, ".env") });
+  if (
+    parseResult.parsed === undefined ||
+    parseResult.parsed.APP_ID === undefined ||
+    parseResult.parsed.APP_SECRET === undefined
+  ) {
     appConfig = await getAppConfig();
     outputFileSync(join(rootDir, ".env"), `APP_ID=${appConfig.appId}\nAPP_SECRET=${appConfig.appSecret}\n`);
   } else {
-    const res = dotenv.config({ path: join(rootDir, ".env") });
-    if (res.parsed === undefined) {
-      throw new Error("Error parsing .env file");
-    }
-    appConfig = { appId: res.parsed.APP_ID, appSecret: res.parsed.APP_SECRET };
+    appConfig = { appId: parseResult.parsed.APP_ID, appSecret: parseResult.parsed.APP_SECRET };
   }
 
   try {
     generate(rootDir, "base", appConfig);
   } catch (e) {
     console.error("Generate error:", e);
-  }
-  if (!existsSync(join(rootDir, ".env"))) {
-    outputFileSync(join(rootDir, ".env"), `APP_SECRET=${appConfig.appSecret}\n`);
   }
 }
 
