@@ -14,7 +14,7 @@ const cmd: CommandModule = {
   aliases: ["b"],
   describe: "Builds the project",
   builder: { only: { choices: ["client", "server"] } },
-  handler(argv) {
+  async handler(argv) {
     const { rootDir, serverDir } = getDirs();
     if (!existsSync(join(serverDir, "impl.ts"))) {
       console.error(
@@ -23,10 +23,10 @@ const cmd: CommandModule = {
           `${chalk.red("first")}`
       );
     } else {
-      generate(rootDir, "base", getAppConfig());
+      generate(rootDir, "base", await getAppConfig());
+      install(argv.only as "server" | "client" | undefined);
+      build(argv.only as "server" | "client" | undefined);
     }
-    install(argv.only as "server" | "client" | undefined);
-    build(argv.only as "server" | "client" | undefined);
   },
 };
 

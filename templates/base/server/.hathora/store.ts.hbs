@@ -147,6 +147,7 @@ class Store {
 
 const coordinator = await register({
   coordinatorHost: COORDINATOR_HOST,
+  appId: "{{appId}}",
   appSecret: "{{appSecret}}",
   storeId: process.env.STORE_ID ?? uuidv4(),
   authInfo: {
