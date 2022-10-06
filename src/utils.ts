@@ -2,11 +2,9 @@ import { pathToFileURL } from "url";
 import { Stream } from "stream";
 import { join } from "path";
 import { existsSync, readdirSync } from "fs";
-import { createHash } from "crypto";
 import { execSync, spawn } from "child_process";
 
 import yargs from "yargs";
-import { v4 as uuidv4 } from "uuid";
 import shelljs from "shelljs";
 import { outputFileSync } from "fs-extra";
 import FormData from "form-data";
@@ -64,23 +62,32 @@ export function getDirs() {
   };
 }
 
-export function getAppConfig() {
-  const appSecret = process.env.APP_SECRET?.trim() ?? uuidv4();
-  const appId = createHash("sha256").update(appSecret).digest("hex");
-  return { appId, appSecret };
+export async function getAppConfig() {
+  const coordinatorHost = process.env.COORDINATOR_HOST ?? "coordinator.hathora.dev";
+  const res = await axios.post<{ appId: string; appSecret: string }>(`https://${coordinatorHost}/registerApp`);
+  return res.data;
 }
 
-export function generateLocal() {
+export async function generateLocal() {
   const { rootDir } = getDirs();
-  dotenv.config({ path: join(rootDir, ".env") });
-  const appConfig = getAppConfig();
+
+  let appConfig: { appId: string; appSecret: string };
+  const parseResult = dotenv.config({ path: join(rootDir, ".env") });
+  if (
+    parseResult.parsed === undefined ||
+    parseResult.parsed.APP_ID === undefined ||
+    parseResult.parsed.APP_SECRET === undefined
+  ) {
+    appConfig = await getAppConfig();
+    outputFileSync(join(rootDir, ".env"), `APP_ID=${appConfig.appId}\nAPP_SECRET=${appConfig.appSecret}\n`);
+  } else {
+    appConfig = { appId: parseResult.parsed.APP_ID, appSecret: parseResult.parsed.APP_SECRET };
+  }
+
   try {
     generate(rootDir, "base", appConfig);
   } catch (e) {
     console.error("Generate error:", e);
-  }
-  if (!existsSync(join(rootDir, ".env"))) {
-    outputFileSync(join(rootDir, ".env"), `APP_SECRET=${appConfig.appSecret}\n`);
   }
 }
 

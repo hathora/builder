@@ -162,8 +162,8 @@ const coordinator = await register({
   },
   store: new Store(),
 });
-const { host, appId, storeId } = coordinator;
-console.log(`Connected to coordinator at ${host} with appId ${appId} and storeId ${storeId}`);
+const { host, storeId } = coordinator;
+console.log(`Connected to coordinator at ${host} with appId {{appId}} and storeId ${storeId}`);
 
 export async function loadState(stateId: RoomId) {
   let rows;

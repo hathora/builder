@@ -10,7 +10,7 @@ const cmd: CommandModule = {
   command: "generate",
   aliases: ["gen", "g"],
   describe: "Regenerates the types from hathora.yml",
-  handler() {
+  async handler() {
     const { serverDir } = getDirs();
     if (!existsSync(join(serverDir, "impl.ts"))) {
       console.error(
@@ -19,7 +19,7 @@ const cmd: CommandModule = {
           `${chalk.red("first")}`
       );
     } else {
-      generateLocal();
+      await generateLocal();
     }
   },
 };

@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
 import Handlebars from "handlebars";
 
 Handlebars.registerHelper("concat", (...arr) => arr.splice(0, arr.length - 1).join(""));
@@ -18,7 +17,6 @@ Handlebars.registerHelper("uppercase", (x) =>
 );
 Handlebars.registerHelper("makeRequestName", (x) => "I" + capitalize(x) + "Request");
 Handlebars.registerHelper("makePluginName", (x) => x.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase() + "-plugin");
-Handlebars.registerHelper("uuid", () => uuidv4());
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 Handlebars.registerHelper("hathoraVersion", () => require("../package.json").version);
 
