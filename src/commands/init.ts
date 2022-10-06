@@ -11,7 +11,7 @@ const cmd: CommandModule = {
   command: "init",
   aliases: ["initialize", "initialise"],
   describe: "Creates a new Hathora project",
-  handler() {
+  async handler() {
     const { rootDir, serverDir } = getDirs();
 
     if (existsSync(join(serverDir, "impl.ts"))) {
@@ -22,7 +22,7 @@ const cmd: CommandModule = {
       );
     } else {
       generate(rootDir, "bootstrap");
-      generateLocal();
+      await generateLocal();
     }
   },
 };

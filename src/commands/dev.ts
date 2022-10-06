@@ -11,7 +11,7 @@ const cmd: CommandModule = {
   aliases: ["development", "d"],
   describe: "Starts the server in development mode",
   builder: { only: { choices: ["client", "server"] } },
-  handler(argv) {
+  async handler(argv) {
     const { serverDir } = getDirs();
     if (!existsSync(join(serverDir, "impl.ts"))) {
       console.error(
@@ -19,9 +19,9 @@ const cmd: CommandModule = {
           `${chalk.blue.bold(" hathora init ")}` +
           `${chalk.red("first")}`
       );
-    } else {
-      generateLocal();
+      return;
     }
+    await generateLocal();
     install(argv.only as "server" | "client" | undefined);
     start(argv.only as "server" | "client" | undefined);
   },
