@@ -6,7 +6,7 @@
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
-// sha256 hash of app secret
+// Hathora appId from the coordinator
 const APP_ID = "...";
 // create client
 const client = new HathoraClient(APP_ID);
@@ -123,14 +123,11 @@ const coordinator = await register({
     unsubscribeUser(roomId, userId) {
       console.log("unsubscribeUser", roomId.toString(36), userId);
     },
-    unsubscribeAll() {
-      console.log("unsubscribeAll");
-    },
     onMessage(roomId, userId, data) {
       const dataBuf = Buffer.from(data.buffer, data.byteOffset, data.byteLength);
       console.log("handleUpdate", roomId.toString(36), userId, dataBuf.toString("utf8"));
       // echo data back to client
-      coordinator.stateUpdate(roomId, userId, dataBuf);
+      coordinator.sendMessage(roomId, userId, dataBuf);
     },
   },
 });

@@ -15,14 +15,13 @@ Hathora BuildKit makes it easy to write applications that conform to the Hathora
 #### Server
 
 1. In your Typescript project, install the server SDKs: `npm i @hathora/server-sdk`
-2. Grab an `APP_ID`/`APP_SECRET` by running `curl -X POST https://coordinator.hathora.dev/registerApp`.
-3. Fill in the `APP_ID`/`APP_SECRET` pair and implement four methods:
+2. Grab an `appId` + `appSecret` pair by running `curl -X POST https://coordinator.hathora.dev/registerApp`.
+3. Set the `APP_ID` and `APP_SECRET` environment variables and implement four methods:
 
 ```ts
 import { register } from "@hathora/server-sdk";
 
 const coordinator = await register({
-  appId: process.env.APP_ID!,
   appSecret: process.env.APP_SECRET!,
   authInfo: { anonymous: { separator: "-" } },
   store: {
@@ -43,7 +42,7 @@ const coordinator = await register({
   },
 });
 
-console.log(`Connected to ${coordinator.host} with AppId ${coordinator.appId}!`);
+console.log(`Connected to ${coordinator.host} with appId ${process.env.APP_ID}!`);
 ```
 
 4. Run your server! You should see a message like this:
