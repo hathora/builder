@@ -1,4 +1,5 @@
 import { join } from "path";
+import { createHash } from "crypto";
 import { execSync } from "child_process";
 
 import { CommandModule } from "yargs";
@@ -24,7 +25,15 @@ const cmd: CommandModule = {
       );
       return;
     }
-    generate(rootDir, "base", await getAppConfig());
+    let appConfig: { appId: string; appSecret: string };
+    if (process.env.APP_SECRET !== undefined) {
+      // for backwards compat purposes
+      const appSecret = process.env.APP_SECRET;
+      appConfig = { appId: createHash("sha256").update(appSecret).digest("hex"), appSecret };
+    } else {
+      appConfig = await getAppConfig();
+    }
+    generate(rootDir, "base", appConfig);
     install(argv.only as "server" | "client" | undefined);
     build(argv.only as "server" | "client" | undefined);
   },
