@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@v2
       - run: npm ci
       - run: npm install ts-node surge -g
-      - run: COORDINATOR_HOST=coordinator.hathora.com APP_SECRET=${{ secrets.BOGGLE_APP_SECRET }} ts-node ../../src/cli.ts build --only client
+      - run: COORDINATOR_HOST=coordinator.hathora.com APP_ID=fb24d1c82b3c3827cd8ccbe6ff98409778d6b9f5ed39f04e096dffd51c8c9288 ts-node ../../src/cli.ts build --only client
       - run: cp client/prototype-ui/dist/index.html client/prototype-ui/dist/200.html
       - run: surge client/prototype-ui/dist hathora-boggle.surge.sh
         env:

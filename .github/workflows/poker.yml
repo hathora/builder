@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@v2
       - run: npm ci
       - run: npm install ts-node surge -g
-      - run: COORDINATOR_HOST=coordinator.hathora.com APP_SECRET=${{ secrets.POKER_APP_SECRET }} ts-node ../../src/cli.ts build --only client
+      - run: COORDINATOR_HOST=coordinator.hathora.com APP_ID=38b1501a2ef61e51a3f9e34d0583aa5ee3b7bd641bc6744e723c6d704456380d ts-node ../../src/cli.ts build --only client
       - run: cp client/prototype-ui/dist/index.html client/prototype-ui/dist/200.html
       - run: surge client/prototype-ui/dist hathora-poker.surge.sh
         env:
@@ -37,7 +37,7 @@ jobs:
       - uses: actions/checkout@v2
       - run: npm ci
       - run: npm install ts-node surge -g
-      - run: COORDINATOR_HOST=coordinator.hathora.com APP_SECRET=${{ secrets.POKER_APP_SECRET }} ts-node ../../src/cli.ts build --only client
+      - run: COORDINATOR_HOST=coordinator.hathora.com APP_ID=38b1501a2ef61e51a3f9e34d0583aa5ee3b7bd641bc6744e723c6d704456380d ts-node ../../src/cli.ts build --only client
       - run: cp client/web/dist/index.html client/web/dist/200.html
       - run: surge client/web/dist screeching-chance.surge.sh
         env:

@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@v2
       - run: npm ci
       - run: npm install ts-node surge -g
-      - run: COORDINATOR_HOST=coordinator.hathora.com APP_SECRET=${{ secrets.CODENAMES_APP_SECRET }} ts-node ../../src/cli.ts build --only client
+      - run: COORDINATOR_HOST=coordinator.hathora.com APP_ID=387691759af11ff3ec16046fa73048d9034668fddfe0ca702ee90391d1d636a1 ts-node ../../src/cli.ts build --only client
       - run: cp client/prototype-ui/dist/index.html client/prototype-ui/dist/200.html
       - run: surge client/prototype-ui/dist hathora-codenames.surge.sh
         env:

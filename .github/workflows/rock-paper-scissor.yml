@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@v2
       - run: npm ci
       - run: npm install ts-node surge -g
-      - run: COORDINATOR_HOST=coordinator.hathora.com APP_SECRET=${{ secrets.RPS_APP_SECRET }} ts-node ../../src/cli.ts build --only client
+      - run: COORDINATOR_HOST=coordinator.hathora.com APP_ID=4891bff367405a23e0a58683f309badd3d106d1811a3b962cecb35fe5e763a24 ts-node ../../src/cli.ts build --only client
       - run: cp client/prototype-ui/dist/index.html client/prototype-ui/dist/200.html
       - run: surge client/prototype-ui/dist hathora-rock-paper-scissor.surge.sh
         env:

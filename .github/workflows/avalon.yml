@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@v2
       - run: npm ci
       - run: npm install ts-node surge -g
-      - run: COORDINATOR_HOST=coordinator.hathora.com APP_SECRET=${{ secrets.AVALON_APP_SECRET }} ts-node ../../src/cli.ts build --only client
+      - run: COORDINATOR_HOST=coordinator.hathora.com APP_ID=7c8388a1aa5c9ee68cdbd5ad8291864b559a139a407a60a83f172b3319e539e1 ts-node ../../src/cli.ts build --only client
       - run: cp client/prototype-ui/dist/index.html client/prototype-ui/dist/200.html
       - run: surge client/prototype-ui/dist hathora-avalon.surge.sh
         env:
