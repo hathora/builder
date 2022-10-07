@@ -25,14 +25,21 @@ const cmd: CommandModule = {
       );
       return;
     }
+
     let appConfig: { appId: string; appSecret: string };
-    if (process.env.APP_SECRET !== undefined) {
+    if (process.env.APP_ID !== undefined && process.env.APP_SECRET !== undefined) {
+      appConfig = { appId: process.env.APP_ID, appSecret: process.env.APP_ID };
+    } else if (argv.only === "client" && process.env.APP_ID !== undefined) {
+      appConfig = { appId: process.env.APP_ID, appSecret: "" };
+    } else if (process.env.APP_SECRET !== undefined) {
       // for backwards compat purposes
       const appSecret = process.env.APP_SECRET;
-      appConfig = { appId: createHash("sha256").update(appSecret).digest("hex"), appSecret };
+      const appId = createHash("sha256").update(appSecret).digest("hex");
+      appConfig = { appId, appSecret };
     } else {
       appConfig = await getAppConfig();
     }
+
     generate(rootDir, "base", appConfig);
     install(argv.only as "server" | "client" | undefined);
     build(argv.only as "server" | "client" | undefined);
