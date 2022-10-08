@@ -15,7 +15,6 @@ export interface Context {
   sendEvent: (event: string, to: UserId) => void;
   broadcastEvent: (event: string) => void;
 }
-
 export interface Methods<T> {
   initialize(ctx: Context, request: IInitializeRequest): T;
   {{#each methods}}
