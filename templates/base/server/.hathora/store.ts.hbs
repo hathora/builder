@@ -13,6 +13,8 @@ import {
   encodeStateUpdate,
   {{userState}} as UserState,
   encodeStateError,
+	HathoraEventTypes,
+	HathoraEventPayloads
 } from "../../api/types";
 import { ImplWrapper } from "./wrapper";
 import { computeDiff } from "./diff";
@@ -250,19 +252,19 @@ function ctx(chance: Chance.Chance, time: number, stateId: RoomId): Context {
   return {
     chance,
     time,
-    sendEvent(event: string, userId: UserId) {
+    sendEvent<EventType extends HathoraEventTypes>(event: EventType, data:HathoraEventPayloads[EventType], userId: UserId) {
       const userInfo = stateInfo.get(stateId)?.subscriptions.get(userId);
       if (userInfo !== undefined) {
-        userInfo.messages.push(Message.event(event));
+        userInfo.messages.push(Message.event(event, data));
         if (!changedStates.has(stateId)) {
           addPendingMessage(stateId, userId);
         }
       }
     },
-    broadcastEvent(event: string) {
+		broadcastEvent<EventType extends HathoraEventTypes>(event: EventType, data:HathoraEventPayloads[EventType]) {
       if (stateInfo.has(stateId)) {
         for (const [userId, { messages }] of stateInfo.get(stateId)!.subscriptions) {
-          messages.push(Message.event(event));
+          messages.push(Message.event(event, data));
           if (!changedStates.has(stateId)) {
             addPendingMessage(stateId, userId);
           }

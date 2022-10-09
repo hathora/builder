@@ -411,6 +411,31 @@ export function encodeStateSnapshot(x: {{userState}}) {
   {{/with}}
   return buf.toBuffer();
 }
+function encodeEvent(buf:_Writer,event:_EventMessage){
+	switch(event.event){
+		{{#each events}}
+		case HathoraEventTypes.{{@key}}:{
+			const x = event.data as HathoraEventPayloads[HathoraEventTypes.{{@key}}];
+			buf.writeUVarint(HathoraEventTypes.{{@key}});
+			{{> renderEncodeArg}};
+			break;
+		}
+		{{/each}}
+	}
+}
+function decodeEvent(sb:_Reader):HathoraEvents{
+	const event = sb.readUVarint();
+	switch(event){
+		{{#each events}}
+		case HathoraEventTypes.{{@key}}:{
+			const x = {{> renderDecodeArg}};
+			return {type:HathoraEventTypes.{{@key}},val:x};
+		}
+		{{/each}}
+		default:
+			throw new Error("Unknown event type");
+	}
+}
 export function encodeStateUpdate(
   x: _DeepPartial<{{userState}}> | undefined,
   changedAtDiff: number,
@@ -427,7 +452,7 @@ export function encodeStateUpdate(
   });
   const events = messages.flatMap((msg) => (msg.type === "event" ? msg : []));
   buf.writeUVarint(events.length);
-  events.forEach(({ event }) => buf.writeString(event));
+	events.forEach((message) => encodeEvent(buf,message));
   if (x !== undefined) {
     {{#with (lookup types userState)}}{{> renderEncodeDiffArg}};{{/with}}
   }
@@ -442,7 +467,7 @@ export function decodeStateUpdate(buf: ArrayBufferView | _Reader): {
   stateDiff?: _DeepPartial<{{userState}}>;
   changedAtDiff: number;
   responses: _ResponseMessage[];
-  events: _EventMessage[];
+  events: HathoraEvents[];
 } {
   const sb = ArrayBuffer.isView(buf) ? new _Reader(buf) : buf;
   const changedAtDiff = sb.readUVarint();
@@ -451,7 +476,7 @@ export function decodeStateUpdate(buf: ArrayBufferView | _Reader): {
     const maybeError = parseOptional(sb, () => {{> renderDecodeArg error}});
     return _Message.response(msgId, maybeError === undefined ? _Response.ok() : _Response.error(maybeError));
   });
-  const events = [...Array(sb.readUVarint())].map(() => _Message.event(sb.readString()));
+  const events = [...Array(sb.readUVarint())].map(() => decodeEvent(sb));
   const stateDiff = sb.remaining() ? {{#with (lookup types userState)}}{{> renderDecodeDiffArg}}{{/with}} : undefined;
   return { stateDiff, changedAtDiff, responses, events };
 }
