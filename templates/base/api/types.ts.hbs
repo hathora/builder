@@ -10,17 +10,17 @@ import {
 {{#if events}}
 export enum HathoraEventTypes {
   {{#each events}}
-	{{@key}},
-	{{/each}}
+  {{@key}},
+  {{/each}}
 }
 export type HathoraEventPayloads = {
-	{{#each events}}
-	[HathoraEventTypes.{{@key}}]: {{> renderTypeArg this}};
-	{{/each}}
+  {{#each events}}
+  [HathoraEventTypes.{{@key}}]: {{> renderTypeArg this}};
+  {{/each}}
 };
 {{/if}}
 export type HathoraEvents = {{#if events}}{{#each events}}
-	| { type: HathoraEventTypes.{{@key}}; val: HathoraEventPayloads[HathoraEventTypes.{{@key}}] }{{/each}}{{else}}never{{/if}};
+  | { type: HathoraEventTypes.{{@key}}; val: HathoraEventPayloads[HathoraEventTypes.{{@key}}] }{{/each}}{{else}}never{{/if}};
 {{#each types}}
 {{> renderExportArg}}
 {{/each}}
@@ -412,29 +412,29 @@ export function encodeStateSnapshot(x: {{userState}}) {
   return buf.toBuffer();
 }
 function encodeEvent(buf:_Writer,event:_EventMessage){
-	switch(event.event){
-		{{#each events}}
-		case HathoraEventTypes.{{@key}}:{
-			const x = event.data as HathoraEventPayloads[HathoraEventTypes.{{@key}}];
-			buf.writeUVarint(HathoraEventTypes.{{@key}});
-			{{> renderEncodeArg}};
-			break;
-		}
-		{{/each}}
-	}
+  switch(event.event){
+    {{#each events}}
+    case HathoraEventTypes.{{@key}}:{
+      const x = event.data as HathoraEventPayloads[HathoraEventTypes.{{@key}}];
+      buf.writeUVarint(HathoraEventTypes.{{@key}});
+      {{> renderEncodeArg}};
+      break;
+    }
+    {{/each}}
+  }
 }
 function decodeEvent(sb:_Reader):HathoraEvents{
-	const event = sb.readUVarint();
-	switch(event){
-		{{#each events}}
-		case HathoraEventTypes.{{@key}}:{
-			const x = {{> renderDecodeArg}};
-			return {type:HathoraEventTypes.{{@key}},val:x};
-		}
-		{{/each}}
-		default:
-			throw new Error("Unknown event type");
-	}
+  const event = sb.readUVarint();
+  switch(event){
+    {{#each events}}
+    case HathoraEventTypes.{{@key}}:{
+      const x = {{> renderDecodeArg}};
+      return {type:HathoraEventTypes.{{@key}},val:x};
+    }
+    {{/each}}
+    default:
+      throw new Error("Unknown event type");
+  }
 }
 export function encodeStateUpdate(
   x: _DeepPartial<{{userState}}> | undefined,
@@ -452,7 +452,7 @@ export function encodeStateUpdate(
   });
   const events = messages.flatMap((msg) => (msg.type === "event" ? msg : []));
   buf.writeUVarint(events.length);
-	events.forEach((message) => encodeEvent(buf,message));
+  events.forEach((message) => encodeEvent(buf,message));
   if (x !== undefined) {
     {{#with (lookup types userState)}}{{> renderEncodeDiffArg}};{{/with}}
   }

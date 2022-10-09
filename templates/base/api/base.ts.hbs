@@ -29,9 +29,9 @@ export const Response: { ok: () => OkResponse; error: (error: {{> renderTypeArg 
 
 export type ResponseMessage = { type: "response"; msgId: number; response: Response };
 export type EventMessage = { 
-	type: "event";
-	event: T.HathoraEventTypes;
-	data: T.HathoraEventPayloads[T.HathoraEventTypes];
+  type: "event";
+  event: T.HathoraEventTypes;
+  data: T.HathoraEventPayloads[T.HathoraEventTypes];
 };
 export type Message = ResponseMessage | EventMessage;
 export const Message: {

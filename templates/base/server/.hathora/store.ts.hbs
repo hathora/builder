@@ -13,8 +13,8 @@ import {
   encodeStateUpdate,
   {{userState}} as UserState,
   encodeStateError,
-	HathoraEventTypes,
-	HathoraEventPayloads
+  HathoraEventTypes,
+  HathoraEventPayloads
 } from "../../api/types";
 import { ImplWrapper } from "./wrapper";
 import { computeDiff } from "./diff";
@@ -261,7 +261,7 @@ function ctx(chance: Chance.Chance, time: number, stateId: RoomId): Context {
         }
       }
     },
-		broadcastEvent<EventType extends HathoraEventTypes>(event: EventType, data:HathoraEventPayloads[EventType]) {
+    broadcastEvent<EventType extends HathoraEventTypes>(event: EventType, data:HathoraEventPayloads[EventType]) {
       if (stateInfo.has(stateId)) {
         for (const [userId, { messages }] of stateInfo.get(stateId)!.subscriptions) {
           messages.push(Message.event(event, data));
