@@ -17,7 +17,6 @@ Handlebars.registerHelper("uppercase", (x) =>
     .toUpperCase()
 );
 Handlebars.registerHelper("makeRequestName", (x) => "I" + capitalize(x) + "Request");
-Handlebars.registerHelper("makeEventName", (x) => "I" + capitalize(x) + "Event");
 Handlebars.registerHelper("makePluginName", (x) => x.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase() + "-plugin");
 Handlebars.registerHelper("uuid", () => uuidv4());
 // eslint-disable-next-line @typescript-eslint/no-var-requires
