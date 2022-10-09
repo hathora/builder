@@ -13,6 +13,7 @@ import {
   {{#each methods}}
   {{makeRequestName @key}},
   {{/each}}
+	HathoraEvents,
 } from "../../api/types";
 import { UserData, Response, Method, COORDINATOR_HOST, MATCHMAKER_HOST } from "../../api/base";
 
@@ -20,7 +21,7 @@ import { computePatch } from "./patch";
 import { ConnectionFailure, transformCoordinatorFailure } from "./failures";
 
 export type StateId = string;
-export type UpdateArgs = { stateId: StateId; state: UserState; updatedAt: number; events: string[] };
+export type UpdateArgs = { stateId: StateId; state: UserState; updatedAt: number; events: HathoraEvents[] };
 export type UpdateCallback = (updateArgs: UpdateArgs) => void;
 export type ErrorCallback = (error: ConnectionFailure) => void;
 
@@ -208,7 +209,10 @@ export class HathoraConnection {
           stateId: this.stateId,
           state: JSON.parse(JSON.stringify(this.internalState)),
           updatedAt: this.changedAt,
-          events: events.map((e) => e.event),
+          events: events.map((e) => ({
+						type: e.event,
+						val: e.data,
+					})) as HathoraEvents[],
         })
       );
       responses.forEach(({ msgId, response }) => {
