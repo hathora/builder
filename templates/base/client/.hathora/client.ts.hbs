@@ -209,7 +209,7 @@ export class HathoraConnection {
           stateId: this.stateId,
           state: JSON.parse(JSON.stringify(this.internalState)),
           updatedAt: this.changedAt,
-          events
+          events,
         })
       );
       responses.forEach(({ msgId, response }) => {
