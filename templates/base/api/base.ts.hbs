@@ -36,7 +36,7 @@ export type EventMessage = {
 export type Message = ResponseMessage | EventMessage;
 export const Message: {
   response: (msgId: number, response: Response) => ResponseMessage;
-  event: (event: T.HathoraEventTypes, data: any) => EventMessage;
+  event: (event: T.HathoraEventTypes, data: T.HathoraEventPayloads[T.HathoraEventTypes]) => EventMessage;
 } = {
   response: (msgId, response) => ({ type: "response", msgId, response }),
   event: (event, data) => ({ type: "event", event, data }),
