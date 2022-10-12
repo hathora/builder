@@ -1,3 +1,5 @@
+/* eslint-disable indent */
+
 import { basename, join } from "path";
 
 import { z } from "zod";
