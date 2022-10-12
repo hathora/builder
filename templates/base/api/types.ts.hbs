@@ -425,7 +425,7 @@ function encodeEvent(buf:_Writer,event:_EventMessage){
 }
 function decodeEvent(sb:_Reader):HathoraEvents{
   const event = sb.readUVarint();
-  switch(event){
+  switch (event) {
     {{#each events}}
     case HathoraEventTypes.{{@key}}:{
       const x = {{> renderDecodeArg}};
