@@ -452,7 +452,7 @@ export function encodeStateUpdate(
   });
   const events = messages.flatMap((msg) => (msg.type === "event" ? msg : []));
   buf.writeUVarint(events.length);
-  events.forEach((message) => encodeEvent(buf,message));
+  events.forEach((message) => encodeEvent(buf, message));
   if (x !== undefined) {
     {{#with (lookup types userState)}}{{> renderEncodeDiffArg}};{{/with}}
   }
