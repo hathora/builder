@@ -22,6 +22,7 @@ const HathoraConfig = z
     initializeArgs: z.optional(z.string()),
     error: z.string(),
     tick: z.optional(z.number().int().gte(25)),
+    events: z.optional(z.record(z.string())),
   })
   .strict();
 
@@ -173,6 +174,14 @@ function enrichDoc(doc: z.infer<typeof HathoraConfig>, plugins: string[], appNam
     error: getArgsInfo(doc, plugins, doc.error, false),
     plugins,
     appName,
+    events:
+      doc.events === undefined
+        ? {}
+        : Object.fromEntries(
+            Object.entries(doc.events).map(([key, val]) => {
+              return [key, getArgsInfo(doc, plugins, val, false)];
+            })
+          ),
   };
 }
 
