@@ -427,7 +427,7 @@ function decodeEvent(sb:_Reader):HathoraEvents{
   const event = sb.readUVarint();
   switch (event) {
     {{#each events}}
-    case HathoraEventTypes.{{@key}}:{
+    case HathoraEventTypes.{{@key}}: {
       const x = {{> renderDecodeArg}};
       return { type: HathoraEventTypes.{{@key}}, val: x };
     }
