@@ -429,7 +429,7 @@ function decodeEvent(sb:_Reader):HathoraEvents{
     {{#each events}}
     case HathoraEventTypes.{{@key}}:{
       const x = {{> renderDecodeArg}};
-      return {type:HathoraEventTypes.{{@key}},val:x};
+      return { type: HathoraEventTypes.{{@key}}, val: x };
     }
     {{/each}}
     default:
