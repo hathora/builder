@@ -18,11 +18,11 @@ export interface Context {
     event: EventType,
     data: HathoraEventPayloads[EventType],
     to: UserId
-    ) => void;
+  ) => void;
   broadcastEvent: <EventType extends HathoraEventTypes>(
     event: EventType,
     data: HathoraEventPayloads[EventType]
-    ) => void;
+  ) => void;
 }
 export interface Methods<T> {
   initialize(ctx: Context, request: IInitializeRequest): T;
