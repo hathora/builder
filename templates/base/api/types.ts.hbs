@@ -411,7 +411,7 @@ export function encodeStateSnapshot(x: {{userState}}) {
   {{/with}}
   return buf.toBuffer();
 }
-function encodeEvent(buf:_Writer,event:_EventMessage){
+function encodeEvent(buf: _Writer, event:_EventMessage) {
   switch (event.event) {
     {{#each events}}
     case HathoraEventTypes.{{@key}}:{
