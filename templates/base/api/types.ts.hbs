@@ -423,7 +423,7 @@ function encodeEvent(buf: _Writer, event:_EventMessage) {
     {{/each}}
   }
 }
-function decodeEvent(sb:_Reader):HathoraEvents{
+function decodeEvent(sb: _Reader): HathoraEvents {
   const event = sb.readUVarint();
   switch (event) {
     {{#each events}}
