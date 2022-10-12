@@ -175,12 +175,13 @@ function enrichDoc(doc: z.infer<typeof HathoraConfig>, plugins: string[], appNam
     plugins,
     appName,
     events:
-      doc.events &&
-      Object.fromEntries(
-        Object.entries(doc.events).map(([key, val]) => {
-          return [key, getArgsInfo(doc, plugins, val, false)];
-        })
-      ),
+      doc.events === undefined
+        ? {}
+        : Object.fromEntries(
+            Object.entries(doc.events).map(([key, val]) => {
+              return [key, getArgsInfo(doc, plugins, val, false)];
+            })
+          ),
   };
 }
 
