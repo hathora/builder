@@ -8,7 +8,6 @@ import {
   EventMessage as _EventMessage,
 } from "./base";
 
-{{#if events}}
 export enum HathoraEventTypes {
   {{#each events}}
   {{@key}},
@@ -19,9 +18,10 @@ export type HathoraEventPayloads = {
   [HathoraEventTypes.{{@key}}]: {{> renderTypeArg this}};
   {{/each}}
 };
-{{/if}}
-export type HathoraEvents = {{#if events}}{{#each events}}
-  | { type: HathoraEventTypes.{{@key}}; val: HathoraEventPayloads[HathoraEventTypes.{{@key}}] }{{/each}}{{else}}never{{/if}};
+
+export type HathoraEvents = {{#each events}}
+  | { type: HathoraEventTypes.{{@key}}; val: HathoraEventPayloads[HathoraEventTypes.{{@key}}] }
+{{/each}};
 {{#each types}}
 {{> renderExportArg}}
 {{/each}}
