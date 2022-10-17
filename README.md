@@ -1,6 +1,10 @@
 <p align="center">
   <a href="https://hathora.dev" target="_blank" rel="noopener noreferrer">
-    <img width="360" src="https://blog.hathora.dev/content/images/2022/10/Logotype_colorwhite-1.png" alt="Hathora logo">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://blog.hathora.dev/content/images/2022/10/Logotype_colorwhite-1.png">
+      <source media="(prefers-color-scheme: light)" srcset="https://blog.hathora.dev/content/images/2022/10/Logotype_colorwhite_1.png">
+      <img alt="hathora logo" src="https://blog.hathora.dev/content/images/2022/10/Logotype_colorwhite_1.png">
+    </picture>
   </a>
 </p>
 <p align="center">
