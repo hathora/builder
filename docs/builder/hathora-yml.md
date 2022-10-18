@@ -72,6 +72,29 @@ Example:
 userState: MyUnion
 ```
 
+## events
+
+The `events` section is used to configure the event types you can send from the server and receive from the client.
+
+Example:
+
+```yml
+# hathora.yml
+
+types:
+  SomeType:
+    foo: string
+events:
+  myEvent: SomeType
+  myOtherEvent: number
+```
+
+Which could then be used on the server like this:
+
+```ts
+ctx.sendEvent(HathoraEvents.myEvent, { foo: "bar" }, userId)
+```
+
 ## initializeArgs
 
 The optional `initializeArgs` key sets the `InitializeRequest` type for the `initialize` method. By default it is empty.

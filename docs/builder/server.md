@@ -62,9 +62,9 @@ ctx.chance // a ChanceJs object for random-based operations
 
 ctx.time // the current time (ms since epoch)
 
-ctx.sendEvent(event: string, to: UserId) // send an event to a particular user
+ctx.sendEvent(event: EventType, data: HathoraEventPayloads[EventType], to: UserId) // send an event to a particular user
 
-ctx.broadcastEvent(event: string) // broadcast an event to all connected users
+ctx.broadcastEvent(event: EventType, data: HathoraEventPayloads[EventType]) // broadcast an event to all connected users
 ```
 
 ## getUserState

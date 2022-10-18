@@ -14,4 +14,4 @@ There are two modes of messaging between a Hathora Builder server and client: st
 
 State synchronization is the process of keeping clients up to date with data on the server. State synchronization is handled automatically by Hathora Builder -- when state is mutated inside server methods, Hathora Builder detects the mutation and computes what data needs to be sent to each subscribed client. Network packets are kept small by only sending diffs and by utilizing an optimized binary serialization format.
 
-Events are one-off messages that can be sent to individual users or broadcast to all subscribers. They are invoked inside server methods via `ctx.sendEvent(event, userId)` and `ctx.broadcastEvent(event)`. Events are useful for ephermeral actions, like telling clients when to start an animation or play a sound.
+Events are one-off messages that can be sent to individual users or broadcast to all subscribers. They are invoked inside server methods via `ctx.sendEvent(event, data, userId)` and `ctx.broadcastEvent(event, data)`. Events are useful for ephermeral actions, like telling clients when to start an animation or play a sound.
