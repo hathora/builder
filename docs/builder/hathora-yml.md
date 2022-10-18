@@ -95,6 +95,13 @@ Which could then be used on the server like this:
 ctx.sendEvent(HathoraEvents.myEvent, { foo: "bar" }, userId)
 ```
 
+If omitted from `hathora.yml`, the `events` block defaults to the following:
+
+```yml
+events:
+  default: string
+```
+
 ## initializeArgs
 
 The optional `initializeArgs` key sets the `InitializeRequest` type for the `initialize` method. By default it is empty.
