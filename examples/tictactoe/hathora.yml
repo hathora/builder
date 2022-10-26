@@ -1,0 +1,23 @@
+types:
+  Tile:
+    - X
+    - O
+    - EMPTY
+  PlayerState:
+    board: Tile[]
+    players: UserId[]
+    turn: UserId?
+    winner: UserId?
+
+methods:
+  joinGame:
+  startGame:
+  playTile:
+    x: int
+    y: int
+
+auth:
+  anonymous: {}
+
+userState: PlayerState
+error: string
