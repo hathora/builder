@@ -10,7 +10,7 @@ Hathora BuildKit makes it easy to write applications that conform to the Hathora
 
 ## Getting Started
 
-> Please see the [Reference](./reference.md) for details and checkout our [tutorial](./tutorial_top_down_shooter.md) for a full walkthrough.
+> Please see the [Reference](/buildkit/reference.md) for details and checkout our [tutorial](/buildkit/tutorial_top_down_shooter.md) for a full walkthrough.
 
 #### Server
 
