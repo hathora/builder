@@ -11,7 +11,7 @@
   <a href="https://npmjs.com/package/hathora"><img src="https://badge.fury.io/js/hathora.svg" alt="npm version"></a>
   <a href="https://nodejs.org/en/about/releases/"><img src="https://img.shields.io/node/v/hathora.svg" alt="node compatibility"></a>
   <a href="https://github.com/hathora/hathora/actions/workflows/build.yml"><img src="https://github.com/hathora/hathora/actions/workflows/build.yml/badge.svg" alt="build status"></a>
-  <a href="https://discord.gg/6nVdeCBffR"><img src="https://img.shields.io/badge/chat-discord-blue?logo=discord" alt="discord chat"></a>
+  <a href="https://discord.com/invite/hathora"><img src="https://img.shields.io/badge/chat-discord-blue?logo=discord" alt="discord chat"></a>
 </p>
 <br/>
 
