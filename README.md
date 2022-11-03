@@ -70,7 +70,7 @@ Here are some other example apps built with hathora:
 
 ## Community
 
-Discord: https://discord.gg/6nVdeCBffR
+Discord: https://discord.com/invite/hathora
 
 ## Contributing
 
