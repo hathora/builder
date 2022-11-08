@@ -14,7 +14,12 @@ const cmd: CommandModule = {
     cloudApiBase: { type: "string", demandOption: true, hidden: true },
   },
   async handler(argv) {
-    const { rootDir } = getDirs();
+    let rootDir: string;
+    try {
+      rootDir = getDirs().rootDir;
+    } catch (e) {
+      rootDir = process.cwd();
+    }
     const tarFile = tar.create(
       {
         cwd: rootDir,
