@@ -56,11 +56,11 @@ const coordinator = await register({
   },
 });
 
-console.log(`Connected to ${coordinator.host} with appId ${process.env.APP_ID}!`);
+console.log(`Connected to ${coordinator.host} with storeId ${coordinator.storeId}!`);
 ```
 
 5. Run your server via `ts-node-esm server.mts` (make sure you have [ts-node](https://www.npmjs.com/package/ts-node) installed globally). You should see a message like this:
-   > Connected to coordinator.hathora.dev with appId b5d4045c3f466fa91fe2cc6abe79232a1a57cdf104f7a26e716e0a1e2789df78!
+   > Connected to coordinator.hathora.dev with storeId 81e5804a-5ffe-496c-8a68-da071945b558!
 
 #### Client
 
