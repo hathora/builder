@@ -51,6 +51,7 @@ const coordinator = await register({
     onMessage(roomId, userId, data) {
       // TODO - example echo
       const dataBuf = Buffer.from(data.buffer, data.byteOffset, data.byteLength);
+      console.log("Received data:", dataBuf.toString("utf8"));
       coordinator.sendMessage(roomId, userId, dataBuf);
     },
   },
@@ -66,11 +67,14 @@ console.log(`Connected to ${coordinator.host} with storeId ${coordinator.storeId
 
 Once your server is connected to the Coordinator, you can start passing messages back and forth. Let's build a client to do that.
 
-1. In your Typescript project, install the client SDKs: `npm i @hathora/client-sdk`
+1. In your typescript project, install the client SDKs: `npm i @hathora/client-sdk`
 2. Fill in the `APP_ID` from above and implement `onMessage` and `onError` methods:
 
 ```ts
+// client.mts
+
 import { HathoraClient } from "@hathora/client-sdk";
+
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
@@ -90,7 +94,7 @@ function onError(error: any) {
 }
 ```
 
-3. Run your client! You should see "Hello world!" echoed back like so:
+3. Run your client via `ts-node-esm client.mts`. You should see "Hello world!" echoed back like so:
    > { message: 'Hello world' }
 
 ### Next Steps
