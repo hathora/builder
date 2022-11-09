@@ -101,4 +101,4 @@ function onError(error: any) {
 
 ### Next Steps
 
-Try building your own application using the BuildKit and reach out to us in Discord if you need help!
+Try building your own application using the BuildKit and reach out to us in [Discord](https://discord.com/invite/hathora) if you need help!
