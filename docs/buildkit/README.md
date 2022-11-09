@@ -15,6 +15,7 @@ Hathora BuildKit makes it easy to write applications that conform to the Hathora
 #### Server
 
 1. Create a new directory with the following `tsconfig.json`:
+
 ```json
 {
   "compilerOptions": {
@@ -26,6 +27,7 @@ Hathora BuildKit makes it easy to write applications that conform to the Hathora
   }
 }
 ```
+
 2. Inside this typescript project, install the server SDKs: `npm i @hathora/server-sdk`
 3. Grab an `appId` + `appSecret` pair by running `curl -X POST https://coordinator.hathora.dev/registerApp`.
 4. Set the `APP_SECRET` environment variable and create the following `server.mts` file:
