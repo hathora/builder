@@ -14,11 +14,25 @@ Hathora BuildKit makes it easy to write applications that conform to the Hathora
 
 #### Server
 
-1. In your Typescript project, install the server SDKs: `npm i @hathora/server-sdk`
-2. Grab an `appId` + `appSecret` pair by running `curl -X POST https://coordinator.hathora.dev/registerApp`.
-3. Set the `APP_ID` and `APP_SECRET` environment variables and implement four methods:
+1. Create a new typescript proejct with the following `tsconfig.json`:
+```json
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "strict": true
+  }
+}
+```
+2. In your typescript project, install the server SDKs: `npm i @hathora/server-sdk`
+3. Grab an `appId` + `appSecret` pair by running `curl -X POST https://coordinator.hathora.dev/registerApp`.
+4. Set the `APP_SECRET` environment variable and implement four methods:
 
 ```ts
+// server.mts
+
 import { register } from "@hathora/server-sdk";
 
 const coordinator = await register({
@@ -45,8 +59,8 @@ const coordinator = await register({
 console.log(`Connected to ${coordinator.host} with appId ${process.env.APP_ID}!`);
 ```
 
-4. Run your server! You should see a message like this:
-   > Connected to coordinator.hathora.dev with AppId b5d4045c3f466fa91fe2cc6abe79232a1a57cdf104f7a26e716e0a1e2789df78!
+5. Run your server via `ts-node-esm server.mts` (make sure you have [ts-node](https://www.npmjs.com/package/ts-node) installed globally). You should see a message like this:
+   > Connected to coordinator.hathora.dev with appId b5d4045c3f466fa91fe2cc6abe79232a1a57cdf104f7a26e716e0a1e2789df78!
 
 #### Client
 
