@@ -14,11 +14,25 @@ Hathora BuildKit makes it easy to write applications that conform to the Hathora
 
 #### Server
 
-1. In your Typescript project, install the server SDKs: `npm i @hathora/server-sdk`
-2. Grab an `appId` + `appSecret` pair by running `curl -X POST https://coordinator.hathora.dev/registerApp`.
-3. Set the `APP_ID` and `APP_SECRET` environment variables and implement four methods:
+1. Create a new directory with the following `tsconfig.json`:
+```json
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "strict": true
+  }
+}
+```
+2. Inside this typescript project, install the server SDKs: `npm i @hathora/server-sdk`
+3. Grab an `appId` + `appSecret` pair by running `curl -X POST https://coordinator.hathora.dev/registerApp`.
+4. Set the `APP_SECRET` environment variable and create the following `server.mts` file:
 
 ```ts
+// server.mts
+
 import { register } from "@hathora/server-sdk";
 
 const coordinator = await register({
@@ -37,26 +51,30 @@ const coordinator = await register({
     onMessage(roomId, userId, data) {
       // TODO - example echo
       const dataBuf = Buffer.from(data.buffer, data.byteOffset, data.byteLength);
+      console.log("Received data:", dataBuf.toString("utf8"));
       coordinator.sendMessage(roomId, userId, dataBuf);
     },
   },
 });
 
-console.log(`Connected to ${coordinator.host} with appId ${process.env.APP_ID}!`);
+console.log(`Connected to ${coordinator.host} with storeId ${coordinator.storeId}!`);
 ```
 
-4. Run your server! You should see a message like this:
-   > Connected to coordinator.hathora.dev with AppId b5d4045c3f466fa91fe2cc6abe79232a1a57cdf104f7a26e716e0a1e2789df78!
+5. Run your server via `ts-node-esm server.mts` (make sure you have [ts-node](https://www.npmjs.com/package/ts-node) installed globally). You should see a message like this:
+   > Connected to coordinator.hathora.dev with storeId 81e5804a-5ffe-496c-8a68-da071945b558!
 
 #### Client
 
 Once your server is connected to the Coordinator, you can start passing messages back and forth. Let's build a client to do that.
 
-1. In your Typescript project, install the client SDKs: `npm i @hathora/client-sdk`
+1. In your typescript project, install the client SDKs: `npm i @hathora/client-sdk`
 2. Fill in the `APP_ID` from above and implement `onMessage` and `onError` methods:
 
 ```ts
+// client.mts
+
 import { HathoraClient } from "@hathora/client-sdk";
+
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
@@ -76,7 +94,7 @@ function onError(error: any) {
 }
 ```
 
-3. Run your client! You should see "Hello world!" echoed back like so:
+3. Run your client via `ts-node-esm client.mts`. You should see "Hello world!" echoed back like so:
    > { message: 'Hello world' }
 
 ### Next Steps
