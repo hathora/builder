@@ -58,7 +58,7 @@ const coordinator = await register({
   },
 });
 
-console.log(`Connected to ${coordinator.host} with storeId ${coordinator.storeId}!`);
+console.log(`Connected to ${coordinator.host} with storeId ${coordinator.storeId}`);
 ```
 
 5. Run your server via `npx ts-node-esm server.mts`. You should see a message like this:
