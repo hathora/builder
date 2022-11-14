@@ -28,7 +28,7 @@ Hathora BuildKit makes it easy to write applications that conform to the Hathora
 }
 ```
 
-2. Inside this typescript project, install the server SDKs: `npm i @hathora/server-sdk`
+2. Inside this typescript project, install the server SDKs: `npm i @hathora/server-sdk`. Also install the required dev dependencies: `npm i -D typescript ts-node @types/node`.
 3. Grab an `appId` + `appSecret` pair by running `curl -X POST https://coordinator.hathora.dev/registerApp`.
 4. Set the `APP_SECRET` environment variable and create the following `server.mts` file:
 
@@ -42,18 +42,17 @@ const coordinator = await register({
   authInfo: { anonymous: { separator: "-" } },
   store: {
     newState(roomId, userId, data) {
-      // TODO
+      console.log("newState", roomId.toString(36), userId);
     },
     subscribeUser(roomId, userId) {
-      // TODO
+      console.log("subscribeUser", roomId.toString(36), userId);
     },
     unsubscribeUser(roomId, userId) {
-      // TODO
+      console.log("unsubscribeUser", roomId.toString(36), userId);
     },
     onMessage(roomId, userId, data) {
-      // TODO - example echo
       const dataBuf = Buffer.from(data.buffer, data.byteOffset, data.byteLength);
-      console.log("Received data:", dataBuf.toString("utf8"));
+      console.log("onMessage", roomId.toString(36), userId, dataBuf.toString("utf8"));
       coordinator.sendMessage(roomId, userId, dataBuf);
     },
   },
@@ -62,8 +61,8 @@ const coordinator = await register({
 console.log(`Connected to ${coordinator.host} with storeId ${coordinator.storeId}!`);
 ```
 
-5. Run your server via `ts-node-esm server.mts` (make sure you have [ts-node](https://www.npmjs.com/package/ts-node) installed globally). You should see a message like this:
-   > Connected to coordinator.hathora.dev with storeId 81e5804a-5ffe-496c-8a68-da071945b558!
+5. Run your server via `npx ts-node-esm server.mts`. You should see a message like this:
+   > Connected to coordinator.hathora.dev with storeId 81e5804a-5ffe-496c-8a68-da071945b558
 
 #### Client
 
@@ -85,10 +84,10 @@ const token = await client.loginAnonymous();
 const roomId = await client.create(token, new Uint8Array());
 const connection = await client.connect(token, roomId, onMessage, onError);
 
-connection.write(encoder.encode(JSON.stringify({ message: "Hello world!" })));
+connection.write(encoder.encode("Hello world!"));
 
 function onMessage(msg: ArrayBuffer) {
-  console.log(JSON.parse(decoder.decode(msg)));
+  console.log(decoder.decode(msg));
 }
 
 function onError(error: any) {
@@ -96,8 +95,13 @@ function onError(error: any) {
 }
 ```
 
-3. Run your client via `ts-node-esm client.mts`. You should see "Hello world!" echoed back like so:
-   > { message: 'Hello world' }
+3. Run your client via `npx ts-node-esm client.mts`. You should see "Hello world!" echoed back like so:
+  > Hello world!
+
+On the server you should see output similar to the following:
+> newState 305z91zyocpd4 k8vkwl7692  
+subscribeUser 305z91zyocpd4 k8vkwl7692  
+onMessage 305z91zyocpd4 k8vkwl7692 Hello world!
 
 ### Next Steps
 
