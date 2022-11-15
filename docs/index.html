@@ -8,10 +8,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0" />
     <meta name="twitter:image" content="https://user-images.githubusercontent.com/5400947/195920406-dc4ebbee-8c54-4d10-a491-b59a71b7df86.png" />
     <link rel="icon" type="image/png" href="https://user-images.githubusercontent.com/5400947/195920406-dc4ebbee-8c54-4d10-a491-b59a71b7df86.png" />
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css" />
+<!--    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css" />-->
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="assets/custom.css" />
     <style>
       video {
         max-width: 100%;
+      }
+      .search {
+          border-color: #29293a !important;
       }
     </style>
   </head>
@@ -20,7 +26,8 @@
     <script>
       window.$docsify = {
         name: "Hathora",
-        repo: "https://github.com/hathora/hathora",
+        logo: "statics/logo.svg",
+        repo: "https://hathora.dev",
         loadSidebar: true,
         subMaxLevel: 1,
         auto2top: true,
@@ -35,5 +42,23 @@
     <script src="//cdn.jsdelivr.net/npm/prismjs@1.26.0/components/prism-yaml.min.js"></script>
     <script src="//cdn.jsdelivr.net/npm/prismjs@1.26.0/components/prism-typescript.min.js"></script>
     <script src="//cdn.jsdelivr.net/npm/@sujaykumarh/docsify-plugin-title@1.x/dist/plugin.min.js"></script>
+
+    <script>
+      (function() {
+        var existCondition = setInterval(function() {
+          if (document.querySelector('.github-corner')) {
+            clearInterval(existCondition);
+            var elem = document.querySelector('.github-corner');
+            console.log(elem);
+
+            // Get HTML content
+            var html = elem.innerHTML;
+
+            // Set HTML content
+            elem.innerHTML = '<span>Home</span> <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"> <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /> </svg>';
+          }
+        }, 100); // check every 100ms
+      })()
+    </script>
   </body>
 </html>

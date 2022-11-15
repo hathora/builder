@@ -1,4 +1,4 @@
-# Hathora
+<img src="statics/logo.svg" alt="drawing" width="200"/>
 
 > A multiplayer game development framework & cloud hosting platform
 

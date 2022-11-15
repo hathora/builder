@@ -1,4 +1,7 @@
-# Hathora Cloud
+<div class="hathora-logo-with-super">
+  <img src="statics/logo.svg" alt="drawing" width="200"/>
+  <span class="hathora-logo-super">Cloud</span>
+</div>
 
 Hathora Cloud is a managed deployment platform for your games. You can always self-host your application in your own instructure around the globe, or you can let us manage it for you.
 
