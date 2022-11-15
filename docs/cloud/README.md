@@ -5,7 +5,7 @@
 
 Hathora Cloud is a managed deployment platform for your games. You can always self-host your application in your own instructure around the globe, or you can let us manage it for you.
 
-Applications deployed Hathora Cloud must conform to the Hathora Protocol, which can be easily done with the use of the Build Kit. Please refer to the [Build Kit](../buildkit/README.md) documentation to learn more about developing Hathora Cloud compatible applications.
+Applications deployed Hathora Cloud must conform to the Hathora Protocol, which can be easily done with the use of the Build Kit. Please refer to the [Hathora BuildKit](../buildkit/README.md) documentation to learn more about developing Hathora Cloud compatible applications.
 
 > Currently Hathora Cloud is in a private beta. If you'd like access, please [sign up here](https://forms.gle/pyYms6TwUJHTm62y8) and we'll be in touch soon.
 

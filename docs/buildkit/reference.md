@@ -1,3 +1,5 @@
+## Hathora BuildKit - Reference
+
 # Hathora Typescript Client SDK
 
 ## Usage

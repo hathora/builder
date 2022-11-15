@@ -353,17 +353,17 @@ body.sticky .sidebar,body.sticky .sidebar-toggle{
     width:100%
 }
 .markdown-section th{
-    font-weight:700
+    font-weight:700;
 }
 .markdown-section td,.markdown-section th{
-    border:1px solid #ddd;
+    border:1px solid #5E5E7D;
     padding:6px 13px
 }
 .markdown-section tr{
-    border-top:1px solid #ccc
+    border-top:1px solid #5E5E7D
 }
 .markdown-section p.tip,.markdown-section tr:nth-child(2n){
-    background-color:#f8f8f8
+    background-color:#191927
 }
 .markdown-section p.tip{
     border-bottom-right-radius:2px;
@@ -772,7 +772,7 @@ section.cover blockquote>p>a:hover{
     color:#c08b30
 }
 .token.tag{
-    color:#2973b7
+    color: #5cefc2
 }
 .token.string{
     color:#B399EA;
@@ -782,7 +782,7 @@ section.cover blockquote>p>a:hover{
     color:#6679cc
 }
 .token.attr-name{
-    color:#2973b7
+    color:#329afa
 }
 .language-css .token.string,.style .token.string,.token.entity,.token.url{
     color:#22a2c9

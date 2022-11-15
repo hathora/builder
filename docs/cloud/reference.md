@@ -1,4 +1,4 @@
-# Hathora Cloud - Reference
+# Hathora Cloud - Command-line interface
 
 To access all the cloud functions you can run `hathora cloud --help`
 
