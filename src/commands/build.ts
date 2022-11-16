@@ -5,6 +5,7 @@ import { execSync } from "child_process";
 import { CommandModule } from "yargs";
 import { existsSync, readdirSync } from "fs-extra";
 import { build as buildServer } from "esbuild";
+import dotenv from "dotenv";
 import chalk from "chalk";
 
 import { getAppConfig, getDirs, install } from "../utils";
@@ -26,9 +27,11 @@ const cmd: CommandModule = {
       return;
     }
 
+    dotenv.config({ path: join(rootDir, ".env") });
+
     let appConfig: { appId: string; appSecret: string };
     if (process.env.APP_ID !== undefined && process.env.APP_SECRET !== undefined) {
-      appConfig = { appId: process.env.APP_ID, appSecret: process.env.APP_ID };
+      appConfig = { appId: process.env.APP_ID, appSecret: process.env.APP_SECRET };
     } else if (argv.only === "client" && process.env.APP_ID !== undefined) {
       appConfig = { appId: process.env.APP_ID, appSecret: "" };
     } else if (process.env.APP_SECRET !== undefined) {
