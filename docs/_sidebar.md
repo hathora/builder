@@ -11,11 +11,12 @@
 - Hathora Cloud
 
   - [Overview](cloud/README.md)
-  - [Reference](cloud/reference.md)
+  - [CLI](cloud/reference.md)
 
 - Hathora Builder
 
   - [Overview](builder/README.md)
+  - [CLI](builder/cli.md)
 
   - Getting Started
 
@@ -23,6 +24,13 @@
     - [Tutorial: Among Us](builder/tutorial_among_us.md)
     - [Tutorial: Platformer](builder/tutorial_platformer.md)
     - [Showcase](builder/showcase.md)
+    
+  - Reference
+
+    - [hathora.yml](builder/hathora-yml.md)
+    - [Server](builder/server.md)
+    - [Client](builder/client.md)
+    - [Deploy](builder/deploy.md)
 
   - Concepts
 
@@ -33,12 +41,5 @@
     - [Authentication](builder/auth.md)
     - [Networking](builder/networking.md)
 
-  - Reference
-
-    - [hathora.yml](builder/hathora-yml.md)
-    - [CLI](builder/cli.md)
-    - [Server](builder/server.md)
-    - [Client](builder/client.md)
-    - [Deploy](builder/deploy.md)
 
 - [Glossary of Terms](glossary.md)
