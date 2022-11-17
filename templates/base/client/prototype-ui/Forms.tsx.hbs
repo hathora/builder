@@ -73,7 +73,7 @@ function ArrayInput<T>({ value, update, initialVal, children }: ArrayProps<T>) {
             type="button"
             disabled={i === 0}
             onClick={() => swapArgs(i, i - 1)}
-            className="ml-0.5 inline-flex items-center p-1 text-sm font-medium text-neutralgray-700 bg-secondary-500 border border-transparent
+            className="ml-0.5 max-h-10 inline-flex items-center p-1 text-sm font-medium text-neutralgray-700 bg-secondary-500 border border-transparent
                       rounded-md shadow-sm hover:bg-secondary-400 hover:text-black focus:outline-none
                       disabled:bg-neutralgray-650 disabled:text-neutralgray-500 disabled:cursor-not-allowed disabled:pointer-events-none disabled:border-neutralgray-525"
           >
@@ -83,7 +83,7 @@ function ArrayInput<T>({ value, update, initialVal, children }: ArrayProps<T>) {
             type="button"
             disabled={i === value.length - 1}
             onClick={() => swapArgs(i, i + 1)}
-            className="ml-0.5 inline-flex items-center p-1 text-sm font-medium text-neutralgray-700 bg-secondary-500 border border-transparent
+            className="ml-0.5 max-h-10 inline-flex items-center p-1 text-sm font-medium text-neutralgray-700 bg-secondary-500 border border-transparent
                       rounded-md shadow-sm hover:bg-secondary-400 hover:text-black focus:outline-none
                       disabled:bg-neutralgray-650 disabled:text-neutralgray-500 disabled:cursor-not-allowed disabled:pointer-events-none disabled:border-neutralgray-525"
           >
@@ -93,7 +93,7 @@ function ArrayInput<T>({ value, update, initialVal, children }: ArrayProps<T>) {
           <button
             type="button"
             onClick={() => deleteArg(i)}
-          className="ml-0.5 inline-flex items-center p-1 text-sm font-medium text-neutralgray-700 bg-secondary-500 border border-transparent rounded-md shadow-sm hover:bg-secondary-400 hover:text-black focus:outline-none"
+          className="ml-0.5 max-h-10 inline-flex items-center p-1 text-sm font-medium text-neutralgray-700 bg-secondary-500 border border-transparent rounded-md shadow-sm hover:bg-secondary-400 hover:text-black focus:outline-none"
           >
             <XIcon className="w-5 h-5 fill-current" aria-hidden="true" />
           </button>
@@ -139,9 +139,9 @@ function EnumInput({ value, update, enumType }: EnumProps) {
   return (
     <Listbox value={value} onChange={update}>
       <div className="relative">
-        <Listbox.Button className="relative w-56 py-2 pl-3 pr-10 text-left bg-neutralgray-700 border border-neutralgray-400 rounded-md shadow-sm cursor-default focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 sm:text-sm">
+        <Listbox.Button className="relative w-full py-2 pl-3 pr-10 text-left bg-neutralgray-700 border border-neutralgray-400 rounded-md shadow-sm cursor-default focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 sm:text-sm">
           <span className="flex items-center">
-            <span className="block ml-3 truncate text-neutralgray-400">{enumType[value]}</span>
+            <span className="block ml-3 truncate text-neutralgray-300">{enumType[value]}</span>
           </span>
           <span className="absolute inset-y-0 right-0 flex items-center pr-2 ml-3 pointer-events-none">
             <ChevronDownIcon className="w-5 h-5 text-neutralgray-400" aria-hidden="true" />
@@ -149,7 +149,7 @@ function EnumInput({ value, update, enumType }: EnumProps) {
         </Listbox.Button>
 
         <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
-          <Listbox.Options className="absolute z-10 w-56 py-1 mt-1 overflow-auto text-base bg-neutralgray-700 rounded-md shadow-lg max-h-56 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+          <Listbox.Options className="absolute z-10 min-w-56 py-1 mt-1 overflow-auto text-base bg-neutralgray-700 border border-neutralgray-525 rounded-md shadow-lg max-h-56 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
             {Object.entries(enumType)
               .filter(([_, val]) => typeof val === "number")
               .map(([label, val]) => (
@@ -198,7 +198,7 @@ function StringInput({ value, update }: BaseProps<string>) {
       type="text"
       value={value}
       onChange={(e) => update(e.target.value)}
-      className="block w-full text-neutralgray-400 bg-neutralgray-700 border border-neutralgray-400 rounded-md shadow-sm focus:ring-brand-500 focus:border-brand-500 sm:text-sm"
+      className="block w-full text-neutralgray-300 bg-neutralgray-700 border border-neutralgray-400 rounded-md shadow-sm focus:ring-brand-500 focus:border-brand-500 sm:text-sm"
     />
   );
 }
@@ -209,7 +209,7 @@ function IntInput({ value, update }: BaseProps<number>) {
       type="number"
       value={value}
       onChange={(e) => update(parseInt(e.target.value))}
-      className="block w-full text-neutralgray-400 bg-neutralgray-700 border border-neutralgray-400 rounded-md shadow-sm focus:ring-brand-500 focus:border-brand-500 sm:text-sm"
+      className="block w-full text-neutralgray-300 bg-neutralgray-700 border border-neutralgray-400 rounded-md shadow-sm focus:ring-brand-500 focus:border-brand-500 sm:text-sm"
     />
   );
 }
@@ -220,7 +220,7 @@ function FloatInput({ value, update }: BaseProps<number>) {
       type="number"
       value={value}
       onChange={(e) => update(Number(e.target.value))}
-      className="block w-full text-neutralgray-400 bg-neutralgray-700 border border-neutralgray-400 rounded-md shadow-sm focus:ring-brand-500 focus:border-brand-500 sm:text-sm"
+      className="block w-full text-neutralgray-300 bg-neutralgray-700 border border-neutralgray-400 rounded-md shadow-sm focus:ring-brand-500 focus:border-brand-500 sm:text-sm"
     />
   );
 }
@@ -253,8 +253,8 @@ export function InitializeForm({ children }: { children: (value: IInitializeRequ
   return (
     <>
       {{#unless (isEmpty initializeArgs.properties)}}
-      <div className="font-semibold ml-3 mt-1">Configure game settings</div>
-      <div className="mb-3 bg-gray-100">
+      <div className="font-semibold mt-1">Configure game settings</div>
+      <div className="mb-3 bg-neutralgray-700">
         {{> renderForm initializeArgs}}
       </div>
       {{/unless}}
@@ -340,10 +340,10 @@ export function Forms({ open, setOpen }: { open: boolean; setOpen: (v: boolean) 
 {{else if (eq type "object")}}
 function {{@key}}Input({ value, update }: BaseProps<T.{{@key}}>) {
   return (
-    <div className="gap-2 p-2 ml-2 border border-gray-300 rounded-md">
+    <div className="gap-2 p-2 ml-2 mt-2 border border-neutralgray-525 rounded-md">
       {{#each properties}}
       <div className="col-span-6 sm:col-span-4">
-        <label className="block mb-1 text-sm font-medium text-gray-700">{{@key}}</label>
+        <label className="block mb-1 text-sm font-medium text-neutralgray-300">{{@key}}</label>
         {{> renderForm arg=@key}}
       </div>
       {{/each}}
@@ -366,9 +366,9 @@ function {{@key}}Input({ value, update }: BaseProps<T.{{@key}}>) {
         }}
       >
         <div className="relative mt-1">
-          <Listbox.Button className="relative w-full py-2 pl-3 pr-10 text-left bg-neutralgray-700 border border-neutralgray-400 rounded-md shadow-sm cursor-default focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 sm:text-sm">
+          <Listbox.Button className="relative w-full min-w-56 py-2 pl-3 pr-10 text-left bg-neutralgray-700 border border-neutralgray-400 rounded-md shadow-sm cursor-default focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 sm:text-sm">
             <span className="flex items-center">
-              <span className="block ml-3 text-neutralgray-400 truncate">{value.type}</span>
+              <span className="block ml-3 text-neutralgray-300 truncate">{value.type}</span>
             </span>
             <span className="absolute inset-y-0 right-0 flex items-center pr-2 ml-3 pointer-events-none">
               <ChevronDownIcon className="w-5 h-5 text-neutralgray-400" aria-hidden="true" />
@@ -376,14 +376,14 @@ function {{@key}}Input({ value, update }: BaseProps<T.{{@key}}>) {
           </Listbox.Button>
 
           <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
-            <Listbox.Options className="absolute z-10 w-full max-w-xs py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-56 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+            <Listbox.Options className="absolute z-10 min-w-56 max-w-xs py-1 mt-1 overflow-auto text-base bg-neutralgray-700 border border-neutralgray-525 rounded-md shadow-lg max-h-56 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
               { T.{{@key}}.values().map((val, i) => (
                 <Listbox.Option
                   key={i}
                   value={val}
                   className={({ active }) =>
                     classNames(
-                      active ? "text-white bg-red-600" : "text-gray-900",
+                      active ? "text-white bg-secondary-500" : "text-neutralgray-300",
                       "cursor-default select-none relative py-2 pl-3 pr-9"
                     )
                   }
@@ -399,7 +399,7 @@ function {{@key}}Input({ value, update }: BaseProps<T.{{@key}}>) {
                       {selected ? (
                         <span
                           className={classNames(
-                            active ? "text-white" : "text-indigo-600",
+                            active ? "text-neutralgray-200" : "text-neutralgray-300",
                             "absolute inset-y-0 right-0 flex items-center pr-4"
                           )}
                         >

@@ -113,7 +113,7 @@ function Home({ token, connect }: { token: string; connect: (stateId: string) =>
           <div className="flex flex-row text-xl pt-8 align-middle">
             <svg
               role="status"
-              className="w-8 h-8 mr-2 text-neutralgray-200 animate-spin dark:text-gray-600 fill-blue-600"
+              className="w-8 h-8 mr-2 text-neutralgray-200 animate-spin dark:text-neutralgray-300 fill-brand-500"
               viewBox="0 0 100 101"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -130,7 +130,9 @@ function Home({ token, connect }: { token: string; connect: (stateId: string) =>
             <span className="text-l">
               Matching players... ({playersFound}/{numPlayers} found)
             </span>
-            <XCircleIcon className="w-7 h-7 ml-2 cursor-pointer" color="indigo" onClick={() => location.reload()} />
+            <span className="text-secondary-500">
+              <XCircleIcon className="w-7 h-7 ml-2 cursor-pointer" onClick={() => location.reload()} />
+            </span>
           </div>
         ) : (
           <div className="flex flex-col mt-2">
