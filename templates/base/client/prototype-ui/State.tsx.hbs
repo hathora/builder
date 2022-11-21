@@ -29,8 +29,8 @@ function KVDisplay(props: { label: string; typeString: string; children: JSX.Ele
         </button>
       </span>
       <span className="group">
-        <span className="hidden text-sm italic text-gray-500 group-hover:inline">({props.typeString}) </span>
-        <span className="font-bold">{props.label}: </span>
+        <span className="hidden text-sm italic text-neutralgray-300 group-hover:inline">({props.typeString}) </span>
+        <span className="font-medium">{props.label}: </span>
       </span>
       {isCollapsed ? "..." : props.children}
     </div>
@@ -43,7 +43,7 @@ function ArrayDisplay<T>(props: { value: T[]; children: (value: T) => JSX.Elemen
       [
       {props.value.length > 0 && (
         <>
-          <span className="ml-2 text-sm italic text-gray-500">
+          <span className="ml-2 text-sm italic text-neutralgray-300">
             {props.value.length} {props.value.length === 1 ? "item" : "items"}
           </span>
           <div
@@ -54,7 +54,7 @@ function ArrayDisplay<T>(props: { value: T[]; children: (value: T) => JSX.Elemen
             }`}
           >
             {props.value.map((val, i) => (
-              <div key={i}>{props.children(val)}</div>
+              <div key={i} class="m-0.5">{props.children(val)}</div>
             ))}
           </div>
         </>
@@ -66,7 +66,7 @@ function ArrayDisplay<T>(props: { value: T[]; children: (value: T) => JSX.Elemen
 
 function OptionalDisplay<T>(props: { value: T | undefined; children: (value: T) => JSX.Element }) {
   if (props.value === undefined) {
-    return <span className="text-sm italic text-gray-500">none</span>;
+    return <span className="text-sm italic text-neutralgray-300">none</span>;
   }
   return <span className="optional-display">{props.children(props.value)}</span>;
 }
@@ -86,7 +86,7 @@ function UserIdDisplay({ value }: { value: string }) {
   }, [value]);
   const renderDisplayText = (displayName: string) => (
     <span className="flex items-center user-display">
-      <UserCircleIcon className="inline flex-shrink-0 mr-1.5 h-5 w-5 text-gray-500" aria-hidden="true" />
+      <UserCircleIcon className="inline flex-shrink-0 mr-1.5 h-5 w-5 text-neutralgray-300" aria-hidden="true" />
       {displayName}
     </span>
   );
@@ -100,14 +100,14 @@ function UserIdDisplay({ value }: { value: string }) {
     return <div className="max-w-md p-1 m-1 border rounded">{renderDisplayText(value)}</div>;
   }
   return (
-    <div className="max-w-md p-1 m-1 border rounded">
+    <div className="max-w-md p-2 m-1 border border-neutralgray-525 rounded-xl">
       <div className="flex items-center justify-between">
         {renderDisplayText(getUserDisplayName(userData))}
         <span className="align-middle mr-0.5 ml-2">
           <button
             type="button"
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="inline-flex items-center text-sm font-medium text-gray-700 bg-gray-100 border border-gray-700 rounded-md shadow-sm hover:bg-gray-200 hover:text-gray-900 hover:border-gray-900 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-indigo-500 disabled:opacity-50"
+            className="inline-flex items-center text-sm font-medium text-neutralgray-600 bg-neutralgray-300 rounded-md shadow-sm hover:bg-neutralgray-200 hover:text-neutralgray-700 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-indigo-500 disabled:opacity-50"
           >
             {icon}
           </button>
@@ -116,11 +116,11 @@ function UserIdDisplay({ value }: { value: string }) {
       {!isCollapsed && (
         <div className="mt-1">
           <div className="kv-display">
-            <span className="font-bold">UserId: </span>
+            <span className="font-medium">UserId: </span>
             <StringDisplay value={userData.id} />
           </div>
           <div className="kv-display">
-            <span className="font-bold">type: </span>
+            <span className="font-medium">type: </span>
             <StringDisplay value={userData.type} />
           </div>
         </div>
@@ -177,7 +177,7 @@ function PluginDisplay<T>(props: { value: T; component: string; children: (value
 export function State() {
   const { state: value } = useContext(HathoraContext)!;
   return (
-    <div className="w-full font-mono text-gray-700 bg-white state-display">
+    <div className="w-full font-mono text-neutralgray-200 bg-neutralgray-650 rounded-2xl shadow state-display">
       {{> renderDisplay (lookup types userState)}}
     </div>
   );
@@ -188,7 +188,7 @@ export function State() {
 {{else if (eq type "object")}}
 function {{@key}}Display({ value }: { value: T.{{@key}}  }) {
   return (
-    <div className="border rounded object-display">
+    <div className="border border-neutralgray-525 rounded-2xl object-display">
       {{#each properties}}
       <KVDisplay label="{{@key}}" typeString="{{typeString}}">
         {{> renderDisplay arg=@key}}

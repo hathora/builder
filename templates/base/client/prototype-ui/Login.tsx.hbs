@@ -10,11 +10,11 @@ export function Login({ client, setToken }: { client: HathoraClient; setToken: (
   return (
     <div className="flex flex-col w-full md:justify-center">
       <div className="w-6/12 m-auto">
-        <h2 className="text-2xl font-semibold text-gray-900">Login</h2>
+        <h2 className="text-2xl font-semibold text-neutralgray-200">Login</h2>
         <div className="flex flex-col mt-2">
 {{#each auth}}
 {{#if (eq @key "anonymous")}}
-          <div className="w-6/12 mb-4">
+          <div className="mb-4">
             <button
               type="button"
               onClick={() =>
@@ -26,19 +26,19 @@ export function Login({ client, setToken }: { client: HathoraClient; setToken: (
                   })
                   .catch((e) => toast.error("Authentication error: " + e.reason))
               }
-              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="inline-flex items-center rounded-full border px-6 py-2 text-base font-medium shadow-sm transition duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-brand-500 border-transparent bg-brand-500 text-neutralgray-700 hover:bg-secondary-500 text-neutralgray-700 border border-neutralgray-700"
             >
               Login (Anonymous)
             </button>
           </div>
 {{else if (eq @key "nickname")}}
-          <div className="w-6/12 mb-4">
+          <div className="mb-4">
             <input
               type="text"
               value={nickname}
               placeholder="Nickname"
               onChange={(e) => setNickname(e.target.value.trim())}
-              className="mr-2 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="min-w-0 mt-1 appearance-none rounded-md py-2 px-4 text-base placeholder-neutralgray-300 focus:border-secondary-500 focus:placeholder-neutralgray-400 focus:outline-none sm:max-w-xs border border-neutralgray-300 bg-neutralgray-650 text-neutralgray-200"
             />
             <button
               type="button"
@@ -51,13 +51,13 @@ export function Login({ client, setToken }: { client: HathoraClient; setToken: (
                   })
                   .catch((e) => toast.error("Authentication error: " + e.reason))
               }
-              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="ml-0 mt-2 sm:ml-4 sm:mt-0 inline-flex items-center rounded-full border px-6 py-2 text-base font-medium shadow-sm transition duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-brand-500 border-transparent bg-brand-500 text-neutralgray-700 hover:bg-secondary-500 text-neutralgray-700 border border-neutralgray-700"
             >
               Login (Nickname)
             </button>
           </div>
 {{else if (eq @key "google")}}
-          <div className="w-6/12 mb-4">
+          <div className="mb-4">
             <GoogleLogin
               clientId="{{clientId}}"
               onSuccess={({ tokenId }: any) =>

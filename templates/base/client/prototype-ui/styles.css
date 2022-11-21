@@ -37,25 +37,25 @@
 }
 
 .enum-display {
-  color: #d53d3d;
+  color: #66B9A0;
 }
 
 .boolean-display {
-  color: #2990d1;
+  color: #e7701a;
 }
 
 .string-display {
-  color: #259f6c;
+  color: #B399EA;
 }
 
 .int-display {
-  color: #947bf7;
+  color: #e7701a;
 }
 
 .float-display {
-  color: #b556c1;
+  color: #e7701a;
 }
 
 .user-display {
-  color: #4f9195;
+  color: #329afa;
 }
