@@ -8,7 +8,7 @@ The full code for this game can be found [here](https://github.com/hathora/hatho
 
 This is what our game will look like by the end of this tutorial:
 
-![image](https://user-images.githubusercontent.com/5400947/149870083-67986611-6151-4ea8-abb2-9a67467741d1.png)
+<img src="statics/uno_end.png" alt="Uno Tutorial Screenshot" class="image-with-border" />
 
 ## Install
 
@@ -116,7 +116,7 @@ export class Impl implements Methods<InternalState> {
 
 Next, run `hathora dev` to start the development server. Visit http://localhost:3000 where you see the following Prototype UI view:
 
-![image](https://user-images.githubusercontent.com/5400947/149869164-19a7cbe3-59a6-47a8-95b0-6bc316b31cef.png)
+<img src="statics/uno_start.png" alt="Uno Tutorial Screenshot start" class="image-with-border" />
 
 ## Backend logic
 
@@ -217,7 +217,7 @@ See [here](builder/methods.md) for more details about how server methods works.
 
 Going back to the Prototype UI, we can see our working application in action. Create a game, join it as another user from a different tab (by using the same url), and start the game. You should see a view like this:
 
-![image](https://user-images.githubusercontent.com/5400947/149870083-67986611-6151-4ea8-abb2-9a67467741d1.png)
+<img src="statics/uno_end.png" alt="Uno Tutorial Screenshot" class="image-with-border" />
 
 ## Validation
 

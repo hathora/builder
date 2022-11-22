@@ -15,7 +15,7 @@
 
 A multiplayer game development framework
 
-![image](https://user-images.githubusercontent.com/5400947/155251444-403b1dcc-904e-4283-931c-883c896bbce5.png)
+![Hathora Builder Example](../statics/avalon_proto_ui.png)
 
 ## Use cases
 
