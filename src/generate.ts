@@ -18,7 +18,10 @@ const HathoraConfig = z
         anonymous: z.optional(z.object({ separator: z.optional(z.string()).default("-") }).strict()),
         nickname: z.optional(z.object({}).strict()),
         google: z.optional(z.object({ clientId: z.string() }).strict()),
-        siwe: z.optional(z.object({ statement: z.optional(z.string()).default("Sign in with Ethereum") }).strict()),
+        siwe: z.optional(z.object({ statement: z.optional(z.string()).default("Sign in with Ethereum"),
+          chainId: z.optional(z.number().int()).default(11155111),
+          publicAddress: z.optional(z.string()),
+        }).strict()),
       })
       .strict(),
     userState: z.string(),
