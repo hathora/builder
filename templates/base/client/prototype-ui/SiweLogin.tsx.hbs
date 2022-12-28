@@ -3,6 +3,7 @@ import ReactDOM from "react-dom";
 import { ethers } from 'ethers';
 import { SiweMessage } from 'siwe';
 import { JsonRpcSigner } from '@ethersproject/providers';
+import axios from "axios";
 
 type SiweLoginProps = {
     statement?: string;
@@ -17,32 +18,43 @@ const useConnectWallet = () => {
     return useMemo(() => ({ connectWallet, signer, provider }), [connectWallet, signer, provider])
 }
 
-const useSiweLogin = (signer: JsonRpcSigner) => {
-    //not entirely sure where we are pulling most of these values from yet
-    const siweMessage: SiweMessage = {
-        domain: '',
-        address: '',
-        statement: 'Sign in to Hathora',
-        uri: '',
+const useAuthServer = () => {
+    const getNonce = useCallback(async () => { 
+        //make request to auth server for nonce using axios
+        return axios.get('http://localhost:3001/nonce')
+    }, []);
+    return useMemo(() => ({ getNonce }), [getNonce])
+}   
+
+const getSiweMessage = (address: string, nonce: string, statement?: string): Partial<SiweMessage> => (
+    {
+        domain: window.location.host,
+        address: address,
+        statement: statement || 'Sign in to Hathora',
+        uri: window.location.origin,
         version: '1',
-        chainId: 11155111
+        chainId: 1,
+        nonce
     }
-    return useMemo(() => ({ siweMessage}), [siweMessage])
-}
+);
 
 export const SiweLogin = ({ statement, onFailure, onSuccess }: SiweLoginProps) => {
     const { connectWallet, signer } = useConnectWallet()
-    const { siweMessage } = useSiweLogin(signer)
+    const { getNonce } = useAuthServer();
     const handleLogin = useCallback(async () => {
         try {
             await connectWallet()
-            const message = new SiweMessage(siweMessage)
+            const address = await signer.getAddress();
+            const nonce = (await getNonce())?.data;
+            const siweMessagePartial = getSiweMessage(address, nonce, statement)
+            const message = new SiweMessage(siweMessagePartial)
             const signature = await signer.signMessage(message.toString())
-            await onSuccess({ message: siweMessage, signature })
+            const messagePrepared = message.prepareMessage();
+            await onSuccess({ message: messagePrepared, signature })
         } catch (error) {
             onFailure(error)
         }
-    }, [connectWallet, onFailure, onSuccess, siweMessage, signer])
+    }, [connectWallet, onFailure, onSuccess, signer])
     return (
         <button onClick={handleLogin} className="inline-flex items-center rounded-full border px-6 py-2 text-base font-medium shadow-sm transition duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-brand-500 border-transparent bg-brand-500 text-neutralgray-700 hover:bg-secondary-500 text-neutralgray-700 border border-neutralgray-700">Login</button>
     )

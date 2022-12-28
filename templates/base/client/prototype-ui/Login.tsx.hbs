@@ -86,9 +86,9 @@ export function Login({ client, setToken }: { client: HathoraClient; setToken: (
                     sessionStorage.setItem(client.appId, token)
                     setToken(token)
                   })
-                  .catch(e => toast.error("Authentication error: " + e.reason))
+                  .catch(e => toast.error(`Authentication error: ${JSON.stringify(e)}`))
               }
-              onFailure={(error) => toast.error("Authentication error: " + error.details)}
+              onFailure={(e) => toast.error(`Authentication error: ${JSON.stringify(e)}`)}
             />
           </div>
 {{/if}}
