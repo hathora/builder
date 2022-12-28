@@ -79,7 +79,7 @@ export function Login({ client, setToken }: { client: HathoraClient; setToken: (
           <div className="mb-4">
             <SiweLogin
               chainId="{{chainId}}"
-              onSuccess={({ message, signature, nonce }: any) =>
+              onSuccess={({ message, signature, nonceToken }: any) =>
                 client
                   .loginSiwe(message, signature, nonceToken)
                   .then(token => {
