@@ -5,7 +5,7 @@ import { SiweMessage } from 'siwe';
 import { JsonRpcSigner } from '@ethersproject/providers';
 import axios from "axios";
 
-type SiweLoginProps = {
+export type SiweLoginProps = {
     statement?: string;
     onSuccess: (payload: { message: string; signature: string; nonceToken: string; }) => Promise<void> | void;
     onFailure: (error: unknown) => Promise<void> | void;
