@@ -48,8 +48,8 @@ export const SiweLogin = ({ statement, onFailure, onSuccess }: SiweLoginProps) =
             const { nonce, nonceToken } = (await getNonce())?.data
             const siweMessagePartial = getSiweMessage(address, nonce, statement)
             const message = new SiweMessage(siweMessagePartial)
-            const signature = await signer.signMessage(message.toString())
             const messagePrepared = message.prepareMessage();
+            const signature = await signer.signMessage(messagePrepared)
             await onSuccess({ message: messagePrepared, signature, nonceToken })
         } catch (error) {
             onFailure(error)
