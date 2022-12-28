@@ -78,8 +78,10 @@ export function Login({ client, setToken }: { client: HathoraClient; setToken: (
 {{else if (eq @key "siwe")}}
           <div className="mb-4">
             <SiweLogin
+              chainId="{{chainId}}"
               onSuccess={({ message, signature }: any) =>
-                client.loginSiwe(message, signature)
+                client
+                  .loginSiwe(message, signature)
                   .then(token => {
                     sessionStorage.setItem(client.appId, token)
                     setToken(token)
