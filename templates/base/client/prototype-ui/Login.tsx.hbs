@@ -72,6 +72,20 @@ export function Login({ client, setToken }: { client: HathoraClient; setToken: (
               onFailure={(error) => toast.error("Authentication error: " + error.details)}
             />
           </div>
+{{else if (eq @key "siwe")}}
+          <div className="mb-4">
+            <SiweLogin
+              onSuccess={({ message, signature }: any) =>
+                client.loginSiwe(message, signature)
+                  .then(token => {
+                    sessionStorage.setItem(client.appId, token)
+                    setToken(token)
+                  })
+                  .catch(e => toast.error("Authentication error: " + e.reason))
+              }
+              onFailure={(error) => toast.error("Authentication error: " + error.details)}
+            />
+          </div>
 {{/if}}
 {{/each}}
         </div>

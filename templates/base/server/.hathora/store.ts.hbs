@@ -160,6 +160,8 @@ const coordinator = await register({
 {{else if (eq @key "google")}}
     google: { clientId: "{{clientId}}" },
 {{/if}}
+{{else if (eq @key "siwe")}}
+    publicAddress: {},
 {{/each}}
   },
   store: new Store(),
