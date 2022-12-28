@@ -79,9 +79,9 @@ export function Login({ client, setToken }: { client: HathoraClient; setToken: (
           <div className="mb-4">
             <SiweLogin
               chainId="{{chainId}}"
-              onSuccess={({ message, signature }: any) =>
+              onSuccess={({ message, signature, nonce }: any) =>
                 client
-                  .loginSiwe(message, signature)
+                  .loginSiwe(message, signature, nonceToken)
                   .then(token => {
                     sessionStorage.setItem(client.appId, token)
                     setToken(token)

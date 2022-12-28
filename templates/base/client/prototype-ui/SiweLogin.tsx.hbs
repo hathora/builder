@@ -45,12 +45,12 @@ export const SiweLogin = ({ statement, onFailure, onSuccess }: SiweLoginProps) =
         try {
             await connectWallet()
             const address = await signer.getAddress();
-            const nonce = (await getNonce())?.data;
+            const { nonce, nonceToken } = (await getNonce())?.data
             const siweMessagePartial = getSiweMessage(address, nonce, statement)
             const message = new SiweMessage(siweMessagePartial)
             const signature = await signer.signMessage(message.toString())
             const messagePrepared = message.prepareMessage();
-            await onSuccess({ message: messagePrepared, signature })
+            await onSuccess({ message: messagePrepared, signature, nonceToken })
         } catch (error) {
             onFailure(error)
         }
