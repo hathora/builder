@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import { GoogleLogin } from "react-google-login";
 {{/if}}
 {{#if auth.siwe}}
-import { SiweLogin, SiweLoginProps } from "./SiweLogin";
+import { SiweLogin } from "./SiweLogin";
 {{/if}}
 import { HathoraClient } from "../.hathora/client";
 
@@ -79,7 +79,7 @@ export function Login({ client, setToken }: { client: HathoraClient; setToken: (
           <div className="mb-4">
             <SiweLogin
               chainId="{{chainId}}"
-              onSuccess={({ message, signature, nonceToken }: SiweLoginProps) =>
+              onSuccess={({ message, signature, nonceToken }: { message: string; signature: string; nonceToken: string; }) =>
                 client
                   .loginSiwe(message, signature, nonceToken)
                   .then(token => {
