@@ -78,8 +78,8 @@ export function Login({ client, setToken }: { client: HathoraClient; setToken: (
 {{else if (eq @key "siwe")}}
           <div className="mb-4">
             <SiweLogin
-              chainId="{{chainId}}"
               onSuccess={({ message, signature, nonceToken }: { message: string; signature: string; nonceToken: string; }) =>
+              {
                 client
                   .loginSiwe(message, signature, nonceToken)
                   .then(token => {
@@ -87,8 +87,9 @@ export function Login({ client, setToken }: { client: HathoraClient; setToken: (
                     setToken(token)
                   })
                   .catch(e => toast.error(`Authentication error: ${JSON.stringify(e)}`))
+                }
               }
-              onFailure={(e) => toast.error(`Authentication error: ${JSON.stringify(e)}`)}
+              onFailure={(e) => {toast.error(`Authentication error: ${JSON.stringify(e)}`)}}
             />
           </div>
 {{/if}}
