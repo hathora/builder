@@ -159,9 +159,9 @@ const coordinator = await register({
     nickname: {},
 {{else if (eq @key "google")}}
     google: { clientId: "{{clientId}}" },
-{{/if}}
 {{else if (eq @key "siwe")}}
-    publicAddress: {},
+
+{{/if}}
 {{/each}}
   },
   store: new Store(),

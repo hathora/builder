@@ -56,6 +56,7 @@ export interface {{capitalize @key}}UserData {
   locale: string;
   picture: string;
 {{else if (eq @key "siwe")}}
+  publicAddress: string;
 {{/if}}
 }
 {{/each}}

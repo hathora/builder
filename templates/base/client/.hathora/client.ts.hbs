@@ -48,9 +48,10 @@ export class HathoraClient {
   public async loginGoogle(idToken: string): Promise<string> {
     return this._client.loginGoogle(idToken);
   }
+
 {{else if (eq @key "siwe")}}
-  public async loginSiwe(mesage: string, signature: string): Promise<string> {
-    return this._client.loginSiwe(message, signature);
+  public async loginSiwe(message: string, signature: string, nonceToken: string): Promise<string> {
+    return this._client.loginSiwe(message, signature, nonceToken);
   }
 {{/if}}
 {{/each}}
