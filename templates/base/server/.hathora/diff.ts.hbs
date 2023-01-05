@@ -37,7 +37,7 @@ function diffArray<T>(a: T[], b: T[], innerDiff: (x: T, y: T) => DeepPartial<T> 
   return a.length === b.length && arr.every((v) => v === NO_DIFF) ? NO_DIFF : arr;
 }
 
-function diffObj<T>(obj: T) {
+function diffObj<T extends object>(obj: T) {
   return Object.values(obj).every((v) => v === NO_DIFF) ? NO_DIFF : obj;
 }
 {{#*inline "renderDiffFunction"}}
