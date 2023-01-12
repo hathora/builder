@@ -18,7 +18,10 @@ export class ImplWrapper {
     monkeyPatchSideEffectFunctions(ctx);
     const state = prevImpl.initialize(ctx, IInitializeRequest.decode(argsBuffer));
     restoreSideEffectFunctions();
-    this.state = onChange(state, () => (this._changedAt = Date.now()), { ...(prevImpl.stateChangeOptions || {}), pathAsArray: true });
+    this.state = onChange(state, () => (this._changedAt = Date.now()), {
+      ...(prevImpl.stateChangeOptions ?? {}),
+      pathAsArray: true,
+    });
   }
   public async getResult(userId: UserId, method: Method, ctx: Context, argsBuffer: ArrayBufferView) {
     monkeyPatchSideEffectFunctions(ctx);
