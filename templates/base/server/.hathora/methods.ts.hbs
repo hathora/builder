@@ -1,3 +1,4 @@
+import { Options } from "on-change";
 import { Chance } from "chance";
 import { Response } from "../../api/base";
 import {
@@ -25,6 +26,7 @@ export interface Context {
   ) => void;
 }
 export interface Methods<T> {
+  stateChangeOptions?: Options;
   initialize(ctx: Context, request: IInitializeRequest): T;
   {{#each methods}}
   {{@key}}(state: T, userId: UserId, ctx: Context, request: {{makeRequestName @key}}): Response;
