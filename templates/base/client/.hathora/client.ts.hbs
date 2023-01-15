@@ -128,20 +128,35 @@ export class HathoraConnection {
   }
 
   public async connect(): Promise<void> {
-    return new Promise(async (resolve, reject) => {
-      this.transport = await this._client.connect(
-        this.token,
-        this.stateId,
-        (data) => {
-          resolve();
-          this.handleData(data);
-        },
-        (e) => {
-          reject(e.reason);
-          this.handleClose(e);
-        },
-        this.transportType
-      );
+    let dataReceived = false;
+    const onData = (data) => {
+      dataReceived = true;
+      this.handleData(data);
+    };
+    let errorEncountered;
+    const onError = (e) => {
+      errorEncountered = e;
+      this.handleClose(e);
+    };
+    this.transport = await this._client.connect(
+      this.token,
+      this.stateId,
+      onData,
+      onError,
+      this.transportType
+    );
+    await new Promise<void>((resolve, reject) => {
+      const t = setInterval(() => {
+        console.log({dataReceived, errorEncountered})
+        if (dataReceived) {
+          clearInterval(t);
+          return resolve();
+        }
+        if (errorEncountered) {
+          clearInterval(t);
+          return reject(errorEncountered);
+        }
+      }, 1000);
     });
   }
 
