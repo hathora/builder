@@ -44,6 +44,7 @@
     "@types/yargs": "17.0.12",
     "@typescript-eslint/eslint-plugin": "5.33.0",
     "@typescript-eslint/parser": "5.43.0",
+    "docsify-cli": "^4.4.4",
     "eslint": "8.23.1",
     "eslint-plugin-import": "2.26.0",
     "eslint-plugin-prettier": "4.2.1",
@@ -77,7 +78,8 @@
     "lint_src": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint_src_fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "lint_packagejson": "npx npm-package-json-lint .",
-    "lint": "npm run lint_src && npm run lint_packagejson"
+    "lint": "npm run lint_src && npm run lint_packagejson",
+    "docs": "docsify serve docs"
   },
   "npmpackagejsonlint": {
     "rules": {
