@@ -83,6 +83,8 @@ class Store {
     );
   }
   async subscribeUser(stateId: RoomId, userId: UserId) {
+    // FIXME: This is not a perfect solution but it works. There should be a better way to ensure the stateId exists in stateInfo.
+    await new Promise(resolve => setTimeout(resolve, 100))
     if (!stateInfo.has(stateId)) {
       const loaded = await loadState(stateId);
       if (loaded === undefined) {
