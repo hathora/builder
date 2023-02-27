@@ -6,6 +6,7 @@
 
   - [Getting Started](buildkit/README.md)
   - [Tutorial: Top Down Shooter](buildkit/tutorial_top_down_shooter.md)
+  - [Tutorial: 3D Platformer](buildkit/tutorial_3d_platformer.md)
   - [Reference](buildkit/reference.md)
 
 - Hathora Cloud
