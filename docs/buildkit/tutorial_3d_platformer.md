@@ -10,7 +10,7 @@ The source code of the 3D platformer can be located [here](https://github.com/ha
 
 Upon completion of this tutorial, your game will look like this:
 
-![A screenshot of the completed 3D platformer demo game, running fullscreen in the browser.](https://user-images.githubusercontent.com/7004280/213311928-18d0ed21-d309-4a30-8c7c-36cf0655d0f5.png)
+![A screenshot of the completed 3D platformer demo game, running fullscreen in the browser.](https://user-images.githubusercontent.com/7004280/221872523-2114c846-8b9d-463d-bd7d-5feac2d4cc9c.png)
 
 ## Bootstrapping the project
 
@@ -48,7 +48,7 @@ If you see this message, congrats! You've successfully established a client-serv
 
 ## Common files
 
-It is a common practice when building games with Hathora BuildKit to create a `common` folder in the root of your project. This folder typically contains any and all files which are used within both the game's client and server code.
+It is a common practice when building games with Hathora BuildKit to create a `common` folder in the root of your project. This folder typically contains any and all files which are shared between both the game's client and server code.
 
 In this section we will do just that.
 
@@ -254,13 +254,12 @@ For the specific game we're building today, we will need a few additional depend
 
 - [enable3d](https://www.npmjs.com/package/enable3d): The 3D framework we're using (which can be run in a headless mode, aka without a visual representation)
 - [@enable3d/ammo-on-nodejs](https://www.npmjs.com/package/@enable3d/ammo-on-nodejs): The 3D physics engine utilized by enable3d
-- [hash.js](https://www.npmjs.com/package/hash.js): A collection of hash functions in pure JavaScript (but *with* TypeScript bindings)
 
 To install all additional dependencies, run the following from your project's root:
 
 ```bash
 cd server
-npm install enable3d @enable3d/ammo-on-nodejs hash.js
+npm install enable3d @enable3d/ammo-on-nodejs
 ```
 
 After the installation is complete, your `server/package.json` should be update to look something like this:
@@ -272,8 +271,7 @@ After the installation is complete, your `server/package.json` should be update 
     "@enable3d/ammo-on-nodejs": "^0.25.3",
     "@hathora/server-sdk": "^0.5.1",
     "dotenv": "^16.0.3",
-    "enable3d": "^0.25.3",
-    "hash.js": "^1.1.7"
+    "enable3d": "^0.25.3"
   },
   "devDependencies": {
     "@types/node": "^18.11.9"
@@ -295,7 +293,6 @@ import _ammo from '@enable3d/ammo-on-nodejs/ammo/ammo.js';
 import Enable3D from '@enable3d/ammo-on-nodejs';
 import { register, Store, UserId, RoomId } from "@hathora/server-sdk";
 import dotenv from "dotenv";
-import hash from "hash.js";
 import { Direction, GameState } from "../common/types";
 import { ClientMessage, ClientMessageType, ServerMessage, ServerMessageType } from "../common/messages";
 import { map } from '../common/map';
@@ -304,7 +301,6 @@ const { Physics, ServerClock, ExtendedObject3D } = Enable3D;
 
 // Game constants
 const PLAYER_MOVE_SPEED = 200;
-const PLAYER_TURN_SPEED = 100;
 const PLAYER_JUMP_FORCE = 5;
 const RADIANS_45 = 0.785398;
 
@@ -341,10 +337,6 @@ Now let's append our server's `store` object. The `store` contains specific func
 const store: Store = {
   // newState is called when a user requests a new room, this is a good place to handle any world initialization
   newState(roomId: bigint, userId: string): void {
-    // const clock = new ServerClock();
-
-    // clock.onTick(delta => this.update(delta));
-
     const physics = new Physics();
     let platforms: Enable3D.ExtendedObject3D[] = [];
 
@@ -532,11 +524,8 @@ function updateRoom(room: InternalState, delta: number) {
     // Forward / backward movement
     const {theta} = player;
     const x = Math.sin(theta + (RADIANS_45 * player.direction.x)) * PLAYER_MOVE_SPEED * player.direction.z * delta;
-    // const x = PLAYER_MOVE_SPEED * player.direction.z * delta;
-    // const x = player.body.body.velocity.x;
     const y = player.body.body.velocity.y;
     const z = Math.cos(theta + (RADIANS_45 * player.direction.x)) * PLAYER_MOVE_SPEED * player.direction.z * delta;
-    // const z = PLAYER_MOVE_SPEED * player.direction.z * delta;
 
     player.body.body.setVelocity(x, y, z);
 
@@ -603,13 +592,12 @@ The clientside dependencies we will be consuming are:
 - [enable3d](https://www.npmjs.com/package/enable3d): The same 3D framework we're using on the server, but we will use it here for visuals.
 - [three](https://www.npmjs.com/package/three): A popular 3D JavaScript library which we will integrate with `enable3d`.
 - [interpolation-buffer](https://www.npmjs.com/package/interpolation-buffer): A utility for implementing linear interpolation into our game's client.
-- [hash.js](https://www.npmjs.com/package/hash.js): The same collection of hashing functions we installed on our server.
 
 To install this game's clientside dependencies, run the following from the project's root folder:
 
 ```bash
 cd client
-npm install enable3d three interpolation-buffer hash.js
+npm install enable3d three interpolation-buffer
 ```
 
 After the module installation completes, your `client` folder's `package.json` file should look something like this:
@@ -632,7 +620,6 @@ After the module installation completes, your `client` folder's `package.json` f
   "dependencies": {
     "@hathora/client-sdk": "^0.0.7",
     "enable3d": "^0.25.3",
-    "hash.js": "^1.1.7",
     "interpolation-buffer": "^1.2.5",
     "three": "^0.144.0"
   }
@@ -1100,7 +1087,6 @@ class PlatformerScene extends Scene3D {
     const player = new ExtendedObject3D();
 
     // Clone our loaded player model
-    // const model = this.playerModel.clone();
     const model = SkeletonUtils.clone(this.playerModel);
 
     // Lower it's scale
