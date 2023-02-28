@@ -1,6 +1,6 @@
 # Tutorial: 3D Platformer
 
-In today's tutorial we're going to develop a 3D platformer game which can be played in your web browser. This game will leverage the Hathora `BuildKit` client and server libraries to facilitate multiplayer functionality.
+In this tutorial we're going to develop a 3D platformer game which can be played in your web browser. This game will leverage the Hathora `BuildKit` client and server libraries to facilitate multiplayer functionality.
 
 Note that this tutorial is aimed at developers who may not have experience with Hathora, TypeScript, or even multiplayer game development in general. If you're a more advanced developer, feel free to skip sections so long as you feel confident in your understanding of what's going on.
 
