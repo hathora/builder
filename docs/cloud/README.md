@@ -61,6 +61,7 @@ on:
 
 env:
   APP_NAME: YOUR_APP_NAME_HERE
+  APP_ID: YOUR_APP_ID_HERE
 
 jobs:
   server:
@@ -76,12 +77,13 @@ jobs:
       - run: npm ci
       - run: npm install hathora -g
       - run: APP_SECRET=${{ secrets.HATHORA_APP_SECRET }} hathora build --only client
-      - run: echo '/* /index.html 200' > client/web/dist/_redirects;
-      - run: |
-          npx netlify deploy --prod \
-          --site '${{ secrets.NETLIFY_SITE_ID }}' \
-          --auth '${{ secrets.NETLIFY_AUTH_TOKEN }}' \
-          --dir=client/web/dist;
+      - run: echo '/* /index.html 200' > client/web/dist/_redirects
+      - uses: jsmrcaga/action-netlify-deploy@v1.1.0
+        with:
+          NETLIFY_DEPLOY_TO_PROD: true
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          build_directory: client/web/dist
 ```
 
 Make sure the following are set properly:
