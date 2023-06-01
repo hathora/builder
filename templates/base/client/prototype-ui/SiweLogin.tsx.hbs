@@ -1,0 +1,61 @@
+import React, { useCallback, useMemo } from "react";
+import ReactDOM from "react-dom";
+import { ethers } from 'ethers';
+import { SiweMessage } from 'siwe';
+import { JsonRpcSigner } from '@ethersproject/providers';
+import axios from "axios";
+
+export type SiweLoginProps = {
+    statement?: string;
+    onSuccess: (payload: { message: string; signature: string; nonceToken: string; }) => Promise<void> | void;
+    onFailure: (error: unknown) => Promise<void> | void;
+}
+
+const useConnectWallet = () => {
+    const provider = useMemo(() => new ethers.providers.Web3Provider((window as any).ethereum), [])
+    const signer = useMemo(() => provider.getSigner(), [])
+    const connectWallet = useCallback(async () => provider.send('eth_requestAccounts', []), [provider])
+    return useMemo(() => ({ connectWallet, signer, provider }), [connectWallet, signer, provider])
+}
+
+const useAuthServer = () => {
+    const getNonce = useCallback(async () => { 
+        //make request to auth server for nonce using axios
+        return axios.get('http://localhost:3001/nonce')
+    }, []);
+    return useMemo(() => ({ getNonce }), [getNonce])
+}   
+
+const getSiweMessage = (address: string, nonce: string, statement?: string): Partial<SiweMessage> => (
+    {
+        domain: window.location.host,
+        address: address,
+        statement: statement || 'Sign in to Hathora',
+        uri: window.location.origin,
+        version: '1',
+        chainId: 1,
+        nonce
+    }
+);
+
+export const SiweLogin = ({ statement, onFailure, onSuccess }: SiweLoginProps) => {
+    const { connectWallet, signer } = useConnectWallet()
+    const { getNonce } = useAuthServer();
+    const handleLogin = useCallback(async () => {
+        try {
+            await connectWallet()
+            const address = await signer.getAddress();
+            const { nonce, nonceToken } = (await getNonce())?.data
+            const siweMessagePartial = getSiweMessage(address, nonce, statement)
+            const message = new SiweMessage(siweMessagePartial)
+            const messagePrepared = message.prepareMessage();
+            const signature = await signer.signMessage(messagePrepared)
+            await onSuccess({ message: messagePrepared, signature, nonceToken })
+        } catch (error) {
+            onFailure(error)
+        }
+    }, [connectWallet, onFailure, onSuccess, signer])
+    return (
+        <button onClick={handleLogin} className="inline-flex items-center rounded-full border px-6 py-2 text-base font-medium shadow-sm transition duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-brand-500 border-transparent bg-brand-500 text-neutralgray-700 hover:bg-secondary-500 text-neutralgray-700 border border-neutralgray-700">Login</button>
+    )
+}

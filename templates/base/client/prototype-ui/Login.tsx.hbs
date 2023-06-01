@@ -3,6 +3,9 @@ import { toast } from "react-toastify";
 {{#if auth.google}}
 import { GoogleLogin } from "react-google-login";
 {{/if}}
+{{#if auth.siwe}}
+import { SiweLogin } from "./SiweLogin";
+{{/if}}
 import { HathoraClient } from "../.hathora/client";
 
 export function Login({ client, setToken }: { client: HathoraClient; setToken: (token: string) => void }) {
@@ -70,6 +73,23 @@ export function Login({ client, setToken }: { client: HathoraClient; setToken: (
                   .catch((e) => toast.error("Authentication error: " + e.reason))
               }
               onFailure={(error) => toast.error("Authentication error: " + error.details)}
+            />
+          </div>
+{{else if (eq @key "siwe")}}
+          <div className="mb-4">
+            <SiweLogin
+              onSuccess={({ message, signature, nonceToken }: { message: string; signature: string; nonceToken: string; }) =>
+              {
+                client
+                  .loginSiwe(message, signature, nonceToken)
+                  .then(token => {
+                    sessionStorage.setItem(client.appId, token)
+                    setToken(token)
+                  })
+                  .catch(e => toast.error(`Authentication error: ${JSON.stringify(e)}`))
+                }
+              }
+              onFailure={(e) => {toast.error(`Authentication error: ${JSON.stringify(e)}`)}}
             />
           </div>
 {{/if}}

@@ -1,0 +1,25 @@
+types:
+  Message:
+    text: string
+    sentAt: int
+    sentBy: UserId
+    sentTo: UserId?
+  RoomState:
+    users: UserId[]
+    messages: Message[]
+
+methods:
+  joinRoom:
+  leaveRoom:
+  sendPublicMessage:
+    text: string
+  sendPrivateMessage:
+    text: string
+    to: UserId
+
+auth:
+  siwe:
+    statement: "Sign in to Hathora"
+
+userState: RoomState
+error: string

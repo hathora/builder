@@ -55,6 +55,8 @@ export interface {{capitalize @key}}UserData {
   email: string;
   locale: string;
   picture: string;
+{{else if (eq @key "siwe")}}
+  publicAddress: string;
 {{/if}}
 }
 {{/each}}
@@ -74,6 +76,8 @@ export function getUserDisplayName(user: UserData) {
       return user.name;
       {{else if (eq @key "google")}}
       return user.name;
+      {{else if (eq @key "siwe")}}
+      return user.publicAddress;
       {{else if (eq @key "email")}}
       return user.email;
       {{/if}}
