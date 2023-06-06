@@ -2,8 +2,10 @@
 // @ts-ignore
 import getRandomValues from "get-random-values";
 import { Reader, Writer } from "bin-serde";
-import { HathoraClient as _HathoraClient } from "@hathora/client-sdk";
-import { HathoraTransport, TransportType } from "@hathora/client-sdk/lib/transport";
+import {
+  HathoraClient as _HathoraClient,
+  HathoraConnection as _HathoraConnection,
+} from "@hathora/client-sdk";
 
 import {
   decodeStateSnapshot,
@@ -15,109 +17,61 @@ import {
   {{/each}}
   HathoraEvents,
 } from "../../api/types";
-import { UserData, Response, Method, COORDINATOR_HOST, MATCHMAKER_HOST } from "../../api/base";
+import { UserData, Response, Method } from "../../api/base";
 
 import { computePatch } from "./patch";
 import { ConnectionFailure, transformCoordinatorFailure } from "./failures";
 
-export type StateId = string;
-export type UpdateArgs = { stateId: StateId; state: UserState; updatedAt: number; events: HathoraEvents[] };
-export type UpdateCallback = (updateArgs: UpdateArgs) => void;
-export type ErrorCallback = (error: ConnectionFailure) => void;
-
-export class HathoraClient {
-  public appId = "{{appId}}";
-  private _client = new _HathoraClient(this.appId, COORDINATOR_HOST);
-
-  public static getUserFromToken(token: string): UserData {
-    return _HathoraClient.getUserFromToken(token) as UserData;
-  }
-
-{{#each auth}}
-{{#if (eq @key "anonymous")}}
-  public async loginAnonymous(): Promise<string> {
-    return this._client.loginAnonymous();
-  }
-
-{{else if (eq @key "nickname")}}
-  public async loginNickname(nickname: string): Promise<string> {
-    return this._client.loginNickname(nickname);
-  }
-
-{{else if (eq @key "google")}}
-  public async loginGoogle(idToken: string): Promise<string> {
-    return this._client.loginGoogle(idToken);
-  }
-
-{{/if}}
-{{/each}}
-  public async create(token: string, request: IInitializeRequest): Promise<string> {
-    return this._client.create(token, IInitializeRequest.encode(request).toBuffer());
+export class HathoraClient extends _HathoraClient {
+  public public_appId = "{{appId}}";
+  constructor() {
+    const connectionInfo = {
+      host: "localhost",
+      port: 4000,
+      transportType: "tcp" as const,
+    };
+    super("{{appId}}", connectionInfo);
   }
 
   public async connect(
     token: string,
-    stateId: StateId,
+    stateId: RoomId,
     onUpdate?: UpdateCallback,
-    onError?: ErrorCallback,
-    transportType: TransportType = TransportType.WebSocket
+    onError?: ErrorCallback
   ): Promise<HathoraConnection> {
-    const connection = new HathoraConnection(this._client, stateId, token, transportType, onUpdate, onError);
-    await connection.connect();
+    const connection = new HathoraConnection(this, stateId, onUpdate, onError);
+    await connection.connect(token);
     return connection;
   }
-
-  public async findMatch(
-    token: string,
-    request: IInitializeRequest,
-    numPlayers: number,
-    onUpdate: (playersFound: number) => void
-  ): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
-      const socket = new WebSocket(`wss://${MATCHMAKER_HOST}/${this.appId}`);
-      socket.binaryType = "arraybuffer";
-      socket.onclose = reject;
-      socket.onopen = () =>
-        socket.send(
-          new Writer()
-            .writeString(token)
-            .writeUVarint(numPlayers)
-            .writeBuffer(IInitializeRequest.encode(request).toBuffer())
-            .toBuffer()
-        );
-      socket.onmessage = ({ data }) => {
-        const reader = new Reader(new Uint8Array(data as ArrayBuffer));
-        const type = reader.readUInt8();
-        if (type === 0) {
-          onUpdate(reader.readUVarint());
-        } else if (type === 1) {
-          resolve(reader.readString());
-        } else {
-          console.error("Unknown message type", type);
-        }
-      };
-    });
-  }
 }
+
+
+export type RoomId = string;
+export type UpdateArgs = {
+  stateId: RoomId;
+  state: UserState;
+  updatedAt: number;
+  events: HathoraEvents[];
+};
+export type UpdateCallback = (updateArgs: UpdateArgs) => void;
+export type ErrorCallback = (error: ConnectionFailure) => void;
+
 
 export class HathoraConnection {
   private callbacks: Record<string, (response: Response) => void> = {};
   private changedAt = 0;
   private updateListeners: UpdateCallback[] = [];
   private errorListeners: ErrorCallback[] = [];
-  private transport!: HathoraTransport;
+  private transport!: _HathoraConnection | undefined;
   private internalState!: UserState;
 
   constructor(
     private _client: _HathoraClient,
-    private stateId: StateId,
-    private token: string,
-    private transportType: TransportType,
+    private stateId: RoomId,
     onUpdate?: UpdateCallback,
     onError?: ErrorCallback
   ) {
     this.stateId = stateId;
-    this.token = token;
 
     if (onUpdate !== undefined) {
       this.onUpdate(onUpdate);
@@ -127,21 +81,18 @@ export class HathoraConnection {
     }
   }
 
-  public async connect(): Promise<void> {
+  public async connect(token: string): Promise<void> {
     return new Promise(async (resolve, reject) => {
-      this.transport = await this._client.connect(
-        this.token,
-        this.stateId,
-        (data) => {
-          resolve();
-          this.handleData(data);
-        },
-        (e) => {
-          reject(e.reason);
-          this.handleClose(e);
-        },
-        this.transportType
-      );
+      this.transport = await this._client.newConnection(this.stateId)
+      this.transport.onClose((e) => {
+        reject(e.reason);
+        this.handleClose(e);
+      })
+      this.transport.onMessage((data) => {
+        resolve();
+        this.handleData(data);
+      })
+      this.transport.connect(token);
     });
   }
 
@@ -169,18 +120,22 @@ export class HathoraConnection {
 
   {{/each}}
   public disconnect(code?: number): void {
-    this.transport.disconnect(code);
+    this.transport?.disconnect(code);
   }
 
-  private callMethod(method: Method, request: Uint8Array): Promise<Response> {
+  private async callMethod(
+    method: Method,
+    request: Uint8Array
+  ): Promise<Response> {
     return new Promise((resolve, reject) => {
-      if (!this.transport.isReady()) {
-        reject("Connection not open");
-      } else {
-        const msgId: Uint8Array = getRandomValues(new Uint8Array(4));
-        this.transport.write(new Uint8Array([...new Uint8Array([method]), ...msgId, ...request]));
-        this.callbacks[new DataView(msgId.buffer).getUint32(0)] = resolve;
+      if (this.transport == null) {
+        return reject(Error("Transport as not been set"));
       }
+      const msgId: Uint8Array = getRandomValues(new Uint8Array(4));
+      this.transport.write(
+        new Uint8Array([...new Uint8Array([method]), ...msgId, ...request])
+      );
+      this.callbacks[new DataView(msgId.buffer).getUint32(0)] = resolve;
     });
   }
 
@@ -219,9 +174,9 @@ export class HathoraConnection {
         }
       });
     } else if (type === 2) {
-      this.transport.disconnect(4004);
+      this.transport!.disconnect(4004);
     } else if (type === 3) {
-      this.transport.pong();
+      this.transport!.pong();
     } else {
       console.error("Unknown message type", type);
     }
