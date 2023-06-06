@@ -32,7 +32,7 @@ export type {{makeRequestName @key}} = {
   {{/each}}
 };
 {{/each}}
-export type IInitializeRequest = {{> renderTypeArg initializeArgs}};
+export type IInitializeRequest = {}
 
 {{#each types}}
 {{> renderTypeValue}}
@@ -64,7 +64,6 @@ export const {{makeRequestName @key}} = {
 };
 {{/each}}
 export const IInitializeRequest = {
-{{#if (isEmpty initializeArgs.properties)}}
   default(): IInitializeRequest {
     return {};
   },
@@ -74,19 +73,6 @@ export const IInitializeRequest = {
   decode(sb: ArrayBufferView | _Reader): IInitializeRequest {
     return {};
   },
-{{else}}
-  default(): IInitializeRequest {
-    return {{> renderDefault initializeArgs}};
-  },
-  encode(x: IInitializeRequest, writer?: _Writer) {
-    const buf = writer ?? new _Writer();
-    return {{> renderEncodeArg initializeArgs}};
-  },
-  decode(buf: ArrayBufferView | _Reader): IInitializeRequest {
-    const sb = ArrayBuffer.isView(buf) ? new _Reader(buf) : buf;
-    return {{> renderDecodeArg initializeArgs}};
-  },
-{{/if}}
 };
 {{#*inline "renderExportArg"}}
 {{#if alias}}
