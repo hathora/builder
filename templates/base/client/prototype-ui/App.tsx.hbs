@@ -15,7 +15,7 @@ import { Login } from "./Login";
 const client = new HathoraClient();
 
 function App() {
-  const [token, setToken] = useState<string | undefined>(sessionStorage.getItem(client.appId) ?? undefined);
+  const [token, setToken] = useState<string | undefined>(sessionStorage.getItem(client.public_appId) ?? undefined);
   const [connection, setConnection] = useState<HathoraConnection>();
   const [updateArgs, setUpdateArgs] = useState<UpdateArgs>();
   const [connectionError, setConnectionError] = useState<ConnectionFailure>();
@@ -24,7 +24,7 @@ function App() {
 
   useEffect(() => {
     if (location.hash.length > 0) {
-      sessionStorage.setItem(client.appId, location.hash.substring(1));
+      sessionStorage.setItem(client.public_appId, location.hash.substring(1));
       setToken(location.hash.substring(1));
       navigate(location.pathname, { replace: true });
     }
@@ -47,16 +47,22 @@ function App() {
                   connection={connection}
                   updateArgs={updateArgs}
                   connectionError={connectionError}
-                  onConnect={async (stateId) =>
-                    setConnection(await client.connect(token, stateId, setUpdateArgs, setConnectionError))
-                  }
+                  onConnect={async (stateId) => {
+                    const connection = await client.connect(
+                      token,
+                      stateId,
+                      setUpdateArgs,
+                      setConnectionError
+                    );
+                    setConnection(connection);
+                  }}
                   onDisconnect={() => {
-                    if (connection !== undefined) {
-                      connection.disconnect();
-                      setConnection(undefined);
-                      setUpdateArgs(undefined);
-                      setConnectionError(undefined);
-                    }
+                    console.log("onDisconnect");
+                    // TODO, why is this getting disconnected?
+                    //connection?.disconnect();
+                    //setConnection(undefined);
+                    //setUpdateArgs(undefined);
+                    //setConnectionError(undefined);
                   }}
                 />
               }
@@ -143,7 +149,7 @@ function Home({ token, connect }: { token: string; connect: (stateId: string) =>
                     <button
                       type="button"
                       onClick={async () => {
-                        const stateId = await client.create(token, value);
+                        const stateId = await client.createPrivateLobby(token)
                         connect(stateId);
                       }}
                       className="inline-flex items-center rounded-full border px-6 py-2 text-base font-medium shadow-sm transition duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-brand-500 border-transparent bg-brand-500 text-neutralgray-700 hover:bg-secondary-500 text-neutralgray-700 border border-neutralgray-700"
