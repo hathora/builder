@@ -88,7 +88,6 @@ const store: Application = {
     return userId;
   },
   async subscribeUser(roomId: RoomId, userId: string): Promise<void> {
-    console.log("subscribeUser", { roomId, userId });
     if (!rooms.has(roomId)) {
       const loaded = await loadState(roomId);
       if (loaded === undefined) {
@@ -184,7 +183,7 @@ export async function loadState(stateId: RoomId) {
   try {
     rows = log.load(stateId);
   } catch (e) {
-    console.error("No existing state found for", stateId);
+    console.log("No existing room", stateId, "found.");
     return;
   }
 
