@@ -25,11 +25,31 @@ import { ConnectionFailure, transformCoordinatorFailure } from "./failures";
 export class HathoraClient extends _HathoraClient {
   public public_appId = "{{appId}}";
   constructor() {
-    const connectionInfo = {
-      host: "localhost",
-      port: 4000,
-      transportType: "tcp" as const,
-    };
+    let connectionInfo;
+    const {
+      VITE_HATHORA_SERVER_HOST,
+      VITE_HATHORA_SERVER_PORT,
+      VITE_HATHORA_TRANSPORT_TYPE,
+    } = import.meta.env;
+    if (
+      VITE_HATHORA_SERVER_HOST ||
+      VITE_HATHORA_SERVER_PORT ||
+      VITE_HATHORA_TRANSPORT_TYPE
+    ) {
+      connectionInfo = {
+        host: VITE_HATHORA_SERVER_HOST ?? "localhost",
+        port: VITE_HATHORA_SERVER_PORT
+          ? parseInt(VITE_HATHORA_SERVER_PORT, 10)
+          : 4000,
+        transportType: VITE_HATHORA_TRANSPORT_TYPE ?? ("tcp" as const),
+      };
+    } else if (import.meta.env.MODE !== "production") {
+      connectionInfo = {
+        host: "localhost",
+        port: 4000,
+        transportType: "tcp" as const,
+      };
+    }
     super("{{appId}}", connectionInfo);
   }
 
