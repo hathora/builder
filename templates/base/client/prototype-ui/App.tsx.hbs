@@ -57,12 +57,12 @@ function App() {
                     setConnection(connection);
                   }}
                   onDisconnect={() => {
-                    console.log("onDisconnect");
-                    // TODO, why is this getting disconnected?
-                    //connection?.disconnect();
-                    //setConnection(undefined);
-                    //setUpdateArgs(undefined);
-                    //setConnectionError(undefined);
+                    if (connection) {
+                      connection.disconnect();
+                      setConnection(undefined);
+                      setUpdateArgs(undefined);
+                      setConnectionError(undefined);
+                    }
                   }}
                 />
               }
