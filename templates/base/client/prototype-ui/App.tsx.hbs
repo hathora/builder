@@ -106,9 +106,6 @@ function NavBar({ user }: { user?: UserData }) {
 
 function Home({ token, connect }: { token: string; connect: (stateId: string) => void }) {
   const navigate = useNavigate();
-  const [numPlayers, setNumPlayers] = useState<string>("");
-  const [playersFound, setPlayersFound] = useState<number>(0);
-  const [isFinding, setFinding] = useState<boolean>(false);
   const [stateId, setStateId] = useState<string>("");
 
   return (
