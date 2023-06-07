@@ -184,7 +184,7 @@ export async function loadState(stateId: RoomId) {
   try {
     rows = log.load(stateId);
   } catch (e) {
-    console.error("Unable to load state", stateId, e);
+    console.error("No existing state found for", stateId);
     return;
   }
 
