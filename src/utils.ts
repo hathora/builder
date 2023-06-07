@@ -62,12 +62,6 @@ export function getDirs() {
   };
 }
 
-export async function getAppConfig() {
-  const coordinatorHost = process.env.COORDINATOR_HOST ?? "coordinator.hathora.dev";
-  const res = await axios.post<{ appId: string; appSecret: string }>(`https://${coordinatorHost}/registerApp`);
-  return res.data;
-}
-
 export async function generateLocal() {
   const { rootDir } = getDirs();
 
@@ -78,8 +72,9 @@ export async function generateLocal() {
     parseResult.parsed.APP_ID === undefined ||
     parseResult.parsed.APP_SECRET === undefined
   ) {
-    appConfig = await getAppConfig();
-    outputFileSync(join(rootDir, ".env"), `APP_ID=${appConfig.appId}\nAPP_SECRET=${appConfig.appSecret}\n`);
+    throw Error(
+      "APP_ID and APP_SECRET are undefined. Please sign up at https://hathora.dev and put them in a .env file."
+    );
   } else {
     appConfig = { appId: parseResult.parsed.APP_ID, appSecret: parseResult.parsed.APP_SECRET };
   }

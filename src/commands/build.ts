@@ -8,7 +8,7 @@ import { build as buildServer } from "esbuild";
 import dotenv from "dotenv";
 import chalk from "chalk";
 
-import { getAppConfig, getDirs, install } from "../utils";
+import { getDirs, install } from "../utils";
 import { generate } from "../generate";
 
 const cmd: CommandModule = {
@@ -34,13 +34,10 @@ const cmd: CommandModule = {
       appConfig = { appId: process.env.APP_ID, appSecret: process.env.APP_SECRET };
     } else if (argv.only === "client" && process.env.APP_ID !== undefined) {
       appConfig = { appId: process.env.APP_ID, appSecret: "" };
-    } else if (process.env.APP_SECRET !== undefined) {
-      // for backwards compat purposes
-      const appSecret = process.env.APP_SECRET;
-      const appId = createHash("sha256").update(appSecret).digest("hex");
-      appConfig = { appId, appSecret };
     } else {
-      appConfig = await getAppConfig();
+      throw Error(
+        "APP_ID and APP_SECRET are undefined. Please sign up at https://hathora.dev and put them in a .env file."
+      );
     }
 
     generate(rootDir, "base", appConfig);
