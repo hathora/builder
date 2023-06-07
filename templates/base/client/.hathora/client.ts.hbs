@@ -43,6 +43,11 @@ export class HathoraClient extends _HathoraClient {
     await connection.connect(token);
     return connection;
   }
+
+  public create(token: string): Promise<string> {
+    console.warn('`client.create` is deprecated. Please use `client.createPrivateLobby`.')
+    return this.createPrivateLobby(token)
+  }
 }
 
 
