@@ -30,13 +30,13 @@ const cmd: CommandModule = {
     dotenv.config({ path: join(rootDir, ".env") });
 
     let appConfig: { appId: string; appSecret: string };
-    if (process.env.APP_ID !== undefined && process.env.APP_SECRET !== undefined) {
-      appConfig = { appId: process.env.APP_ID, appSecret: process.env.APP_SECRET };
-    } else if (argv.only === "client" && process.env.APP_ID !== undefined) {
-      appConfig = { appId: process.env.APP_ID, appSecret: "" };
+    if (process.env.HATHORA_APP_ID !== undefined && process.env.HATHORA_APP_SECRET !== undefined) {
+      appConfig = { appId: process.env.HATHORA_APP_ID, appSecret: process.env.HATHORA_APP_SECRET };
+    } else if (argv.only === "client" && process.env.HATHORA_APP_ID !== undefined) {
+      appConfig = { appId: process.env.HATHORA_APP_ID, appSecret: "" };
     } else {
       throw Error(
-        "APP_ID and APP_SECRET are undefined. Please sign up at https://hathora.dev and put them in a .env file."
+        "HATHORA_APP_ID and HATHORA_APP_SECRET are undefined. Please sign up at https://console.hathora.dev and put them in a .env file."
       );
     }
 
