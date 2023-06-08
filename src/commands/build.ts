@@ -1,10 +1,9 @@
 import { join } from "path";
+import fs from "node:fs/promises";
 import { execSync } from "child_process";
 
 import { CommandModule } from "yargs";
 import { existsSync, readdirSync } from "fs-extra";
-import fs from "node:fs/promises";
-import path from "node:path";
 import { build as buildServer } from "esbuild";
 import dotenv from "dotenv";
 import chalk from "chalk";
@@ -76,14 +75,14 @@ async function build(only: "server" | "client" | undefined) {
 }
 
 async function copyUWebsocketBinaries(serverDir: string) {
-  const uWebDir = path.join(serverDir, ".hathora/node_modules/uWebSockets.js/");
+  const uWebDir = join(serverDir, ".hathora/node_modules/uWebSockets.js/");
   const files = await fs.readdir(uWebDir);
   const binaries = files.filter((file) => file.endsWith(".node"));
-  const dist = path.join(serverDir, "dist");
+  const dist = join(serverDir, "dist");
   await Promise.all(
     binaries.map((bin) => {
-      const source = path.join(uWebDir, bin);
-      const destination = path.join(dist, bin);
+      const source = join(uWebDir, bin);
+      const destination = join(dist, bin);
       return fs.copyFile(source, destination);
     })
   );
