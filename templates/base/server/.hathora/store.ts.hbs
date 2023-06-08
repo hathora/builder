@@ -183,7 +183,6 @@ export async function loadState(stateId: RoomId) {
   try {
     rows = log.load(stateId);
   } catch (e) {
-    console.log("No existing room", stateId, "found.");
     return;
   }
 
