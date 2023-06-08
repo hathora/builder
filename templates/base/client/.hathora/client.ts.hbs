@@ -63,6 +63,9 @@ export class HathoraClient extends _HathoraClient {
     return connection;
   }
 
+  /**
+   * @deprecated
+   */
   public create(token: string): Promise<string> {
     console.warn('`client.create` is deprecated. Please use `client.createPrivateLobby`.')
     return this.createPrivateLobby(token)
