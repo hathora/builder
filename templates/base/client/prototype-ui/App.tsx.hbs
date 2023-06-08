@@ -15,7 +15,7 @@ import { Login } from "./Login";
 const client = new HathoraClient();
 
 function App() {
-  const [token, setToken] = useState<string | undefined>(sessionStorage.getItem(client.public_appId) ?? undefined);
+  const [token, setToken] = useState<string | undefined>(sessionStorage.getItem(client.appId) ?? undefined);
   const [connection, setConnection] = useState<HathoraConnection>();
   const [updateArgs, setUpdateArgs] = useState<UpdateArgs>();
   const [connectionError, setConnectionError] = useState<ConnectionFailure>();
@@ -24,7 +24,7 @@ function App() {
 
   useEffect(() => {
     if (location.hash.length > 0) {
-      sessionStorage.setItem(client.public_appId, location.hash.substring(1));
+      sessionStorage.setItem(client.appId, location.hash.substring(1));
       setToken(location.hash.substring(1));
       navigate(location.pathname, { replace: true });
     }

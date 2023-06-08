@@ -75,7 +75,7 @@ setInterval(() => {
 
 const store: Application = {
   // A function called by Hathora to verify a connecting user's token
-  verifyToken(token: string): UserId | undefined {
+  async verifyToken(token: string): Promise<UserId | undefined> {
     const userId = verifyJwt(
       token,
       "{{appSecret}}"
@@ -102,7 +102,7 @@ const store: Application = {
     }
     sendSnapshot(roomId, userId);
   },
-  unsubscribeUser(roomId: RoomId, userId: UserId) {
+  async unsubscribeUser(roomId: RoomId, userId: UserId): Promise<void> {
     if (!rooms.has(roomId)) {
       return;
     }
