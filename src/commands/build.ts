@@ -59,7 +59,7 @@ async function build(only: "server" | "client" | undefined) {
     }
   }
   if (only === "server" || only === undefined) {
-    buildServer({
+    await buildServer({
       entryPoints: [join(serverDir, ".hathora", "store.ts")],
       bundle: true,
       platform: "node",
