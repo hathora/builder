@@ -1,14 +1,19 @@
 import { randomBytes } from "crypto";
 import { existsSync, mkdirSync } from "fs";
 import { Chance } from "chance";
-import { v4 as uuidv4 } from "uuid";
 import { Writer, Reader } from "bin-serde";
 import { LogStore } from "@hathora/log-store";
-import { register, RoomId } from "@hathora/server-sdk";
-
-import { COORDINATOR_HOST, Message, NO_DIFF } from "../../api/base";
 import {
   UserId,
+  RoomId,
+  Application,
+  startServer,
+  verifyJwt,
+  Server,
+} from "@hathora/server-sdk";
+
+import { Message, NO_DIFF } from "../../api/base";
+import {
   encodeStateSnapshot,
   encodeStateUpdate,
   {{userState}} as UserState,
@@ -21,9 +26,9 @@ import { computeDiff } from "./diff";
 import { Context } from "./methods";
 
 type UserInfo = { userState: UserState; changedAt: number; messages: Message[] };
-type StateInfo = { impl: ImplWrapper; chance: Chance.Chance; subscriptions: Map<UserId, UserInfo> };
+type RoomInfo = { impl: ImplWrapper; chance: Chance.Chance; subscriptions: Map<UserId, UserInfo> };
 
-const stateInfo: Map<RoomId, StateInfo> = new Map();
+const rooms: Map<RoomId, RoomInfo> = new Map();
 const changedStates: Map<RoomId, number> = new Map();
 const pendingMessages: Map<RoomId, Set<UserId>> = new Map();
 
@@ -33,105 +38,109 @@ if (!existsSync(dataDir)) {
 }
 const log = new LogStore(dataDir);
 
-class Store {
-  constructor() {
-    {{#if tick}}
-    let prevUpdateTime = Date.now();
-    {{/if}}
-    setInterval(() => {
-      {{#if tick}}
-      const currTime = Date.now();
-      stateInfo.forEach(async ({ impl, chance, subscriptions }, stateId) => {
-        if (subscriptions.size > 0) {
-          const timeDelta = currTime - prevUpdateTime;
-          await impl.onTick(ctx(chance, currTime, stateId), timeDelta / 1000);
-          const changedAt = impl.changedAt();
-          if (changedAt !== undefined) {
-            changedStates.set(stateId, changedAt);
-            pendingMessages.delete(stateId);
-            log.append(stateId, currTime, new Writer().writeUInt8(0xff).writeUVarint(timeDelta).toBuffer());
-          }
-        }
-      });
-      prevUpdateTime = currTime;
-
-      {{/if}}
-      changedStates.forEach((changedAt, stateId) => sendUpdates(stateId, changedAt));
-      changedStates.clear();
-      pendingMessages.forEach((userIds, stateId) => userIds.forEach((userId) => sendMessages(stateId, userId)));
-      pendingMessages.clear();
-    }, {{#if tick}}{{tick}}{{else}}50{{/if}});
-    setInterval(() => {
-      stateInfo.forEach(({ subscriptions }, stateId) => {
-        if (subscriptions.size === 0) {
-          stateInfo.delete(stateId);
-          log.unload(stateId);
-        }
-      });
-    }, 10000);
-  }
-  async newState(stateId: RoomId, userId: UserId, data: Buffer) {
-    const seed = randomBytes(8).readBigUInt64LE();
-    const time = Date.now();
-    const chance = Chance(seed.toString());
-    const impl = new ImplWrapper(ctx(chance, time, stateId), data);
-    stateInfo.set(stateId, { impl, chance, subscriptions: new Map() });
-    log.append(
-      stateId,
-      time,
-      new Writer().writeUInt64(seed).writeString(userId).writeUVarint(data.length).writeBuffer(data).toBuffer()
-    );
-  }
-  async subscribeUser(stateId: RoomId, userId: UserId) {
-    if (!stateInfo.has(stateId)) {
-      const loaded = await loadState(stateId);
-      if (loaded === undefined) {
-        coordinator.closeConnection(stateId, userId, "State not found");
-        return;
+{{#if tick}}
+let prevUpdateTime = Date.now();
+{{/if}}
+setInterval(() => {
+  {{#if tick}}
+  const currTime = Date.now();
+  rooms.forEach(async ({ impl, chance, subscriptions }, stateId) => {
+    if (subscriptions.size > 0) {
+      const timeDelta = currTime - prevUpdateTime;
+      await impl.onTick(ctx(chance, currTime, stateId), timeDelta / 1000);
+      const changedAt = impl.changedAt();
+      if (changedAt !== undefined) {
+        changedStates.set(stateId, changedAt);
+        pendingMessages.delete(stateId);
+        log.append(stateId, currTime, new Writer().writeUInt8(0xff).writeUVarint(timeDelta).toBuffer());
       }
-      stateInfo.set(stateId, { impl: loaded.impl, chance: loaded.chance, subscriptions: new Map() });
     }
-    sendSnapshot(stateId, userId);
-  }
-  unsubscribeUser(stateId: RoomId, userId: UserId) {
-    if (!stateInfo.has(stateId)) {
+  });
+  prevUpdateTime = currTime;
+
+  {{/if}}
+  changedStates.forEach((changedAt, stateId) => sendUpdates(stateId, changedAt));
+  changedStates.clear();
+  pendingMessages.forEach((userIds, stateId) => userIds.forEach((userId) => sendMessages(stateId, userId)));
+  pendingMessages.clear();
+}, {{#if tick}}{{tick}}{{else}}50{{/if}});
+setInterval(() => {
+  rooms.forEach(({ subscriptions }, stateId) => {
+    if (subscriptions.size === 0) {
+      rooms.delete(stateId);
+      log.unload(stateId);
+    }
+  });
+}, 10000);
+
+const store: Application = {
+  // A function called by Hathora to verify a connecting user's token
+  async verifyToken(token: string): Promise<UserId | undefined> {
+    const userId = verifyJwt(
+      token,
+      "{{appSecret}}"
+    );
+
+    if (userId === undefined) {
+      console.error("Failed to verify token", token);
+    }
+
+    return userId;
+  },
+  async subscribeUser(roomId: RoomId, userId: string): Promise<void> {
+    if (!rooms.has(roomId)) {
+      const loaded = await loadState(roomId);
+      if (loaded === undefined) {
+        createRoom(roomId, userId);
+      } else {
+        rooms.set(roomId, {
+          impl: loaded.impl,
+          chance: loaded.chance,
+          subscriptions: new Map(),
+        });
+      }
+    }
+    sendSnapshot(roomId, userId);
+  },
+  async unsubscribeUser(roomId: RoomId, userId: UserId): Promise<void> {
+    if (!rooms.has(roomId)) {
       return;
     }
-    const subscribers = stateInfo.get(stateId)!.subscriptions;
+    const subscribers = rooms.get(roomId)!.subscriptions;
     subscribers.delete(userId);
     if (subscribers.size === 0) {
-      changedStates.delete(stateId);
-      pendingMessages.delete(stateId);
+      changedStates.delete(roomId);
+      pendingMessages.delete(roomId);
     }
-  }
-  unsubscribeAll() {
-    stateInfo.forEach(({ subscriptions }, stateId) => {
-      subscriptions.clear();
-      changedStates.delete(stateId);
-      pendingMessages.delete(stateId);
-    });
-  }
-  async onMessage(stateId: RoomId, userId: UserId, data: Buffer) {
-    if (!stateInfo.has(stateId)) {
+  },
+  async onMessage(roomId: RoomId, userId: UserId, data: Buffer): Promise<void> {
+    if (!rooms.has(roomId)) {
       return;
     }
-    const { impl, chance, subscriptions } = stateInfo.get(stateId)!;
-    const reader = new Reader(data);
+    const { impl, chance, subscriptions } = rooms.get(roomId)!;
+    const reader = new Reader(new DataView(data));
     const [method, msgId, argsBuffer] = [
       reader.readUInt8(),
       reader.readUInt32(),
       reader.readBuffer(reader.remaining()),
     ];
     const time = Date.now();
-    const response = await impl.getResult(userId, method, ctx(chance, time, stateId), argsBuffer);
+    const response = await impl.getResult(
+      userId,
+      method,
+      ctx(chance, time, roomId),
+      argsBuffer
+    );
     if (subscriptions.has(userId)) {
-      subscriptions.get(userId)!.messages.push(Message.response(msgId, response));
+      subscriptions
+        .get(userId)!
+        .messages.push(Message.response(msgId, response));
       const changedAt = impl.changedAt();
       if (changedAt !== undefined) {
-        changedStates.set(stateId, changedAt);
-        pendingMessages.delete(stateId);
+        changedStates.set(roomId, changedAt);
+        pendingMessages.delete(roomId);
         log.append(
-          stateId,
+          roomId,
           time,
           new Writer()
             .writeUInt8(method)
@@ -141,38 +150,39 @@ class Store {
             .toBuffer()
         );
       } else {
-        addPendingMessage(stateId, userId);
+        addPendingMessage(roomId, userId);
       }
     }
-  }
-}
-
-const coordinator = await register({
-  coordinatorHost: COORDINATOR_HOST,
-  appSecret: "{{appSecret}}",
-  storeId: process.env.STORE_ID ?? uuidv4(),
-  authInfo: {
-{{#each auth}}
-{{#if (eq @key "anonymous")}}
-    anonymous: { separator: "{{separator}}" },
-{{else if (eq @key "nickname")}}
-    nickname: {},
-{{else if (eq @key "google")}}
-    google: { clientId: "{{clientId}}" },
-{{/if}}
-{{/each}}
   },
-  store: new Store(),
-});
-const { host, storeId } = coordinator;
-console.log(`Connected to coordinator at ${host} with appId {{appId}} and storeId ${storeId}`);
+};
+
+function createRoom(roomId: RoomId, userId: UserId) {
+  const seed = randomBytes(8).readBigUInt64LE();
+  const time = Date.now();
+  const chance = Chance(seed.toString());
+
+  // set to default in preparation for removing IInitializeRequest
+  const data = Buffer.from("");
+
+  const impl = new ImplWrapper(ctx(chance, time, roomId), data);
+  rooms.set(roomId, { impl, chance, subscriptions: new Map() });
+  log.append(
+    roomId,
+    time,
+    new Writer()
+      .writeUInt64(seed)
+      .writeString(userId)
+      .writeUVarint(data.length)
+      .writeBuffer(data)
+      .toBuffer()
+  );
+}
 
 export async function loadState(stateId: RoomId) {
   let rows;
   try {
     rows = log.load(stateId);
   } catch (e) {
-    console.error("Unable to load state", stateId.toString(36));
     return;
   }
 
@@ -204,35 +214,35 @@ export async function loadState(stateId: RoomId) {
 }
 
 async function sendSnapshot(stateId: RoomId, userId: UserId) {
-  const { impl, subscriptions } = stateInfo.get(stateId)!;
+  const { impl, subscriptions } = rooms.get(stateId)!;
   const userState = await impl.getUserState(userId);
   const validationErrors = UserState.validate(userState);
   if (validationErrors.length > 0) {
     console.error("Invalid user state: ", validationErrors);
-    coordinator.sendMessage(stateId, userId, Buffer.from(encodeStateError()));
+    server.sendMessage(stateId, userId, Buffer.from(encodeStateError()));
     return;
   }
   subscriptions.set(userId, { userState: JSON.parse(JSON.stringify(userState)), changedAt: 0, messages: [] });
   const buf = encodeStateSnapshot(userState);
-  coordinator.sendMessage(stateId, userId, Buffer.from(buf));
+  server.sendMessage(stateId, userId, Buffer.from(buf));
 }
 
 async function sendUpdates(stateId: RoomId, changedAt: number) {
-  if (stateInfo.has(stateId)) {
-    const { impl, subscriptions } = stateInfo.get(stateId)!;
+  if (rooms.has(stateId)) {
+    const { impl, subscriptions } = rooms.get(stateId)!;
     for (const [userId, userInfo] of subscriptions) {
       const { userState: prevUserState, changedAt: prevChangedAt, messages } = userInfo!;
       const currUserState = await impl.getUserState(userId);
       const validationErrors = UserState.validate(currUserState);
       if (validationErrors.length > 0) {
         console.error("Invalid user state: ", validationErrors);
-        coordinator.sendMessage(stateId, userId, Buffer.from(encodeStateError()));
+        server.sendMessage(stateId, userId, Buffer.from(encodeStateError()));
         return;
       }
       const diff = computeDiff(currUserState, prevUserState);
       if (diff !== NO_DIFF || messages.length > 0) {
         const buf = encodeStateUpdate(diff !== NO_DIFF ? diff : undefined, changedAt - prevChangedAt, messages);
-        coordinator.sendMessage(stateId, userId, Buffer.from(buf));
+        server.sendMessage(stateId, userId, Buffer.from(buf));
         subscriptions.set(userId, { userState: JSON.parse(JSON.stringify(currUserState)), changedAt, messages: [] });
       }
     }
@@ -240,10 +250,10 @@ async function sendUpdates(stateId: RoomId, changedAt: number) {
 }
 
 function sendMessages(stateId: RoomId, userId: UserId) {
-  const messages = stateInfo.get(stateId)?.subscriptions.get(userId)?.messages;
+  const messages = rooms.get(stateId)?.subscriptions.get(userId)?.messages;
   if (messages !== undefined) {
     const buf = encodeStateUpdate(undefined, 0, messages);
-    coordinator.sendMessage(stateId, userId, Buffer.from(buf));
+    server.sendMessage(stateId, userId, Buffer.from(buf));
     messages.splice(0);
   }
 }
@@ -257,7 +267,7 @@ function ctx(chance: Chance.Chance, time: number, stateId: RoomId): Context {
       data: HathoraEventPayloads[EventType],
       userId: UserId
     ) {
-      const userInfo = stateInfo.get(stateId)?.subscriptions.get(userId);
+      const userInfo = rooms.get(stateId)?.subscriptions.get(userId);
       if (userInfo !== undefined) {
         userInfo.messages.push(Message.event(event, data));
         if (!changedStates.has(stateId)) {
@@ -266,8 +276,8 @@ function ctx(chance: Chance.Chance, time: number, stateId: RoomId): Context {
       }
     },
     broadcastEvent<EventType extends HathoraEventTypes>(event: EventType, data: HathoraEventPayloads[EventType]) {
-      if (stateInfo.has(stateId)) {
-        for (const [userId, { messages }] of stateInfo.get(stateId)!.subscriptions) {
+      if (rooms.has(stateId)) {
+        for (const [userId, { messages }] of rooms.get(stateId)!.subscriptions) {
           messages.push(Message.event(event, data));
           if (!changedStates.has(stateId)) {
             addPendingMessage(stateId, userId);
@@ -288,3 +298,7 @@ function addPendingMessage(stateId: RoomId, userId: UserId) {
   }
   pendingMessages.get(stateId)!.add(userId);
 }
+
+const port = 4000;
+const server: Server = await startServer(store, port);
+console.log(`Server listening on port ${port}`);

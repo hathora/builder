@@ -62,12 +62,6 @@ export function getDirs() {
   };
 }
 
-export async function getAppConfig() {
-  const coordinatorHost = process.env.COORDINATOR_HOST ?? "coordinator.hathora.dev";
-  const res = await axios.post<{ appId: string; appSecret: string }>(`https://${coordinatorHost}/registerApp`);
-  return res.data;
-}
-
 export async function generateLocal() {
   const { rootDir } = getDirs();
 
@@ -75,13 +69,14 @@ export async function generateLocal() {
   const parseResult = dotenv.config({ path: join(rootDir, ".env") });
   if (
     parseResult.parsed === undefined ||
-    parseResult.parsed.APP_ID === undefined ||
-    parseResult.parsed.APP_SECRET === undefined
+    parseResult.parsed.HATHORA_APP_ID === undefined ||
+    parseResult.parsed.HATHORA_APP_SECRET === undefined
   ) {
-    appConfig = await getAppConfig();
-    outputFileSync(join(rootDir, ".env"), `APP_ID=${appConfig.appId}\nAPP_SECRET=${appConfig.appSecret}\n`);
+    throw Error(
+      "HATHORA_APP_ID and HATHORA_APP_SECRET are undefined. Please sign up at https://console.hathora.dev and put them in a .env file."
+    );
   } else {
-    appConfig = { appId: parseResult.parsed.APP_ID, appSecret: parseResult.parsed.APP_SECRET };
+    appConfig = { appId: parseResult.parsed.HATHORA_APP_ID, appSecret: parseResult.parsed.HATHORA_APP_SECRET };
   }
 
   try {

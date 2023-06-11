@@ -21,7 +21,9 @@ const HathoraConfig = z
       })
       .strict(),
     userState: z.string(),
-    initializeArgs: z.optional(z.string()),
+    initializeArgs: z.undefined({
+      invalid_type_error: "initializeArgs is no longer supported, please remove it from your hathora.yml",
+    }),
     error: z.string(),
     tick: z.optional(z.number().int().gte(25)),
     events: z.optional(

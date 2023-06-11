@@ -1,5 +1,5 @@
 import { join } from "path";
-import { createHash } from "crypto";
+import fs from "node:fs/promises";
 import { execSync } from "child_process";
 
 import { CommandModule } from "yargs";
@@ -8,7 +8,7 @@ import { build as buildServer } from "esbuild";
 import dotenv from "dotenv";
 import chalk from "chalk";
 
-import { getAppConfig, getDirs, install } from "../utils";
+import { getDirs, install } from "../utils";
 import { generate } from "../generate";
 
 const cmd: CommandModule = {
@@ -30,17 +30,14 @@ const cmd: CommandModule = {
     dotenv.config({ path: join(rootDir, ".env") });
 
     let appConfig: { appId: string; appSecret: string };
-    if (process.env.APP_ID !== undefined && process.env.APP_SECRET !== undefined) {
-      appConfig = { appId: process.env.APP_ID, appSecret: process.env.APP_SECRET };
-    } else if (argv.only === "client" && process.env.APP_ID !== undefined) {
-      appConfig = { appId: process.env.APP_ID, appSecret: "" };
-    } else if (process.env.APP_SECRET !== undefined) {
-      // for backwards compat purposes
-      const appSecret = process.env.APP_SECRET;
-      const appId = createHash("sha256").update(appSecret).digest("hex");
-      appConfig = { appId, appSecret };
+    if (process.env.HATHORA_APP_ID !== undefined && process.env.HATHORA_APP_SECRET !== undefined) {
+      appConfig = { appId: process.env.HATHORA_APP_ID, appSecret: process.env.HATHORA_APP_SECRET };
+    } else if (argv.only === "client" && process.env.HATHORA_APP_ID !== undefined) {
+      appConfig = { appId: process.env.HATHORA_APP_ID, appSecret: "" };
     } else {
-      appConfig = await getAppConfig();
+      throw Error(
+        "HATHORA_APP_ID and HATHORA_APP_SECRET are undefined. Please sign up at https://console.hathora.dev and put them in a .env file."
+      );
     }
 
     generate(rootDir, "base", appConfig);
@@ -73,7 +70,22 @@ async function build(only: "server" | "client" | undefined) {
         js: "import { createRequire as topLevelCreateRequire } from 'module';\n const require = topLevelCreateRequire(import.meta.url);",
       },
     });
+    await copyUWebsocketBinaries(serverDir);
   }
+}
+
+async function copyUWebsocketBinaries(serverDir: string) {
+  const uWebDir = join(serverDir, ".hathora/node_modules/uWebSockets.js/");
+  const files = await fs.readdir(uWebDir);
+  const binaries = files.filter((file) => file.endsWith(".node"));
+  const dist = join(serverDir, "dist");
+  await Promise.all(
+    binaries.map((bin) => {
+      const source = join(uWebDir, bin);
+      const destination = join(dist, bin);
+      return fs.copyFile(source, destination);
+    })
+  );
 }
 
 module.exports = cmd;

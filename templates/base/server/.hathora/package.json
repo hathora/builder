@@ -3,8 +3,8 @@
   "dependencies": {
     "bin-serde": "1.2.2",
     "chance": "1.1.8",
-    "@hathora/log-store": "0.0.2",
-    "@hathora/server-sdk": "0.5.1",
+    "@hathora/log-store": "^0.0.3",
+    "@hathora/server-sdk": "^1.1.0",
     "on-change": "4.0.1",
     "uuid": "8.3.2"
   },

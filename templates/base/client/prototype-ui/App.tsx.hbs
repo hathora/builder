@@ -47,11 +47,17 @@ function App() {
                   connection={connection}
                   updateArgs={updateArgs}
                   connectionError={connectionError}
-                  onConnect={async (stateId) =>
-                    setConnection(await client.connect(token, stateId, setUpdateArgs, setConnectionError))
-                  }
+                  onConnect={async (stateId) => {
+                    const connection = await client.connect(
+                      token,
+                      stateId,
+                      setUpdateArgs,
+                      setConnectionError
+                    );
+                    setConnection(connection);
+                  }}
                   onDisconnect={() => {
-                    if (connection !== undefined) {
+                    if (connection) {
                       connection.disconnect();
                       setConnection(undefined);
                       setUpdateArgs(undefined);
@@ -100,9 +106,6 @@ function NavBar({ user }: { user?: UserData }) {
 
 function Home({ token, connect }: { token: string; connect: (stateId: string) => void }) {
   const navigate = useNavigate();
-  const [numPlayers, setNumPlayers] = useState<string>("");
-  const [playersFound, setPlayersFound] = useState<number>(0);
-  const [isFinding, setFinding] = useState<boolean>(false);
   const [stateId, setStateId] = useState<string>("");
 
   return (
@@ -139,39 +142,16 @@ function Home({ token, connect }: { token: string; connect: (stateId: string) =>
             <div className="mb-4">
               <InitializeForm>
                 {(value) => (
-                  <>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        const stateId = await client.create(token, value);
-                        connect(stateId);
-                      }}
-                      className="inline-flex items-center rounded-full border px-6 py-2 text-base font-medium shadow-sm transition duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-brand-500 border-transparent bg-brand-500 text-neutralgray-700 hover:bg-secondary-500 text-neutralgray-700 border border-neutralgray-700"
-                    >
-                      Create New
-                    </button>
-                    <div className="m-2">OR</div>
-                    <input
-                      type="number"
-                      value={numPlayers}
-                      placeholder="Player count"
-                      onChange={(e) => setNumPlayers(e.target.value)}
-                      className="min-w-0 mt-1 appearance-none rounded-md py-2 px-4 text-base placeholder-neutralgray-300 focus:border-secondary-500 focus:placeholder-neutralgray-400 focus:outline-none sm:max-w-xs border border-neutralgray-300 bg-neutralgray-650 text-neutralgray-200"
-                    />
-                    <button
-                      type="button"
-                      disabled={isNaN(parseInt(numPlayers)) || isFinding}
-                      onClick={async () => {
-                        setFinding(true);
-                        const stateId = await client.findMatch(token, value, parseInt(numPlayers), setPlayersFound);
-                        setFinding(false);
-                        connect(stateId);
-                      }}
-                      className="ml-0 mt-2 sm:ml-4 sm:mt-0 inline-flex items-center rounded-full border px-6 py-2 text-base font-medium shadow-sm transition duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-brand-500 border-transparent bg-brand-500 text-neutralgray-700 hover:bg-secondary-500 text-neutralgray-700 border border-neutralgray-700"
-                    >
-                      Find Match
-                    </button>
-                  </>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const stateId = await client.createPrivateLobby(token)
+                      connect(stateId);
+                    }}
+                    className="inline-flex items-center rounded-full border px-6 py-2 text-base font-medium shadow-sm transition duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-brand-500 border-transparent bg-brand-500 text-neutralgray-700 hover:bg-secondary-500 text-neutralgray-700 border border-neutralgray-700"
+                  >
+                    Create New
+                  </button>
                 )}
               </InitializeForm>
             </div>
