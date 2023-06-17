@@ -69,7 +69,7 @@ export async function generateLocal() {
   const parseResult = dotenv.config({ path: join(rootDir, ".env") });
   if (parseResult.parsed === undefined || parseResult.parsed.HATHORA_APP_ID === undefined) {
     throw Error(
-      "HATHORA_APP_ID is undefined. Please sign up at https://console.hathora.dev and put them in a .env file."
+      "HATHORA_APP_ID is undefined. Please sign up at https://console.hathora.dev and put it in a .env file."
     );
   } else {
     appConfig = { appId: parseResult.parsed.HATHORA_APP_ID };
