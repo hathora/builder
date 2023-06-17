@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN npm i -g hathora@0.11.3
+RUN npm i -g hathora@0.11.4
 RUN npx hathora build --only server
 
 ENV NODE_ENV=production
