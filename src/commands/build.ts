@@ -29,12 +29,12 @@ const cmd: CommandModule = {
 
     dotenv.config({ path: join(rootDir, ".env") });
 
-    if (process.env.HATHORA_APP_ID === undefined) {
+    if (process.env.HATHORA_APP_ID === undefined && argv.only !== "server") {
       throw Error(
         "HATHORA_APP_ID is undefined. Please sign up at https://console.hathora.dev and put it in a .env file."
       );
     }
-    const appConfig = { appId: process.env.HATHORA_APP_ID };
+    const appConfig = { appId: process.env.HATHORA_APP_ID ?? "" };
 
     generate(rootDir, "base", appConfig);
     install(argv.only as "server" | "client" | undefined);
