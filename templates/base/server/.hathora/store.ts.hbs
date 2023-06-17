@@ -73,13 +73,15 @@ setInterval(() => {
   });
 }, 10000);
 
+const appSecret = process.env.HATHORA_APP_SECRET;
+if (appSecret === undefined) {
+  throw new Error("HATHORA_APP_SECRET is not set");
+}
+
 const store: Application = {
   // A function called by Hathora to verify a connecting user's token
   async verifyToken(token: string): Promise<UserId | undefined> {
-    const userId = verifyJwt(
-      token,
-      "{{appSecret}}"
-    );
+    const userId = verifyJwt(token, appSecret);
 
     if (userId === undefined) {
       console.error("Failed to verify token", token);

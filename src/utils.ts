@@ -65,18 +65,14 @@ export function getDirs() {
 export async function generateLocal() {
   const { rootDir } = getDirs();
 
-  let appConfig: { appId: string; appSecret: string };
+  let appConfig: { appId: string };
   const parseResult = dotenv.config({ path: join(rootDir, ".env") });
-  if (
-    parseResult.parsed === undefined ||
-    parseResult.parsed.HATHORA_APP_ID === undefined ||
-    parseResult.parsed.HATHORA_APP_SECRET === undefined
-  ) {
+  if (parseResult.parsed === undefined || parseResult.parsed.HATHORA_APP_ID === undefined) {
     throw Error(
-      "HATHORA_APP_ID and HATHORA_APP_SECRET are undefined. Please sign up at https://console.hathora.dev and put them in a .env file."
+      "HATHORA_APP_ID is undefined. Please sign up at https://console.hathora.dev and put them in a .env file."
     );
   } else {
-    appConfig = { appId: parseResult.parsed.HATHORA_APP_ID, appSecret: parseResult.parsed.HATHORA_APP_SECRET };
+    appConfig = { appId: parseResult.parsed.HATHORA_APP_ID };
   }
 
   try {
