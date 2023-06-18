@@ -16,16 +16,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: npm ci
-      - run: npm install ts-node -g
-      - run: ts-node ../../src/cli.ts cloud deploy --appName hathora-boggle --token ${{ secrets.HATHORA_TOKEN }}
+      - run: npm install -g @hathora/cli
+      - run: hathora-cloud deploy --appId app-c0a30146-a018-48cb-9f30-dead988e806c --token ${{ secrets.HATHORA_CLOUD_TOKEN }}
   frontend:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - run: npm ci
       - run: npm install ts-node surge -g
-      - run: COORDINATOR_HOST=coordinator.hathora.com APP_ID=fb24d1c82b3c3827cd8ccbe6ff98409778d6b9f5ed39f04e096dffd51c8c9288 ts-node ../../src/cli.ts build --only client
+      - run: HATHORA_APP_ID=app-d6e4a3e0-0a18-4631-9a3a-97ee434e977c ts-node ../../src/cli.ts build --only client
       - run: cp client/prototype-ui/dist/index.html client/prototype-ui/dist/200.html
       - run: surge client/prototype-ui/dist hathora-boggle.surge.sh
         env:
