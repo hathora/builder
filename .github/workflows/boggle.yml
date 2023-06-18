@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@v2
       - run: npm ci
       - run: npm install ts-node surge -g
-      - run: HATHORA_APP_ID=app-d6e4a3e0-0a18-4631-9a3a-97ee434e977c ts-node ../../src/cli.ts build --only client
+      - run: HATHORA_APP_ID=app-c0a30146-a018-48cb-9f30-dead988e806c ts-node ../../src/cli.ts build --only client
       - run: cp client/prototype-ui/dist/index.html client/prototype-ui/dist/200.html
       - run: surge client/prototype-ui/dist hathora-boggle.surge.sh
         env:
