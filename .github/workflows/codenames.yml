@@ -16,16 +16,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: npm ci
-      - run: npm install ts-node -g
-      - run: ts-node ../../src/cli.ts cloud deploy --appName hathora-codenames --token ${{ secrets.HATHORA_TOKEN }}
+      - run: npm install -g @hathora/cli
+      - run: hathora-cloud deploy --appId app-f932714b-707c-448a-9e36-706f8ae6d7bf --token ${{ secrets.HATHORA_CLOUD_TOKEN }}
   frontend:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - run: npm ci
       - run: npm install ts-node surge -g
-      - run: COORDINATOR_HOST=coordinator.hathora.com APP_ID=387691759af11ff3ec16046fa73048d9034668fddfe0ca702ee90391d1d636a1 ts-node ../../src/cli.ts build --only client
+      - run: HATHORA_APP_ID=app-f932714b-707c-448a-9e36-706f8ae6d7bf ts-node ../../src/cli.ts build --only client
       - run: cp client/prototype-ui/dist/index.html client/prototype-ui/dist/200.html
       - run: surge client/prototype-ui/dist hathora-codenames.surge.sh
         env:
