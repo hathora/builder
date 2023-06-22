@@ -1,15 +1,13 @@
-FROM node:16
+FROM node:18
 
 WORKDIR /app
 
-RUN npm i -g hathora@0.9.26
+COPY . .
+
+RUN npm i -g hathora@0.11.5
+RUN npx hathora build --only server
 
 ENV NODE_ENV=production
-
-ARG APP_SECRET
-ENV APP_SECRET=${APP_SECRET}
-
-COPY . .
-RUN hathora build --only server
+ENV DATA_DIR=/app/data
 
 CMD ["node", "server/dist/index.mjs"]
