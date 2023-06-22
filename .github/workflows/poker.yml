@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: npm ci
+      - run: npm install -g @hathora/cli
       - run: hathora-cloud deploy --appId app-c6802174-e24f-4eae-9feb-5d951ce31f78 --token ${{ secrets.HATHORA_CLOUD_TOKEN }}
   frontend:
     runs-on: ubuntu-latest
