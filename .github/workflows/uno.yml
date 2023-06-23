@@ -16,16 +16,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: npm ci
-      - run: npm install ts-node -g
-      - run: ts-node ../../src/cli.ts cloud deploy --appName hathora-uno --token ${{ secrets.HATHORA_TOKEN }}
+      - run: npm install -g @hathora/cli
+      - run: hathora-cloud deploy --appId app-8be12744-50cf-44b5-94c1-82ba4c2b249a --token ${{ secrets.HATHORA_CLOUD_TOKEN }}
   frontend:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - run: npm ci
       - run: npm install ts-node surge -g
-      - run: COORDINATOR_HOST=coordinator.hathora.com APP_ID=8aec7fb7a99ea7fa187ee92e5a7837e5072554f03497e8799053510f3c9c8dcd ts-node ../../src/cli.ts build --only client
+      - run: HATHORA_APP_ID=app-8be12744-50cf-44b5-94c1-82ba4c2b249a ts-node ../../src/cli.ts build --only client
       - run: cp client/prototype-ui/dist/index.html client/prototype-ui/dist/200.html
       - run: surge client/prototype-ui/dist hathora-uno.surge.sh
         env:
@@ -37,7 +36,7 @@ jobs:
       - uses: actions/checkout@v2
       - run: npm ci
       - run: npm install ts-node surge -g
-      - run: COORDINATOR_HOST=coordinator.hathora.com APP_ID=8aec7fb7a99ea7fa187ee92e5a7837e5072554f03497e8799053510f3c9c8dcd ts-node ../../src/cli.ts build --only client
+      - run: HATHORA_APP_ID=app-8be12744-50cf-44b5-94c1-82ba4c2b249a ts-node ../../src/cli.ts build --only client
       - run: cp client/web/dist/index.html client/web/dist/200.html
       - run: surge client/web/dist material-suit.surge.sh
         env:
