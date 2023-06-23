@@ -16,16 +16,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: npm ci
-      - run: npm install ts-node -g
-      - run: ts-node ../../src/cli.ts cloud deploy --appName hathora-rock-paper-scissor --token ${{ secrets.HATHORA_TOKEN }}
+      - run: npm install -g @hathora/cli
+      - run: hathora-cloud deploy --appId app-05d9ab33-1c37-4600-b0a1-c117e51719cb --token ${{ secrets.HATHORA_CLOUD_TOKEN }}
   frontend:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - run: npm ci
       - run: npm install ts-node surge -g
-      - run: COORDINATOR_HOST=coordinator.hathora.com APP_ID=4891bff367405a23e0a58683f309badd3d106d1811a3b962cecb35fe5e763a24 ts-node ../../src/cli.ts build --only client
+      - run: HATHORA_APP_ID=app-05d9ab33-1c37-4600-b0a1-c117e51719cb ts-node ../../src/cli.ts build --only client
       - run: cp client/prototype-ui/dist/index.html client/prototype-ui/dist/200.html
       - run: surge client/prototype-ui/dist hathora-rock-paper-scissor.surge.sh
         env:
