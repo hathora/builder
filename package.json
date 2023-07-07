@@ -22,7 +22,7 @@
     "hot-esm": "1.5.0",
     "js-yaml": "4.1.0",
     "open": "8.4.0",
-    "openid-client": "5.1.8",
+    "openid-client": "5.4.2",
     "prompts": "2.4.2",
     "shelljs": "0.8.5",
     "tar": "6.1.11",
