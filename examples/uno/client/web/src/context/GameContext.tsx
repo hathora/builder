@@ -4,7 +4,7 @@ import { useSessionstorageState } from "rooks";
 import { HathoraClient, HathoraConnection } from "../../../.hathora/client";
 import { ConnectionFailure } from "../../../.hathora/failures";
 import { Card, PlayerState, IInitializeRequest } from "../../../../api/types";
-import { lookupUser, UserData, Response } from "../../../../api/base";
+import { Response, UserData } from "../../../../api/base";
 
 interface GameContext {
   token?: string;
@@ -20,7 +20,7 @@ interface GameContext {
   drawCard: () => Promise<void>;
   endGame: () => void;
   getUserName: (id: string) => string;
-  user?: UserData;
+  user?: { id: string };
   connecting?: boolean;
   loggingIn?: boolean;
 }
@@ -58,11 +58,11 @@ export default function HathoraContextProvider({ children }: HathoraContextProvi
   const [connectionError, setConnectionError] = useState<ConnectionFailure>();
   const [connecting, setConnecting] = useState<boolean>();
   const [loggingIn, setLoggingIn] = useState<boolean>();
-  const [playerNameMapping, setPlayerNameMapping] = useSessionstorageState<Record<string, UserData>>(
+  const [playerNameMapping, setPlayerNameMapping] = useSessionstorageState<Record<string, { id: string }>>(
     `${client.appId}_player_mapping`,
     {}
   );
-  const [user, setUserInfo] = useState<UserData>();
+  const [user, setUserInfo] = useState<{ id: string }>();
   const isLoginIn = useRef(false);
 
   const login = async () => {
@@ -110,10 +110,10 @@ export default function HathoraContextProvider({ children }: HathoraContextProvi
 
   const createGame = useCallback(async () => {
     if (token) {
-      return client.create(token, IInitializeRequest.default());
+      return client.createPrivateLobby(token);
     } else {
       const token = await login()!;
-      return client.create(token!, IInitializeRequest.default());
+      return client.createPrivateLobby(token!);
     }
   }, [token]);
 
@@ -160,11 +160,8 @@ export default function HathoraContextProvider({ children }: HathoraContextProvi
   const getUserName = useCallback(
     (userId: string) => {
       if (Boolean(playerNameMapping[userId])) {
-        return playerNameMapping[userId].name;
+        return playerNameMapping[userId].id;
       } else {
-        lookupUser(userId).then((response) => {
-          setPlayerNameMapping((curr) => ({ ...curr, [userId]: response }));
-        });
         return userId;
       }
     },
