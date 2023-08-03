@@ -1,18 +1,13 @@
 - [Overview](README.md)
-- [Architecture](architecture.md)
-- [Roadmap](roadmap.md)
 
 - Hathora BuildKit
 
   - [Getting Started](buildkit/README.md)
-  - [Tutorial: Top Down Shooter](buildkit/tutorial_top_down_shooter.md)
+  - [Tutorial: Top Down Shooter](https://bullet-mania.vercel.app/)
   - [Tutorial: 3D Platformer](buildkit/tutorial_3d_platformer.md)
-  - [Reference](buildkit/reference.md)
 
 - Hathora Cloud
-
-  - [Overview](cloud/README.md)
-  - [CLI](cloud/reference.md)
+  - [Get started](https://hathora.dev/docs)
 
 - Hathora Builder
 

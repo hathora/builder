@@ -39,13 +39,6 @@ For Typescript backends, the only file inside the `server/dist` directory is `in
 
 - Node.js must be installed
 - The `DATA_DIR` environment variable must be set to the path where Hathora should write its data files
-- The `COORDINATOR_HOST` environment variable must be set to the URL of the Coordinator being used (if you are using a custom Coordinator other than the Hathora managed one)
-
-Example command to start the backend:
-
-```sh
-COORDINATOR_HOST=coordinator.example.com DATA_DIR=./data node index.mjs
-```
 
 ### Hathora Cloud
 
@@ -60,6 +53,4 @@ Navigate to the project root for your game and confirm there is a Dockerfile (th
 └─ server
 ```
 
-Run `hathora cloud deploy --appName ${MY_GAME_NAME}` to begin the global deployment process. If you run into any issues, please refer to the [Hathora Cloud](../cloud/README.md) documentation.
-
-> You maybe interested in setting up Continuous Delivery. You can find instructions [here](../cloud/README.md#continuous-delivery).
+Run `hathora cloud deploy --appName ${MY_GAME_NAME}` to begin the global deployment process. If you run into any issues, please refer to the [Hathora Cloud](https://hathora.dev/docs) documentation.

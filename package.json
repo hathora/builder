@@ -2,7 +2,9 @@
   "name": "hathora",
   "version": "0.11.5",
   "description": "Multiplayer game framework",
-  "bin": "lib/cli.js",
+  "bin": {
+    "hathora": "lib/cli.js"
+  },
   "files": [
     "lib",
     "node-loader.config.mjs",
@@ -11,7 +13,7 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@node-loader/core": "hpx7/node-loader-core#patch-1",
+    "@node-loader/core": "github:hpx7/node-loader-core#patch-1",
     "axios": "0.27.2",
     "chalk": "4.1.2",
     "dotenv": "16.0.1",
@@ -44,7 +46,7 @@
     "@types/yargs": "17.0.12",
     "@typescript-eslint/eslint-plugin": "5.33.0",
     "@typescript-eslint/parser": "5.43.0",
-    "docsify-cli": "4.4.4",
+    "docsify-cli": "^4.4.4",
     "eslint": "8.23.1",
     "eslint-plugin-import": "2.26.0",
     "eslint-plugin-prettier": "4.2.1",
@@ -88,5 +90,10 @@
       "no-tilde-version-dependencies": "error",
       "no-tilde-version-devDependencies": "error"
     }
+  },
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "example": "examples"
   }
 }
