@@ -47,7 +47,7 @@ Hathora BuildKits are lightweight networking libraries. They make it easier to w
 
 <img src="statics/appId-appSecret.png" alt="drawing" width="300"/>
 
-5. Set the `APP_SECRET` environment variable and create the following `server.mts` file:
+5. Set the `HATHORA_APP_SECRET` environment variable and create the following `server.mts` file:
 
 ```ts
 // server.mts
@@ -57,7 +57,7 @@ Hathora BuildKits are lightweight networking libraries. They make it easier to w
 const store: Application = {
   // A function called by Hathora to verify a connecting user's token
   verifyToken(token: string): UserId | undefined {
-    const userId = verifyJwt(token, "YOUR_HATHORA_APP_SECRET");
+    const userId = verifyJwt(token, process.env.HATHORA_APP_SECRET!);
 
     if (userId === undefined) {
       console.error("Failed to verify token", token);
@@ -151,7 +151,7 @@ console.log(`Server listening on port ${port}`);
 Once your server is connected to the Coordinator, you can start passing messages back and forth. Let's build a client to do that.
 
 1. In your typescript project, install the client SDKs: `npm i @hathora/client-sdk`
-2. Fill in the `APP_ID` from above. Establish a connection using the `onMessage` and `onError` methods:
+2. Fill in `YOUR_HATHORA_APP_ID`. Establish a connection using the `onMessage` and `onError` methods:
 
 ```ts
 // client.mts
