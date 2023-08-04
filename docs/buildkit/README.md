@@ -47,7 +47,7 @@ Hathora BuildKits are lightweight networking libraries. They make it easier to w
 
 <img src="statics/appId-appSecret.png" alt="drawing" width="300"/>
 
-5. Set the `APP_SECRET` environment variable and create the following `server.mts` file:
+5. Set the `HATHORA_APP_SECRET` environment variable and create the following `server.mts` file:
 
 ```ts
 // server.mts
