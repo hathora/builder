@@ -1,5 +1,5 @@
 <div class="hathora-logo-with-super">
-  <img src="statics/logo.svg" alt="drawing" width="200"/>
+  <img src="statics/reg-logo.svg" alt="drawing" width="200"/>
   <span class="hathora-logo-super">Builder</span>
 </div>
 
