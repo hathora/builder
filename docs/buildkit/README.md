@@ -57,7 +57,7 @@ Hathora BuildKits are lightweight networking libraries. They make it easier to w
 const store: Application = {
   // A function called by Hathora to verify a connecting user's token
   verifyToken(token: string): UserId | undefined {
-    const userId = verifyJwt(token, "YOUR_HATHORA_APP_SECRET");
+    const userId = verifyJwt(token, process.env.HATHORA_APP_SECRET!);
 
     if (userId === undefined) {
       console.error("Failed to verify token", token);
