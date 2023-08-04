@@ -53,4 +53,13 @@ Navigate to the project root for your game and confirm there is a Dockerfile (th
 └─ server
 ```
 
-Run `hathora cloud deploy --appName ${MY_GAME_NAME}` to begin the global deployment process. If you run into any issues, please refer to the [Hathora Cloud](https://hathora.dev/docs) documentation.
+1. Create a tar of your server project. 
+2. Upload your server build to Hathora Cloud from either the [Console UI](https://console.hathora.dev/login) or using the CLI command below with your `AppId`.
+```
+hathora-cloud builds create --appId {"HATHORA_APP_ID"}
+``` 
+<img src="statics/console_upload.png" alt="drawing" width="400"/>
+
+3. Configure your deployment through the [Console UI](https://console.hathora.dev/login). 
+
+Refer to the [Hathora Cloud](https://hathora.dev/docs) documentation for more help!
