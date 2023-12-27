@@ -150,7 +150,7 @@ export const {{@key}} = {
     {{/each}}
     return buf;
   },
-  encodeDiff(obj: _DeepPartial<{{@key}}>, tracker: boolean[], writer?: _Writer) {
+  encodeDiff(obj: _DeepPartial<{{@key}}>, tracker: Tracker, writer?: _Writer) {
     const buf = writer ?? new _Writer();
     {{#each properties}}
     tracker.push(obj.{{@key}} !== _NO_DIFF);
@@ -168,11 +168,11 @@ export const {{@key}} = {
       {{/each}}
     };
   },
-  decodeDiff(buf: ArrayBufferView | _Reader, tracker: boolean[]): _DeepPartial<{{@key}}> {
+  decodeDiff(buf: ArrayBufferView | _Reader, tracker: Tracker): _DeepPartial<{{@key}}> {
     const sb = ArrayBuffer.isView(buf) ? new _Reader(buf) : buf;
     return {
       {{#each properties}}
-      {{@key}}: tracker.shift() ? {{> renderDecodeDiffArg}} : _NO_DIFF,
+      {{@key}}: tracker.next() ? {{> renderDecodeDiffArg}} : _NO_DIFF,
       {{/each}}
     };
   },
@@ -436,12 +436,13 @@ export function encodeStateUpdate(
   buf.writeUVarint(events.length);
   events.forEach((message) => encodeEvent(buf, message));
   if (x !== undefined) {
-    const tracker: boolean[] = [];
+    const bits: boolean[] = [];
+    const tracker = new Tracker(bits);
     const _buf = buf;
     buf = new _Writer();
     {{#with (lookup types userState)}}{{> renderEncodeDiffArg}};{{/with}}
-    _buf.writeUVarint(tracker.length);
-    _buf.writeBits(tracker);
+    _buf.writeUVarint(bits.length);
+    _buf.writeBits(bits);
     _buf.writeBuffer(buf.toBuffer());
     buf = _buf;
   }
@@ -469,7 +470,7 @@ export function decodeStateUpdate(buf: ArrayBufferView | _Reader): {
   if (sb.remaining() === 0) {
     return { changedAtDiff, responses, events };
   }
-  const tracker = sb.readBits(sb.readUVarint());
+  const tracker = new Tracker(sb.readBits(sb.readUVarint()));
   const stateDiff = {{#with (lookup types userState)}}{{> renderDecodeDiffArg}}{{/with}};
   return { stateDiff, changedAtDiff, responses, events };
 }
@@ -478,6 +479,16 @@ export function decodeStateSnapshot(buf: ArrayBufferView | _Reader) {
   {{#with (lookup types userState)}}
   return {{> renderDecodeArg}};
   {{/with}}
+}
+
+class Tracker {
+  constructor(private bits: boolean[] = [], private idx = 0) {}
+  push(val: boolean) {
+    this.bits.push(val);
+  }
+  next() {
+    return this.bits[this.idx++];
+  }
 }
 
 function validatePrimitive(isValid: boolean, errorMessage: string) {
@@ -529,7 +540,7 @@ function writeArray<T>(buf: _Writer, x: T[], innerWrite: (x: T) => void) {
     innerWrite(val);
   }
 }
-function writeArrayDiff<T>(buf: _Writer, tracker: boolean[], x: (T | typeof _NO_DIFF)[], innerWrite: (x: T) => void) {
+function writeArrayDiff<T>(buf: _Writer, tracker: Tracker, x: (T | typeof _NO_DIFF)[], innerWrite: (x: T) => void) {
   buf.writeUVarint(x.length);
   x.forEach((val) => {
     tracker.push(val !== _NO_DIFF);
@@ -565,11 +576,11 @@ function parseArray<T>(buf: _Reader, innerParse: () => T): T[] {
   }
   return arr;
 }
-function parseArrayDiff<T>(buf: _Reader, tracker: boolean[], innerParse: () => T): (T | typeof _NO_DIFF)[] {
+function parseArrayDiff<T>(buf: _Reader, tracker: Tracker, innerParse: () => T): (T | typeof _NO_DIFF)[] {
   const len = buf.readUVarint();
   const arr = [];
   for (let i = 0; i < len; i++) {
-    if (tracker.shift()) {
+    if (tracker.next()) {
       arr.push(innerParse());
     } else {
       arr.push(_NO_DIFF);
