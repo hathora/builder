@@ -143,15 +143,13 @@ export const {{@key}} = {
 
     return validationErrors;
   },
-  encode(obj: {{@key}}, writer?: _Writer) {
-    const buf = writer ?? new _Writer();
+  encode(obj: {{@key}}, buf: _Writer) {
     {{#each properties}}
     {{> renderEncodeArg arg=@key}};
     {{/each}}
     return buf;
   },
-  encodeDiff(obj: _DeepPartial<{{@key}}>, tracker: Tracker, writer?: _Writer) {
-    const buf = writer ?? new _Writer();
+  encodeDiff(obj: _DeepPartial<{{@key}}>, tracker: Tracker, buf: _Writer) {
     {{#each properties}}
     tracker.push(obj.{{@key}} !== _NO_DIFF);
     if (obj.{{@key}} !== _NO_DIFF) {
@@ -160,16 +158,16 @@ export const {{@key}} = {
     {{/each}}
     return buf;
   },
-  decode(buf: ArrayBufferView | _Reader): {{@key}} {
-    const sb = ArrayBuffer.isView(buf) ? new _Reader(buf) : buf;
+  decode(buf: _Reader): {{@key}} {
+    const sb = buf;
     return {
       {{#each properties}}
       {{@key}}: {{> renderDecodeArg}},
       {{/each}}
     };
   },
-  decodeDiff(buf: ArrayBufferView | _Reader, tracker: Tracker): _DeepPartial<{{@key}}> {
-    const sb = ArrayBuffer.isView(buf) ? new _Reader(buf) : buf;
+  decodeDiff(buf: _Reader, tracker: Tracker): _DeepPartial<{{@key}}> {
+    const sb = buf;
     return {
       {{#each properties}}
       {{@key}}: tracker.next() ? {{> renderDecodeDiffArg}} : _NO_DIFF,
@@ -217,8 +215,7 @@ export const {{@key}} = {
     {{/each}}
     return buf;
   },
-  encodeDiff(obj: _DeepPartial<{{@key}}>, writer?: _Writer) {
-    const buf = writer ?? new _Writer();
+  encodeDiff(obj: _DeepPartial<{{@key}}>, buf: _Writer) {
     {{#each options}}
     {{#unless @first}}else {{/unless}}if (obj.type === "{{@key}}") {
       writeUInt8(buf, {{@index}});
@@ -231,8 +228,7 @@ export const {{@key}} = {
     {{/each}}
     return buf;
   },
-  decode(buf: ArrayBufferView | _Reader): {{@key}} {
-    const sb = ArrayBuffer.isView(buf) ? new _Reader(buf) : buf;
+  decode(sb: _Reader): {{@key}} {
     const type = parseUInt8(sb);
     {{#each options}}
     {{#unless @first}}else {{/unless}}if (type === {{@index}}) {
@@ -241,8 +237,7 @@ export const {{@key}} = {
     {{/each}}
     throw new Error("Invalid union");
   },
-  decodeDiff(buf: ArrayBufferView | _Reader): _DeepPartial<{{@key}}> {
-    const sb = ArrayBuffer.isView(buf) ? new _Reader(buf) : buf;
+  decodeDiff(sb: _Reader): _DeepPartial<{{@key}}> {
     const type = parseUInt8(sb);
     {{#each options}}
     {{#unless @first}}else {{/unless}}if (type === {{@index}}) {
