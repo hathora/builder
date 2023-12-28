@@ -215,7 +215,7 @@ export const {{@key}} = {
     {{/each}}
     return buf;
   },
-  encodeDiff(obj: _DeepPartial<{{@key}}>, buf: _Writer) {
+  encodeDiff(obj: _DeepPartial<{{@key}}>, tracker: Tracker, buf: _Writer) {
     {{#each options}}
     {{#unless @first}}else {{/unless}}if (obj.type === "{{@key}}") {
       writeUInt8(buf, {{@index}});
@@ -237,7 +237,7 @@ export const {{@key}} = {
     {{/each}}
     throw new Error("Invalid union");
   },
-  decodeDiff(sb: _Reader): _DeepPartial<{{@key}}> {
+  decodeDiff(sb: _Reader, tracker: Tracker): _DeepPartial<{{@key}}> {
     const type = parseUInt8(sb);
     {{#each options}}
     {{#unless @first}}else {{/unless}}if (type === {{@index}}) {
@@ -575,11 +575,7 @@ function parseArrayDiff<T>(buf: _Reader, tracker: Tracker, innerParse: () => T):
   const len = buf.readUVarint();
   const arr = [];
   for (let i = 0; i < len; i++) {
-    if (tracker.next()) {
-      arr.push(innerParse());
-    } else {
-      arr.push(_NO_DIFF);
-    }
+    arr.push(tracker.next() ? innerParse() : _NO_DIFF);
   }
   return arr;
 }
